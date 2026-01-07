@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Pcare;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\PcareMassSendJob;
+use App\Jobs\PcareResendJob;
 use App\Traits\BpjsTraits;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use App\Jobs\PcareResendJob;
-use App\Jobs\PcareMassSendJob;
 
 /**
  * Controller untuk bridging BPJS PCare.
@@ -70,7 +71,12 @@ class PcareController extends Controller
                     $noUrut = (string) $m[3];
                     $kdPoli = (string) $m[4];
                     $y = null;
-                    try { $d = \DateTime::createFromFormat('d-m-Y', $tgl); $y = $d ? $d->format('Y-m-d') : null; } catch (\Throwable $e) { $y = null; }
+                    try {
+                        $d = \DateTime::createFromFormat('d-m-Y', $tgl);
+                        $y = $d ? $d->format('Y-m-d') : null;
+                    } catch (\Throwable $e) {
+                        $y = null;
+                    }
                     $noRawatLog = null;
                     if ($y) {
                         try {
@@ -81,7 +87,8 @@ class PcareController extends Controller
                                 ->select(['no_rawat'])
                                 ->first();
                             $noRawatLog = $row?->no_rawat ?: null;
-                        } catch (\Throwable $e) {}
+                        } catch (\Throwable $e) {
+                        }
                     }
                     if ($noRawatLog) {
                         $maskedCard = substr($noka, 0, 6).str_repeat('*', max(strlen($noka) - 10, 0)).substr($noka, -4);
@@ -113,7 +120,8 @@ class PcareController extends Controller
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
-                        } catch (\Throwable $e) {}
+                        } catch (\Throwable $e) {
+                        }
                     }
                 }
             }
@@ -459,7 +467,8 @@ class PcareController extends Controller
                     }
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         try {
             $ct = (string) config('bpjs.pcare.kunjungan_content_type', 'text/plain');
@@ -1480,6 +1489,7 @@ class PcareController extends Controller
                 $failed++;
             }
         }
+
         return response()->json(['success' => $success, 'failed' => $failed]);
     }
 
@@ -1560,7 +1570,7 @@ class PcareController extends Controller
         foreach ($rows2 as $r) {
             $key = (string) $r->no_rawat;
             if (! isset($byRaw[$key])) {
-            $mapped = $r->status === 'sent' ? 'Terkirim' : ($r->status === 'failed' ? 'Gagal' : (string) $r->status);
+                $mapped = $r->status === 'sent' ? 'Terkirim' : ($r->status === 'failed' ? 'Gagal' : (string) $r->status);
                 $byRaw[$key] = [
                     'no_rawat' => $key,
                     'tglDaftar' => (string) $r->tglDaftar,
@@ -1593,6 +1603,7 @@ class PcareController extends Controller
         usort($out, function ($a, $b) {
             $da = $this->normalizeDateToYmd((string) $a['tglDaftar']) ?? '';
             $db = $this->normalizeDateToYmd((string) $b['tglDaftar']) ?? '';
+
             return strcmp($db, $da);
         });
 
@@ -1614,27 +1625,55 @@ class PcareController extends Controller
         $startY = $this->normalizeDateToYmd((string) $request->query('start'));
         $endY = $this->normalizeDateToYmd((string) $request->query('end'));
         $limit = (int) $request->query('limit', 200);
-        if ($limit < 1) { $limit = 200; }
-        if ($limit > 1000) { $limit = 1000; }
+        if ($limit < 1) {
+            $limit = 200;
+        }
+        if ($limit > 1000) {
+            $limit = 1000;
+        }
 
         $qbuilder = \Illuminate\Support\Facades\DB::table('pcare_bpjs_log');
-        if ($endpoint !== '') { $qbuilder->where('endpoint', $endpoint); }
-        if ($status !== '') { $qbuilder->where('status', $status); }
-        if ($q !== '') { $qbuilder->where('no_rawat', 'like', '%'.$q.'%'); }
-        if ($startY) { $qbuilder->whereDate('created_at', '>=', $startY); }
-        if ($endY) { $qbuilder->whereDate('created_at', '<=', $endY); }
+        if ($endpoint !== '') {
+            $qbuilder->where('endpoint', $endpoint);
+        }
+        if ($status !== '') {
+            $qbuilder->where('status', $status);
+        }
+        if ($q !== '') {
+            $qbuilder->where('no_rawat', 'like', '%'.$q.'%');
+        }
+        if ($startY) {
+            $qbuilder->whereDate('created_at', '>=', $startY);
+        }
+        if ($endY) {
+            $qbuilder->whereDate('created_at', '<=', $endY);
+        }
         $rows = $qbuilder
-            ->select(['id','no_rawat','endpoint','status','http_status','meta_code','meta_message','duration_ms','request_payload','response_body_json','response_body_raw','created_at'])
+            ->select(['id', 'no_rawat', 'endpoint', 'status', 'http_status', 'meta_code', 'meta_message', 'duration_ms', 'request_payload', 'response_body_json', 'response_body_raw', 'created_at'])
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
 
         $out = [];
         foreach ($rows as $r) {
-            $req = null; $resp = null; $rawPrev = '';
-            try { $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload; } catch (\Throwable $e) { $req = null; }
-            try { $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json; } catch (\Throwable $e) { $resp = null; }
-            try { $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200); } catch (\Throwable $e) { $rawPrev = ''; }
+            $req = null;
+            $resp = null;
+            $rawPrev = '';
+            try {
+                $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload;
+            } catch (\Throwable $e) {
+                $req = null;
+            }
+            try {
+                $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json;
+            } catch (\Throwable $e) {
+                $resp = null;
+            }
+            try {
+                $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200);
+            } catch (\Throwable $e) {
+                $rawPrev = '';
+            }
             $out[] = [
                 'id' => (int) $r->id,
                 'no_rawat' => (string) ($r->no_rawat ?? ''),
@@ -1650,6 +1689,7 @@ class PcareController extends Controller
                 'created_at' => optional($r->created_at)->format('Y-m-d H:i:s'),
             ];
         }
+
         return response()->json(['data' => $out]);
     }
 
@@ -1666,10 +1706,24 @@ class PcareController extends Controller
             ->get();
         $out = [];
         foreach ($rows as $r) {
-            $req = null; $resp = null; $rawPrev = '';
-            try { $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload; } catch (\Throwable $e) { $req = null; }
-            try { $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json; } catch (\Throwable $e) { $resp = null; }
-            try { $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200); } catch (\Throwable $e) { $rawPrev = ''; }
+            $req = null;
+            $resp = null;
+            $rawPrev = '';
+            try {
+                $req = is_string($r->request_payload) ? json_decode($r->request_payload, true) : $r->request_payload;
+            } catch (\Throwable $e) {
+                $req = null;
+            }
+            try {
+                $resp = is_string($r->response_body_json) ? json_decode($r->response_body_json, true) : $r->response_body_json;
+            } catch (\Throwable $e) {
+                $resp = null;
+            }
+            try {
+                $rawPrev = substr((string) ($r->response_body_raw ?? ''), 0, 1200);
+            } catch (\Throwable $e) {
+                $rawPrev = '';
+            }
             $out[] = [
                 'id' => (int) $r->id,
                 'no_rawat' => (string) ($r->no_rawat ?? ''),
@@ -1685,6 +1739,7 @@ class PcareController extends Controller
                 'created_at' => optional($r->created_at)->format('Y-m-d H:i:s'),
             ];
         }
+
         return response()->json(['data' => $out]);
     }
 
@@ -1754,13 +1809,16 @@ class PcareController extends Controller
                     'status' => (string) ($r->status ?? ''),
                 ];
             }
+
             return response()->json(['data' => $out]);
         } catch (\Throwable $e) {
             try {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->error('pendaftaranList error', [
                     'error' => $e->getMessage(),
                 ]);
-            } catch (\Throwable $ie) {}
+            } catch (\Throwable $ie) {
+            }
+
             return response()->json(['data' => []], 200);
         }
     }
@@ -1797,7 +1855,8 @@ class PcareController extends Controller
                 if (Storage::disk('local')->exists($path)) {
                     $rawFile = Storage::disk('local')->get($path);
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+            }
             if ($data) {
                 if ((string) ($data['raw'] ?? '') === '' && is_string($rawCache) && $rawCache !== '') {
                     $data['raw'] = $rawCache;
@@ -1815,15 +1874,26 @@ class PcareController extends Controller
                 $desc = null;
                 $rawStr = is_array($data['raw'] ?? null) ? json_encode($data['raw']) : (string) ($data['raw'] ?? '');
                 $rawArr = null;
-                try { $rawArr = json_decode($rawStr, true); } catch (\Throwable $e) {}
+                try {
+                    $rawArr = json_decode($rawStr, true);
+                } catch (\Throwable $e) {
+                }
                 if (is_array($rawArr)) {
                     $meta = $rawArr['metaData'] ?? [];
                     $resp = $rawArr['response'] ?? [];
                     $parts = [];
-                    if (isset($meta['code'])) { $parts[] = 'code: '.(string) $meta['code']; }
-                    if (isset($meta['message'])) { $parts[] = 'message: '.(string) $meta['message']; }
-                    if (isset($resp['noKunjungan'])) { $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan']; }
-                    if (isset($resp['noUrut'])) { $parts[] = 'noUrut: '.(string) $resp['noUrut']; }
+                    if (isset($meta['code'])) {
+                        $parts[] = 'code: '.(string) $meta['code'];
+                    }
+                    if (isset($meta['message'])) {
+                        $parts[] = 'message: '.(string) $meta['message'];
+                    }
+                    if (isset($resp['noKunjungan'])) {
+                        $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan'];
+                    }
+                    if (isset($resp['noUrut'])) {
+                        $parts[] = 'noUrut: '.(string) $resp['noUrut'];
+                    }
                     if (isset($resp['field']) || isset($resp['message'])) {
                         $parts[] = 'field: '.(string) ($resp['field'] ?? '').' message: '.(string) ($resp['message'] ?? '');
                     }
@@ -1832,6 +1902,7 @@ class PcareController extends Controller
                 }
                 $data['desc'] = $desc;
             }
+
             return response()->json(['data' => $data]);
         }
         $select2 = [
@@ -1861,7 +1932,8 @@ class PcareController extends Controller
             if (Storage::disk('local')->exists($path)) {
                 $rawFile = Storage::disk('local')->get($path);
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
         if ($data) {
             if ((string) ($data['raw'] ?? '') === '' && is_string($rawCache) && $rawCache !== '') {
                 $data['raw'] = $rawCache;
@@ -1879,15 +1951,26 @@ class PcareController extends Controller
             $desc = null;
             $rawStr = is_array($data['raw'] ?? null) ? json_encode($data['raw']) : (string) ($data['raw'] ?? '');
             $rawArr = null;
-            try { $rawArr = json_decode($rawStr, true); } catch (\Throwable $e) {}
+            try {
+                $rawArr = json_decode($rawStr, true);
+            } catch (\Throwable $e) {
+            }
             if (is_array($rawArr)) {
                 $meta = $rawArr['metaData'] ?? [];
                 $resp = $rawArr['response'] ?? [];
                 $parts = [];
-                if (isset($meta['code'])) { $parts[] = 'code: '.(string) $meta['code']; }
-                if (isset($meta['message'])) { $parts[] = 'message: '.(string) $meta['message']; }
-                if (isset($resp['noKunjungan'])) { $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan']; }
-                if (isset($resp['noUrut'])) { $parts[] = 'noUrut: '.(string) $resp['noUrut']; }
+                if (isset($meta['code'])) {
+                    $parts[] = 'code: '.(string) $meta['code'];
+                }
+                if (isset($meta['message'])) {
+                    $parts[] = 'message: '.(string) $meta['message'];
+                }
+                if (isset($resp['noKunjungan'])) {
+                    $parts[] = 'noKunjungan: '.(string) $resp['noKunjungan'];
+                }
+                if (isset($resp['noUrut'])) {
+                    $parts[] = 'noUrut: '.(string) $resp['noUrut'];
+                }
                 if (isset($resp['field']) || isset($resp['message'])) {
                     $parts[] = 'field: '.(string) ($resp['field'] ?? '').' message: '.(string) ($resp['message'] ?? '');
                 }
@@ -1896,6 +1979,7 @@ class PcareController extends Controller
             }
             $data['desc'] = $desc;
         }
+
         return response()->json(['data' => $data]);
     }
 
@@ -1906,6 +1990,7 @@ class PcareController extends Controller
             return response()->json(['message' => 'no_rawat wajib diisi'], 422);
         }
         PcareResendJob::dispatch($noRawat);
+
         return response()->json(['queued' => true]);
     }
 
@@ -1923,6 +2008,7 @@ class PcareController extends Controller
             return response()->json(['queued' => false, 'message' => 'Tidak ada data untuk dikirim'], 200);
         }
         PcareMassSendJob::dispatch($list);
+
         return response()->json(['queued' => true, 'count' => count($list)]);
     }
 
@@ -2620,6 +2706,217 @@ class PcareController extends Controller
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
         return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Referensi Penyakit SRK (Skrinning Rekap) dari PCare.
+     * Sesuai katalog BPJS: GET {Base URL}/{Service Name}/skrinning/rekap
+     * Endpoint ini TIDAK menerima parameter apapun dan mengembalikan semua data rekapitulasi.
+     *
+     * Catatan: Parameter q, start, limit di frontend digunakan untuk filtering/pagination di sisi client
+     * setelah data diterima dari BPJS.
+     */
+    public function getReferensiSrk(Request $request)
+    {
+        // Validasi konfigurasi dasar terlebih dahulu
+        $cfg = $this->pcareConfig();
+        $base = rtrim((string) ($cfg['base_url'] ?? ''), '/');
+        if ($base === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'BPJS_PCARE_BASE_URL belum dikonfigurasi di server ini (.env). Silakan isi nilai base URL PCare.',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], 422);
+        }
+
+        // Sesuai katalog BPJS, endpoint skrinning/rekap TIDAK menerima parameter
+        // Endpoint langsung mengembalikan semua data rekapitulasi
+        // Content-Type sesuai katalog: application/json; charset=utf-8
+        $endpoint = 'skrinning/rekap';
+
+        try {
+            Log::channel('bpjs')->info('PCare getReferensiSrk requesting endpoint', [
+                'endpoint' => $endpoint,
+                'full_url' => $base.'/'.$endpoint,
+                'note' => 'Endpoint tidak menerima parameter sesuai katalog BPJS',
+            ]);
+
+            // Gunakan pcareRequest seperti endpoint lain yang sudah bekerja
+            // Endpoint skrinning/rekap tidak menerima parameter sesuai katalog BPJS
+            // Content-Type sesuai katalog: application/json; charset=utf-8
+            $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+            $response = $result['response'];
+            $url = $result['url'] ?? $base.'/'.$endpoint;
+
+            // Log response status dan body untuk debugging
+            $rawBody = $response->body();
+            $statusCode = $response->status();
+
+            Log::channel('bpjs')->info('PCare getReferensiSrk response received', [
+                'status' => $statusCode,
+                'endpoint' => $endpoint,
+                'url' => $url,
+                'body_preview' => substr($rawBody, 0, 1000),
+                'body_length' => strlen($rawBody),
+            ]);
+
+            // Process response
+            $processed = $this->maybeDecryptAndDecompress($rawBody, $result['timestamp_used']);
+            if (! is_array($processed)) {
+                $processed = ['raw' => $processed];
+            }
+
+            // Log processed response untuk debugging error 400
+            if ($statusCode >= 400) {
+                Log::channel('bpjs')->error('PCare getReferensiSrk error response details', [
+                    'status' => $statusCode,
+                    'endpoint' => $endpoint,
+                    'url' => $url,
+                    'processed' => $processed,
+                    'raw_body' => substr($rawBody, 0, 2000),
+                    'headers_sent' => [
+                        'X-cons-id' => $result['headers_used']['X-cons-id'] ?? 'N/A',
+                        'X-timestamp' => $result['timestamp_used'] ?? 'N/A',
+                        'Content-Type' => $result['headers_used']['Content-Type'] ?? 'N/A',
+                    ],
+                ]);
+                if ($statusCode === 412) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => 'Data SRK tidak tersedia untuk PPK saat ini',
+                            'code' => 200,
+                        ],
+                        'response' => [
+                            'list' => [],
+                            'count' => 0,
+                        ],
+                    ], 200);
+                }
+            }
+
+            // Jika sukses (2xx), return response
+            if ($response->status() >= 200 && $response->status() < 300) {
+                // Filter di sisi server jika parameter q diberikan (untuk kompatibilitas dengan frontend)
+                $q = trim($request->query('q', ''));
+                if ($q !== '' && isset($processed['response']['list']) && is_array($processed['response']['list'])) {
+                    $filtered = array_filter($processed['response']['list'], function ($item) use ($q) {
+                        $namaPenyakit = strtolower($item['nama_penyakit'] ?? '');
+                        $qLower = strtolower($q);
+
+                        return strpos($namaPenyakit, $qLower) !== false;
+                    });
+                    $processed['response']['list'] = array_values($filtered);
+                    $processed['response']['count'] = count($filtered);
+                }
+
+                // Pagination di sisi server jika start/limit diberikan
+                $start = (int) $request->query('start', 0);
+                $limit = (int) $request->query('limit', 0);
+                if ($limit > 0 && isset($processed['response']['list']) && is_array($processed['response']['list'])) {
+                    $list = $processed['response']['list'];
+                    $total = count($list);
+                    $processed['response']['list'] = array_slice($list, $start, $limit);
+                    $processed['response']['count'] = $total;
+                }
+
+                return response()->json($processed, $response->status());
+            }
+
+            // Jika error, return response error dari BPJS (termasuk pesan dari metaData jika ada)
+            $errorMessage = 'Permintaan tidak valid ke BPJS PCare (Referensi SRK)';
+            if (is_array($processed) && isset($processed['metaData']['message'])) {
+                $errorMessage = $processed['metaData']['message'];
+            }
+            if ($response->status() === 412) {
+                $errorMessage = 'Precondition Failed dari BPJS PCare: periksa kredensial dan header (user_key, signature, authorization)';
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $errorMessage,
+                    'code' => $response->status(),
+                ],
+                'response' => $processed['response'] ?? ['list' => [], 'count' => 0],
+            ], $response->status());
+
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $responseBody = '';
+            $responseStatus = 503;
+            if ($e->response) {
+                $responseBody = $e->response->body();
+                $responseStatus = $e->response->status();
+                if ($responseStatus === 412) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => 'Data SRK tidak tersedia untuk PPK saat ini',
+                            'code' => 200,
+                        ],
+                        'response' => [
+                            'list' => [],
+                            'count' => 0,
+                        ],
+                    ], 200);
+                }
+                try {
+                    $processed = $this->maybeDecryptAndDecompress($responseBody, '');
+                    if (is_array($processed) && isset($processed['metaData']['message'])) {
+                        return response()->json($processed, $responseStatus);
+                    }
+                } catch (\Throwable $ignore) {
+                }
+            }
+
+            Log::channel('bpjs')->error('PCare getReferensiSrk RequestException', [
+                'endpoint' => $endpoint,
+                'base_url' => $base,
+                'status' => $responseStatus,
+                'error' => $e->getMessage(),
+                'response_body' => substr($responseBody, 0, 500),
+            ]);
+
+            $errorMsg = 'Gagal terhubung ke BPJS PCare (Referensi SRK): '.$e->getMessage();
+            $status = $responseStatus;
+        } catch (\Throwable $e) {
+            Log::channel('bpjs')->error('PCare getReferensiSrk error', [
+                'endpoint' => $endpoint,
+                'base_url' => $base,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $errorMsg = 'Gagal terhubung ke BPJS PCare (Referensi SRK): '.$e->getMessage();
+            $status = 503;
+
+            // Deteksi jenis error untuk status code yang lebih tepat
+            $errorMsgLower = strtolower($e->getMessage());
+            if (stripos($errorMsgLower, 'status code 400') !== false || stripos($errorMsgLower, '400') !== false) {
+                $status = 400;
+            } elseif (stripos($errorMsgLower, 'status code 401') !== false || stripos($errorMsgLower, '401') !== false) {
+                $status = 401;
+            } elseif (stripos($errorMsgLower, 'status code 404') !== false || stripos($errorMsgLower, '404') !== false) {
+                $status = 404;
+            } elseif (stripos($errorMsgLower, 'timeout') !== false || stripos($errorMsgLower, 'connection') !== false) {
+                $status = 503;
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $errorMsg,
+                    'code' => $status,
+                ],
+                'response' => [
+                    'list' => [],
+                    'count' => 0,
+                ],
+            ], $status);
+        }
     }
 
     /**

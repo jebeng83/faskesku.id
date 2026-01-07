@@ -27,9 +27,7 @@ trait BpjsTraits
             'base_url' => config('bpjs.pcare.base_url'),
             'cons_id' => $row?->cons_id_pcare ?? config('bpjs.pcare.cons_id'),
             'cons_pwd' => $row?->secretkey_pcare ?? config('bpjs.pcare.cons_pwd'),
-            // Wajib ambil dari DB sesuai instruksi: setting_bridging_bpjs.userkey_pcare
-            // Tanpa fallback ke env untuk mencegah ketidaksesuaian konfigurasi saat runtime
-            'user_key' => (string) ($row?->userkey_pcare ?? ''),
+            'user_key' => (string) (($row?->userkey_pcare ?? '') !== '' ? ($row?->userkey_pcare ?? '') : (config('bpjs.pcare.user_key') ?? '')),
             'user' => $row?->user_pcare ?? config('bpjs.pcare.user'),
             'pass' => $row?->pass_pcare ?? config('bpjs.pcare.pass'),
             // kode_ppk diutamakan dari config; jika null, fallback ke tabel 'setting'

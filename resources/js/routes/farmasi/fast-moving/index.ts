@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:734
+* @see \App\Http\Controllers\Farmasi\FastMovingController::data
+* @see app/Http/Controllers/Farmasi/FastMovingController.php:11
 * @route '/farmasi/obat-fast-moving/data'
 */
 export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +15,8 @@ data.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:734
+* @see \App\Http\Controllers\Farmasi\FastMovingController::data
+* @see app/Http/Controllers/Farmasi/FastMovingController.php:11
 * @route '/farmasi/obat-fast-moving/data'
 */
 data.url = (options?: RouteQueryOptions) => {
@@ -22,7 +24,8 @@ data.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:734
+* @see \App\Http\Controllers\Farmasi\FastMovingController::data
+* @see app/Http/Controllers/Farmasi/FastMovingController.php:11
 * @route '/farmasi/obat-fast-moving/data'
 */
 data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +34,8 @@ data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:734
+* @see \App\Http\Controllers\Farmasi\FastMovingController::data
+* @see app/Http/Controllers/Farmasi/FastMovingController.php:11
 * @route '/farmasi/obat-fast-moving/data'
 */
 data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

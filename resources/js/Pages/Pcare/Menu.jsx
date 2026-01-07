@@ -147,6 +147,20 @@ const cardsByTab = {
       )
     },
     {
+      key: 'refSrk',
+      title: 'Referensi Penyakit SRK',
+      desc: 'Rekap skrining penyakit dari PCare',
+      href: '/pcare/referensi/srk',
+      gradient: 'from-indigo-500 to-blue-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 6h16" />
+          <path d="M4 12h10" />
+          <path d="M4 18h7" />
+        </svg>
+      )
+    },
+    {
       key: 'refTindakan',
       title: 'Referensi Tindakan',
       desc: 'Daftar tindakan PCare',

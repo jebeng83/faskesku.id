@@ -42,7 +42,6 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RadiologiController;
-use App\Http\Controllers\SuratController;
 use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
@@ -53,6 +52,7 @@ use App\Http\Controllers\RehabilitasiMedikController;
 use App\Http\Controllers\setting\SettingController;
 use App\Http\Controllers\SkriningVisualController;
 use App\Http\Controllers\SpesialisController;
+use App\Http\Controllers\SuratController;
 use App\Http\Controllers\TarifTindakanController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -720,6 +720,7 @@ Route::middleware('auth')->group(function () {
         } else { // ralan default
             $data = $base;
         }
+
         return response()->json($data);
     })->name('laporan.stats');
 
@@ -734,6 +735,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/farmasi/obat-fast-moving/data', function () {
         $rows = [];
         $period = request()->query('period');
+        $limit = (int) (request()->query('limit', 10));
         $days = 7;
         if ($period === 'month') {
             $days = 30;
@@ -745,33 +747,50 @@ Route::middleware('auth')->group(function () {
             $days = 365;
         }
         $fromDate = now()->subDays($days)->format('Y-m-d');
-        $dateColumn = null;
-        $candidates = ['tgl_perawatan', 'tgl_peresepan', 'tanggal', 'tgl', 'tgl_jual', 'tgl_resep', 'tgl_penjualan'];
-        foreach ($candidates as $col) {
-            if (Schema::hasColumn('resep_dokter', $col)) {
-                $dateColumn = $col;
-                break;
-            }
-        }
-        if (Schema::hasTable('resep_dokter') && Schema::hasTable('databarang')) {
+        if (Schema::hasTable('detail_pemberian_obat') && Schema::hasTable('databarang')) {
             try {
+                $rows = DB::table('detail_pemberian_obat as dpo')
+                    ->join('databarang as db', 'db.kode_brng', '=', 'dpo.kode_brng')
+                    ->select('dpo.kode_brng', 'db.nama_brng', DB::raw('SUM(dpo.jml) as jumlah'))
+                    ->whereNotNull('dpo.kode_brng')
+                    ->where('dpo.kode_brng', '!=', '')
+                    ->whereDate('dpo.tgl_perawatan', '>=', $fromDate)
+                    ->groupBy('dpo.kode_brng', 'db.nama_brng')
+                    ->orderByDesc('jumlah')
+                    ->limit($limit > 0 ? $limit : 10)
+                    ->get();
+            } catch (\Throwable $e) {
+                $rows = [];
+            }
+        } elseif (Schema::hasTable('resep_dokter') && Schema::hasTable('resep_obat') && Schema::hasTable('databarang')) {
+            try {
+                $dateColumn = null;
+                $candidates = ['tgl_perawatan', 'tgl_peresepan'];
+                foreach ($candidates as $col) {
+                    if (Schema::hasColumn('resep_obat', $col)) {
+                        $dateColumn = $col;
+                        break;
+                    }
+                }
                 $query = DB::table('resep_dokter as rd')
+                    ->join('resep_obat as ro', 'ro.no_resep', '=', 'rd.no_resep')
                     ->join('databarang as db', 'db.kode_brng', '=', 'rd.kode_brng')
                     ->select('rd.kode_brng', 'db.nama_brng', DB::raw('COUNT(*) as jumlah'))
                     ->whereNotNull('rd.kode_brng')
                     ->where('rd.kode_brng', '!=', '');
                 if ($dateColumn) {
-                    $query = $query->whereDate('rd.' . $dateColumn, '>=', $fromDate);
+                    $query = $query->whereDate('ro.'.$dateColumn, '>=', $fromDate);
                 }
                 $rows = $query
                     ->groupBy('rd.kode_brng', 'db.nama_brng')
                     ->orderByDesc('jumlah')
-                    ->limit(10)
+                    ->limit($limit > 0 ? $limit : 10)
                     ->get();
             } catch (\Throwable $e) {
                 $rows = [];
             }
         }
+
         return response()->json([
             'data' => collect($rows)->map(function ($r) {
                 return [
@@ -794,6 +813,7 @@ Route::middleware('auth')->group(function () {
                 $columns = [];
             }
         }
+
         return response()->json([
             'columns' => collect($columns)->map(function ($c) {
                 return [
@@ -1484,6 +1504,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/sisa-stok/data', [\App\Http\Controllers\Farmasi\SisaStokController::class, 'index'])
             ->name('sisa-stok.data');
 
+        Route::get('/obat-fast-moving', function () {
+            return Inertia::render('farmasi/10ObatFastMoving');
+        })->name('fast-moving');
+        Route::get('/obat-fast-moving/data', [\App\Http\Controllers\Farmasi\FastMovingController::class, 'index'])
+            ->name('fast-moving.data');
+
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
@@ -1659,6 +1685,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDpho');
         })->name('referensi.dpho');
 
+        // Referensi Penyakit SRK page (Inertia)
+        Route::get('/referensi/srk', function () {
+            return Inertia::render('Pcare/ReferensiPcare/ReferensiSRK');
+        })->name('referensi.srk');
+
         // Referensi Provider Rayonisasi page (Inertia)
         Route::get('/referensi/provider', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiProvider');
@@ -1787,9 +1818,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('/api/mapping/obat', [\App\Http\Controllers\Pcare\PcareController::class, 'deleteMappingObat'])
             ->name('mapping.obat.delete');
 
-        // API: Get Referensi Tindakan dari BPJS PCare
+        // API: Get Tindakan dari BPJS PCare
         Route::get('/api/tindakan', [\App\Http\Controllers\Pcare\PcareController::class, 'getTindakan'])
             ->name('tindakan.api');
+
+        // API: Referensi Penyakit SRK (skrinning/rekap) dari BPJS PCare
+        Route::get('/api/srk/rekap', [\App\Http\Controllers\Pcare\PcareController::class, 'getReferensiSrk'])
+            ->name('srk.rekap.api');
+
+        // API TEST (tanpa auth/CSRF): Referensi Penyakit SRK for terminal curl
+        Route::get('/api/srk/rekap/test', [\App\Http\Controllers\Pcare\PcareController::class, 'getReferensiSrk'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('srk.rekap.api.test');
 
         // API: Get Peserta by NIK dari BPJS PCare
         Route::get('/api/peserta/nik', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNik'])

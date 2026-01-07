@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, Suspense } from "react";
+import axios from "axios";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import {
@@ -6,11 +7,6 @@ import {
     BookOpen,
     ArrowRight,
     ShieldCheck,
-    Activity,
-    ClipboardList,
-    Bell,
-    CheckCircle2,
-    Clock4,
     UserPlus,
     Settings,
     Search,
@@ -47,88 +43,6 @@ const LowStockInfoLazy = React.lazy(() =>
 );
 
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
-
-const quickLinks = [
-    {
-        title: "Pengaturan",
-        description: "Kelola konfigurasi aplikasi & bridging",
-        href: route("profile.home"),
-    },
-    {
-        title: "Pendaftaran Pasien",
-        description: "Registrasi cepat atau tambah pasien baru",
-        href: "/registration/lanjutan",
-    },
-    {
-        title: "Monitoring Satusehat",
-        description: "Pantau status FHIR & Encounter",
-        href: "/satusehat/monitoring",
-    },
-    {
-        title: "Briding",
-        description: "Akses modul bridging",
-        href: "/pcare",
-    },
-    {
-        title: "PCare & Rujukan",
-        description: "Sinkron data PCare dan status rujukan",
-        href: "/pcare",
-    },
-    {
-        title: "Rawat Jalan",
-        description: "Kelola pemeriksaan & SOAP RME",
-        href: "/rawat-jalan",
-    },
-    {
-        title: "Laboratorium",
-        description: "Kelola pemeriksaan laboratorium & data hasil",
-        href: route("laboratorium.permintaan-lab.index"),
-    },
-    {
-        title: "Pembayaran",
-        description: "Kelola pembayaran Ralan & Ranap",
-        href: "/pembayaran",
-    },
-    {
-        title: "Keuangan",
-        description: "Kelola Rekening, Jurnal, dan Nota",
-        // Arahkan ke halaman Home Akutansi
-        href: "/akutansi/home",
-    },
-];
-
-const timeline = [
-    {
-        title: "Kunjungan diterima SATUSEHAT",
-        meta: "09:42 WIB • Dr. Siswo Hariyono",
-        status: "success",
-    },
-    {
-        title: "Bundle Rajal diproses",
-        meta: "09:10 WIB • IGD 01",
-        status: "info",
-    },
-    {
-        title: "Token SATUSEHAT diperbarui",
-        meta: "08:55 WIB • Otomatis",
-        status: "neutral",
-    },
-];
-
-const updates = [
-    {
-        label: "IGD",
-        text: "Flow triase baru mulai 08:00 - pastikan form SOAP terisi lengkap.",
-    },
-    {
-        label: "Farmasi",
-        text: "Resep favorit & stok kritikal kini tersedia di panel farmasi.",
-    },
-    {
-        label: "Keuangan",
-        text: "Laporan tarif baru dapat di-export di Pengaturan > Tarif.",
-    },
-];
 
 function AutoScrollRow({ items, renderItem, speed = 40 }) {
     const containerRef = useRef(null);
@@ -699,10 +613,7 @@ export default function Dashboard() {
         };
     }, [wallpaperUrl]);
 
-    // State untuk jumlah registrasi/pasien hari ini
-    const [pasienHariIniCount, setPasienHariIniCount] = useState(null);
-    // State untuk jumlah registrasi/pasien kemarin
-    const [pasienKemarinCount, setPasienKemarinCount] = useState(null);
+    
 
     // Ref untuk caching hasil pencarian menu
     const cacheRef = useRef(new Map());
@@ -726,60 +637,7 @@ export default function Dashboard() {
         return () => observer.disconnect();
     }, []);
 
-    // Helper format tanggal lokal ke YYYY-MM-DD
-    const formatDate = (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        const d = String(date.getDate()).padStart(2, "0");
-        return `${y}-${m}-${d}`;
-    };
-
-    // Ambil jumlah registrasi hari ini & kemarin secara paralel untuk mengurangi re-render
-    useEffect(() => {
-        let mounted = true;
-        const run = async () => {
-            try {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yStr = formatDate(yesterday);
-                const [resToday, resYesterday] = await Promise.all([
-                    fetch(
-                        route(
-                            "registration.get-registrations",
-                            { per_page: 1 },
-                            false
-                        ),
-                        { headers: { Accept: "application/json" } }
-                    ),
-                    fetch(
-                        route(
-                            "registration.get-registrations",
-                            { per_page: 1, date: yStr },
-                            false
-                        ),
-                        { headers: { Accept: "application/json" } }
-                    ),
-                ]);
-                const [jsonToday, jsonYesterday] = await Promise.all([
-                    resToday.json(),
-                    resYesterday.json(),
-                ]);
-                if (mounted) {
-                    setPasienHariIniCount(jsonToday?.data?.total ?? null);
-                    setPasienKemarinCount(jsonYesterday?.data?.total ?? null);
-                }
-            } catch {
-                if (mounted) {
-                    setPasienHariIniCount(null);
-                    setPasienKemarinCount(null);
-                }
-            }
-        };
-        run();
-        return () => {
-            mounted = false;
-        };
-    }, []);
+    
 
     // ===== Grafik batang: kunjungan poli per bulan =====
     const [poliMonthly, setPoliMonthly] = useState(null);
@@ -810,41 +668,118 @@ export default function Dashboard() {
     }, [shouldLoadChart]);
 
     const [fastMovingData, setFastMovingData] = useState([]);
+    const [fastMovingPeriod, setFastMovingPeriod] = useState("week");
     const [lowStockData, setLowStockData] = useState([]);
+    const [fastMovingFilterData, setFastMovingFilterData] = useState([]);
+    const fastMovingFilterSet = useMemo(
+        () => new Set((Array.isArray(fastMovingFilterData) ? fastMovingFilterData : []).map((it) => String(it?.kode_brng ?? ""))),
+        [fastMovingFilterData]
+    );
+    const periodDays = useMemo(() => {
+        const now = new Date();
+        let start;
+        let end;
+        if (fastMovingPeriod === "week") {
+            const day = now.getDay();
+            const diff = (day + 6) % 7; // Senin sebagai awal pekan
+            start = new Date(now);
+            start.setDate(now.getDate() - diff);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+        } else if (fastMovingPeriod === "month") {
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        } else if (fastMovingPeriod === "3m") {
+            const m = now.getMonth(); // 0 = Jan
+            if (m <= 2) {
+                start = new Date(now.getFullYear(), 0, 1);
+            } else {
+                start = new Date(now.getFullYear(), m - 2, 1);
+            }
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        } else if (fastMovingPeriod === "6m") {
+            const m = now.getMonth();
+            if (m <= 5) {
+                start = new Date(now.getFullYear(), 0, 1);
+            } else {
+                start = new Date(now.getFullYear(), m - 5, 1);
+            }
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        } else if (fastMovingPeriod === "year") {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = now; // YTD
+        } else {
+            const day = now.getDay();
+            const diff = (day + 6) % 7;
+            start = new Date(now);
+            start.setDate(now.getDate() - diff);
+            end = new Date(start);
+            end.setDate(start.getDate() + 6);
+        }
+        const days = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+        return Math.max(1, days);
+    }, [fastMovingPeriod]);
+    const fastMovingDailyRate = useMemo(() => {
+        const arr = Array.isArray(fastMovingFilterData) ? fastMovingFilterData : [];
+        const days = Math.max(1, Number(periodDays || 7));
+        const m = new Map();
+        for (const it of arr) {
+            const k = String(it?.kode_brng ?? "");
+            const c = Number(it?.jumlah ?? 0);
+            m.set(k, c > 0 ? c / days : 0);
+        }
+        return m;
+    }, [fastMovingFilterData, periodDays]);
+    const visibleLowStock = useMemo(() => {
+        const arr = Array.isArray(lowStockData) ? lowStockData : [];
+        const hasFilter = fastMovingFilterSet && fastMovingFilterSet.size > 0;
+        const base = hasFilter
+            ? arr.filter((r) => r?.kode_brng && fastMovingFilterSet.has(String(r.kode_brng)))
+            : arr;
+        const enriched = base.map((r) => {
+            const k = String(r.kode_brng);
+            const rate = fastMovingDailyRate.get(k) || 0;
+            const doc = rate > 0 ? Number(r.stok_saat_ini ?? 0) / rate : Number.POSITIVE_INFINITY;
+            const shortage = Number(r.stok_saat_ini ?? 0) - Number(r.stok_minimal ?? 0);
+            return { ...r, __doc: doc, __shortage: shortage };
+        });
+        const sorted = enriched.sort((a, b) => {
+            if (a.__doc === b.__doc) return a.__shortage - b.__shortage;
+            return a.__doc - b.__doc;
+        });
+        return sorted.slice(0, 10).map(({ __doc, __shortage, ...rest }) => rest);
+    }, [lowStockData, fastMovingFilterSet, fastMovingDailyRate]);
     useEffect(() => {
         let active = true;
         (async () => {
             try {
-                let url = "";
-                try {
-                    url = route("farmasi.fast-moving.data", { period: "week" }, false);
-                } catch (_) {
-                    const { protocol, hostname, port } = window.location;
-                    const base = port === '5173'
-                        ? `${protocol}//${hostname}:8000`
-                        : `${protocol}//${hostname}${port ? ":" + port : ""}`;
-                    url = `${base}/farmasi/obat-fast-moving/data?period=week`;
-                }
-                const res = await fetch(url, { headers: { Accept: "application/json" } });
-                const json = await res.json();
+                const { protocol, hostname } = window.location;
+                const base = `${protocol}//${hostname}:8000`;
+                const url = `${base}/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}`;
+                const res = await axios.get(url, { headers: { Accept: "application/json" }, withCredentials: true });
+                const json = res.data;
                 const arr = Array.isArray(json?.data) ? json.data : [];
                 if (active) setFastMovingData(arr);
             } catch (_) {
                 if (active) setFastMovingData([]);
             }
             try {
-                let url2 = "";
-                try {
-                    url2 = route("farmasi.darurat-stok.data", { per_page: 100, page: 1 }, false);
-                } catch (_) {
-                    const { protocol, hostname, port } = window.location;
-                    const base = port === '5173'
-                        ? `${protocol}//${hostname}:8000`
-                        : `${protocol}//${hostname}${port ? ":" + port : ""}`;
-                    url2 = `${base}/farmasi/darurat-stok/data?per_page=100&page=1`;
-                }
-                const res2 = await fetch(url2, { headers: { Accept: "application/json" } });
-                const json2 = await res2.json();
+                const { protocol, hostname } = window.location;
+                const base100 = `${protocol}//${hostname}:8000`;
+                const urlFM100 = `${base100}/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}&limit=100`;
+                const resFM100 = await axios.get(urlFM100, { headers: { Accept: "application/json" }, withCredentials: true });
+                const jsonFM100 = resFM100.data;
+                const arrFM100 = Array.isArray(jsonFM100?.data) ? jsonFM100.data : [];
+                if (active) setFastMovingFilterData(arrFM100);
+            } catch (_) {
+                if (active) setFastMovingFilterData([]);
+            }
+            try {
+                const { protocol, hostname } = window.location;
+                const base2 = `${protocol}//${hostname}:8000`;
+                const url2 = `${base2}/farmasi/darurat-stok/data?per_page=100&page=1`;
+                const res2 = await axios.get(url2, { headers: { Accept: "application/json" }, withCredentials: true });
+                const json2 = res2.data;
                 const items = Array.isArray(json2?.items?.data)
                     ? json2.items.data
                     : Array.isArray(json2?.items)
@@ -860,9 +795,7 @@ export default function Dashboard() {
                         nama_brng: typeof r?.nama_brng === "string" ? r.nama_brng : null,
                         stok_minimal: Number(r?.stok_minimal ?? 0),
                         stok_saat_ini: Number(r?.stok_saat_ini ?? 0),
-                    }))
-                    .sort((a, b) => a.stok_saat_ini - b.stok_saat_ini)
-                    .slice(0, 10);
+                    }));
                 if (active) setLowStockData(clean);
             } catch (_) {
                 if (active) setLowStockData([]);
@@ -871,7 +804,7 @@ export default function Dashboard() {
         return () => {
             active = false;
         };
-    }, []);
+    }, [fastMovingPeriod]);
 
     // Pencarian menu (mengadopsi logic dari Landing.jsx)
     const [query, setQuery] = useState("");
@@ -880,38 +813,39 @@ export default function Dashboard() {
 
     useEffect(() => {
         let active = true;
-        const controller = new AbortController();
+        const requestIdRef = { current: 0 };
 
         const fetchMenus = async () => {
+            const id = requestIdRef.current + 1;
+            requestIdRef.current = id;
             setLoading(true);
             try {
                 const trimmed = query?.trim() ?? "";
                 const key = trimmed ? `search:${trimmed}` : `popular:8`;
                 const cached = cacheRef.current.get(key);
                 if (cached) {
-                    if (active) setResults(cached);
-                    if (active) setLoading(false);
+                    if (active && id === requestIdRef.current) setResults(cached);
+                    if (active && id === requestIdRef.current) setLoading(false);
                     return;
                 }
                 const url = trimmed
                     ? route("api.menu.search", { q: trimmed })
                     : route("api.menu.popular", { limit: 8 });
-                const res = await fetch(url, { signal: controller.signal });
+                const res = await fetch(url);
                 const json = await res.json();
                 const data = json.data || [];
                 cacheRef.current.set(key, data);
-                if (active) setResults(data);
+                if (active && id === requestIdRef.current) setResults(data);
             } catch {
-                if (active) setResults([]);
+                if (active && id === requestIdRef.current) setResults([]);
             } finally {
-                if (active) setLoading(false);
+                if (active && id === requestIdRef.current) setLoading(false);
             }
         };
 
         const t = setTimeout(fetchMenus, 250);
         return () => {
             active = false;
-            controller.abort();
             clearTimeout(t);
         };
     }, [query]);
@@ -1030,49 +964,6 @@ export default function Dashboard() {
     );
 
     // Stats dinamis yang menggunakan hasil dari endpoint
-    const trendReady = pasienHariIniCount != null && pasienKemarinCount != null;
-    const displayTrend = (() => {
-        if (!trendReady) return "Memuat…";
-        if (pasienKemarinCount === 0) {
-            if (pasienHariIniCount === 0) return "0%";
-            return "+∞%"; // tidak terdefinisi (kenaikan dari 0)
-        }
-        const diff = pasienHariIniCount - pasienKemarinCount;
-        const pct = (diff / pasienKemarinCount) * 100;
-        const sign = pct > 0 ? "+" : "";
-        return `${sign}${pct.toFixed(1)}%`;
-    })();
-
-    const stats = [
-        {
-            label: "Pasien Hari Ini",
-            value: pasienHariIniCount ?? "—",
-            change: displayTrend,
-            accent: "from-emerald-600 to-green-700",
-            icon: Activity,
-        },
-        {
-            label: "Kunjungan Terjadwal",
-            value: "342",
-            change: "+12%",
-            accent: "from-teal-600 to-teal-700",
-            icon: ClipboardList,
-        },
-        {
-            label: "Integrasi SATUSEHAT",
-            value: "Aktif",
-            change: "98% sukses",
-            accent: "from-green-600 to-emerald-700",
-            icon: ShieldCheck,
-        },
-        {
-            label: "Notifikasi Penting",
-            value: "6",
-            change: "Perlu tindakan",
-            accent: "from-amber-600 to-orange-600",
-            icon: Bell,
-        },
-    ];
     const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState("");
     useEffect(() => {
@@ -1096,13 +987,11 @@ export default function Dashboard() {
         setNotes((n) => n.filter((i) => i.id !== id));
     };
 	const [sipExpiring, setSipExpiring] = useState([]);
-	useEffect(() => {
-		let active = true;
-		const controller = new AbortController();
+    useEffect(() => {
+        let active = true;
         (async () => {
             try {
                 const res = await window.axios.get("/api/public/sip-pegawai/expiring", {
-                    signal: controller.signal,
                     withCredentials: true,
                     headers: { Accept: "application/json" },
                 });
@@ -1126,7 +1015,6 @@ export default function Dashboard() {
         })();
         return () => {
             active = false;
-            controller.abort();
         };
     }, []);
     const mapLat = Number(props?.map_coords?.latitude);
@@ -1511,6 +1399,30 @@ export default function Dashboard() {
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     Grafik 10 Obat Fast Moving
                                 </h3>
+                                <div className="inline-flex items-center gap-1 rounded-xl border border-white/20 dark:border-gray-700/50 bg-white/70 dark:bg-gray-900/60 backdrop-blur px-1 py-1 text-xs">
+                                    {[
+                                        { key: "week", label: "Minggu" },
+                                        { key: "month", label: "Bulan" },
+                                        { key: "3m", label: "3 Bulan" },
+                                        { key: "6m", label: "6 Bulan" },
+                                        { key: "year", label: "Tahun" },
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.key}
+                                            type="button"
+                                            onClick={() => setFastMovingPeriod(opt.key)}
+                                            className={[
+                                                "px-2.5 py-1 rounded-lg",
+                                                "transition",
+                                                fastMovingPeriod === opt.key
+                                                    ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white"
+                                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/50",
+                                            ].join(" ")}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                             <div className="mt-4">
                                 <Suspense
@@ -1539,201 +1451,15 @@ export default function Dashboard() {
                                     </p>
                                 }
                             >
-                                <LowStockInfoLazy data={lowStockData} />
+                                <LowStockInfoLazy data={visibleLowStock} />
                             </Suspense>
                         </motion.div>
                     </section>
 
-                    <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                        <div className="xl:col-span-2 space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {quickLinks.map((item) => (
-                                    <motion.div
-                                        key={item.title}
-                                        variants={itemVariants}
-                                        whileHover={{ scale: 1.01, y: -3 }}
-                                        className="relative overflow-hidden rounded-2xl shadow-xl shadow-blue-500/5 hover:shadow-2xl transition-all"
-                                    >
-                                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                                        <Link
-                                            href={item.href}
-                                            className="rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-5 flex flex-col gap-3"
-                                        >
-                                            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                                                {item.title}
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 flex-1">
-                                                {item.description}
-                                            </p>
-                                            <span className="text-sm font-medium text-blue-600 dark:text-blue-400 inline-flex items-center gap-1">
-                                                Buka modul{" "}
-                                                <ArrowRight className="w-4 h-4" />
-                                            </span>
-                                        </Link>
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
+                    
 
-                        <div className="space-y-4">
-                            <motion.div
-                                variants={itemVariants}
-                                className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-sm p-6 shadow-xl shadow-blue-500/5"
-                            >
-                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Clock4 className="w-4 h-4 text-blue-500" />
-                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                        Aktivitas terkini
-                                    </h3>
-                                </div>
-                                <div className="space-y-4">
-                                    {timeline.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="flex items-start gap-3"
-                                        >
-                                            <span
-                                                className={`mt-1 w-2 h-2 rounded-full ${
-                                                    item.status === "success"
-                                                        ? "bg-emerald-500"
-                                                        : item.status === "info"
-                                                        ? "bg-blue-500"
-                                                        : "bg-gray-400"
-                                                }`}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {item.title}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {item.meta}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                variants={itemVariants}
-                                className="relative overflow-hidden rounded-2xl border border-emerald-700/40 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white p-6 shadow-lg shadow-emerald-900/30"
-                            >
-                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/30" />
-                                <div className="flex items-center gap-3 mb-3">
-                                    <CheckCircle2 className="w-5 h-5" />
-                                    <p className="text-sm font-medium">
-                                        Integrasi berjalan mulus
-                                    </p>
-                                </div>
-                                <p className="text-sm text-white/85 mb-3">
-                                    29 bundle RME rawat jalan berhasil dikirim
-                                    dalam 24 jam terakhir tanpa error validasi.
-                                </p>
-                                <Link
-                                    href="/satusehat/monitoring"
-                                    className="inline-flex items-center gap-1 text-sm font-semibold"
-                                >
-                                    Lihat detail
-                                    <ArrowRight className="w-4 h-4" />
-                                </Link>
-                            </motion.div>
-                        </div>
-                    </section>
-
-                    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <motion.div
-                            variants={itemVariants}
-                            className="relative overflow-hidden lg:col-span-2 rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
-                        >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                Highlight Tim
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-                                Update cepat dari unit operasional
-                            </p>
-                            <div className="space-y-4">
-                                {updates.map((item, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-slate-50/90 dark:bg-gray-800/80 text-sm"
-                                    >
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                                            {item.label}
-                                        </p>
-                                        <p className="text-gray-700 dark:text-gray-200">
-                                            {item.text}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                        <motion.div
-                            variants={itemVariants}
-                            className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
-                        >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                Tindakan prioritas
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                Hal yang perlu perhatian hari ini
-                            </p>
-                            <ul className="space-y-3 text-sm">
-                                <li className="flex items-start gap-3">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-1" />
-                                    <span>
-                                        Review 6 mapping lokasi baru sebelum
-                                        dikirim ke SATUSEHAT.
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <ShieldCheck className="w-4 h-4 text-blue-500 mt-1" />
-                                    <span>
-                                        Verifikasi 2 Encounter yang pending
-                                        validasi.
-                                    </span>
-                                </li>
-                                <li className="flex items-start gap-3">
-                                    <UserPlus className="w-4 h-4 text-purple-500 mt-1" />
-                                    <span>
-                                        Tambahkan NIK untuk 4 dokter baru.
-                                    </span>
-                                </li>
-                            </ul>
-                        </motion.div>
-                    </section>
-                    {/* Panel statistik diletakkan di atas footer sesuai permintaan */}
-                    <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-                        {stats.map((item) => (
-                            <motion.div
-                                key={item.label}
-                                variants={itemVariants}
-                                whileHover={{ scale: 1.01, y: -4 }}
-                                className={`relative overflow-hidden rounded-2xl p-6 text-white shadow-xl shadow-blue-500/10 bg-gradient-to-br ${item.accent}`}
-                            >
-                                {/* Accent top line tipis untuk efek premium */}
-                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/30" />
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-xs uppercase tracking-wide text-white/70">
-                                            {item.label}
-                                        </p>
-                                        <p className="text-4xl font-extrabold mt-2">
-                                            {item.value}
-                                        </p>
-                                        <p className="text-sm text-white/85 mt-1">
-                                            {item.change}
-                                        </p>
-                                    </div>
-                                    <div className="p-3 rounded-xl bg-white/20">
-                                        <item.icon className="w-5 h-5" />
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </section>
+                    
+                    
                     <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
                         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">

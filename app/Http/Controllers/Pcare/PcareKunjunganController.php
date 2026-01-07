@@ -279,11 +279,17 @@ class PcareKunjunganController extends Controller
                         }
 
                         $lingkarPerut = isset($payload['lingkarPerut']) ? (string) $payload['lingkarPerut'] : ($pemeriksaan->lingkar_perut ?? '');
-                        if ($lingkarPerut === null) { $lingkarPerut = ''; }
+                        if ($lingkarPerut === null) {
+                            $lingkarPerut = '';
+                        }
                         $terapiNonObat = $payload['terapiNonObat'] ?? ($pemeriksaan->instruksi ?? 'Edukasi Kesehatan');
-                        if ($terapiNonObat === '') { $terapiNonObat = 'Edukasi Kesehatan'; }
+                        if ($terapiNonObat === '') {
+                            $terapiNonObat = 'Edukasi Kesehatan';
+                        }
                         $bmhp = $payload['bmhp'] ?? 'Tidak Ada';
-                        if ($bmhp === '') { $bmhp = 'Tidak Ada'; }
+                        if ($bmhp === '') {
+                            $bmhp = 'Tidak Ada';
+                        }
 
                         $data = [
                             'no_rawat' => $noRawat,
@@ -369,9 +375,189 @@ class PcareKunjunganController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
+
+        try {
+            $noRawatRujuk = trim((string) ($payload['no_rawat'] ?? ''));
+            $rujuk = isset($payload['rujukLanjut']) && is_array($payload['rujukLanjut']) ? $payload['rujukLanjut'] : null;
+            if ($noRawatRujuk !== '' && $rujuk && \Illuminate\Support\Facades\Schema::hasTable('pcare_rujuk_subspesialis')) {
+                $reg = DB::table('reg_periksa')->where('no_rawat', $noRawatRujuk)->first();
+                $pasien = $reg ? DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first() : null;
+                $poli = $reg && $reg->kd_poli ? DB::table('poliklinik')->where('kd_poli', $reg->kd_poli)->first() : null;
+                $dokter = $reg && $reg->kd_dokter ? DB::table('dokter')->where('kd_dokter', $reg->kd_dokter)->first() : null;
+
+                $pemeriksaan = DB::table('pemeriksaan_ralan')
+                    ->where('no_rawat', $noRawatRujuk)
+                    ->orderBy('tgl_perawatan', 'desc')
+                    ->orderBy('jam_rawat', 'desc')
+                    ->first();
+
+                $terapiObatData = DB::table('resep_obat')
+                    ->join('resep_dokter', 'resep_obat.no_resep', '=', 'resep_dokter.no_resep')
+                    ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
+                    ->where('resep_obat.no_rawat', $noRawatRujuk)
+                    ->select('databarang.nama_brng', 'resep_dokter.jml', 'resep_dokter.aturan_pakai')
+                    ->get();
+                $terapiObatStringR = 'Tidak Ada';
+                if ($terapiObatData->isNotEmpty()) {
+                    $arrR = [];
+                    foreach ($terapiObatData as $obat) {
+                        $arrR[] = $obat->nama_brng.' '.$obat->jml.' ['.$obat->aturan_pakai.']';
+                    }
+                    $terapiObatStringR = implode(', ', $arrR);
+                }
+
+                $sistoleR = null;
+                $diastoleR = null;
+                if ($pemeriksaan && ! empty($pemeriksaan->tensi) && strpos($pemeriksaan->tensi, '/') !== false) {
+                    $partsR = explode('/', $pemeriksaan->tensi);
+                    $sistoleR = trim($partsR[0]) ?: null;
+                    $diastoleR = isset($partsR[1]) ? trim($partsR[1]) : null;
+                }
+                $sistoleR = $sistoleR ?? (isset($payload['sistole']) ? (string) $payload['sistole'] : null);
+                $diastoleR = $diastoleR ?? (isset($payload['diastole']) ? (string) $payload['diastole'] : null);
+
+                $tglDaftarYmdR = null;
+                if (! empty($payload['tglDaftar'])) {
+                    $s = (string) $payload['tglDaftar'];
+                    if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $s)) {
+                        $dt = \DateTime::createFromFormat('d-m-Y', $s);
+                        $tglDaftarYmdR = $dt ? $dt->format('Y-m-d') : null;
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+                        $tglDaftarYmdR = $s;
+                    }
+                }
+                $tglPulangYmdR = null;
+                if (! empty($payload['tglPulang'])) {
+                    $s = (string) $payload['tglPulang'];
+                    if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $s)) {
+                        $dt = \DateTime::createFromFormat('d-m-Y', $s);
+                        $tglPulangYmdR = $dt ? $dt->format('Y-m-d') : null;
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+                        $tglPulangYmdR = $s;
+                    }
+                }
+
+                $subSp = is_array($rujuk['subSpesialis'] ?? null) ? $rujuk['subSpesialis'] : [];
+                $tglEstRujukYmd = null;
+                if (! empty($rujuk['tglEstRujuk'])) {
+                    $s = (string) $rujuk['tglEstRujuk'];
+                    if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $s)) {
+                        $dt = \DateTime::createFromFormat('d-m-Y', $s);
+                        $tglEstRujukYmd = $dt ? $dt->format('Y-m-d') : null;
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $s)) {
+                        $tglEstRujukYmd = $s;
+                    }
+                }
+
+                $nmPoliR = $poli->nm_poli ?? ($payload['nmPoli'] ?? null);
+                $nmDokterR = $dokter->nm_dokter ?? ($payload['nmDokter'] ?? null);
+
+                $diagnosa1R = DB::table('diagnosa_pasien')
+                    ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                    ->where('diagnosa_pasien.no_rawat', $noRawatRujuk)
+                    ->where('diagnosa_pasien.prioritas', '1')
+                    ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                    ->first();
+                $diagnosa2R = DB::table('diagnosa_pasien')
+                    ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                    ->where('diagnosa_pasien.no_rawat', $noRawatRujuk)
+                    ->where('diagnosa_pasien.prioritas', '2')
+                    ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                    ->first();
+                $diagnosa3R = DB::table('diagnosa_pasien')
+                    ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                    ->where('diagnosa_pasien.no_rawat', $noRawatRujuk)
+                    ->where('diagnosa_pasien.prioritas', '3')
+                    ->select('diagnosa_pasien.kd_penyakit', 'penyakit.nm_penyakit')
+                    ->first();
+
+                $nmSadarR = null;
+                if (! empty($payload['kdSadar'])) {
+                    $kesadaran = DB::table('master_kesadaran')->where('kd_kesadaran', $payload['kdSadar'])->first();
+                    $nmSadarR = $kesadaran->nm_kesadaran ?? null;
+                }
+                $nmStatusPulangR = null;
+                if (! empty($payload['kdStatusPulang'])) {
+                    $sp = DB::table('status_pulang')->where('kd_status_pulang', $payload['kdStatusPulang'])->first();
+                    $nmStatusPulangR = $sp->nm_status_pulang ?? null;
+                }
+
+                $nmSubSpesialisR = isset($payload['nmSubSpesialis']) ? $payload['nmSubSpesialis'] : null;
+                $nmSaranaR = null;
+                if (isset($subSp['kdSarana'])) {
+                    $nmSaranaR = $subSp['kdSarana'] === '1' ? 'Rawat Jalan' : ($subSp['kdSarana'] === '2' ? 'Rawat Inap' : null);
+                }
+                $nmPPKR = isset($payload['nmPPK']) && trim((string) $payload['nmPPK']) !== '' ? trim((string) $payload['nmPPK']) : '';
+
+                $nmTACCR = null;
+                if (isset($payload['kdTacc'])) {
+                    $map = ['-1' => 'Tanpa TACC', '1' => 'Time', '2' => 'Age', '3' => 'Complication', '4' => 'Comorbidity'];
+                    $kd = (string) $payload['kdTacc'];
+                    $nmTACCR = $map[$kd] ?? null;
+                }
+
+                $dataR = [
+                    'no_rawat' => $noRawatRujuk,
+                    'noKunjungan' => $noKunjungan,
+                    'tglDaftar' => $tglDaftarYmdR ?? (isset($reg->tgl_registrasi) ? date('Y-m-d', strtotime($reg->tgl_registrasi)) : null),
+                    'no_rkm_medis' => $reg->no_rkm_medis ?? null,
+                    'nm_pasien' => $pasien->nm_pasien ?? null,
+                    'noKartu' => $payload['noKartu'] ?? null,
+                    'kdPoli' => $payload['kdPoli'] ?? ($reg->kd_poli ?? null),
+                    'nmPoli' => $nmPoliR,
+                    'keluhan' => $payload['keluhan'] ?? ($pemeriksaan->keluhan ?? null),
+                    'kdSadar' => $payload['kdSadar'] ?? null,
+                    'nmSadar' => $nmSadarR,
+                    'sistole' => $sistoleR,
+                    'diastole' => $diastoleR,
+                    'beratBadan' => isset($payload['beratBadan']) ? (string) $payload['beratBadan'] : ($pemeriksaan->berat ?? null),
+                    'tinggiBadan' => isset($payload['tinggiBadan']) ? (string) $payload['tinggiBadan'] : ($pemeriksaan->tinggi ?? null),
+                    'respRate' => isset($payload['respRate']) ? (string) $payload['respRate'] : ($pemeriksaan->respirasi ?? null),
+                    'heartRate' => isset($payload['heartRate']) ? (string) $payload['heartRate'] : ($pemeriksaan->nadi ?? null),
+                    'lingkarPerut' => isset($payload['lingkarPerut']) ? (string) $payload['lingkarPerut'] : ($pemeriksaan->lingkar_perut ?? ''),
+                    'terapi' => $terapiObatStringR,
+                    'kdStatusPulang' => $payload['kdStatusPulang'] ?? null,
+                    'nmStatusPulang' => $nmStatusPulangR,
+                    'tglPulang' => $tglPulangYmdR ?? null,
+                    'kdDokter' => $payload['kdDokter'] ?? null,
+                    'nmDokter' => $nmDokterR,
+                    'kdDiag1' => $payload['kdDiag1'] ?? ($diagnosa1R->kd_penyakit ?? null),
+                    'nmDiag1' => $diagnosa1R->nm_penyakit ?? null,
+                    'kdDiag2' => $payload['kdDiag2'] ?? ($diagnosa2R->kd_penyakit ?? null),
+                    'nmDiag2' => $diagnosa2R->nm_penyakit ?? null,
+                    'kdDiag3' => $payload['kdDiag3'] ?? ($diagnosa3R->kd_penyakit ?? null),
+                    'nmDiag3' => $diagnosa3R->nm_penyakit ?? null,
+                    'tglEstRujuk' => $tglEstRujukYmd,
+                    'kdPPK' => $rujuk['kdppk'] ?? null,
+                    'nmPPK' => $nmPPKR,
+                    'kdSubSpesialis' => $subSp['kdSubSpesialis1'] ?? ($subSp['kdSubSpesialis'] ?? null),
+                    'nmSubSpesialis' => $nmSubSpesialisR,
+                    'kdSarana' => $subSp['kdSarana'] ?? null,
+                    'nmSarana' => $nmSaranaR,
+                    'kdTACC' => isset($payload['kdTacc']) ? (string) $payload['kdTacc'] : null,
+                    'nmTACC' => $nmTACCR,
+                    'alasanTACC' => $payload['alasanTacc'] ?? null,
+                    'KdAlergiMakanan' => $kdAlergiMakanan,
+                    'NmAlergiMakanan' => $nmAlergiMakanan,
+                    'KdAlergiUdara' => $kdAlergiUdara,
+                    'NmAlergiUdara' => $nmAlergiUdara,
+                    'KdAlergiObat' => $kdAlergiObat,
+                    'NmAlergiObat' => $nmAlergiObat,
+                    'KdPrognosa' => $kdPrognosa,
+                    'NmPrognosa' => $nmPrognosa,
+                    'terapi_non_obat' => $terapiNonObat,
+                    'bmhp' => $bmhp,
+                ];
+
+                DB::table('pcare_rujuk_subspesialis')->updateOrInsert(['no_rawat' => $noRawatRujuk], $dataR);
+            }
+        } catch (\Throwable $e) {
+        }
 
         // Kembalikan hasil sesuai HTTP status asli dari PCare
         if (is_array($processed)) {

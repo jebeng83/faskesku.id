@@ -118,12 +118,56 @@ export default function MonitoringPcare() {
       const pj = await prev.json().catch(() => ({}));
       const payload = pj?.payload || {};
       const body = { ...payload, no_rawat: String(no) };
-      const r = await fetch(`/api/pcare/kunjungan`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
+      const issues = [];
+      if (!body.noKartu) issues.push('noKartu');
+      if (!body.kdPoli) issues.push('kdPoli');
+      if (!body.kdDokter) issues.push('kdDokter');
+      if (!body.kdDiag1) issues.push('kdDiag1');
+      if (issues.length) {
+        return { ok: false, requestBody: body, response: `Payload tidak lengkap: ${issues.join(', ')}` };
+      }
+      const tglIso = typeof body.tglDaftar === 'string' ? body.tglDaftar : '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(tglIso)) {
+        const dt = new Date(tglIso);
+        const dd = String(dt.getDate()).padStart(2, '0');
+        const mm = String(dt.getMonth() + 1).padStart(2, '0');
+        const yy = dt.getFullYear();
+        body.tglDaftar = `${dd}-${mm}-${yy}`;
+      }
+      const vTacc = body.kdTacc;
+      if (vTacc === undefined || vTacc === null || vTacc === '' || vTacc === 0 || vTacc === '0' || vTacc === -1 || vTacc === '-1') {
+        body.kdTacc = -1;
+        body.alasanTacc = null;
+      }
+      if (body.rujukLanjut && typeof body.rujukLanjut === 'object') {
+        const rl = body.rujukLanjut;
+        const hasKppk = !!rl.kdppk;
+        const hasSub = rl.subSpesialis && typeof rl.subSpesialis === 'object' && (!!rl.subSpesialis.kdSubSpesialis1 || !!rl.subSpesialis.kdSubSpesialis);
+        const hasDate = !!rl.tglEstRujuk;
+        if (!hasKppk || !hasSub || !hasDate) {
+          delete body.rujukLanjut;
+        } else {
+          const t = String(rl.tglEstRujuk || '');
+          if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+            const d = new Date(t);
+            const ddd = String(d.getDate()).padStart(2, '0');
+            const mmm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyy = d.getFullYear();
+            rl.tglEstRujuk = `${ddd}-${mmm}-${yyy}`;
+          }
+          if (rl.khusus === null || rl.khusus === '') delete rl.khusus;
+          body.rujukLanjut = rl;
+        }
+      }
+      const r = await fetch(`/api/pcare/kunjungan`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
       const text = await r.text();
       let json = null;
       try { json = JSON.parse(text); } catch {}
       const code = json?.metaData?.code ?? json?.metadata?.code;
       const ok = Number(code) === 201 || Number(code) === 200;
+      if (!ok && !json && r.status >= 400) {
+        return { ok: false, requestBody: body, response: `HTTP ${r.status}: ${text}` };
+      }
       return { ok, requestBody: body, response: json ?? text };
     } catch (e) {
       return { ok: false, requestBody: { no_rawat: String(no) }, response: String(e?.message || e) };
@@ -386,9 +430,9 @@ export default function MonitoringPcare() {
               <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div className="absolute inset-0 bg-black/30" onClick={() => setKunjunganModalOpen(false)} />
                 <div className="relative w-[90vw] max-w-4xl max-h-[80vh] overflow-hidden rounded-2xl border border-white/30 dark:border-gray-700/50 bg-white/95 dark:bg-gray-800/95 shadow-xl">
-                  <div className="px-4 py-3 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between">
+                  <div className="sticky top-0 z-20 px-4 py-3 border-b border-gray-200/60 dark:border-gray-700/60 flex items-center justify-between bg-white/95 dark:bg-gray-800/95 backdrop-blur">
                     <div className="text-sm font-semibold">Proses Jadikan Kunjungan</div>
-                    <button onClick={() => setKunjunganModalOpen(false)} className="text-xs rounded px-2 py-1 border">Tutup</button>
+                    <button onClick={() => setKunjunganModalOpen(false)} aria-label="Tutup" title="Tutup" className="inline-flex items-center justify-center h-7 w-7 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">✕</button>
                   </div>
                   <div className="p-4 overflow-auto" style={{ maxHeight: '70vh' }}>
                     {kunjunganLogs.length === 0 ? (

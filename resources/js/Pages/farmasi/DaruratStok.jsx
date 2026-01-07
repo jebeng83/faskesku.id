@@ -20,18 +20,10 @@ export default function DaruratStok() {
     const [perPage, setPerPage] = useState(10);
 
     const requestIdRef = useRef(0);
-    const controllerRef = useRef(null);
 
     const fetchData = async (opts) => {
         const id = requestIdRef.current + 1;
         requestIdRef.current = id;
-        if (controllerRef.current) {
-            try {
-                controllerRef.current.abort();
-            } catch {}
-        }
-        const ac = new AbortController();
-        controllerRef.current = ac;
         setLoading(true);
         try {
             const { data } = await axios.get("/farmasi/darurat-stok/data", {
@@ -47,15 +39,18 @@ export default function DaruratStok() {
                 },
                 headers: { Accept: "application/json" },
                 withCredentials: true,
-                signal: ac.signal,
             });
             if (id !== requestIdRef.current) return;
             const gs = Array.isArray(data?.gudangs) ? data.gudangs : [];
             const it = data?.items ?? [];
             setGudangs(gs);
             setItems(it);
-        } catch {
+        } catch (e) {
             if (id !== requestIdRef.current) return;
+            const isCanceled = e?.code === 'ERR_CANCELED' || e?.name === 'CanceledError' || e?.name === 'AbortError';
+            if (isCanceled) {
+                return;
+            }
             setGudangs([]);
             setItems([]);
         } finally {
@@ -157,6 +152,13 @@ export default function DaruratStok() {
         }
         return [];
     }, [paginator]);
+
+    const gotoPage = (n) => {
+        const last = paginator && typeof paginator.last_page === "number" ? paginator.last_page : 1;
+        const target = Math.max(1, Math.min(n || 1, last));
+        setPage(target);
+        fetchData({ page: target });
+    };
 
     const gotoPageFromUrl = (url) => {
         if (!url) return;
@@ -343,14 +345,28 @@ export default function DaruratStok() {
                                     }}
                                     className="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-indigo-300 dark:border-gray-600"
                                 >
-                                    {[10, 20, 50].map((n) => (
+                                    {[10, 20, 50, 100].map((n) => (
                                         <option key={n} value={n}>{n}</option>
                                     ))}
                                 </select>
                             </div>
                             <p className="text-xs text-gray-600">Menampilkan {items?.from ?? 0}-{items?.to ?? 0} dari {items?.total ?? 0} data</p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => gotoPage(1)}
+                                className={`rounded-lg px-3 py-1.5 text-xs ${paginator?.current_page === 1 ? "bg-white text-gray-400 border pointer-events-none opacity-50" : "bg-white text-gray-700 border"}`}
+                            >
+                                « Pertama
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => gotoPage((paginator?.current_page || 1) - 1)}
+                                className={`rounded-lg px-3 py-1.5 text-xs ${paginator?.current_page === 1 ? "bg-white text-gray-400 border pointer-events-none opacity-50" : "bg-white text-gray-700 border"}`}
+                            >
+                                ‹ Sebelumnya
+                            </button>
                             {pageLinks.map((link, idx) => (
                                 <button
                                     key={idx}
@@ -360,6 +376,21 @@ export default function DaruratStok() {
                                     dangerouslySetInnerHTML={{ __html: String(link.label) }}
                                 />
                             ))}
+                            <button
+                                type="button"
+                                onClick={() => gotoPage((paginator?.current_page || 1) + 1)}
+                                className={`rounded-lg px-3 py-1.5 text-xs ${paginator && paginator.current_page >= paginator.last_page ? "bg-white text-gray-400 border pointer-events-none opacity-50" : "bg-white text-gray-700 border"}`}
+                            >
+                                Berikutnya ›
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => gotoPage(paginator?.last_page || 1)}
+                                className={`rounded-lg px-3 py-1.5 text-xs ${paginator && paginator.current_page >= paginator.last_page ? "bg-white text-gray-400 border pointer-events-none opacity-50" : "bg-white text-gray-700 border"}`}
+                            >
+                                Terakhir »
+                            </button>
+                            <span className="text-xs text-gray-600">Halaman {paginator?.current_page ?? 1} dari {paginator?.last_page ?? 1}</span>
                         </div>
                     </div>
                 )}

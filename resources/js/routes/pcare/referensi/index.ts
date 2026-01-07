@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import mobilejkn from './mobilejkn'
 /**
-* @see routes/web.php:1628
+* @see routes/web.php:1654
 * @route '/pcare/referensi/diagnosa'
 */
 export const diagnosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,7 +15,7 @@ diagnosa.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1628
+* @see routes/web.php:1654
 * @route '/pcare/referensi/diagnosa'
 */
 diagnosa.url = (options?: RouteQueryOptions) => {
@@ -23,7 +23,7 @@ diagnosa.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1628
+* @see routes/web.php:1654
 * @route '/pcare/referensi/diagnosa'
 */
 diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,7 +32,7 @@ diagnosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1628
+* @see routes/web.php:1654
 * @route '/pcare/referensi/diagnosa'
 */
 diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -41,7 +41,7 @@ diagnosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1633
+* @see routes/web.php:1659
 * @route '/pcare/referensi/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,7 +55,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1633
+* @see routes/web.php:1659
 * @route '/pcare/referensi/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -63,7 +63,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1633
+* @see routes/web.php:1659
 * @route '/pcare/referensi/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,7 +72,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1633
+* @see routes/web.php:1659
 * @route '/pcare/referensi/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -81,7 +81,7 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1638
+* @see routes/web.php:1664
 * @route '/pcare/referensi/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -95,7 +95,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1638
+* @see routes/web.php:1664
 * @route '/pcare/referensi/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1638
+* @see routes/web.php:1664
 * @route '/pcare/referensi/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1638
+* @see routes/web.php:1664
 * @route '/pcare/referensi/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -121,7 +121,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1643
+* @see routes/web.php:1669
 * @route '/pcare/referensi/kesadaran'
 */
 export const kesadaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -135,7 +135,7 @@ kesadaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1643
+* @see routes/web.php:1669
 * @route '/pcare/referensi/kesadaran'
 */
 kesadaran.url = (options?: RouteQueryOptions) => {
@@ -143,7 +143,7 @@ kesadaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1643
+* @see routes/web.php:1669
 * @route '/pcare/referensi/kesadaran'
 */
 kesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -152,7 +152,7 @@ kesadaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1643
+* @see routes/web.php:1669
 * @route '/pcare/referensi/kesadaran'
 */
 kesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ kesadaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1648
+* @see routes/web.php:1674
 * @route '/pcare/referensi/prognosa'
 */
 export const prognosa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,7 +175,7 @@ prognosa.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1648
+* @see routes/web.php:1674
 * @route '/pcare/referensi/prognosa'
 */
 prognosa.url = (options?: RouteQueryOptions) => {
@@ -183,7 +183,7 @@ prognosa.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1648
+* @see routes/web.php:1674
 * @route '/pcare/referensi/prognosa'
 */
 prognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +192,7 @@ prognosa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1648
+* @see routes/web.php:1674
 * @route '/pcare/referensi/prognosa'
 */
 prognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -201,7 +201,7 @@ prognosa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1653
+* @see routes/web.php:1679
 * @route '/pcare/referensi/tindakan'
 */
 export const tindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -215,7 +215,7 @@ tindakan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1653
+* @see routes/web.php:1679
 * @route '/pcare/referensi/tindakan'
 */
 tindakan.url = (options?: RouteQueryOptions) => {
@@ -223,7 +223,7 @@ tindakan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1653
+* @see routes/web.php:1679
 * @route '/pcare/referensi/tindakan'
 */
 tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -232,7 +232,7 @@ tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1653
+* @see routes/web.php:1679
 * @route '/pcare/referensi/tindakan'
 */
 tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -241,7 +241,7 @@ tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1658
+* @see routes/web.php:1684
 * @route '/pcare/referensi/dpho'
 */
 export const dpho = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -255,7 +255,7 @@ dpho.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1658
+* @see routes/web.php:1684
 * @route '/pcare/referensi/dpho'
 */
 dpho.url = (options?: RouteQueryOptions) => {
@@ -263,7 +263,7 @@ dpho.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1658
+* @see routes/web.php:1684
 * @route '/pcare/referensi/dpho'
 */
 dpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +272,7 @@ dpho.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1658
+* @see routes/web.php:1684
 * @route '/pcare/referensi/dpho'
 */
 dpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -281,7 +281,47 @@ dpho.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1663
+* @see routes/web.php:1689
+* @route '/pcare/referensi/srk'
+*/
+export const srk = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: srk.url(options),
+    method: 'get',
+})
+
+srk.definition = {
+    methods: ["get","head"],
+    url: '/pcare/referensi/srk',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1689
+* @route '/pcare/referensi/srk'
+*/
+srk.url = (options?: RouteQueryOptions) => {
+    return srk.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1689
+* @route '/pcare/referensi/srk'
+*/
+srk.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: srk.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1689
+* @route '/pcare/referensi/srk'
+*/
+srk.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: srk.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:1694
 * @route '/pcare/referensi/provider'
 */
 export const provider = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -295,7 +335,7 @@ provider.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1663
+* @see routes/web.php:1694
 * @route '/pcare/referensi/provider'
 */
 provider.url = (options?: RouteQueryOptions) => {
@@ -303,7 +343,7 @@ provider.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1663
+* @see routes/web.php:1694
 * @route '/pcare/referensi/provider'
 */
 provider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -312,7 +352,7 @@ provider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1663
+* @see routes/web.php:1694
 * @route '/pcare/referensi/provider'
 */
 provider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -321,7 +361,7 @@ provider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1668
+* @see routes/web.php:1699
 * @route '/pcare/referensi/spesialis'
 */
 export const spesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -335,7 +375,7 @@ spesialis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1668
+* @see routes/web.php:1699
 * @route '/pcare/referensi/spesialis'
 */
 spesialis.url = (options?: RouteQueryOptions) => {
@@ -343,7 +383,7 @@ spesialis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1668
+* @see routes/web.php:1699
 * @route '/pcare/referensi/spesialis'
 */
 spesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -352,7 +392,7 @@ spesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1668
+* @see routes/web.php:1699
 * @route '/pcare/referensi/spesialis'
 */
 spesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -361,7 +401,7 @@ spesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1673
+* @see routes/web.php:1704
 * @route '/pcare/referensi/subspesialis'
 */
 export const subspesialis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -375,7 +415,7 @@ subspesialis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1673
+* @see routes/web.php:1704
 * @route '/pcare/referensi/subspesialis'
 */
 subspesialis.url = (options?: RouteQueryOptions) => {
@@ -383,7 +423,7 @@ subspesialis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1673
+* @see routes/web.php:1704
 * @route '/pcare/referensi/subspesialis'
 */
 subspesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -392,7 +432,7 @@ subspesialis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1673
+* @see routes/web.php:1704
 * @route '/pcare/referensi/subspesialis'
 */
 subspesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -401,7 +441,7 @@ subspesialis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1678
+* @see routes/web.php:1709
 * @route '/pcare/referensi/sarana'
 */
 export const sarana = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -415,7 +455,7 @@ sarana.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1678
+* @see routes/web.php:1709
 * @route '/pcare/referensi/sarana'
 */
 sarana.url = (options?: RouteQueryOptions) => {
@@ -423,7 +463,7 @@ sarana.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1678
+* @see routes/web.php:1709
 * @route '/pcare/referensi/sarana'
 */
 sarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -432,7 +472,7 @@ sarana.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1678
+* @see routes/web.php:1709
 * @route '/pcare/referensi/sarana'
 */
 sarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -441,7 +481,7 @@ sarana.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1683
+* @see routes/web.php:1714
 * @route '/pcare/referensi/khusus'
 */
 export const khusus = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -455,7 +495,7 @@ khusus.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1683
+* @see routes/web.php:1714
 * @route '/pcare/referensi/khusus'
 */
 khusus.url = (options?: RouteQueryOptions) => {
@@ -463,7 +503,7 @@ khusus.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1683
+* @see routes/web.php:1714
 * @route '/pcare/referensi/khusus'
 */
 khusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -472,7 +512,7 @@ khusus.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1683
+* @see routes/web.php:1714
 * @route '/pcare/referensi/khusus'
 */
 khusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -481,7 +521,7 @@ khusus.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1688
+* @see routes/web.php:1719
 * @route '/pcare/referensi/alergi'
 */
 export const alergi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -495,7 +535,7 @@ alergi.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1688
+* @see routes/web.php:1719
 * @route '/pcare/referensi/alergi'
 */
 alergi.url = (options?: RouteQueryOptions) => {
@@ -503,7 +543,7 @@ alergi.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1688
+* @see routes/web.php:1719
 * @route '/pcare/referensi/alergi'
 */
 alergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -512,7 +552,7 @@ alergi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1688
+* @see routes/web.php:1719
 * @route '/pcare/referensi/alergi'
 */
 alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -521,7 +561,7 @@ alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1693
+* @see routes/web.php:1724
 * @route '/pcare/referensi/statuspulang'
 */
 export const statuspulang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -535,7 +575,7 @@ statuspulang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1693
+* @see routes/web.php:1724
 * @route '/pcare/referensi/statuspulang'
 */
 statuspulang.url = (options?: RouteQueryOptions) => {
@@ -543,7 +583,7 @@ statuspulang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1693
+* @see routes/web.php:1724
 * @route '/pcare/referensi/statuspulang'
 */
 statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -552,7 +592,7 @@ statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1693
+* @see routes/web.php:1724
 * @route '/pcare/referensi/statuspulang'
 */
 statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -561,7 +601,7 @@ statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1698
+* @see routes/web.php:1729
 * @route '/pcare/referensi/faskes-rujukan'
 */
 export const faskesRujukan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -575,7 +615,7 @@ faskesRujukan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1698
+* @see routes/web.php:1729
 * @route '/pcare/referensi/faskes-rujukan'
 */
 faskesRujukan.url = (options?: RouteQueryOptions) => {
@@ -583,7 +623,7 @@ faskesRujukan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1698
+* @see routes/web.php:1729
 * @route '/pcare/referensi/faskes-rujukan'
 */
 faskesRujukan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -592,7 +632,7 @@ faskesRujukan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1698
+* @see routes/web.php:1729
 * @route '/pcare/referensi/faskes-rujukan'
 */
 faskesRujukan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -608,6 +648,7 @@ const referensi = {
     prognosa: Object.assign(prognosa, prognosa),
     tindakan: Object.assign(tindakan, tindakan),
     dpho: Object.assign(dpho, dpho),
+    srk: Object.assign(srk, srk),
     provider: Object.assign(provider, provider),
     spesialis: Object.assign(spesialis, spesialis),
     subspesialis: Object.assign(subspesialis, subspesialis),
