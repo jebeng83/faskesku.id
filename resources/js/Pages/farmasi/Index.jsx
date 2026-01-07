@@ -90,6 +90,14 @@ const riwayatBarangMedisUrl = (() => {
     }
 })();
 
+const fastMovingUrl = (() => {
+    try {
+        return route("farmasi.fast-moving", {}, false);
+    } catch {
+        return "http://127.0.0.1:8000/farmasi/obat-fast-moving";
+    }
+})();
+
 const tabs = [
     {
         key: "master",
@@ -281,6 +289,13 @@ const tabs = [
                 href: sisaStokUrl,
                 icon: RectangleStackIcon,
                 accent: "from-lime-500 to-green-500",
+            },
+            {
+                title: "Laporan 10 Obat Terbanyak",
+                description: "Tampilkan 10 obat yang paling cepat keluar",
+                href: fastMovingUrl,
+                icon: ChartBarIcon,
+                accent: "from-indigo-500 to-blue-500",
             },
         ],
     },

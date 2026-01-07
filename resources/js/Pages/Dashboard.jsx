@@ -28,6 +28,7 @@ import {
     ArrowUp,
     Link as LinkIcon,
     Wallet,
+    BarChart2,
 } from "lucide-react";
 import { route } from "ziggy-js";
 
@@ -37,6 +38,12 @@ const ChartPoliMonthlyLazy = React.lazy(() =>
 );
 const MonthlyInfoPanelLazy = React.lazy(() =>
     import("./DashboardComponents/MonthlyInfoPanel")
+);
+const FastMovingChartLazy = React.lazy(() =>
+    import("./DashboardComponents/FastMovingChart")
+);
+const LowStockInfoLazy = React.lazy(() =>
+    import("./DashboardComponents/LowStockInfo")
 );
 
 // Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
@@ -93,7 +100,7 @@ const quickLinks = [
 const timeline = [
     {
         title: "Kunjungan diterima SATUSEHAT",
-        meta: "09:42 WIB • Dr. Sita Anindya",
+        meta: "09:42 WIB • Dr. Siswo Hariyono",
         status: "success",
     },
     {
@@ -268,6 +275,16 @@ const TopNavbar = React.memo(function TopNavbar() {
                             <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
                             <span className="relative">
                                 Farmasi
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
+                        <Link
+                            href={route("laporan.index")}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <BarChart2 className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Laporan
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
                             </span>
                         </Link>
@@ -791,6 +808,70 @@ export default function Dashboard() {
             active = false;
         };
     }, [shouldLoadChart]);
+
+    const [fastMovingData, setFastMovingData] = useState([]);
+    const [lowStockData, setLowStockData] = useState([]);
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            try {
+                let url = "";
+                try {
+                    url = route("farmasi.fast-moving.data", { period: "week" }, false);
+                } catch (_) {
+                    const { protocol, hostname, port } = window.location;
+                    const base = port === '5173'
+                        ? `${protocol}//${hostname}:8000`
+                        : `${protocol}//${hostname}${port ? ":" + port : ""}`;
+                    url = `${base}/farmasi/obat-fast-moving/data?period=week`;
+                }
+                const res = await fetch(url, { headers: { Accept: "application/json" } });
+                const json = await res.json();
+                const arr = Array.isArray(json?.data) ? json.data : [];
+                if (active) setFastMovingData(arr);
+            } catch (_) {
+                if (active) setFastMovingData([]);
+            }
+            try {
+                let url2 = "";
+                try {
+                    url2 = route("farmasi.darurat-stok.data", { per_page: 100, page: 1 }, false);
+                } catch (_) {
+                    const { protocol, hostname, port } = window.location;
+                    const base = port === '5173'
+                        ? `${protocol}//${hostname}:8000`
+                        : `${protocol}//${hostname}${port ? ":" + port : ""}`;
+                    url2 = `${base}/farmasi/darurat-stok/data?per_page=100&page=1`;
+                }
+                const res2 = await fetch(url2, { headers: { Accept: "application/json" } });
+                const json2 = await res2.json();
+                const items = Array.isArray(json2?.items?.data)
+                    ? json2.items.data
+                    : Array.isArray(json2?.items)
+                    ? json2.items
+                    : Array.isArray(json2?.data)
+                    ? json2.data
+                    : Array.isArray(json2)
+                    ? json2
+                    : [];
+                const clean = items
+                    .map((r) => ({
+                        kode_brng: r?.kode_brng ?? null,
+                        nama_brng: typeof r?.nama_brng === "string" ? r.nama_brng : null,
+                        stok_minimal: Number(r?.stok_minimal ?? 0),
+                        stok_saat_ini: Number(r?.stok_saat_ini ?? 0),
+                    }))
+                    .sort((a, b) => a.stok_saat_ini - b.stok_saat_ini)
+                    .slice(0, 10);
+                if (active) setLowStockData(clean);
+            } catch (_) {
+                if (active) setLowStockData([]);
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, []);
 
     // Pencarian menu (mengadopsi logic dari Landing.jsx)
     const [query, setQuery] = useState("");
@@ -1416,6 +1497,49 @@ export default function Dashboard() {
                                         Memuat ringkasan…
                                     </p>
                                 )}
+                            </Suspense>
+                        </motion.div>
+                    </section>
+
+                    <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <motion.div
+                            variants={itemVariants}
+                            className="relative overflow-hidden xl:col-span-2 rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
+                        >
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Grafik 10 Obat Fast Moving
+                                </h3>
+                            </div>
+                            <div className="mt-4">
+                                <Suspense
+                                    fallback={
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            Memuat grafik…
+                                        </div>
+                                    }
+                                >
+                                    <FastMovingChartLazy data={fastMovingData} />
+                                </Suspense>
+                            </div>
+                        </motion.div>
+                        <motion.div
+                            variants={itemVariants}
+                            className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5"
+                        >
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                Informasi Obat Menipis
+                            </h3>
+                            <Suspense
+                                fallback={
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Memuat ringkasan…
+                                    </p>
+                                }
+                            >
+                                <LowStockInfoLazy data={lowStockData} />
                             </Suspense>
                         </motion.div>
                     </section>

@@ -27,6 +27,7 @@ use App\Http\Controllers\OpnameController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\PcareKunjunganController;
+use App\Http\Controllers\Pcare\IcareController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
@@ -79,6 +80,22 @@ Route::post('/aturan-pakai/public-store', [ResepController::class, 'createAturan
 // PCare referensi diagnosa (public untuk autocomplete ICD)
 Route::prefix('pcare')->group(function () {
     Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
+});
+
+// Icare test proxy (public, tanpa auth/CSRF) untuk keperluan debugging
+Route::prefix('icare')->group(function () {
+    Route::match(['get', 'post', 'put', 'delete'], '/proxy/test/{endpoint}', [IcareController::class, 'proxy'])
+        ->where('endpoint', '.*')
+        ->withoutMiddleware([
+            'auth',
+            'auth:web',
+            'auth:sanctum',
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ])
+        ->name('api.icare.proxy.test');
 });
 
 // Public endpoint: SIP Pegawai yang akan habis dalam 30 hari (sanitized fields)
@@ -497,6 +514,34 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Get kabupaten config
         Route::get('/config/kabupaten', [PcareController::class, 'getKabupatenConfig'])
             ->name('api.pcare.config.kabupaten');
+    });
+
+    Route::prefix('icare')->group(function () {
+        Route::get('/ping', [IcareController::class, 'ping'])->name('api.icare.ping');
+        Route::match(['get', 'post', 'put', 'delete'], '/proxy/{endpoint}', [IcareController::class, 'proxy'])
+            ->where('endpoint', '.*')
+            ->withoutMiddleware([
+                'auth',
+                'auth:web',
+                'auth:sanctum',
+                \Illuminate\Auth\Middleware\Authenticate::class,
+                \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+                \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+                \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            ])
+            ->name('api.icare.proxy');
+        Route::post('/validate', [IcareController::class, 'validateIcare'])
+            ->withoutMiddleware([
+                'auth',
+                'auth:web',
+                'auth:sanctum',
+                \Illuminate\Auth\Middleware\Authenticate::class,
+                \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+                \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+                \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            ])
+            ->name('api.icare.validate');
+        Route::get('/peserta/{noka}', [IcareController::class, 'getPeserta'])->name('api.icare.peserta');
     });
 
     // SATUSEHAT FHIR API relay endpoints

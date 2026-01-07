@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/api.php:119
+* @see routes/api.php:136
 * @route '/api/rawat-jalan/surat-sakit/verify'
 */
 export const verify = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ verify.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:119
+* @see routes/api.php:136
 * @route '/api/rawat-jalan/surat-sakit/verify'
 */
 verify.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ verify.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:119
+* @see routes/api.php:136
 * @route '/api/rawat-jalan/surat-sakit/verify'
 */
 verify.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ verify.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/api.php:119
+* @see routes/api.php:136
 * @route '/api/rawat-jalan/surat-sakit/verify'
 */
 verify.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

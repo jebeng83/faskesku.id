@@ -465,6 +465,224 @@ trait BpjsTraits
         ];
     }
 
+    protected function icareConfig(): array
+    {
+        $rowMobilejkn = DB::table('setting_briding_mobilejkn')->first();
+        $rowBpjs = DB::table('setting_bridging_bpjs')->first();
+
+        return [
+            'base_url' => config('bpjs.icare.base_url'),
+            'cons_id' => $rowMobilejkn?->cons_id_mobilejkn ?? config('bpjs.pcare.cons_id'),
+            'cons_pwd' => $rowMobilejkn?->secretkey_mobilejkn ?? config('bpjs.pcare.cons_pwd'),
+            // User key untuk Icare diambil dari setting_bridging_bpjs.userkey_pcare sesuai instruksi
+            'user_key' => (string) ($rowBpjs?->userkey_pcare ?? config('bpjs.pcare.user_key')),
+            'user' => $rowMobilejkn?->user_mobilejkn ?? config('bpjs.pcare.user'),
+            'pass' => $rowMobilejkn?->pass_mobilejkn ?? config('bpjs.pcare.pass'),
+            'app_code' => config('bpjs.pcare.app_code'),
+        ];
+    }
+
+    protected function buildIcareHeaders(?string $overrideTimestamp = null): array
+    {
+        $cfg = $this->icareConfig();
+        $timestamp = $overrideTimestamp ?: $this->generateTimestamp();
+        $signature = $this->generateSignature($cfg['cons_id'], $cfg['cons_pwd'], $timestamp);
+        $authorization = $this->generateAuthorization($cfg['user'], $cfg['pass'], $cfg['app_code']);
+
+        return [
+            'X-cons-id' => $cfg['cons_id'],
+            'X-timestamp' => $timestamp,
+            'X-signature' => $signature,
+            'X-authorization' => 'Basic '.$authorization,
+            'user_key' => $cfg['user_key'],
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ];
+    }
+
+    protected function icareRequest(
+        string $method,
+        string $endpoint,
+        array $query = [],
+        array|string|null $body = null,
+        array $extraHeaders = [],
+        ?string $overrideTimestamp = null
+    ): array {
+        $start = microtime(true);
+        $logId = uniqid('icare_', true);
+        $cfg = $this->icareConfig();
+        $headers = array_merge($this->buildIcareHeaders($overrideTimestamp), $extraHeaders);
+        if (strtoupper($method) === 'POST' && (str_ends_with($endpoint, 'validate') || str_contains($endpoint, 'validate'))) {
+            $headers['Content-Type'] = 'application/json';
+        }
+        $baseUrl = rtrim((string) ($cfg['base_url'] ?? ''), '/');
+        if ($baseUrl === '') {
+            throw new \InvalidArgumentException('Base URL Icare belum dikonfigurasi. Set BPJS_ICARE_BASE_URL di .env untuk server ini.');
+        }
+        $candidateBaseUrls = [$baseUrl];
+
+        $sanitizedHeaders = [
+            'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
+            'X-timestamp' => (string) ($headers['X-timestamp'] ?? ''),
+            'Accept' => (string) ($headers['Accept'] ?? ''),
+            'Content-Type' => (string) ($headers['Content-Type'] ?? ''),
+        ];
+
+        $bodyPreview = null;
+        if (is_array($body)) {
+            $bodyPreview = json_encode($body);
+            $bodyPreview = $bodyPreview !== false ? substr($bodyPreview, 0, 1000) : null;
+        } elseif (is_string($body)) {
+            $bodyPreview = substr($body, 0, 1000);
+        }
+
+        $baseHttpOptions = [];
+        if (! empty($query)) {
+            $baseHttpOptions['query'] = $query;
+        }
+        $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
+        $timeout = (int) config('bpjs.http.timeout', 30);
+        $baseHttpOptions['connect_timeout'] = $connectTimeout;
+        $baseHttpOptions['timeout'] = $timeout;
+        $baseCurlOptions = [];
+        if (defined('CURL_IPRESOLVE_V4')) {
+            $baseCurlOptions[CURLOPT_IPRESOLVE] = CURL_IPRESOLVE_V4;
+        }
+        if (defined('CURL_HTTP_VERSION_1_1')) {
+            $baseCurlOptions[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
+        }
+        if (defined('CURLOPT_NOSIGNAL')) {
+            $baseCurlOptions[CURLOPT_NOSIGNAL] = true;
+        }
+        if (defined('CURL_SSLVERSION_TLSv1_2')) {
+            $baseCurlOptions[CURLOPT_SSLVERSION] = CURL_SSLVERSION_TLSv1_2;
+        }
+        $disableSslVerify = filter_var(config('bpjs.http.disable_ssl_verify', false), FILTER_VALIDATE_BOOLEAN);
+        if ($disableSslVerify) {
+            $baseCurlOptions[CURLOPT_SSL_VERIFYPEER] = false;
+            $baseCurlOptions[CURLOPT_SSL_VERIFYHOST] = 0;
+            Log::channel('bpjs')->warning('Icare SSL verification DISABLED via env BPJS_HTTP_DISABLE_SSL_VERIFY');
+        }
+        $resolveList = [];
+        $forceResolve = null;
+
+        $retryTimes = (int) config('bpjs.http.retry_times', 2);
+        $retrySleep = (int) config('bpjs.http.retry_sleep', 500);
+
+        $response = null;
+        $attempt = 0;
+        $lastException = null;
+        $attemptResolveUsed = null;
+        $finalUrl = null;
+
+        $attemptsPool = [null];
+        foreach ($candidateBaseUrls as $candidate) {
+            $url = rtrim($candidate, '/').'/'.ltrim($endpoint, '/');
+            foreach ($attemptsPool as $resolveEntry) {
+                $attempt++;
+                $httpOptions = $baseHttpOptions;
+                $curlOptions = $baseCurlOptions;
+                $attemptResolveUsed = null;
+                if (! empty($curlOptions)) {
+                    $httpOptions['curl'] = $curlOptions;
+                }
+
+                Log::channel('bpjs')->debug('Icare request', [
+                    'id' => $logId,
+                    'method' => strtoupper($method),
+                    'url' => $url,
+                    'endpoint' => $endpoint,
+                    'query' => $query,
+                    'headers' => $sanitizedHeaders,
+                    'body_preview' => $bodyPreview,
+                ]);
+
+                $request = Http::withHeaders($headers)->withOptions($httpOptions);
+                if ($retryTimes > 0) {
+                    $request = $request->retry($retryTimes, $retrySleep);
+                }
+
+                try {
+                    switch (strtoupper($method)) {
+                        case 'GET':
+                            $response = $request->get($url);
+                            break;
+                        case 'POST':
+                            if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                                $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                                $response = $request->withBody($json, 'text/plain')->post($url);
+                            } else {
+                                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                                $response = $request->post($url, $payload);
+                            }
+                            break;
+                        case 'PUT':
+                            if (isset($headers['Content-Type']) && strtolower($headers['Content-Type']) === 'text/plain') {
+                                $json = is_string($body) ? $body : json_encode(is_array($body) ? $body : []);
+                                $response = $request->withBody($json, 'text/plain')->put($url);
+                            } else {
+                                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                                $response = $request->put($url, $payload);
+                            }
+                            break;
+                        case 'DELETE':
+                            $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                            $response = $request->delete($url, $payload);
+                            break;
+                        default:
+                            throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+                    }
+
+                    if ($response) {
+                        $finalUrl = $url;
+                        if ($response->status() === 503) {
+                            $response = null;
+
+                            continue;
+                        }
+                        break;
+                    }
+                } catch (\Throwable $e) {
+                    $lastException = $e;
+                    Log::channel('bpjs')->error('Icare attempt failed', [
+                        'attempt' => $attempt,
+                        'resolve' => $attemptResolveUsed,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $response = null;
+
+                    continue;
+                }
+            }
+            if ($response) {
+                break;
+            }
+        }
+
+        if (! $response && $lastException) {
+            throw $lastException;
+        }
+
+        $durationMs = (int) round((microtime(true) - $start) * 1000);
+        $rawBody = $response->body();
+        Log::channel('bpjs')->debug('Icare response', [
+            'id' => $logId,
+            'status' => $response->status(),
+            'successful' => $response->successful(),
+            'duration_ms' => $durationMs,
+            'url' => $finalUrl,
+            'timestamp_used' => $headers['X-timestamp'] ?? null,
+            'body_excerpt' => substr($rawBody ?? '', 0, 1000),
+        ]);
+
+        return [
+            'response' => $response,
+            'headers_used' => $headers,
+            'timestamp_used' => $headers['X-timestamp'],
+            'url' => $finalUrl,
+        ];
+    }
+
     /**
      * AES-256-CBC decrypt helper used by BPJS catalogs (PCare/VClaim) if response encrypted.
      */
@@ -518,6 +736,29 @@ trait BpjsTraits
 
         // Fallback: try decrypting the whole body (legacy behavior)
         $cfg = $this->pcareConfig();
+        $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
+        $decrypted = $this->stringDecrypt($key, $body);
+        $result = $this->decompressLzString($decrypted ?: $body);
+        $decoded = json_decode($result, true);
+
+        return $decoded ?? $result;
+    }
+
+    protected function maybeDecryptAndDecompressIcare(string $body, string $timestamp): array|string
+    {
+        $wrapper = json_decode($body, true);
+        if (is_array($wrapper) && array_key_exists('response', $wrapper) && is_string($wrapper['response'])) {
+            $cfg = $this->icareConfig();
+            $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
+            $decrypted = $this->stringDecrypt($key, $wrapper['response']);
+            $decompressed = $this->decompressLzString($decrypted ?: $wrapper['response']);
+            $decodedResponse = json_decode($decompressed, true);
+            $wrapper['response'] = $decodedResponse ?? $decompressed;
+
+            return $wrapper;
+        }
+
+        $cfg = $this->icareConfig();
         $key = $cfg['cons_id'].$cfg['cons_pwd'].$timestamp;
         $decrypted = $this->stringDecrypt($key, $body);
         $result = $this->decompressLzString($decrypted ?: $body);

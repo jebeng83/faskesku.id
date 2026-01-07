@@ -18,6 +18,10 @@ return [
         'kunjungan_content_type' => env('BPJS_PCARE_KUNJUNGAN_CT', 'text/plain'),
     ],
 
+    'icare' => [
+        'base_url' => env('BPJS_ICARE_BASE_URL', 'https://apijkn.bpjs-kesehatan.go.id/wsihs/api/pcare'),
+    ],
+
     // Opsi HTTP untuk koneksi BPJS (dipakai oleh trait BpjsTraits)
     'http' => [
         'connect_timeout' => env('BPJS_HTTP_CONNECT_TIMEOUT', 10),

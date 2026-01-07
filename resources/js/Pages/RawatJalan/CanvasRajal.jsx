@@ -13,6 +13,7 @@ import OdontogramForm from "../Odontogram/odontogram";
 import axios from "axios";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { setRawatJalanFilters } from "@/tools/rawatJalanFilters";
+import Icare from "./NewComponen/Icare";
 
 export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "", tab = "" }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -53,6 +54,8 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [subSpesialisOptions, setSubSpesialisOptions] = useState([]);
   const [saranaOptions, setSaranaOptions] = useState([]);
   const [selectedSpesialis, setSelectedSpesialis] = useState("");
+  
+  const [bpjsNoPeserta, setBpjsNoPeserta] = useState("");
 
   const REF_TACC = useMemo(() => ([
     { kdTacc: -1, nmTacc: "Tanpa TACC", alasanTacc: [] },
@@ -128,10 +131,22 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         const kd = (regData?.kd_poli ?? regData?.poliklinik?.kd_poli ?? kdPoli ?? "").toString();
         const nm = (regData?.poliklinik?.nm_poli ?? regData?.nm_poli ?? "").toString();
         const kdDokter = (regData?.kd_dokter ?? regData?.dokter?.kd_dokter ?? "").toString();
+        let noka = (regData?.no_peserta ?? regData?.pasien?.no_peserta ?? "").toString();
+        if (!noka && noRawat) {
+          try {
+            const respPcare = await axios.get(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
+              withCredentials: true,
+              headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
+            const d = respPcare?.data?.data || null;
+            noka = (d?.noKartu ?? d?.no_kartu ?? "").toString();
+          } catch (_) {}
+        }
         if (!cancelled) {
           setPoliCode(kd);
           if (nm) setPoliName(nm);
           setDoctorCode(kdDokter);
+          setBpjsNoPeserta(noka);
         }
       } catch (_) {}
     };
@@ -748,6 +763,8 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     }
   };
 
+  
+
   useEffect(() => {
     const onKey = (e) => {
       if (!isOpen) return;
@@ -941,6 +958,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       >
                         Surat
                       </button>
+                      <Icare noPeserta={bpjsNoPeserta} kodeDokter={doctorCode} noRawat={noRawat} label="Icare" buttonClassName="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60" />
                     </div>
                   </div>
 
@@ -1502,6 +1520,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                   </div>
                 </div>
               )}
+              
             </motion.div>
         )}
       </AnimatePresence>

@@ -90,7 +90,7 @@ class SecurityHeadersMiddleware
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 "connect-src 'self' https://cloudflareinsights.com ".implode(' ', array_merge($httpAllowed, $wsAllowed)).'; '.
                 "worker-src 'self' blob:; ".
-                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com";
+                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com https://apijkn.bpjs-kesehatan.go.id https://mobile-faskes.bpjs-kesehatan.go.id https://vclaim.bpjs-kesehatan.go.id";
         } else {
             // CSP untuk production - lebih ketat
             $style = "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com";
@@ -111,7 +111,7 @@ class SecurityHeadersMiddleware
                 "img-src 'self' data: https:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 $connect.'; '.
-                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com";
+                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com https://apijkn.bpjs-kesehatan.go.id https://mobile-faskes.bpjs-kesehatan.go.id https://vclaim.bpjs-kesehatan.go.id";
         }
 
         $response->headers->set('Content-Security-Policy', $csp);

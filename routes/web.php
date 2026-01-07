@@ -618,9 +618,195 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    // Pusat Laporan
+    Route::get('/laporan', function () {
+        return Inertia::render('Laporan/Home', [
+            'summary' => [
+                'rawat_jalan' => [
+                    'total' => 0,
+                    'baru' => 0,
+                    'lama' => 0,
+                    'avg_daily' => 0,
+                    'delta_pct' => 0,
+                ],
+                'rawat_inap' => [
+                    'total' => 0,
+                    'masuk' => 0,
+                    'keluar' => 0,
+                    'okupansi_pct' => 0,
+                    'bed_total' => 0,
+                    'avg_los_days' => 0,
+                    'delta_pct' => 0,
+                ],
+                'igd' => [
+                    'total' => 0,
+                    'baru' => 0,
+                    'lama' => 0,
+                    'avg_daily' => 0,
+                    'delta_pct' => 0,
+                ],
+                'chart_period' => 'week',
+                'updated_at' => now()->format('H:i'),
+            ],
+        ]);
+    })->name('laporan.index');
+
+    // Laporan Ralan
+    Route::get('/laporan/ralan/frekuensi-penyakit', function () {
+        return Inertia::render('Laporan/FrekuensiPenyakit');
+    })->name('laporan.ralan.frekuensi-penyakit');
+
+    Route::get('/laporan/ralan/frekuensi-penyakit/data', function () {
+        return response()->json([
+            'data' => [],
+            'total' => 0,
+        ]);
+    })->name('laporan.ralan.frekuensi-penyakit.data');
+
+    Route::get('/laporan/ralan/frekuensi-penyakit/print', function () {
+        return response('<html><body><h1>Frekuensi Penyakit Ralan</h1><p>Belum ada data.</p></body></html>');
+    })->name('laporan.ralan.frekuensi-penyakit.print');
+
+    Route::get('/laporan/ralan/kunjungan', function () {
+        return Inertia::render('Laporan/Kunjungan');
+    })->name('laporan.ralan.kunjungan');
+
+    Route::get('/laporan/ralan/kunjungan/data', function () {
+        return response()->json([
+            'data' => [],
+            'current_page' => 1,
+            'last_page' => 1,
+            'total' => 0,
+            'from' => 0,
+            'to' => 0,
+        ]);
+    })->name('laporan.ralan.kunjungan.data');
+
+    Route::get('/laporan/ralan/kunjungan/print', function () {
+        return response('<html><body><h1>Kunjungan Ralan</h1><p>Belum ada data.</p></body></html>');
+    })->name('laporan.ralan.kunjungan.print');
+
+    // Laporan Ranap (stub sementara)
+    Route::get('/laporan/ranap/kunjungan', function () {
+        return Inertia::render('Laporan/Home');
+    })->name('laporan.ranap.kunjungan');
+    Route::get('/laporan/ranap/frekuensi-penyakit', function () {
+        return Inertia::render('Laporan/Home');
+    })->name('laporan.ranap.frekuensi-penyakit');
+
+    // Endpoint sederhana untuk statistik laporan (placeholder)
+    Route::get('/laporan/stats', function () {
+        $type = request()->query('type');
+        $period = request()->query('period');
+        $base = [
+            'total' => 0,
+            'baru' => 0,
+            'lama' => 0,
+            'avg_daily' => 0,
+            'delta_pct' => 0,
+        ];
+        if ($type === 'ranap') {
+            $data = [
+                'total' => 0,
+                'masuk' => 0,
+                'keluar' => 0,
+                'okupansi_pct' => 0,
+                'bed_total' => 0,
+                'avg_los_days' => 0,
+                'delta_pct' => 0,
+            ];
+        } elseif ($type === 'igd') {
+            $data = $base;
+        } else { // ralan default
+            $data = $base;
+        }
+        return response()->json($data);
+    })->name('laporan.stats');
+
     Route::get('/tools/scan-whatsapp-credentials', function () {
         return Inertia::render('Tools/ScanWhatsAppCredentials');
     })->name('tools.whatsapp.credentials.scan');
+
+    Route::get('/farmasi/obat-fast-moving', function () {
+        return Inertia::render('farmasi/10ObatFastMoving');
+    })->name('farmasi.fast-moving');
+
+    Route::get('/farmasi/obat-fast-moving/data', function () {
+        $rows = [];
+        $period = request()->query('period');
+        $days = 7;
+        if ($period === 'month') {
+            $days = 30;
+        } elseif ($period === '3m') {
+            $days = 90;
+        } elseif ($period === '6m') {
+            $days = 180;
+        } elseif ($period === 'year') {
+            $days = 365;
+        }
+        $fromDate = now()->subDays($days)->format('Y-m-d');
+        $dateColumn = null;
+        $candidates = ['tgl_perawatan', 'tgl_peresepan', 'tanggal', 'tgl', 'tgl_jual', 'tgl_resep', 'tgl_penjualan'];
+        foreach ($candidates as $col) {
+            if (Schema::hasColumn('resep_dokter', $col)) {
+                $dateColumn = $col;
+                break;
+            }
+        }
+        if (Schema::hasTable('resep_dokter') && Schema::hasTable('databarang')) {
+            try {
+                $query = DB::table('resep_dokter as rd')
+                    ->join('databarang as db', 'db.kode_brng', '=', 'rd.kode_brng')
+                    ->select('rd.kode_brng', 'db.nama_brng', DB::raw('COUNT(*) as jumlah'))
+                    ->whereNotNull('rd.kode_brng')
+                    ->where('rd.kode_brng', '!=', '');
+                if ($dateColumn) {
+                    $query = $query->whereDate('rd.' . $dateColumn, '>=', $fromDate);
+                }
+                $rows = $query
+                    ->groupBy('rd.kode_brng', 'db.nama_brng')
+                    ->orderByDesc('jumlah')
+                    ->limit(10)
+                    ->get();
+            } catch (\Throwable $e) {
+                $rows = [];
+            }
+        }
+        return response()->json([
+            'data' => collect($rows)->map(function ($r) {
+                return [
+                    'kode_brng' => $r->kode_brng ?? null,
+                    'nama_brng' => isset($r->nama_brng) ? preg_replace('/[\x00-\x1F\x7F]/u', '', (string) $r->nama_brng) : null,
+                    'jumlah' => (int) ($r->jumlah ?? 0),
+                ];
+            })->all(),
+            'period' => $period ?: 'week',
+            'from' => $fromDate,
+        ]);
+    })->name('farmasi.fast-moving.data');
+
+    Route::get('/farmasi/resep_dokter/describe', function () {
+        $columns = [];
+        if (Schema::hasTable('resep_dokter')) {
+            try {
+                $columns = DB::select('SHOW COLUMNS FROM resep_dokter');
+            } catch (\Throwable $e) {
+                $columns = [];
+            }
+        }
+        return response()->json([
+            'columns' => collect($columns)->map(function ($c) {
+                return [
+                    'Field' => $c->Field ?? null,
+                    'Type' => $c->Type ?? null,
+                    'Null' => $c->Null ?? null,
+                    'Key' => $c->Key ?? null,
+                    'Default' => $c->Default ?? null,
+                    'Extra' => $c->Extra ?? null,
+                ];
+            })->all(),
+        ]);
+    })->name('farmasi.resep_dokter.describe');
 
     Route::get('/docs/{section?}', function ($section = null) {
         return Inertia::render('Docs', ['section' => $section]);

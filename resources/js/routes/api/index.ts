@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import publicMethod from './public'
 import resep from './resep'
 import pcare from './pcare'
+import icare from './icare'
 import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
@@ -216,6 +217,7 @@ const api = {
     public: Object.assign(publicMethod, publicMethod),
     resep: Object.assign(resep, resep),
     pcare: Object.assign(pcare, pcare),
+    icare: Object.assign(icare, icare),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
