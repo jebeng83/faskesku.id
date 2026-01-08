@@ -20,7 +20,7 @@ export default function ObatFastMoving() {
       try {
         url = route("farmasi.fast-moving.data", { period: sel }, false);
       } catch {
-        url = `http://127.0.0.1:8000/farmasi/obat-fast-moving/data?period=${encodeURIComponent(sel)}`;
+        url = `/farmasi/obat-fast-moving/data?period=${encodeURIComponent(sel)}`;
       }
       const res = await fetch(url, { headers: { Accept: "application/json" } });
       const json = await res.json();

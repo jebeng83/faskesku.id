@@ -343,41 +343,15 @@ const Footer = React.memo(function Footer() {
                 return route('antrian.loket');
             }
         } catch (_) {}
-        try {
-            const { protocol, hostname, port } = window.location;
-            if (port === '5173') {
-                return `${protocol}//${hostname}:8000/antrian/loket`;
-            }
-            return `${protocol}//${hostname}${port ? ':' + port : ''}/antrian/loket`;
-        } catch (_) {
-            return '/antrian/loket';
-        }
+        return '/antrian/loket';
     };
 
     const resolveDisplayUrl = () => {
-        try {
-            const { protocol, hostname, port } = window.location;
-            const base = `${protocol}//${hostname}`;
-            if (port === '5173') {
-                return `${base}:8000/antrian/display`;
-            }
-            return `${base}${port ? ':' + port : ''}/antrian/display`;
-        } catch (_) {
-            return '/antrian/display';
-        }
+        return '/antrian/display';
     };
 
     const resolveDisplayPoliUrl = () => {
-        try {
-            const { protocol, hostname, port } = window.location;
-            const base = `${protocol}//${hostname}`;
-            if (port === '5173') {
-                return `${base}:8000/antrian/poli`;
-            }
-            return `${base}${port ? ':' + port : ''}/antrian/poli`;
-        } catch (_) {
-            return '/antrian/poli';
-        }
+        return '/antrian/poli';
     };
 
     const resolveWaGatewayUrl = () => {
@@ -753,9 +727,7 @@ export default function Dashboard() {
         let active = true;
         (async () => {
             try {
-                const { protocol, hostname } = window.location;
-                const base = `${protocol}//${hostname}:8000`;
-                const url = `${base}/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}`;
+                const url = `/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}`;
                 const res = await axios.get(url, { headers: { Accept: "application/json" }, withCredentials: true });
                 const json = res.data;
                 const arr = Array.isArray(json?.data) ? json.data : [];
@@ -764,9 +736,7 @@ export default function Dashboard() {
                 if (active) setFastMovingData([]);
             }
             try {
-                const { protocol, hostname } = window.location;
-                const base100 = `${protocol}//${hostname}:8000`;
-                const urlFM100 = `${base100}/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}&limit=100`;
+                const urlFM100 = `/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}&limit=100`;
                 const resFM100 = await axios.get(urlFM100, { headers: { Accept: "application/json" }, withCredentials: true });
                 const jsonFM100 = resFM100.data;
                 const arrFM100 = Array.isArray(jsonFM100?.data) ? jsonFM100.data : [];
@@ -775,9 +745,7 @@ export default function Dashboard() {
                 if (active) setFastMovingFilterData([]);
             }
             try {
-                const { protocol, hostname } = window.location;
-                const base2 = `${protocol}//${hostname}:8000`;
-                const url2 = `${base2}/farmasi/darurat-stok/data?per_page=100&page=1`;
+                const url2 = `/farmasi/darurat-stok/data?per_page=100&page=1`;
                 const res2 = await axios.get(url2, { headers: { Accept: "application/json" }, withCredentials: true });
                 const json2 = res2.data;
                 const items = Array.isArray(json2?.items?.data)
