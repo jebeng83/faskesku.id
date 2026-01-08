@@ -16,92 +16,85 @@ class RawatInapController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->query('search', ''));
-        $status = (string) $request->query('status', '');
-        $sort = (string) $request->query('sort', 'terbaru');
-        $sttsPulang = (string) $request->query('stts_pulang', '-');
+        $dateFilterMode = (string) $request->query('date_filter_mode', 'belum_pulang');
+        $startDate = (string) $request->query('start_date', date('Y-m-d'));
+        $endDate = (string) $request->query('end_date', date('Y-m-d'));
         $perPage = (int) ($request->query('per_page', 12));
 
         $query = RegPeriksa::query()
-            ->with([
-                'patient:no_rkm_medis,nm_pasien',
-                'dokter:kd_dokter,nm_dokter',
-            ])
-            ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
-            ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
-            ->where('reg_periksa.status_lanjut', 'Ranap')
             ->select([
-                'reg_periksa.*',
-                DB::raw('kamar_inap.kd_kamar as kamar'),
+                'kamar_inap.no_rawat',
+                'reg_periksa.no_rkm_medis',
+                'pasien.nm_pasien',
+                DB::raw("concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab) as alamat"),
+                'reg_periksa.p_jawab',
+                'reg_periksa.hubunganpj',
+                'penjab.png_jawab',
+                DB::raw("concat(kamar_inap.kd_kamar,' ',bangsal.nm_bangsal) as kamar"),
+                'kamar_inap.trf_kamar',
+                'kamar_inap.diagnosa_awal',
+                'kamar_inap.diagnosa_akhir',
                 'kamar_inap.tgl_masuk',
                 'kamar_inap.jam_masuk',
                 'kamar_inap.tgl_keluar',
                 'kamar_inap.jam_keluar',
+                'kamar_inap.ttl_biaya',
                 'kamar_inap.stts_pulang',
-            ]);
+                'kamar_inap.lama',
+                'dokter.nm_dokter',
+                'kamar_inap.kd_kamar',
+                'reg_periksa.kd_pj',
+                DB::raw("concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur) as umur"),
+                'reg_periksa.status_bayar',
+                'pasien.agama'
+            ])
+            ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->join('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+            ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+            ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+            ->join('kelurahan', 'pasien.kd_kel', '=', 'kelurahan.kd_kel')
+            ->join('kecamatan', 'pasien.kd_kec', '=', 'kecamatan.kd_kec')
+            ->join('kabupaten', 'pasien.kd_kab', '=', 'kabupaten.kd_kab')
+            ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+            ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj');
+
+        // Apply Date/Status Filter Modes (R1, R2, R3)
+        if ($dateFilterMode === 'belum_pulang') {
+            $query->where('kamar_inap.stts_pulang', '-');
+        } elseif ($dateFilterMode === 'masuk') {
+            $query->whereBetween('kamar_inap.tgl_masuk', [$startDate, $endDate]);
+        } elseif ($dateFilterMode === 'pulang') {
+            $query->whereBetween('kamar_inap.tgl_keluar', [$startDate, $endDate]);
+        }
 
         if ($search !== '') {
             $like = "%$search%";
             $query->where(function ($w) use ($like) {
-                $w->where('reg_periksa.no_rawat', 'like', $like)
+                $w->where('kamar_inap.no_rawat', 'like', $like)
                     ->orWhere('reg_periksa.no_rkm_medis', 'like', $like)
                     ->orWhere('pasien.nm_pasien', 'like', $like)
-                    ->orWhere('kamar_inap.kd_kamar', 'like', $like);
+                    ->orWhere('kamar_inap.kd_kamar', 'like', $like)
+                    ->orWhere('bangsal.nm_bangsal', 'like', $like)
+                    ->orWhere('dokter.nm_dokter', 'like', $like)
+                    ->orWhere('penjab.png_jawab', 'like', $like);
             });
         }
 
-        if ($status !== '') {
-            switch ($status) {
-                case 'Pulang':
-                    $query->whereNotNull('kamar_inap.tgl_keluar');
-                    break;
-                case 'Dirujuk':
-                    $query->where('kamar_inap.stts_pulang', 'Rujuk');
-                    break;
-                case 'Menunggu':
-                case 'Dirawat':
-                    $query->whereNull('kamar_inap.tgl_keluar');
-                    break;
-            }
-        }
-
-        if ($sttsPulang !== '') {
-            $query->where('kamar_inap.stts_pulang', $sttsPulang);
-        }
-
-        switch ($sort) {
-            case 'terlama':
-                $query->orderBy('reg_periksa.tgl_registrasi')->orderBy('reg_periksa.jam_reg');
-                break;
-            case 'nama':
-                $query->orderBy('pasien.nm_pasien');
-                break;
-            default:
-                $query->orderByDesc('reg_periksa.tgl_registrasi')->orderByDesc('reg_periksa.jam_reg');
-                break;
-        }
+        $query->orderBy('bangsal.nm_bangsal')
+              ->orderBy('kamar_inap.tgl_masuk')
+              ->orderBy('kamar_inap.jam_masuk');
 
         $rawatInap = $query->paginate($perPage)->withQueryString();
-
-        $sttsPulangOptions = DB::table('kamar_inap')
-            ->select('stts_pulang')
-            ->distinct()
-            ->orderBy('stts_pulang')
-            ->pluck('stts_pulang')
-            ->filter(function ($v) {
-                return $v !== null && $v !== '';
-            })
-            ->values();
 
         return Inertia::render('RawatInap/Index', [
             'title' => 'Data Rawat Inap',
             'rawatInap' => $rawatInap,
             'filters' => [
                 'search' => $search,
-                'status' => $status,
-                'sort' => $sort,
-                'stts_pulang' => $sttsPulang,
+                'date_filter_mode' => $dateFilterMode,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ],
-            'sttsPulangOptions' => $sttsPulangOptions,
         ]);
     }
 
