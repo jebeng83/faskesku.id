@@ -371,6 +371,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan/ranap/frekuensi-penyakit/data', [App\Http\Controllers\FrekuensiPenyakitRanapController::class, 'data'])->name('laporan.ranap.frekuensi-penyakit.data');
     Route::get('/laporan/ranap/frekuensi-penyakit/print', [App\Http\Controllers\FrekuensiPenyakitRanapController::class, 'print'])->name('laporan.ranap.frekuensi-penyakit.print');
 
+    // Surveilans Penyakit Ranap
+    Route::get('/laporan/ranap/surveilans-penyakit', [App\Http\Controllers\SurveilansPenyakitRanapController::class, 'index'])->name('laporan.ranap.surveilans-penyakit');
+    Route::get('/laporan/ranap/surveilans-penyakit/data', [App\Http\Controllers\SurveilansPenyakitRanapController::class, 'data'])->name('laporan.ranap.surveilans-penyakit.data');
+
     Route::get('/laporan/rl-kemenkes', function () {
         return Inertia::render('Laporan/RLKemenkes');
     })->name('laporan.rl-kemenkes');

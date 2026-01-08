@@ -127,6 +127,11 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                         href: route("laporan.ranap.frekuensi-penyakit"),
                         icon: <Activity className="w-4 h-4" />,
                     },
+                    {
+                        label: "Surveilans Penyakit Ranap",
+                        href: route("laporan.ranap.surveilans-penyakit"),
+                        icon: <Microscope className="w-4 h-4" />,
+                    },
                 ],
             },
             // Ubah submenu dari "Keuangan" menjadi "Laporan Umum"
