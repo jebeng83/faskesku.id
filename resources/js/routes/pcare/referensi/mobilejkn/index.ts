@@ -3,6 +3,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1272
 =======
 * @see routes/web.php:1279
@@ -13,6 +14,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 =======
 * @see routes/web.php:1289
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1293
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -29,6 +33,7 @@ poli.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1272
 =======
 * @see routes/web.php:1279
@@ -39,6 +44,9 @@ poli.definition = {
 =======
 * @see routes/web.php:1289
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1293
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -49,6 +57,7 @@ poli.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1272
 =======
 * @see routes/web.php:1279
@@ -59,6 +68,9 @@ poli.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1289
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1293
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -70,6 +82,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1272
 =======
 * @see routes/web.php:1279
@@ -80,6 +93,9 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1289
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1293
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -88,6 +104,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -101,6 +118,9 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1294
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1298
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,6 +137,7 @@ dokter.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1277
 =======
 * @see routes/web.php:1284
@@ -127,6 +148,9 @@ dokter.definition = {
 =======
 * @see routes/web.php:1294
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1298
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -137,6 +161,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1277
 =======
 * @see routes/web.php:1284
@@ -147,6 +172,9 @@ dokter.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1294
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1298
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -158,6 +186,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1277
 =======
 * @see routes/web.php:1284
@@ -168,6 +197,9 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1294
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1298
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/referensi-mobilejkn/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

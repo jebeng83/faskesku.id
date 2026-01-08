@@ -95,6 +95,7 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:360
 >>>>>>> c30c174a (qrcode validasi surat)
 =======
@@ -103,6 +104,9 @@ stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:370
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:374
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/laporan/rl-kemenkes'
 */
 export const rlKemenkes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +120,7 @@ rlKemenkes.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:370
+* @see routes/web.php:374
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.url = (options?: RouteQueryOptions) => {
@@ -124,7 +128,7 @@ rlKemenkes.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:370
+* @see routes/web.php:374
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -133,7 +137,7 @@ rlKemenkes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:370
+* @see routes/web.php:374
 * @route '/laporan/rl-kemenkes'
 */
 rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -142,7 +146,7 @@ rlKemenkes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:374
+* @see routes/web.php:378
 * @route '/laporan/bor'
 */
 export const bor = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -156,7 +160,7 @@ bor.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:374
+* @see routes/web.php:378
 * @route '/laporan/bor'
 */
 bor.url = (options?: RouteQueryOptions) => {
@@ -164,7 +168,7 @@ bor.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:374
+* @see routes/web.php:378
 * @route '/laporan/bor'
 */
 bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -173,7 +177,7 @@ bor.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:374
+* @see routes/web.php:378
 * @route '/laporan/bor'
 */
 bor.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

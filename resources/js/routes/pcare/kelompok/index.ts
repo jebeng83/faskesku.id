@@ -6,6 +6,7 @@ import peserta from './peserta'
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1292
 =======
 * @see routes/web.php:1299
@@ -16,6 +17,9 @@ import peserta from './peserta'
 =======
 * @see routes/web.php:1309
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1313
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/club-prolanis'
 */
 export const clubProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +36,7 @@ clubProlanis.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1292
 =======
 * @see routes/web.php:1299
@@ -42,6 +47,9 @@ clubProlanis.definition = {
 =======
 * @see routes/web.php:1309
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1313
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.url = (options?: RouteQueryOptions) => {
@@ -52,6 +60,7 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1292
 =======
 * @see routes/web.php:1299
@@ -62,6 +71,9 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1309
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1313
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,6 +85,7 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1292
 =======
 * @see routes/web.php:1299
@@ -83,6 +96,9 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1309
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1313
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -91,6 +107,7 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -104,6 +121,9 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1314
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1318
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/kegiatan'
 */
 export const kegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,6 +140,7 @@ kegiatan.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1297
 =======
 * @see routes/web.php:1304
@@ -130,6 +151,9 @@ kegiatan.definition = {
 =======
 * @see routes/web.php:1314
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1318
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.url = (options?: RouteQueryOptions) => {
@@ -140,6 +164,7 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1297
 =======
 * @see routes/web.php:1304
@@ -150,6 +175,9 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1314
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1318
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -161,6 +189,7 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1297
 =======
 * @see routes/web.php:1304
@@ -171,6 +200,9 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1314
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1318
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -179,6 +211,7 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -192,6 +225,9 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1319
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1323
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/entri'
 */
 export const entri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -208,6 +244,7 @@ entri.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1302
 =======
 * @see routes/web.php:1309
@@ -218,6 +255,9 @@ entri.definition = {
 =======
 * @see routes/web.php:1319
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1323
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/entri'
 */
 entri.url = (options?: RouteQueryOptions) => {
@@ -228,6 +268,7 @@ entri.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1302
 =======
 * @see routes/web.php:1309
@@ -238,6 +279,9 @@ entri.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1319
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1323
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/entri'
 */
 entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -249,6 +293,7 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1302
 =======
 * @see routes/web.php:1309
@@ -259,6 +304,9 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1319
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1323
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/entri'
 */
 entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -267,6 +315,7 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -280,6 +329,9 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1324
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1328
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 export const pesertaKegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -296,6 +348,7 @@ pesertaKegiatan.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1307
 =======
 * @see routes/web.php:1314
@@ -306,6 +359,9 @@ pesertaKegiatan.definition = {
 =======
 * @see routes/web.php:1324
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1328
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.url = (options?: RouteQueryOptions) => {
@@ -316,6 +372,7 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1307
 =======
 * @see routes/web.php:1314
@@ -326,6 +383,9 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1324
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1328
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -337,6 +397,7 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1307
 =======
 * @see routes/web.php:1314
@@ -347,6 +408,9 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 =======
 * @see routes/web.php:1324
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1328
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

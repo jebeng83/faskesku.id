@@ -4,6 +4,7 @@ import cetak from './cetak'
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
@@ -14,6 +15,9 @@ import cetak from './cetak'
 =======
 * @see routes/web.php:1083
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1087
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,6 +34,7 @@ dataOpname.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
@@ -40,6 +45,9 @@ dataOpname.definition = {
 =======
 * @see routes/web.php:1083
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1087
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -50,6 +58,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
@@ -60,6 +69,9 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1083
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1087
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,6 +83,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1066
 =======
 * @see routes/web.php:1073
@@ -81,6 +94,9 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1083
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1087
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

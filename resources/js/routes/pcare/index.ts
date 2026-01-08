@@ -20,6 +20,7 @@ import setting from './setting'
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
@@ -30,6 +31,9 @@ import setting from './setting'
 =======
 * @see routes/web.php:1186
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1190
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -46,6 +50,7 @@ index.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
@@ -56,6 +61,9 @@ index.definition = {
 =======
 * @see routes/web.php:1186
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1190
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -66,6 +74,7 @@ index.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
@@ -76,6 +85,9 @@ index.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1186
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1190
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,6 +99,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1169
 =======
 * @see routes/web.php:1176
@@ -97,6 +110,9 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1186
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1190
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -105,6 +121,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -118,6 +135,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1205
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,6 +154,7 @@ monitoring.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
@@ -144,6 +165,9 @@ monitoring.definition = {
 =======
 * @see routes/web.php:1205
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -154,6 +178,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
@@ -164,6 +189,9 @@ monitoring.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1205
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,6 +203,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1188
 =======
 * @see routes/web.php:1195
@@ -185,6 +214,9 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1205
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1209
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

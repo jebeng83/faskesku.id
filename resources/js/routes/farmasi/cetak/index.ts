@@ -3,6 +3,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1069
 =======
 * @see routes/web.php:1076
@@ -13,6 +14,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 =======
 * @see routes/web.php:1086
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1090
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cetak/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -29,6 +33,7 @@ dataOpname.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1069
 =======
 * @see routes/web.php:1076
@@ -39,6 +44,9 @@ dataOpname.definition = {
 =======
 * @see routes/web.php:1086
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1090
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -49,6 +57,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1069
 =======
 * @see routes/web.php:1076
@@ -59,6 +68,9 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1086
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1090
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -70,6 +82,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1069
 =======
 * @see routes/web.php:1076
@@ -80,6 +93,9 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1086
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1090
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

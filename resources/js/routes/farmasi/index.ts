@@ -23,6 +23,7 @@ import jenisObat from './jenis-obat'
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:971
 =======
 * @see routes/web.php:978
@@ -30,6 +31,9 @@ import jenisObat from './jenis-obat'
 =======
 * @see routes/web.php:983
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:992
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -45,6 +49,7 @@ index.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:971
 =======
 * @see routes/web.php:978
@@ -52,6 +57,9 @@ index.definition = {
 =======
 * @see routes/web.php:983
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:992
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -61,6 +69,7 @@ index.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:971
 =======
 * @see routes/web.php:978
@@ -68,6 +77,9 @@ index.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:983
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:992
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,6 +90,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:971
 =======
 * @see routes/web.php:978
@@ -85,6 +98,9 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:983
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:992
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -95,6 +111,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:976
 =======
 * @see routes/web.php:983
@@ -102,6 +119,9 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:988
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:997
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -117,6 +137,7 @@ dashboard.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:976
 =======
 * @see routes/web.php:983
@@ -124,6 +145,9 @@ dashboard.definition = {
 =======
 * @see routes/web.php:988
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:997
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -133,6 +157,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:976
 =======
 * @see routes/web.php:983
@@ -140,6 +165,9 @@ dashboard.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:988
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:997
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -150,6 +178,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:976
 =======
 * @see routes/web.php:983
@@ -157,6 +186,9 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:988
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:997
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,6 +199,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:980
 =======
 * @see routes/web.php:987
@@ -174,6 +207,9 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:992
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1001
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/pembelian-obat'
 */
 export const pembelianObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,6 +225,7 @@ pembelianObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:980
 =======
 * @see routes/web.php:987
@@ -196,6 +233,9 @@ pembelianObat.definition = {
 =======
 * @see routes/web.php:992
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1001
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.url = (options?: RouteQueryOptions) => {
@@ -205,6 +245,7 @@ pembelianObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:980
 =======
 * @see routes/web.php:987
@@ -212,6 +253,9 @@ pembelianObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:992
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1001
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -222,6 +266,7 @@ pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:980
 =======
 * @see routes/web.php:987
@@ -229,6 +274,9 @@ pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:992
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1001
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -239,6 +287,7 @@ pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1001
@@ -246,6 +295,9 @@ pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 =======
 * @see routes/web.php:1006
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1015
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/hutang-obat'
 */
 export const hutangObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -261,6 +313,7 @@ hutangObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1001
@@ -268,6 +321,9 @@ hutangObat.definition = {
 =======
 * @see routes/web.php:1006
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1015
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.url = (options?: RouteQueryOptions) => {
@@ -277,6 +333,7 @@ hutangObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1001
@@ -284,6 +341,9 @@ hutangObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1006
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1015
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -294,6 +354,7 @@ hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:994
 =======
 * @see routes/web.php:1001
@@ -301,6 +362,9 @@ hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1006
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1015
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -311,6 +375,7 @@ hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:990
 =======
 * @see routes/web.php:997
@@ -318,6 +383,9 @@ hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1002
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1011
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/penjualan-obat'
 */
 export const penjualanObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -333,6 +401,7 @@ penjualanObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:990
 =======
 * @see routes/web.php:997
@@ -340,6 +409,9 @@ penjualanObat.definition = {
 =======
 * @see routes/web.php:1002
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1011
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.url = (options?: RouteQueryOptions) => {
@@ -349,6 +421,7 @@ penjualanObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:990
 =======
 * @see routes/web.php:997
@@ -356,6 +429,9 @@ penjualanObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1002
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1011
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -366,6 +442,7 @@ penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:990
 =======
 * @see routes/web.php:997
@@ -373,6 +450,9 @@ penjualanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1002
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1011
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/penjualan-obat'
 */
 penjualanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -383,6 +463,7 @@ penjualanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1005
@@ -390,6 +471,9 @@ penjualanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 =======
 * @see routes/web.php:1010
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1019
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/resep-obat'
 */
 export const resepObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -405,6 +489,7 @@ resepObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1005
@@ -412,6 +497,9 @@ resepObat.definition = {
 =======
 * @see routes/web.php:1010
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1019
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/resep-obat'
 */
 resepObat.url = (options?: RouteQueryOptions) => {
@@ -421,6 +509,7 @@ resepObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1005
@@ -428,6 +517,9 @@ resepObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1010
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1019
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/resep-obat'
 */
 resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -438,6 +530,7 @@ resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:998
 =======
 * @see routes/web.php:1005
@@ -445,6 +538,9 @@ resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1010
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1019
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/resep-obat'
 */
 resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -455,6 +551,7 @@ resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1003
 =======
 * @see routes/web.php:1010
@@ -462,6 +559,9 @@ resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1015
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1024
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/permintaan-resep'
 */
 export const permintaanResep = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -477,6 +577,7 @@ permintaanResep.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1003
 =======
 * @see routes/web.php:1010
@@ -484,6 +585,9 @@ permintaanResep.definition = {
 =======
 * @see routes/web.php:1015
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1024
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.url = (options?: RouteQueryOptions) => {
@@ -493,6 +597,7 @@ permintaanResep.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1003
 =======
 * @see routes/web.php:1010
@@ -500,6 +605,9 @@ permintaanResep.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1015
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1024
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -510,6 +618,7 @@ permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1003
 =======
 * @see routes/web.php:1010
@@ -517,6 +626,9 @@ permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 =======
 * @see routes/web.php:1015
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1024
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -527,6 +639,7 @@ permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1007
 =======
 * @see routes/web.php:1014
@@ -534,6 +647,9 @@ permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 =======
 * @see routes/web.php:1019
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1028
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 export const riwayatTransaksiGudang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -549,6 +665,7 @@ riwayatTransaksiGudang.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1007
 =======
 * @see routes/web.php:1014
@@ -556,6 +673,9 @@ riwayatTransaksiGudang.definition = {
 =======
 * @see routes/web.php:1019
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1028
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
@@ -565,6 +685,7 @@ riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1007
 =======
 * @see routes/web.php:1014
@@ -572,6 +693,9 @@ riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1019
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1028
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -582,6 +706,7 @@ riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1007
 =======
 * @see routes/web.php:1014
@@ -589,6 +714,9 @@ riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get
 =======
 * @see routes/web.php:1019
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1028
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -643,6 +771,7 @@ riwayatBarangMedis.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1020
 =======
 * @see routes/web.php:1027
@@ -650,6 +779,9 @@ riwayatBarangMedis.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 =======
 * @see routes/web.php:1032
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1041
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-obat'
 */
 export const stokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -665,6 +797,7 @@ stokObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1020
 =======
 * @see routes/web.php:1027
@@ -672,6 +805,9 @@ stokObat.definition = {
 =======
 * @see routes/web.php:1032
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1041
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-obat'
 */
 stokObat.url = (options?: RouteQueryOptions) => {
@@ -681,6 +817,7 @@ stokObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1020
 =======
 * @see routes/web.php:1027
@@ -688,6 +825,9 @@ stokObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1032
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1041
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-obat'
 */
 stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -698,6 +838,7 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1020
 =======
 * @see routes/web.php:1027
@@ -705,6 +846,9 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1032
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1041
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-obat'
 */
 stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -715,6 +859,7 @@ stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1023
 =======
 * @see routes/web.php:1030
@@ -722,6 +867,9 @@ stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1035
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1044
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-opname'
 */
 export const stokOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -737,6 +885,7 @@ stokOpname.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1023
 =======
 * @see routes/web.php:1030
@@ -744,6 +893,9 @@ stokOpname.definition = {
 =======
 * @see routes/web.php:1035
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1044
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.url = (options?: RouteQueryOptions) => {
@@ -753,6 +905,7 @@ stokOpname.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1023
 =======
 * @see routes/web.php:1030
@@ -760,6 +913,9 @@ stokOpname.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1035
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1044
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -770,6 +926,7 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1023
 =======
 * @see routes/web.php:1030
@@ -777,6 +934,9 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1035
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1044
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/stok-opname'
 */
 stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -787,6 +947,7 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1026
 =======
 * @see routes/web.php:1033
@@ -794,6 +955,9 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1038
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1047
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/darurat-stok'
 */
 export const daruratStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -809,6 +973,7 @@ daruratStok.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1026
 =======
 * @see routes/web.php:1033
@@ -816,6 +981,9 @@ daruratStok.definition = {
 =======
 * @see routes/web.php:1038
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1047
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.url = (options?: RouteQueryOptions) => {
@@ -825,6 +993,7 @@ daruratStok.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1026
 =======
 * @see routes/web.php:1033
@@ -832,6 +1001,9 @@ daruratStok.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1038
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1047
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -842,6 +1014,7 @@ daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1026
 =======
 * @see routes/web.php:1033
@@ -849,6 +1022,9 @@ daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1038
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1047
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -859,6 +1035,7 @@ daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1052
 =======
 * @see routes/web.php:1059
@@ -866,6 +1043,9 @@ daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1064
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1073
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sirkulasi-obat'
 */
 export const sirkulasiObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -881,6 +1061,7 @@ sirkulasiObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1052
 =======
 * @see routes/web.php:1059
@@ -888,6 +1069,9 @@ sirkulasiObat.definition = {
 =======
 * @see routes/web.php:1064
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1073
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.url = (options?: RouteQueryOptions) => {
@@ -897,6 +1081,7 @@ sirkulasiObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1052
 =======
 * @see routes/web.php:1059
@@ -904,6 +1089,9 @@ sirkulasiObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1064
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1073
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -914,6 +1102,7 @@ sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1052
 =======
 * @see routes/web.php:1059
@@ -921,6 +1110,9 @@ sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1064
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1073
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -931,6 +1123,7 @@ sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1056
 =======
 * @see routes/web.php:1063
@@ -938,6 +1131,9 @@ sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 =======
 * @see routes/web.php:1068
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1077
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cek-stok-obat'
 */
 export const cekStokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -953,6 +1149,7 @@ cekStokObat.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1056
 =======
 * @see routes/web.php:1063
@@ -960,6 +1157,9 @@ cekStokObat.definition = {
 =======
 * @see routes/web.php:1068
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1077
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.url = (options?: RouteQueryOptions) => {
@@ -969,6 +1169,7 @@ cekStokObat.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1056
 =======
 * @see routes/web.php:1063
@@ -976,6 +1177,9 @@ cekStokObat.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1068
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1077
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -986,6 +1190,7 @@ cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1056
 =======
 * @see routes/web.php:1063
@@ -993,6 +1198,9 @@ cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1068
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1077
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1003,6 +1211,7 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1048
 =======
 * @see routes/web.php:1055
@@ -1010,6 +1219,9 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1060
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1069
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sisa-stok'
 */
 export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1025,6 +1237,7 @@ sisaStok.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1048
 =======
 * @see routes/web.php:1055
@@ -1032,6 +1245,9 @@ sisaStok.definition = {
 =======
 * @see routes/web.php:1060
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1069
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.url = (options?: RouteQueryOptions) => {
@@ -1041,6 +1257,7 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1048
 =======
 * @see routes/web.php:1055
@@ -1048,6 +1265,9 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1060
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1069
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1058,6 +1278,7 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1048
 =======
 * @see routes/web.php:1055
@@ -1065,6 +1286,9 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1060
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1069
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1075,6 +1299,7 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1061
 =======
 * @see routes/web.php:1068
@@ -1082,6 +1307,9 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 =======
 * @see routes/web.php:1073
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1082
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1097,6 +1325,7 @@ dataOpname.definition = {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1061
 =======
 * @see routes/web.php:1068
@@ -1104,6 +1333,9 @@ dataOpname.definition = {
 =======
 * @see routes/web.php:1073
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1082
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -1113,6 +1345,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1061
 =======
 * @see routes/web.php:1068
@@ -1120,6 +1353,9 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1073
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1082
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1130,6 +1366,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1061
 =======
 * @see routes/web.php:1068
@@ -1137,6 +1374,9 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1073
 >>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
+=======
+* @see routes/web.php:1082
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

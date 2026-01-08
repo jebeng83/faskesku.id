@@ -3,6 +3,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1129
 =======
 * @see routes/web.php:1136
@@ -13,6 +14,9 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 =======
 * @see routes/web.php:1146
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1150
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/supplier'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -29,6 +33,7 @@ index.definition = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1129
 =======
 * @see routes/web.php:1136
@@ -39,6 +44,9 @@ index.definition = {
 =======
 * @see routes/web.php:1146
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1150
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/supplier'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -49,6 +57,7 @@ index.url = (options?: RouteQueryOptions) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1129
 =======
 * @see routes/web.php:1136
@@ -59,6 +68,9 @@ index.url = (options?: RouteQueryOptions) => {
 =======
 * @see routes/web.php:1146
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1150
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/supplier'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -70,6 +82,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * @see routes/web.php:1129
 =======
 * @see routes/web.php:1136
@@ -80,6 +93,9 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 =======
 * @see routes/web.php:1146
 >>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
+=======
+* @see routes/web.php:1150
+>>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/farmasi/supplier'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

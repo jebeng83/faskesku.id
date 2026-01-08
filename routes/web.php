@@ -358,6 +358,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan/ralan/frekuensi-penyakit/data', [App\Http\Controllers\FrekuensiPenyakitRalanController::class, 'data'])->name('laporan.ralan.frekuensi-penyakit.data');
     Route::get('/laporan/ralan/frekuensi-penyakit/print', [App\Http\Controllers\FrekuensiPenyakitRalanController::class, 'print'])->name('laporan.ralan.frekuensi-penyakit.print');
 
+    // Surveilans Penyakit Ralan
+    Route::get('/laporan/ralan/surveilans-penyakit', [App\Http\Controllers\SurveilansPenyakitRalanController::class, 'index'])->name('laporan.ralan.surveilans-penyakit');
+    Route::get('/laporan/ralan/surveilans-penyakit/data', [App\Http\Controllers\SurveilansPenyakitRalanController::class, 'data'])->name('laporan.ralan.surveilans-penyakit.data');
+
     Route::get('/laporan/ranap/kunjungan', [KunjunganController::class, 'kunjunganRanapPage'])->name('laporan.ranap.kunjungan.page');
     Route::get('/laporan/ranap/kunjungan/data', [KunjunganController::class, 'kunjunganRanapData'])->name('laporan.ranap.kunjungan.data');
     Route::get('/laporan/ranap/kunjungan/print', [KunjunganController::class, 'kunjunganRanapPrint'])->name('laporan.ranap.kunjungan.print');
