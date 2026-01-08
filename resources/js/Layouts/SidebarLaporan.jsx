@@ -12,6 +12,7 @@ import {
     Users,
     ClipboardList,
     Activity,
+    Microscope,
 } from "lucide-react";
 import MobileBottomNav from "@/Components/MobileBottomNav";
 
@@ -102,6 +103,11 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
                     {
                         label: "Frekuensi Penyakit Ralan",
                         href: route("laporan.ralan.frekuensi-penyakit"),
+                        icon: <Activity className="w-4 h-4" />,
+                    },
+                    {
+                        label: "surveilans Penyakit Ralan",
+                        href: route("laporan.ralan.surveilans-penyakit"),
                         icon: <Activity className="w-4 h-4" />,
                     },
                 ],
