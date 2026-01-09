@@ -10,6 +10,10 @@ return new class extends Migration
         if (DB::connection()->getDriverName() === 'sqlite') {
             return;
         }
+        $tableExists = collect(DB::select("SHOW TABLES LIKE 'bank'"))->isNotEmpty();
+        if (! $tableExists) {
+            return;
+        }
         // 1) Pastikan bank.namabank memiliki indeks unik agar bisa direferensikan oleh FK
         $hasUnique = collect(DB::select("SHOW INDEX FROM bank WHERE Key_name = 'bank_namabank_unique'"))->isNotEmpty();
         if (! $hasUnique) {
