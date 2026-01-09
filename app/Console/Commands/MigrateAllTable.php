@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\QueryException;
+use Throwable;
 
 class MigrateAllTable extends Command
 {
@@ -60,7 +62,15 @@ class MigrateAllTable extends Command
         if (!$baseOnly) {
             $this->info('Menjalankan migrasi generated dari path: ' . $generatedPath);
             $args = array_merge($opts(), ['--path' => $generatedPath]);
-            $code = Artisan::call('migrate', $args);
+            try {
+                $code = Artisan::call('migrate', $args);
+            } catch (Throwable $e) {
+                if ($this->isDuplicateForeignKeyError($e)) {
+                    $this->warn('Migrasi generated dilewati karena ditemukan foreign key duplikat, diasumsikan sudah terpasang di database.');
+                    return 0;
+                }
+                throw $e;
+            }
             $this->line(Artisan::output());
             if ($code !== 0) {
                 $this->error('Migrasi generated gagal');
@@ -70,5 +80,15 @@ class MigrateAllTable extends Command
 
         return $exitCode;
     }
-}
 
+    protected function isDuplicateForeignKeyError(Throwable $e): bool
+    {
+        if ($e instanceof QueryException && isset($e->errorInfo[1]) && (int) $e->errorInfo[1] === 1005) {
+            return str_contains($e->getMessage(), 'Duplicate key on write or update')
+                || str_contains($e->getMessage(), 'errno: 121');
+        }
+
+        return str_contains($e->getMessage(), 'Duplicate key on write or update')
+            || str_contains($e->getMessage(), 'errno: 121');
+    }
+}
