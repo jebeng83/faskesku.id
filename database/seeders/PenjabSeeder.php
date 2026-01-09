@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Penjab;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class PenjabSeeder extends Seeder
 {
@@ -84,8 +85,19 @@ class PenjabSeeder extends Seeder
             ],
         ];
 
+        if (! Schema::hasTable('penjab')) {
+            return;
+        }
+
+        $columns = Schema::getColumnListing('penjab');
+
         foreach ($penjabs as $penjab) {
-            Penjab::create($penjab);
+            $data = array_intersect_key($penjab, array_flip($columns));
+
+            Penjab::updateOrCreate(
+                ['kd_pj' => $penjab['kd_pj']],
+                $data
+            );
         }
     }
 }

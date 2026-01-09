@@ -256,7 +256,10 @@ class JnsPerawatanLabSeeder extends Seeder
         ];
 
         foreach ($jenisPerawatan as $jenis) {
-            JnsPerawatanLab::create($jenis);
+            JnsPerawatanLab::updateOrCreate(
+                ['kd_jenis_prw' => $jenis['kd_jenis_prw']],
+                $jenis
+            );
         }
 
         $this->command->info('Jenis perawatan laboratorium berhasil dibuat!');

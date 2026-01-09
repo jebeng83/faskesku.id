@@ -48,7 +48,10 @@ class KategoriPerawatanSeeder extends Seeder
         ];
 
         foreach ($kategoris as $kategori) {
-            KategoriPerawatan::create($kategori);
+            KategoriPerawatan::updateOrCreate(
+                ['kd_kategori' => $kategori['kd_kategori']],
+                $kategori
+            );
         }
     }
 }

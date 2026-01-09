@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Doctor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DoctorSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class DoctorSeeder extends Seeder
     public function run(): void
     {
         // Disable foreign key checks temporarily
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         $doctors = [
             [
@@ -115,11 +116,14 @@ class DoctorSeeder extends Seeder
         ];
 
         foreach ($doctors as $doctor) {
-            Doctor::create($doctor);
+            Doctor::updateOrCreate(
+                ['kd_dokter' => $doctor['kd_dokter']],
+                $doctor
+            );
         }
 
         // Re-enable foreign key checks
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info('Doctor seeder completed successfully!');
     }

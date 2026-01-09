@@ -4,11 +4,14 @@ namespace Database\Seeders;
 
 use App\Models\Dokter;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DokterSeeder extends Seeder
 {
     public function run()
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
         $dokters = [
             [
                 'kd_dokter' => 'D001',
@@ -93,7 +96,12 @@ class DokterSeeder extends Seeder
         ];
 
         foreach ($dokters as $dokter) {
-            Dokter::create($dokter);
+            Dokter::updateOrCreate(
+                ['kd_dokter' => $dokter['kd_dokter']],
+                $dokter
+            );
         }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }
