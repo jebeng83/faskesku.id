@@ -226,8 +226,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
 
-<<<<<<< HEAD
-=======
     Route::prefix('odontogram')->group(function () {
         Route::get('/pasien/{no_rkm_medis}', [OdontogramController::class, 'byPatient'])
             ->where('no_rkm_medis', '.*')
@@ -248,7 +246,6 @@ Route::middleware('auth:sanctum')->group(function () {
             ->name('api.odontogram.destroy-by-medis');
     });
 
-    // WhatsApp outbound
     Route::post('/whatsapp/send', function (Request $request) {
         $to = (string) $request->input('to', '');
         $text = (string) $request->input('text', '');
@@ -276,10 +273,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
         Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
     });
-
-    
-
->>>>>>> d469a398 (Odontogram)
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
     Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');

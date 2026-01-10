@@ -793,9 +793,6 @@ Route::middleware('auth')->group(function () {
     // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
-    // Rawat Jalan landing/index page (Inertia)
-<<<<<<< HEAD
-=======
     Route::get('rawat-jalan/canvas', function () {
         return Inertia::render('RawatJalan/CanvasRajal', [
             'token' => request()->query('token'),
@@ -813,7 +810,6 @@ Route::middleware('auth')->group(function () {
             'defaultDate' => request()->query('tanggal'),
         ]);
     })->name('rawat-jalan.canvas-surat');
->>>>>>> d469a398 (Odontogram)
     Route::get('rawat-jalan', function () {
         return Inertia::render('RawatJalan/Index');
     })->name('rawat-jalan.index');
