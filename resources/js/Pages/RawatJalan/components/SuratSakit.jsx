@@ -5,11 +5,7 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-<<<<<<< HEAD
-export default function SuratSakit({ rawatJalan, patient, dokter, setting }) {
-=======
 export default function SuratSakit({ rawatJalan, patient, dokter, setting, suratSakitData, embedded = false, templateSelector, validationUrl }) {
->>>>>>> c30c174a (qrcode validasi surat)
     const { props } = usePage();
     const triggerPrint = !!props?.flash?.trigger_print;
     
@@ -99,14 +95,9 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
 
         if (!formData.no_rawat || !formData.tanggalawal) return;
 
-<<<<<<< HEAD
-=======
-        // If editing existing data, skip duplicate check if no_surat matches
         if (suratSakitData && suratSakitData.no_surat === formData.no_surat) {
             return;
         }
-
->>>>>>> e5c6ba05 (surat sehat perbaikan tombol)
         const ac = new AbortController();
         const t = setTimeout(async () => {
             try {
@@ -418,24 +409,6 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                 </p>
                             </div>
                             <div className="flex gap-3">
-<<<<<<< HEAD
-                                <button
-                                    onClick={handlePrint}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                        <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
-                                    </svg>
-                                    Cetak
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => router.get(backToRalanUrl)}
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    Kembali Rawat Jalan
-                                </button>
-=======
                                 {!embedded && (
                                     <button
                                         type="button"
@@ -445,7 +418,6 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                         Kembali Rawat Jalan
                                     </button>
                                 )}
->>>>>>> e5c6ba05 (surat sehat perbaikan tombol)
                             </div>
                         </div>
                     </div>

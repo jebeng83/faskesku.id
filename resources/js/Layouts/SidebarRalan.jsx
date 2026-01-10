@@ -73,7 +73,6 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Hospital className="w-4 h-4" />,
         },
         {
-<<<<<<< HEAD
           label: 'Data Surat Sehat',
           href: route('rawat-jalan.surat-sehat.index'),
           icon: <Receipt className="w-4 h-4" />,
@@ -84,8 +83,6 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           icon: <Receipt className="w-4 h-4" />,
         },
         {
-=======
->>>>>>> 28d88caf (surat sehat - sakit buttom)
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,

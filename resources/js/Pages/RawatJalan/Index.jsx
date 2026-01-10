@@ -476,7 +476,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                     }
                                                 >
                                                     <DropdownItem
-<<<<<<< HEAD
                                                         onClick={() => handleSuratSehat(item.no_rawat)}
                                                         icon={<DocumentCheckIcon className="w-4 h-4" />}
                                                     >
@@ -484,19 +483,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                     </DropdownItem>
                                                     <DropdownItem
                                                         onClick={() => handleSuratSakit(item.no_rawat)}
-=======
-                                                        onClick={() => openMasukRanap(item)}
-                                                        icon={<DocumentCheckIcon className="w-4 h-4" />}
-                                                    >
-                                                        Masuk Rawat Inap
-                                                    </DropdownItem>
-                                                    <DropdownItem
-<<<<<<< HEAD
-                                                        onClick={() => router.get(route('rawat-jalan.surat-sehat.index'), { search: item.no_rawat })}
->>>>>>> e5c6ba05 (surat sehat perbaikan tombol)
-=======
-                                                        onClick={() => router.get(route('rawat-jalan.buat-surat', { no_rawat: item.no_rawat }))}
->>>>>>> 28d88caf (surat sehat - sakit buttom)
                                                         icon={<DocumentTextIcon className="w-4 h-4" />}
                                                     >
                                                         Surat Sakit

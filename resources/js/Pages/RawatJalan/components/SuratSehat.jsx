@@ -5,11 +5,7 @@ import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-<<<<<<< HEAD
-export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData }) {
-=======
 export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData, embedded = false, templateSelector, validationUrl }) {
->>>>>>> c30c174a (qrcode validasi surat)
     const [formData, setFormData] = useState({
         no_surat: suratSehatData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
