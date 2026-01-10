@@ -78,8 +78,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 })
 
 /**
-* @see routes/web.php:877
-* @see routes/web.php:1122
+* @see routes/web.php:1249
 * @route '/profile/menu'
 */
 export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -93,8 +92,7 @@ menu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:877
-* @see routes/web.php:1122
+* @see routes/web.php:1249
 * @route '/profile/menu'
 */
 menu.url = (options?: RouteQueryOptions) => {
@@ -102,8 +100,7 @@ menu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:877
-* @see routes/web.php:1122
+* @see routes/web.php:1249
 * @route '/profile/menu'
 */
 menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,8 +109,7 @@ menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:877
-* @see routes/web.php:1122
+* @see routes/web.php:1249
 * @route '/profile/menu'
 */
 menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,8 +118,7 @@ menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:881
-* @see routes/web.php:1126
+* @see routes/web.php:1253
 * @route '/profile/home'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -137,8 +132,7 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:881
-* @see routes/web.php:1126
+* @see routes/web.php:1253
 * @route '/profile/home'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -146,8 +140,7 @@ home.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:881
-* @see routes/web.php:1126
+* @see routes/web.php:1253
 * @route '/profile/home'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -156,8 +149,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:881
-* @see routes/web.php:1126
+* @see routes/web.php:1253
 * @route '/profile/home'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

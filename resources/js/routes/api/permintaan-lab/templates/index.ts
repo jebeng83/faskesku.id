@@ -1,8 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::query
-* @see app/Http/Controllers/PermintaanLabController.php:1235
-* @see app/Http/Controllers/PermintaanLabController.php:1290
+* @see app/Http/Controllers/PermintaanLabController.php:1316
 * @route '/api/permintaan-lab/templates'
 */
 export const query = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,8 +16,7 @@ query.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::query
-* @see app/Http/Controllers/PermintaanLabController.php:1235
-* @see app/Http/Controllers/PermintaanLabController.php:1290
+* @see app/Http/Controllers/PermintaanLabController.php:1316
 * @route '/api/permintaan-lab/templates'
 */
 query.url = (options?: RouteQueryOptions) => {
@@ -27,8 +25,7 @@ query.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::query
-* @see app/Http/Controllers/PermintaanLabController.php:1235
-* @see app/Http/Controllers/PermintaanLabController.php:1290
+* @see app/Http/Controllers/PermintaanLabController.php:1316
 * @route '/api/permintaan-lab/templates'
 */
 query.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -38,8 +35,7 @@ query.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::query
-* @see app/Http/Controllers/PermintaanLabController.php:1235
-* @see app/Http/Controllers/PermintaanLabController.php:1290
+* @see app/Http/Controllers/PermintaanLabController.php:1316
 * @route '/api/permintaan-lab/templates'
 */
 query.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

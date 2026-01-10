@@ -64,16 +64,6 @@ class PermintaanLabController extends Controller
             $query->whereDate('tgl_permintaan', '>=', $start);
         } elseif ($end) {
             $query->whereDate('tgl_permintaan', '<=', $end);
-        if ($request->filled('start_date') || $request->filled('end_date')) {
-            $start = $request->query('start_date');
-            $end = $request->query('end_date');
-            if ($start && $end) {
-                $query->whereBetween('tgl_permintaan', [$start, $end]);
-            } elseif ($start) {
-                $query->whereDate('tgl_permintaan', '>=', $start);
-            } elseif ($end) {
-                $query->whereDate('tgl_permintaan', '<=', $end);
-            }
         }
 
         // Filter berdasarkan status
@@ -98,10 +88,6 @@ class PermintaanLabController extends Controller
             });
         }
 
-        $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
-            ->orderBy('jam_permintaan', 'desc')
-            ->paginate(15)
-            ->withQueryString();
         try {
             // Batasi pagination untuk menghindari memory issue
             $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')

@@ -14,8 +14,6 @@ import users from './users'
 import menus from './menus'
 import obat from './obat'
 import penyakit from './penyakit'
-import resep from './resep'
-import rawatJalan from './rawat-jalan'
 import odontogram from './odontogram'
 import whatsapp from './whatsapp'
 import messages from './messages'
@@ -46,8 +44,7 @@ import tarifTindakan from './tarif-tindakan'
 import tarifTindakanRanap from './tarif-tindakan-ranap'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @see app/Http/Controllers/PermintaanLabController.php:1004
+* @see app/Http/Controllers/PermintaanLabController.php:1017
 * @route '/api/reg-periksa'
 */
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -62,8 +59,7 @@ regPeriksa.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @see app/Http/Controllers/PermintaanLabController.php:1004
+* @see app/Http/Controllers/PermintaanLabController.php:1017
 * @route '/api/reg-periksa'
 */
 regPeriksa.url = (options?: RouteQueryOptions) => {
@@ -72,8 +68,7 @@ regPeriksa.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @see app/Http/Controllers/PermintaanLabController.php:1004
+* @see app/Http/Controllers/PermintaanLabController.php:1017
 * @route '/api/reg-periksa'
 */
 regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -83,8 +78,7 @@ regPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
-* @see app/Http/Controllers/PermintaanLabController.php:936
-* @see app/Http/Controllers/PermintaanLabController.php:1004
+* @see app/Http/Controllers/PermintaanLabController.php:1017
 * @route '/api/reg-periksa'
 */
 regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -94,8 +88,7 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @see app/Http/Controllers/PermintaanLabController.php:1254
+* @see app/Http/Controllers/PermintaanLabController.php:1280
 * @route '/api/lab-tests'
 */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -110,8 +103,7 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @see app/Http/Controllers/PermintaanLabController.php:1254
+* @see app/Http/Controllers/PermintaanLabController.php:1280
 * @route '/api/lab-tests'
 */
 labTests.url = (options?: RouteQueryOptions) => {
@@ -120,8 +112,7 @@ labTests.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @see app/Http/Controllers/PermintaanLabController.php:1254
+* @see app/Http/Controllers/PermintaanLabController.php:1280
 * @route '/api/lab-tests'
 */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,8 +122,7 @@ labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
-* @see app/Http/Controllers/PermintaanLabController.php:1254
+* @see app/Http/Controllers/PermintaanLabController.php:1280
 * @route '/api/lab-tests'
 */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -185,7 +175,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:432
+* @see routes/web.php:439
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -199,7 +189,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:432
+* @see routes/web.php:439
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -207,7 +197,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:432
+* @see routes/web.php:439
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -216,7 +206,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:432
+* @see routes/web.php:439
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -240,8 +230,6 @@ const api = {
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
     penyakit: Object.assign(penyakit, penyakit),
-    resep: Object.assign(resep, resep),
-    rawatJalan: Object.assign(rawatJalan, rawatJalan),
     odontogram: Object.assign(odontogram, odontogram),
     whatsapp: Object.assign(whatsapp, whatsapp),
     messages: Object.assign(messages, messages),

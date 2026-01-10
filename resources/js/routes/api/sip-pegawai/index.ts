@@ -1,7 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/api.php:312
-* @see routes/api.php:400
+* @see routes/api.php:403
 * @route '/api/sip-pegawai/apoteker'
 */
 export const apoteker = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +14,7 @@ apoteker.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:312
-* @see routes/api.php:400
+* @see routes/api.php:403
 * @route '/api/sip-pegawai/apoteker'
 */
 apoteker.url = (options?: RouteQueryOptions) => {
@@ -24,8 +22,7 @@ apoteker.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:312
-* @see routes/api.php:400
+* @see routes/api.php:403
 * @route '/api/sip-pegawai/apoteker'
 */
 apoteker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +31,7 @@ apoteker.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/api.php:312
-* @see routes/api.php:400
+* @see routes/api.php:403
 * @route '/api/sip-pegawai/apoteker'
 */
 apoteker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +40,7 @@ apoteker.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/api.php:337
-* @see routes/api.php:425
+* @see routes/api.php:428
 * @route '/api/sip-pegawai/expiring'
 */
 export const expiring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,8 +54,7 @@ expiring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:337
-* @see routes/api.php:425
+* @see routes/api.php:428
 * @route '/api/sip-pegawai/expiring'
 */
 expiring.url = (options?: RouteQueryOptions) => {
@@ -68,8 +62,7 @@ expiring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:337
-* @see routes/api.php:425
+* @see routes/api.php:428
 * @route '/api/sip-pegawai/expiring'
 */
 expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,8 +71,7 @@ expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/api.php:337
-* @see routes/api.php:425
+* @see routes/api.php:428
 * @route '/api/sip-pegawai/expiring'
 */
 expiring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:1510
-* @see routes/web.php:1726
+* @see routes/web.php:1888
 * @route '/satusehat/prerequisites/organization'
 */
 export const organization = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +14,7 @@ organization.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1510
-* @see routes/web.php:1726
+* @see routes/web.php:1888
 * @route '/satusehat/prerequisites/organization'
 */
 organization.url = (options?: RouteQueryOptions) => {
@@ -24,8 +22,7 @@ organization.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1510
-* @see routes/web.php:1726
+* @see routes/web.php:1888
 * @route '/satusehat/prerequisites/organization'
 */
 organization.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +31,7 @@ organization.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1510
-* @see routes/web.php:1726
+* @see routes/web.php:1888
 * @route '/satusehat/prerequisites/organization'
 */
 organization.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +40,7 @@ organization.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1514
-* @see routes/web.php:1730
+* @see routes/web.php:1892
 * @route '/satusehat/prerequisites/location'
 */
 export const location = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,8 +54,7 @@ location.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1514
-* @see routes/web.php:1730
+* @see routes/web.php:1892
 * @route '/satusehat/prerequisites/location'
 */
 location.url = (options?: RouteQueryOptions) => {
@@ -68,8 +62,7 @@ location.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1514
-* @see routes/web.php:1730
+* @see routes/web.php:1892
 * @route '/satusehat/prerequisites/location'
 */
 location.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,8 +71,7 @@ location.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1514
-* @see routes/web.php:1730
+* @see routes/web.php:1892
 * @route '/satusehat/prerequisites/location'
 */
 location.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -88,8 +80,7 @@ location.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1518
-* @see routes/web.php:1734
+* @see routes/web.php:1896
 * @route '/satusehat/prerequisites/location-ranap'
 */
 export const location_ranap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,8 +94,7 @@ location_ranap.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1518
-* @see routes/web.php:1734
+* @see routes/web.php:1896
 * @route '/satusehat/prerequisites/location-ranap'
 */
 location_ranap.url = (options?: RouteQueryOptions) => {
@@ -112,8 +102,7 @@ location_ranap.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1518
-* @see routes/web.php:1734
+* @see routes/web.php:1896
 * @route '/satusehat/prerequisites/location-ranap'
 */
 location_ranap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -122,8 +111,7 @@ location_ranap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1518
-* @see routes/web.php:1734
+* @see routes/web.php:1896
 * @route '/satusehat/prerequisites/location-ranap'
 */
 location_ranap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -132,8 +120,7 @@ location_ranap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 })
 
 /**
-* @see routes/web.php:1521
-* @see routes/web.php:1737
+* @see routes/web.php:1899
 * @route '/satusehat/prerequisites/location-farmasi'
 */
 export const location_farmasi = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -147,8 +134,7 @@ location_farmasi.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1521
-* @see routes/web.php:1737
+* @see routes/web.php:1899
 * @route '/satusehat/prerequisites/location-farmasi'
 */
 location_farmasi.url = (options?: RouteQueryOptions) => {
@@ -156,8 +142,7 @@ location_farmasi.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1521
-* @see routes/web.php:1737
+* @see routes/web.php:1899
 * @route '/satusehat/prerequisites/location-farmasi'
 */
 location_farmasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -166,8 +151,7 @@ location_farmasi.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:1521
-* @see routes/web.php:1737
+* @see routes/web.php:1899
 * @route '/satusehat/prerequisites/location-farmasi'
 */
 location_farmasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -176,8 +160,7 @@ location_farmasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 })
 
 /**
-* @see routes/web.php:1524
-* @see routes/web.php:1740
+* @see routes/web.php:1902
 * @route '/satusehat/prerequisites/practitioner'
 */
 export const practitioner = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,8 +174,7 @@ practitioner.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1524
-* @see routes/web.php:1740
+* @see routes/web.php:1902
 * @route '/satusehat/prerequisites/practitioner'
 */
 practitioner.url = (options?: RouteQueryOptions) => {
@@ -200,8 +182,7 @@ practitioner.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1524
-* @see routes/web.php:1740
+* @see routes/web.php:1902
 * @route '/satusehat/prerequisites/practitioner'
 */
 practitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -210,8 +191,7 @@ practitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1524
-* @see routes/web.php:1740
+* @see routes/web.php:1902
 * @route '/satusehat/prerequisites/practitioner'
 */
 practitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -220,8 +200,7 @@ practitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1527
-* @see routes/web.php:1743
+* @see routes/web.php:1905
 * @route '/satusehat/prerequisites/patient'
 */
 export const patient = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -235,8 +214,7 @@ patient.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1527
-* @see routes/web.php:1743
+* @see routes/web.php:1905
 * @route '/satusehat/prerequisites/patient'
 */
 patient.url = (options?: RouteQueryOptions) => {
@@ -244,8 +222,7 @@ patient.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1527
-* @see routes/web.php:1743
+* @see routes/web.php:1905
 * @route '/satusehat/prerequisites/patient'
 */
 patient.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,8 +231,7 @@ patient.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1527
-* @see routes/web.php:1743
+* @see routes/web.php:1905
 * @route '/satusehat/prerequisites/patient'
 */
 patient.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

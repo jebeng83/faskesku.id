@@ -3,8 +3,7 @@ import summary from './summary'
 import attempts from './attempts'
 import raw from './raw'
 /**
-* @see routes/web.php:1217
-* @see routes/web.php:1433
+* @see routes/web.php:1589
 * @route '/pcare/monitoring-status'
 */
 export const status = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,8 +17,7 @@ status.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1217
-* @see routes/web.php:1433
+* @see routes/web.php:1589
 * @route '/pcare/monitoring-status'
 */
 status.url = (options?: RouteQueryOptions) => {
@@ -27,8 +25,7 @@ status.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1217
-* @see routes/web.php:1433
+* @see routes/web.php:1589
 * @route '/pcare/monitoring-status'
 */
 status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -37,8 +34,7 @@ status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1217
-* @see routes/web.php:1433
+* @see routes/web.php:1589
 * @route '/pcare/monitoring-status'
 */
 status.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

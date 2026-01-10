@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import permintaanLab from './permintaan-lab'
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:24
+* @see app/Http/Controllers/LaboratoriumController.php:25
 * @route '/laboratorium'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:24
+* @see app/Http/Controllers/LaboratoriumController.php:25
 * @route '/laboratorium'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:24
+* @see app/Http/Controllers/LaboratoriumController.php:25
 * @route '/laboratorium'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::index
-* @see app/Http/Controllers/LaboratoriumController.php:24
+* @see app/Http/Controllers/LaboratoriumController.php:25
 * @route '/laboratorium'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,8 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::dashboard
-* @see app/Http/Controllers/LaboratoriumController.php:508
-* @see app/Http/Controllers/LaboratoriumController.php:375
+* @see app/Http/Controllers/LaboratoriumController.php:511
 * @route '/laboratorium/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -62,8 +61,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::dashboard
-* @see app/Http/Controllers/LaboratoriumController.php:508
-* @see app/Http/Controllers/LaboratoriumController.php:375
+* @see app/Http/Controllers/LaboratoriumController.php:511
 * @route '/laboratorium/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -72,8 +70,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::dashboard
-* @see app/Http/Controllers/LaboratoriumController.php:508
-* @see app/Http/Controllers/LaboratoriumController.php:375
+* @see app/Http/Controllers/LaboratoriumController.php:511
 * @route '/laboratorium/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -83,8 +80,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::dashboard
-* @see app/Http/Controllers/LaboratoriumController.php:508
-* @see app/Http/Controllers/LaboratoriumController.php:375
+* @see app/Http/Controllers/LaboratoriumController.php:511
 * @route '/laboratorium/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -94,8 +90,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:76
-* @see app/Http/Controllers/LaboratoriumController.php:33
+* @see app/Http/Controllers/LaboratoriumController.php:79
 * @route '/laboratorium/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -110,8 +105,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:76
-* @see app/Http/Controllers/LaboratoriumController.php:33
+* @see app/Http/Controllers/LaboratoriumController.php:79
 * @route '/laboratorium/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -120,8 +114,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:76
-* @see app/Http/Controllers/LaboratoriumController.php:33
+* @see app/Http/Controllers/LaboratoriumController.php:79
 * @route '/laboratorium/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,8 +124,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::create
-* @see app/Http/Controllers/LaboratoriumController.php:76
-* @see app/Http/Controllers/LaboratoriumController.php:33
+* @see app/Http/Controllers/LaboratoriumController.php:79
 * @route '/laboratorium/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -142,8 +134,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:96
-* @see app/Http/Controllers/LaboratoriumController.php:53
+* @see app/Http/Controllers/LaboratoriumController.php:99
 * @route '/laboratorium'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -158,8 +149,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:96
-* @see app/Http/Controllers/LaboratoriumController.php:53
+* @see app/Http/Controllers/LaboratoriumController.php:99
 * @route '/laboratorium'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -168,8 +158,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::store
-* @see app/Http/Controllers/LaboratoriumController.php:96
-* @see app/Http/Controllers/LaboratoriumController.php:53
+* @see app/Http/Controllers/LaboratoriumController.php:99
 * @route '/laboratorium'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -179,8 +168,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::detail
-* @see app/Http/Controllers/LaboratoriumController.php:259
-* @see app/Http/Controllers/LaboratoriumController.php:126
+* @see app/Http/Controllers/LaboratoriumController.php:262
 * @route '/laboratorium/detail'
 */
 export const detail = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -195,8 +183,7 @@ detail.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::detail
-* @see app/Http/Controllers/LaboratoriumController.php:259
-* @see app/Http/Controllers/LaboratoriumController.php:126
+* @see app/Http/Controllers/LaboratoriumController.php:262
 * @route '/laboratorium/detail'
 */
 detail.url = (options?: RouteQueryOptions) => {
@@ -205,8 +192,7 @@ detail.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::detail
-* @see app/Http/Controllers/LaboratoriumController.php:259
-* @see app/Http/Controllers/LaboratoriumController.php:126
+* @see app/Http/Controllers/LaboratoriumController.php:262
 * @route '/laboratorium/detail'
 */
 detail.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -216,8 +202,7 @@ detail.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::detail
-* @see app/Http/Controllers/LaboratoriumController.php:259
-* @see app/Http/Controllers/LaboratoriumController.php:126
+* @see app/Http/Controllers/LaboratoriumController.php:262
 * @route '/laboratorium/detail'
 */
 detail.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -227,8 +212,7 @@ detail.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:149
-* @see app/Http/Controllers/LaboratoriumController.php:102
+* @see app/Http/Controllers/LaboratoriumController.php:152
 * @route '/laboratorium/{noRawat}'
 */
 export const show = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -243,8 +227,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:149
-* @see app/Http/Controllers/LaboratoriumController.php:102
+* @see app/Http/Controllers/LaboratoriumController.php:152
 * @route '/laboratorium/{noRawat}'
 */
 show.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -271,8 +254,7 @@ show.url = (args: { noRawat: string | number } | [noRawat: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:149
-* @see app/Http/Controllers/LaboratoriumController.php:102
+* @see app/Http/Controllers/LaboratoriumController.php:152
 * @route '/laboratorium/{noRawat}'
 */
 show.get = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -282,8 +264,7 @@ show.get = (args: { noRawat: string | number } | [noRawat: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::show
-* @see app/Http/Controllers/LaboratoriumController.php:149
-* @see app/Http/Controllers/LaboratoriumController.php:102
+* @see app/Http/Controllers/LaboratoriumController.php:152
 * @route '/laboratorium/{noRawat}'
 */
 show.head = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -293,8 +274,7 @@ show.head = (args: { noRawat: string | number } | [noRawat: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:357
-* @see app/Http/Controllers/LaboratoriumController.php:224
+* @see app/Http/Controllers/LaboratoriumController.php:360
 * @route '/laboratorium/{noRawat}/edit'
 */
 export const edit = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -309,8 +289,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:357
-* @see app/Http/Controllers/LaboratoriumController.php:224
+* @see app/Http/Controllers/LaboratoriumController.php:360
 * @route '/laboratorium/{noRawat}/edit'
 */
 edit.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -337,8 +316,7 @@ edit.url = (args: { noRawat: string | number } | [noRawat: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:357
-* @see app/Http/Controllers/LaboratoriumController.php:224
+* @see app/Http/Controllers/LaboratoriumController.php:360
 * @route '/laboratorium/{noRawat}/edit'
 */
 edit.get = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -348,8 +326,7 @@ edit.get = (args: { noRawat: string | number } | [noRawat: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::edit
-* @see app/Http/Controllers/LaboratoriumController.php:357
-* @see app/Http/Controllers/LaboratoriumController.php:224
+* @see app/Http/Controllers/LaboratoriumController.php:360
 * @route '/laboratorium/{noRawat}/edit'
 */
 edit.head = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -359,8 +336,7 @@ edit.head = (args: { noRawat: string | number } | [noRawat: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:378
-* @see app/Http/Controllers/LaboratoriumController.php:245
+* @see app/Http/Controllers/LaboratoriumController.php:381
 * @route '/laboratorium/{noRawat}'
 */
 export const update = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -375,8 +351,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:378
-* @see app/Http/Controllers/LaboratoriumController.php:245
+* @see app/Http/Controllers/LaboratoriumController.php:381
 * @route '/laboratorium/{noRawat}'
 */
 update.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -403,8 +378,7 @@ update.url = (args: { noRawat: string | number } | [noRawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::update
-* @see app/Http/Controllers/LaboratoriumController.php:378
-* @see app/Http/Controllers/LaboratoriumController.php:245
+* @see app/Http/Controllers/LaboratoriumController.php:381
 * @route '/laboratorium/{noRawat}'
 */
 update.put = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -414,8 +388,7 @@ update.put = (args: { noRawat: string | number } | [noRawat: string | number ] |
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:407
-* @see app/Http/Controllers/LaboratoriumController.php:274
+* @see app/Http/Controllers/LaboratoriumController.php:410
 * @route '/laboratorium/{noRawat}'
 */
 export const destroy = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -430,8 +403,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:407
-* @see app/Http/Controllers/LaboratoriumController.php:274
+* @see app/Http/Controllers/LaboratoriumController.php:410
 * @route '/laboratorium/{noRawat}'
 */
 destroy.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -458,8 +430,7 @@ destroy.url = (args: { noRawat: string | number } | [noRawat: string | number ] 
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::destroy
-* @see app/Http/Controllers/LaboratoriumController.php:407
-* @see app/Http/Controllers/LaboratoriumController.php:274
+* @see app/Http/Controllers/LaboratoriumController.php:410
 * @route '/laboratorium/{noRawat}'
 */
 destroy.delete = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -469,8 +440,7 @@ destroy.delete = (args: { noRawat: string | number } | [noRawat: string | number
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::updateHasil
-* @see app/Http/Controllers/LaboratoriumController.php:423
-* @see app/Http/Controllers/LaboratoriumController.php:290
+* @see app/Http/Controllers/LaboratoriumController.php:426
 * @route '/laboratorium/{noRawat}/hasil'
 */
 export const updateHasil = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -485,8 +455,7 @@ updateHasil.definition = {
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::updateHasil
-* @see app/Http/Controllers/LaboratoriumController.php:423
-* @see app/Http/Controllers/LaboratoriumController.php:290
+* @see app/Http/Controllers/LaboratoriumController.php:426
 * @route '/laboratorium/{noRawat}/hasil'
 */
 updateHasil.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -513,8 +482,7 @@ updateHasil.url = (args: { noRawat: string | number } | [noRawat: string | numbe
 
 /**
 * @see \App\Http\Controllers\LaboratoriumController::updateHasil
-* @see app/Http/Controllers/LaboratoriumController.php:423
-* @see app/Http/Controllers/LaboratoriumController.php:290
+* @see app/Http/Controllers/LaboratoriumController.php:426
 * @route '/laboratorium/{noRawat}/hasil'
 */
 updateHasil.put = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({

@@ -21,12 +21,12 @@ import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
 import Akutansi from './Akutansi'
 import AuthController from './AuthController'
+import SuratController from './SuratController'
 import KunjunganController from './KunjunganController'
 import FrekuensiPenyakitRalanController from './FrekuensiPenyakitRalanController'
 import SurveilansPenyakitRalanController from './SurveilansPenyakitRalanController'
 import FrekuensiPenyakitRanapController from './FrekuensiPenyakitRanapController'
 import SurveilansPenyakitRanapController from './SurveilansPenyakitRanapController'
-import SuratController from './SuratController'
 import PatientController from './PatientController'
 import Pasien from './Pasien'
 import RegistrationController from './RegistrationController'
@@ -74,12 +74,12 @@ const Controllers = {
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
     Akutansi: Object.assign(Akutansi, Akutansi),
     AuthController: Object.assign(AuthController, AuthController),
+    SuratController: Object.assign(SuratController, SuratController),
     KunjunganController: Object.assign(KunjunganController, KunjunganController),
     FrekuensiPenyakitRalanController: Object.assign(FrekuensiPenyakitRalanController, FrekuensiPenyakitRalanController),
     SurveilansPenyakitRalanController: Object.assign(SurveilansPenyakitRalanController, SurveilansPenyakitRalanController),
     FrekuensiPenyakitRanapController: Object.assign(FrekuensiPenyakitRanapController, FrekuensiPenyakitRanapController),
     SurveilansPenyakitRanapController: Object.assign(SurveilansPenyakitRanapController, SurveilansPenyakitRanapController),
-    SuratController: Object.assign(SuratController, SuratController),
     PatientController: Object.assign(PatientController, PatientController),
     Pasien: Object.assign(Pasien, Pasien),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),

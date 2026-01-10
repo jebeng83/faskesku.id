@@ -1,7 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:143
-* @see routes/web.php:147
+* @see routes/web.php:148
 * @route '/anjungan/pasien-mandiri'
 */
 export const pasienMandiri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +14,7 @@ pasienMandiri.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:143
-* @see routes/web.php:147
+* @see routes/web.php:148
 * @route '/anjungan/pasien-mandiri'
 */
 pasienMandiri.url = (options?: RouteQueryOptions) => {
@@ -24,8 +22,7 @@ pasienMandiri.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:143
-* @see routes/web.php:147
+* @see routes/web.php:148
 * @route '/anjungan/pasien-mandiri'
 */
 pasienMandiri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +31,7 @@ pasienMandiri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:143
-* @see routes/web.php:147
+* @see routes/web.php:148
 * @route '/anjungan/pasien-mandiri'
 */
 pasienMandiri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +40,7 @@ pasienMandiri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:203
-* @see routes/web.php:207
+* @see routes/web.php:208
 * @route '/anjungan/cetak-label'
 */
 export const cetakLabel = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,8 +54,7 @@ cetakLabel.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:203
-* @see routes/web.php:207
+* @see routes/web.php:208
 * @route '/anjungan/cetak-label'
 */
 cetakLabel.url = (options?: RouteQueryOptions) => {
@@ -68,8 +62,7 @@ cetakLabel.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:203
-* @see routes/web.php:207
+* @see routes/web.php:208
 * @route '/anjungan/cetak-label'
 */
 cetakLabel.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,8 +71,7 @@ cetakLabel.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:203
-* @see routes/web.php:207
+* @see routes/web.php:208
 * @route '/anjungan/cetak-label'
 */
 cetakLabel.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

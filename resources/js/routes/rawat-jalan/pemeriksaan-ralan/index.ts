@@ -1,8 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:634
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:560
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:635
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,8 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:634
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:560
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:635
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -27,8 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:634
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:560
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:635
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -38,8 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::deleteMethod
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:734
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:676
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:779
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -54,8 +50,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::deleteMethod
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:734
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:676
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:779
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -64,8 +59,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::deleteMethod
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:734
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:676
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:779
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -75,8 +69,7 @@ deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:758
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:700
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:803
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -91,8 +84,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:758
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:700
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:803
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -101,8 +93,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:758
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:700
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:803
 * @route '/rawat-jalan/pemeriksaan-ralan'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
