@@ -17,15 +17,7 @@ import resend from './resend'
 import massSend from './mass-send'
 import setting from './setting'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1187
-=======
-* @see routes/web.php:1410
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1257
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1421
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -39,15 +31,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1187
-=======
-* @see routes/web.php:1410
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1257
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1421
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -55,15 +39,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1187
-=======
-* @see routes/web.php:1410
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1257
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1421
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,15 +48,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1187
-=======
-* @see routes/web.php:1410
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1257
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1421
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,15 +57,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1206
-=======
-* @see routes/web.php:1429
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1276
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1440
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,15 +71,7 @@ monitoring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1206
-=======
-* @see routes/web.php:1429
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1276
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1440
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -127,15 +79,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1206
-=======
-* @see routes/web.php:1429
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1276
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1440
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -144,15 +88,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1206
-=======
-* @see routes/web.php:1429
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1276
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1440
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -160,49 +96,6 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
-<<<<<<< HEAD
-=======
-/**
-* @see routes/web.php:1437
-* @route '/pcare/data-pendaftaran'
-*/
-export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: dataPendaftaran.url(options),
-    method: 'get',
-})
-
-dataPendaftaran.definition = {
-    methods: ["get","head"],
-    url: '/pcare/data-pendaftaran',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see routes/web.php:1437
-* @route '/pcare/data-pendaftaran'
-*/
-dataPendaftaran.url = (options?: RouteQueryOptions) => {
-    return dataPendaftaran.definition.url + queryParams(options)
-}
-
-/**
-* @see routes/web.php:1437
-* @route '/pcare/data-pendaftaran'
-*/
-dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: dataPendaftaran.url(options),
-    method: 'get',
-})
-
-/**
-* @see routes/web.php:1437
-* @route '/pcare/data-pendaftaran'
-*/
-dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: dataPendaftaran.url(options),
-    method: 'head',
-})
-
->>>>>>> d469a398 (Odontogram)
 const pcare = {
     index: Object.assign(index, index),
     mapping: Object.assign(mapping, mapping),

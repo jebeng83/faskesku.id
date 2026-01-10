@@ -541,12 +541,6 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
           </div>
         </div>
 
-<<<<<<< HEAD
-        <div className="flex justify-end">
-          <button type="submit" className="px-4 py-2 rounded-lg bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)] shadow-[0_0_12px_oklch(84.1%_0.238_128.85_/_0.45)]">
-            {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
-          </button>
-=======
         <div className="flex items-center justify-end gap-2 flex-wrap">
           <button type="submit" className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]">
             {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
@@ -696,7 +690,6 @@ export default function NewCpptSoap({ token = '', noRkmMedis = '', noRawat = '',
               Cetak Rujukan
             </button>
           )}
->>>>>>> d469a398 (Odontogram)
         </div>
         <div className="mt-3 rounded-2xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
           <div className="px-4 py-2.5 border-b border-[oklch(84.1%_0.238_128.85_/_0.35)] text-sm font-semibold">Riwayat Pemeriksaan</div>

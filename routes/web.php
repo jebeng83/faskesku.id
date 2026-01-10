@@ -266,14 +266,10 @@ Route::get('/anjungan/cetak-label', function () {
         ]);
     })->name('antrian.display');
 
-<<<<<<< HEAD
     Route::get('/validasi/surat/{type}', [RawatJalanController::class, 'validasiSurat'])
         ->name('validasi.surat')
         ->middleware(['signed', 'throttle:30,1']);
 
-    // API routes that don't require authentication
-    Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
-=======
 Route::get('/antrian/poli', function () {
     $setting = null;
     if (Schema::hasTable('setting')) {
@@ -397,7 +393,6 @@ Route::get('/antrian/poli', function () {
     ]);
 })->name('antrian.poli');
 
-// API routes that don't require authentication
 Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
 Route::get('/api/antrian-poli', function () {
     $today = date('Y-m-d');
@@ -495,7 +490,6 @@ Route::get('/api/antrian-poli', function () {
         'status' => 'ok',
     ]);
 })->name('api.antrian-poli');
->>>>>>> 697e42ab (BelumFixTVPoli)
 
 // API routes that require authentication
 Route::middleware('auth')->prefix('api')->group(function () {

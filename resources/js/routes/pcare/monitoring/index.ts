@@ -3,15 +3,7 @@ import summary from './summary'
 import attempts from './attempts'
 import raw from './raw'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1210
-=======
-* @see routes/web.php:1433
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1280
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1444
 * @route '/pcare/monitoring-status'
 */
 export const status = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,15 +17,7 @@ status.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1210
-=======
-* @see routes/web.php:1433
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1280
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1444
 * @route '/pcare/monitoring-status'
 */
 status.url = (options?: RouteQueryOptions) => {
@@ -41,15 +25,7 @@ status.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1210
-=======
-* @see routes/web.php:1433
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1280
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1444
 * @route '/pcare/monitoring-status'
 */
 status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,15 +34,7 @@ status.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1210
-=======
-* @see routes/web.php:1433
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1280
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1444
 * @route '/pcare/monitoring-status'
 */
 status.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

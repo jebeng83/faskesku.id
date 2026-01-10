@@ -417,12 +417,8 @@ const Footer = React.memo(function Footer() {
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
-<<<<<<< HEAD
-        { label: "APM", href: resolveApmUrl() },
-=======
         { label: "Display TV Poli", href: resolveDisplayPoliUrl(), target: "_blank" },
         { label: "APM", href: route("anjungan.pasien-mandiri") },
->>>>>>> 697e42ab (BelumFixTVPoli)
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },

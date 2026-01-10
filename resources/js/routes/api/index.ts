@@ -10,15 +10,12 @@ import regPeriksaD17f92 from './reg-periksa'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
-<<<<<<< HEAD
 import penyakit from './penyakit'
 import resep from './resep'
-import rawatJalan from './rawat-jalan'
-=======
 import odontogram from './odontogram'
 import whatsapp from './whatsapp'
 import messages from './messages'
->>>>>>> d469a398 (Odontogram)
+import rawatJalan from './rawat-jalan'
 import dokter from './dokter'
 import permintaanLab from './permintaan-lab'
 import radiologiTests from './radiologi-tests'
@@ -176,7 +173,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:397
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -190,7 +187,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:397
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -198,7 +195,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:397
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -207,7 +204,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:392
+* @see routes/web.php:397
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -227,15 +224,12 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
-<<<<<<< HEAD
     penyakit: Object.assign(penyakit, penyakit),
     resep: Object.assign(resep, resep),
-    rawatJalan: Object.assign(rawatJalan, rawatJalan),
-=======
     odontogram: Object.assign(odontogram, odontogram),
     whatsapp: Object.assign(whatsapp, whatsapp),
     messages: Object.assign(messages, messages),
->>>>>>> d469a398 (Odontogram)
+    rawatJalan: Object.assign(rawatJalan, rawatJalan),
     dokter: Object.assign(dokter, dokter),
     labTests: Object.assign(labTests, labTests),
     permintaanLab: Object.assign(permintaanLab, permintaanLab),

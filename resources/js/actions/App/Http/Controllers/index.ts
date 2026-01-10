@@ -2,13 +2,9 @@ import API from './API'
 import QueueController from './QueueController'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
-<<<<<<< HEAD
 import RawatJalan from './RawatJalan'
-=======
 import Odontogram from './Odontogram'
 import WhatsApp from './WhatsApp'
-import Alergi from './Alergi'
->>>>>>> d469a398 (Odontogram)
 import PermintaanRadiologiController from './PermintaanRadiologiController'
 import OpnameController from './OpnameController'
 import Farmasi from './Farmasi'
@@ -54,13 +50,9 @@ const Controllers = {
     QueueController: Object.assign(QueueController, QueueController),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
-<<<<<<< HEAD
     RawatJalan: Object.assign(RawatJalan, RawatJalan),
-=======
     Odontogram: Object.assign(Odontogram, Odontogram),
     WhatsApp: Object.assign(WhatsApp, WhatsApp),
-    Alergi: Object.assign(Alergi, Alergi),
->>>>>>> d469a398 (Odontogram)
     PermintaanRadiologiController: Object.assign(PermintaanRadiologiController, PermintaanRadiologiController),
     OpnameController: Object.assign(OpnameController, OpnameController),
     Farmasi: Object.assign(Farmasi, Farmasi),

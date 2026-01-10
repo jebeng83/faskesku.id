@@ -1,14 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1300
-=======
-* @see routes/web.php:1527
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1370
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1534
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,15 +14,7 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1300
-=======
-* @see routes/web.php:1527
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1370
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1534
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -38,15 +22,7 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1300
-=======
-* @see routes/web.php:1527
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1370
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1534
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,15 +31,7 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1300
-=======
-* @see routes/web.php:1527
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1370
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1534
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -72,15 +40,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1305
-=======
-* @see routes/web.php:1532
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1375
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1539
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,15 +54,7 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1305
-=======
-* @see routes/web.php:1532
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1375
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1539
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -110,15 +62,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1305
-=======
-* @see routes/web.php:1532
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1375
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1539
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -127,15 +71,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1305
-=======
-* @see routes/web.php:1532
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1375
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1539
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

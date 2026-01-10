@@ -1,14 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1087
-=======
-* @see routes/web.php:1310
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1157
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1321
 * @route '/farmasi/cetak/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,15 +14,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1087
-=======
-* @see routes/web.php:1310
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1157
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1321
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -38,15 +22,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1087
-=======
-* @see routes/web.php:1310
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1157
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1321
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,15 +31,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1087
-=======
-* @see routes/web.php:1310
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1157
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1321
 * @route '/farmasi/cetak/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

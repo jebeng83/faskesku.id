@@ -1,10 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-* @see routes/web.php:445
-=======
-* @see routes/web.php:567
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:663
 * @route '/akutansi/mutasi-rekening'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,11 +14,7 @@ page.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:445
-=======
-* @see routes/web.php:567
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:663
 * @route '/akutansi/mutasi-rekening'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -30,11 +22,7 @@ page.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:445
-=======
-* @see routes/web.php:567
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:663
 * @route '/akutansi/mutasi-rekening'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,11 +31,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:445
-=======
-* @see routes/web.php:567
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:663
 * @route '/akutansi/mutasi-rekening'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

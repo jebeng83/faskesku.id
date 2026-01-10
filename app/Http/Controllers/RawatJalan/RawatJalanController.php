@@ -1204,8 +1204,6 @@ class RawatJalanController extends Controller
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Show unified buat surat page
      */
     public function buatSurat(Request $request, $noRawat)
@@ -1287,7 +1285,6 @@ class RawatJalanController extends Controller
     }
 
     /**
->>>>>>> 28d88caf (surat sehat - sakit buttom)
      * Show surat sehat form
      */
     public function suratSehat($noRawat)

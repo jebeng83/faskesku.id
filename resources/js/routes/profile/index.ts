@@ -78,15 +78,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:870
-=======
-* @see routes/web.php:1122
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:969
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1104
 * @route '/profile/menu'
 */
 export const menu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -100,15 +92,7 @@ menu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:870
-=======
-* @see routes/web.php:1122
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:969
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1104
 * @route '/profile/menu'
 */
 menu.url = (options?: RouteQueryOptions) => {
@@ -116,15 +100,7 @@ menu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:870
-=======
-* @see routes/web.php:1122
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:969
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1104
 * @route '/profile/menu'
 */
 menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -133,15 +109,7 @@ menu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:870
-=======
-* @see routes/web.php:1122
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:969
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1104
 * @route '/profile/menu'
 */
 menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -150,15 +118,7 @@ menu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:874
-=======
-* @see routes/web.php:1126
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:973
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1108
 * @route '/profile/home'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,15 +132,7 @@ home.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:874
-=======
-* @see routes/web.php:1126
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:973
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1108
 * @route '/profile/home'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -188,15 +140,7 @@ home.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:874
-=======
-* @see routes/web.php:1126
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:973
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1108
 * @route '/profile/home'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -205,15 +149,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:874
-=======
-* @see routes/web.php:1126
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:973
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1108
 * @route '/profile/home'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

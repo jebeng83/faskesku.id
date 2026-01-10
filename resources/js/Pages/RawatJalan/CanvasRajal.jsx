@@ -4,17 +4,10 @@ import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import NewCpptSoap from "./NewComponen/NewCpptSoap";
-<<<<<<< HEAD
 import TarifTindakan from "./components/TarifTindakan";
 import Resep from "./components/Resep";
 import PermintaanLab from "./components/PermintaanLab";
-=======
-import NewTarifTindakan from "./NewComponen/NewTarifTindakan";
-import NewResep from "./NewComponen/NewResep";
-import NewPermintaanLab from "./NewComponen/NewPermintaanLab";
-import NewDiagnosa from "./NewComponen/NewDiagnosa";
 import OdontogramForm from "../Odontogram/odontogram";
->>>>>>> d469a398 (Odontogram)
 import axios from "axios";
 
 const overlayTransition = {
@@ -431,8 +424,6 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                     <div className="flex items-center justify-end gap-2">
                       <button
                         type="button"
-<<<<<<< HEAD
-=======
                         onClick={openCpptModal}
                         className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
                         title="Tampilkan Riwayat SOAP"
@@ -459,7 +450,6 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       </button>
                       <button
                         type="button"
->>>>>>> d469a398 (Odontogram)
                         onClick={() => {
                           const idx = pages.findIndex((p) => p.key === "resep");
                           if (idx >= 0) {
@@ -467,18 +457,12 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             setIndex(idx);
                           }
                         }}
-<<<<<<< HEAD
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border border-[oklch(84.1%_0.238_128.85_/_0.45)]"
-=======
                         className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
->>>>>>> d469a398 (Odontogram)
                         aria-label="Buka Resep"
                         title="Buka Resep"
                       >
                         Resep
                       </button>
-<<<<<<< HEAD
-=======
                       <button
                         type="button"
                         onClick={() => {
@@ -501,7 +485,6 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       >
                         Surat
                       </button>
->>>>>>> d469a398 (Odontogram)
                     </div>
                   </div>
 

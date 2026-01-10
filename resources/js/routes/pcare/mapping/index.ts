@@ -3,15 +3,7 @@ import poli16996d from './poli'
 import dokter1a4744 from './dokter'
 import obatE6960e from './obat'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1192
-=======
-* @see routes/web.php:1415
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1262
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1426
 * @route '/pcare/mapping/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,15 +17,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1192
-=======
-* @see routes/web.php:1415
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1262
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1426
 * @route '/pcare/mapping/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -41,15 +25,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1192
-=======
-* @see routes/web.php:1415
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1262
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1426
 * @route '/pcare/mapping/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,15 +34,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1192
-=======
-* @see routes/web.php:1415
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1262
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1426
 * @route '/pcare/mapping/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -75,15 +43,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1197
-=======
-* @see routes/web.php:1420
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1267
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1431
 * @route '/pcare/mapping/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,15 +57,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1197
-=======
-* @see routes/web.php:1420
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1267
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1431
 * @route '/pcare/mapping/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -113,15 +65,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1197
-=======
-* @see routes/web.php:1420
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1267
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1431
 * @route '/pcare/mapping/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -130,15 +74,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1197
-=======
-* @see routes/web.php:1420
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1267
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1431
 * @route '/pcare/mapping/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -147,15 +83,7 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1202
-=======
-* @see routes/web.php:1425
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1272
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1436
 * @route '/pcare/mapping/obat'
 */
 export const obat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -169,15 +97,7 @@ obat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1202
-=======
-* @see routes/web.php:1425
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1272
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1436
 * @route '/pcare/mapping/obat'
 */
 obat.url = (options?: RouteQueryOptions) => {
@@ -185,15 +105,7 @@ obat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1202
-=======
-* @see routes/web.php:1425
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1272
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1436
 * @route '/pcare/mapping/obat'
 */
 obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -202,15 +114,7 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1202
-=======
-* @see routes/web.php:1425
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1272
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1436
 * @route '/pcare/mapping/obat'
 */
 obat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

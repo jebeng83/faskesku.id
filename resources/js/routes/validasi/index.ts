@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::surat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2034
 * @route '/validasi/surat/{type}'
 */
 export const surat = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ surat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::surat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2034
 * @route '/validasi/surat/{type}'
 */
 surat.url = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ surat.url = (args: { type: string | number } | [type: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::surat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2034
 * @route '/validasi/surat/{type}'
 */
 surat.get = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ surat.get = (args: { type: string | number } | [type: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::surat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2034
 * @route '/validasi/surat/{type}'
 */
 surat.head = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

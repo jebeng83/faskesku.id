@@ -3,15 +3,7 @@ import kegiatan90f170 from './kegiatan'
 import club from './club'
 import peserta from './peserta'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1310
-=======
-* @see routes/web.php:1537
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1380
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1544
 * @route '/pcare/kelompok/club-prolanis'
 */
 export const clubProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,15 +17,7 @@ clubProlanis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1310
-=======
-* @see routes/web.php:1537
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1380
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1544
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.url = (options?: RouteQueryOptions) => {
@@ -41,15 +25,7 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1310
-=======
-* @see routes/web.php:1537
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1380
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1544
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,15 +34,7 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1310
-=======
-* @see routes/web.php:1537
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1380
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1544
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -75,15 +43,7 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1315
-=======
-* @see routes/web.php:1542
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1385
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1549
 * @route '/pcare/kelompok/kegiatan'
 */
 export const kegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,15 +57,7 @@ kegiatan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1315
-=======
-* @see routes/web.php:1542
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1385
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1549
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.url = (options?: RouteQueryOptions) => {
@@ -113,15 +65,7 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1315
-=======
-* @see routes/web.php:1542
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1385
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1549
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -130,15 +74,7 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1315
-=======
-* @see routes/web.php:1542
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1385
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1549
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -147,15 +83,7 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1320
-=======
-* @see routes/web.php:1547
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1390
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1554
 * @route '/pcare/kelompok/entri'
 */
 export const entri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -169,15 +97,7 @@ entri.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1320
-=======
-* @see routes/web.php:1547
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1390
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1554
 * @route '/pcare/kelompok/entri'
 */
 entri.url = (options?: RouteQueryOptions) => {
@@ -185,15 +105,7 @@ entri.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1320
-=======
-* @see routes/web.php:1547
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1390
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1554
 * @route '/pcare/kelompok/entri'
 */
 entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -202,15 +114,7 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1320
-=======
-* @see routes/web.php:1547
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1390
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1554
 * @route '/pcare/kelompok/entri'
 */
 entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -219,15 +123,7 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1325
-=======
-* @see routes/web.php:1552
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1395
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1559
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 export const pesertaKegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -241,15 +137,7 @@ pesertaKegiatan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1325
-=======
-* @see routes/web.php:1552
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1395
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1559
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.url = (options?: RouteQueryOptions) => {
@@ -257,15 +145,7 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1325
-=======
-* @see routes/web.php:1552
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1395
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1559
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -274,15 +154,7 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1325
-=======
-* @see routes/web.php:1552
->>>>>>> d469a398 (Odontogram)
-=======
-* @see routes/web.php:1395
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:1559
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

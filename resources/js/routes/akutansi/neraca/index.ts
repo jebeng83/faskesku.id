@@ -1,10 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-<<<<<<< HEAD
-* @see routes/web.php:435
-=======
-* @see routes/web.php:557
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:653
 * @route '/akutansi/neraca'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,11 +14,7 @@ page.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:435
-=======
-* @see routes/web.php:557
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:653
 * @route '/akutansi/neraca'
 */
 page.url = (options?: RouteQueryOptions) => {
@@ -30,11 +22,7 @@ page.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:435
-=======
-* @see routes/web.php:557
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:653
 * @route '/akutansi/neraca'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,11 +31,7 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:435
-=======
-* @see routes/web.php:557
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:653
 * @route '/akutansi/neraca'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

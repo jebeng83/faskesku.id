@@ -1,10 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-<<<<<<< HEAD
-* @see routes/web.php:770
-=======
-* @see routes/web.php:890
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:988
 * @route '/users'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,11 +14,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:770
-=======
-* @see routes/web.php:890
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:988
 * @route '/users'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -30,11 +22,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:770
-=======
-* @see routes/web.php:890
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:988
 * @route '/users'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,11 +31,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:770
-=======
-* @see routes/web.php:890
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:988
 * @route '/users'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

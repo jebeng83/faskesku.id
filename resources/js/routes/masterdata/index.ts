@@ -1,10 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-<<<<<<< HEAD
-* @see routes/web.php:611
-=======
-* @see routes/web.php:731
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:829
 * @route '/masterdata'
 */
 export const alias = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,11 +14,7 @@ alias.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:611
-=======
-* @see routes/web.php:731
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:829
 * @route '/masterdata'
 */
 alias.url = (options?: RouteQueryOptions) => {
@@ -30,11 +22,7 @@ alias.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:611
-=======
-* @see routes/web.php:731
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:829
 * @route '/masterdata'
 */
 alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,11 +31,7 @@ alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:611
-=======
-* @see routes/web.php:731
->>>>>>> 697e42ab (BelumFixTVPoli)
+* @see routes/web.php:829
 * @route '/masterdata'
 */
 alias.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
