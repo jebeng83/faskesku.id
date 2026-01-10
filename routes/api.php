@@ -499,6 +499,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/kunjungan', [PcareKunjunganController::class, 'store'])->name('api.pcare.kunjungan.store');
         // Add Data Pendaftaran (PCare)
         Route::post('/pendaftaran', [PcareController::class, 'addPendaftaran'])->name('api.pcare.pendaftaran.store');
+        // Delete Data Pendaftaran (PCare)
+        Route::delete('/pendaftaran', [PcareController::class, 'deletePendaftaran'])->name('api.pcare.pendaftaran.delete');
         // Get latest pendaftaran by nomor rawat
         Route::get('/pendaftaran/rawat/{no_rawat}', [PcareController::class, 'getPendaftaranByRawat'])
             ->where('no_rawat', '.*')

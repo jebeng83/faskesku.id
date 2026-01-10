@@ -1744,7 +1744,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                     )}
                     {/* Tombol Cetak Rujukan - tampil jika ada data di tabel pcare_rujuk_subspesialis */}
-                    {rujukanBerhasil && (
+                    {(rujukanBerhasil && (lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan))) && (
                         <button
                             type="button"
                             onClick={async () => {
@@ -2548,61 +2548,96 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Alergi Makan</label>
-                                                        <SearchableSelect
-                                                            source="alergi"
-                                                            value={kunjunganPreview.alergiMakan ?? '00'}
-                                                            onChange={(val) => updateKunjunganField('alergiMakan', val)}
-                                                            placeholder="Pilih Alergi Makanan"
-                                                            searchPlaceholder="Cari alergi (makanan)…"
-                                                            sourceParams={{ jenis: '01' }}
-                                                            defaultDisplay="Tidak Ada"
-                                                        />
+                                                    <SearchableSelect
+                                                        source="alergi"
+                                                        value={kunjunganPreview.alergiMakan ?? '00'}
+                                                        onChange={(val) => {
+                                                            updateKunjunganField('alergiMakan', val);
+                                                            if (!val) updateKunjunganField('nmAlergiMakanan', '');
+                                                        }}
+                                                        onSelect={(opt) => {
+                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                            updateKunjunganField('nmAlergiMakanan', label);
+                                                        }}
+                                                        placeholder="Pilih Alergi Makanan"
+                                                        searchPlaceholder="Cari alergi (makanan)…"
+                                                        sourceParams={{ jenis: '01' }}
+                                                        defaultDisplay="Tidak Ada"
+                                                    />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Alergi Udara</label>
-                                                        <SearchableSelect
-                                                            source="alergi"
-                                                            value={kunjunganPreview.alergiUdara ?? '00'}
-                                                            onChange={(val) => updateKunjunganField('alergiUdara', val)}
-                                                            placeholder="Pilih Alergi Udara"
-                                                            searchPlaceholder="Cari alergi (udara)…"
-                                                            sourceParams={{ jenis: '02' }}
-                                                            defaultDisplay="Tidak Ada"
-                                                        />
+                                                    <SearchableSelect
+                                                        source="alergi"
+                                                        value={kunjunganPreview.alergiUdara ?? '00'}
+                                                        onChange={(val) => {
+                                                            updateKunjunganField('alergiUdara', val);
+                                                            if (!val) updateKunjunganField('nmAlergiUdara', '');
+                                                        }}
+                                                        onSelect={(opt) => {
+                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                            updateKunjunganField('nmAlergiUdara', label);
+                                                        }}
+                                                        placeholder="Pilih Alergi Udara"
+                                                        searchPlaceholder="Cari alergi (udara)…"
+                                                        sourceParams={{ jenis: '02' }}
+                                                        defaultDisplay="Tidak Ada"
+                                                    />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">Alergi Obat</label>
-                                                        <SearchableSelect
-                                                            source="alergi"
-                                                            value={kunjunganPreview.alergiObat ?? '00'}
-                                                            onChange={(val) => updateKunjunganField('alergiObat', val)}
-                                                            placeholder="Pilih Alergi Obat"
-                                                            searchPlaceholder="Cari alergi (obat)…"
-                                                            sourceParams={{ jenis: '03' }}
-                                                            defaultDisplay="Tidak Ada"
-                                                        />
+                                                    <SearchableSelect
+                                                        source="alergi"
+                                                        value={kunjunganPreview.alergiObat ?? '00'}
+                                                        onChange={(val) => {
+                                                            updateKunjunganField('alergiObat', val);
+                                                            if (!val) updateKunjunganField('nmAlergiObat', '');
+                                                        }}
+                                                        onSelect={(opt) => {
+                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                            updateKunjunganField('nmAlergiObat', label);
+                                                        }}
+                                                        placeholder="Pilih Alergi Obat"
+                                                        searchPlaceholder="Cari alergi (obat)…"
+                                                        sourceParams={{ jenis: '03' }}
+                                                        defaultDisplay="Tidak Ada"
+                                                    />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">KD Prognosa</label>
-                                                        <SearchableSelect
-                                                            source="prognosa"
-                                                            value={kunjunganPreview.kdPrognosa ?? '02'}
-                                                            onChange={(val) => updateKunjunganField('kdPrognosa', val)}
-                                                            placeholder="Pilih Prognosa"
-                                                            searchPlaceholder="Cari prognosa…"
-                                                            defaultDisplay="Bonam (Baik)"
-                                                        />
+                                                    <SearchableSelect
+                                                        source="prognosa"
+                                                        value={kunjunganPreview.kdPrognosa ?? '02'}
+                                                        onChange={(val) => {
+                                                            updateKunjunganField('kdPrognosa', val);
+                                                            if (!val) updateKunjunganField('nmPrognosa', '');
+                                                        }}
+                                                        onSelect={(opt) => {
+                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                            updateKunjunganField('nmPrognosa', label);
+                                                        }}
+                                                        placeholder="Pilih Prognosa"
+                                                        searchPlaceholder="Cari prognosa…"
+                                                        defaultDisplay="Bonam (Baik)"
+                                                    />
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs font-medium mb-1">KD Sadar</label>
-                                                        <SearchableSelect
-                                                            source="kesadaran"
-                                                            value={kunjunganPreview.kdSadar ?? '01'}
-                                                            onChange={(val) => updateKunjunganField('kdSadar', val)}
-                                                            placeholder="Pilih Kesadaran"
-                                                            searchPlaceholder="Cari kesadaran…"
-                                                            defaultDisplay="Compos mentis"
-                                                        />
+                                                    <SearchableSelect
+                                                        source="kesadaran"
+                                                        value={kunjunganPreview.kdSadar ?? '01'}
+                                                        onChange={(val) => {
+                                                            updateKunjunganField('kdSadar', val);
+                                                            if (!val) updateKunjunganField('nmSadar', '');
+                                                        }}
+                                                        onSelect={(opt) => {
+                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                            updateKunjunganField('nmSadar', label);
+                                                        }}
+                                                        placeholder="Pilih Kesadaran"
+                                                        searchPlaceholder="Cari kesadaran…"
+                                                        defaultDisplay="Compos mentis"
+                                                    />
                                                     </div>
                                                 </div>
 

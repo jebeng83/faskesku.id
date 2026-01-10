@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1986
+* @see app/Http/Controllers/Pcare/PcareController.php:2059
 * @route '/pcare/api/resend/{no_rawat}'
 */
 export const api = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1986
+* @see app/Http/Controllers/Pcare/PcareController.php:2059
 * @route '/pcare/api/resend/{no_rawat}'
 */
 api.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ api.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:1986
+* @see app/Http/Controllers/Pcare/PcareController.php:2059
 * @route '/pcare/api/resend/{no_rawat}'
 */
 api.post = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

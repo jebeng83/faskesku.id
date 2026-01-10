@@ -13,6 +13,7 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
     XMarkIcon,
+    MapPinIcon,
 } from "@heroicons/react/24/outline";
 import axios from "axios";
 import PatientCreateModal from "@/Components/PatientCreateModal";
@@ -29,6 +30,7 @@ export default function Registration({
     searchQuery,
 }) {
     const [searchTerm, setSearchTerm] = useState(searchQuery || "");
+    const [alamatTerm, setAlamatTerm] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -178,6 +180,7 @@ export default function Registration({
         kd_poli: "",
         kd_dokter: "",
         search: "",
+        alamat: "",
         status: "",
         status_poli: "",
         // Tambahkan per_page agar daftar menampilkan lebih dari 1 data per halaman
@@ -630,8 +633,8 @@ export default function Registration({
     };
 
     // Search patients
-    const handleSearch = async (term) => {
-        if (!term.trim()) {
+    const handleSearch = async (term, alamat = "") => {
+        if (!term.trim() && !String(alamat || "").trim()) {
             setSearchResults([]);
             return;
         }
@@ -639,9 +642,29 @@ export default function Registration({
         setIsSearching(true);
         try {
             const response = await axios.get("/registration/search-patients", {
-                params: { search: term },
+                params: { search: term, alamat },
             });
-            setSearchResults(response.data.data);
+            const data = Array.isArray(response?.data?.data) ? response.data.data : [];
+            const a = String(alamat || "").trim().toLowerCase();
+            const filtered = a
+                ? data.filter((p) => {
+                      const addr = [
+                          p?.alamat,
+                          p?.kelurahan?.nm_kel,
+                          p?.kecamatan?.nm_kec,
+                          p?.kabupaten?.nm_kab,
+                          p?.alamatpj,
+                          p?.kelurahanpj,
+                          p?.kecamatanpj,
+                          p?.kabupatenpj,
+                      ]
+                          .filter(Boolean)
+                          .join(", ")
+                          .toLowerCase();
+                      return addr.includes(a);
+                  })
+                : data;
+            setSearchResults(filtered);
         } catch (error) {
             console.error("Error searching patients:", error);
             alert("Gagal mencari data pasien");
@@ -650,14 +673,14 @@ export default function Registration({
         }
     };
 
-    // Handle search input change with debounce
+    // Handle search input change with debounce (search + alamat)
     useEffect(() => {
         const timeoutId = setTimeout(() => {
-            handleSearch(searchTerm);
+            handleSearch(searchTerm, alamatTerm);
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchTerm]);
+    }, [searchTerm, alamatTerm]);
 
     // Select patient for registration
     const selectPatient = (patient) => {
@@ -1428,7 +1451,7 @@ export default function Registration({
         try {
             // Refresh list if searching
             if (searchTerm) {
-                handleSearch(searchTerm);
+                handleSearch(searchTerm, alamatTerm);
             }
 
             // Update selected patient info in modal
@@ -1471,7 +1494,7 @@ export default function Registration({
         
         if (newPatient && newPatient.no_rkm_medis) {
             setSearchTerm(newPatient.no_rkm_medis);
-            handleSearch(newPatient.no_rkm_medis);
+            handleSearch(newPatient.no_rkm_medis, alamatTerm);
         }
 
         // Optionally refresh the page or search results
@@ -1562,6 +1585,7 @@ export default function Registration({
         filters.kd_poli,
         filters.kd_dokter,
         filters.search,
+        filters.alamat,
         filters.status,
         filters.status_poli,
         // Muat ulang jika jumlah per halaman berubah
@@ -1910,61 +1934,76 @@ export default function Registration({
                                     </div>
                                 </div>
 
-                                {/* Search Input */}
-                                <motion.div
-                                    className="relative"
-                                    whileFocus={{ scale: 1.02 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    <input
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) =>
-                                            setSearchTerm(e.target.value)
-                                        }
-                                        placeholder="Cari berdasarkan nama, nomor RM, atau KTP..."
-                                        className="w-full px-4 py-2 lg:py-3 pl-10 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                    />
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg
-                                            className="h-5 w-5 text-gray-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    {isSearching && (
-                                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                {/* Search Inputs: Keyword + Alamat */}
+                                <div className="grid grid-cols-5 gap-2 items-center">
+                                    <motion.div
+                                        className="relative col-span-3"
+                                        whileFocus={{ scale: 1.02 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) =>
+                                                setSearchTerm(e.target.value)
+                                            }
+                                            placeholder="Cari berdasarkan nama, nomor RM, atau KTP..."
+                                            className="w-full px-4 py-2 lg:py-3 pl-10 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                        />
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg
-                                                className="animate-spin h-5 w-5 text-blue-500"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5 text-gray-400"
                                                 fill="none"
+                                                stroke="currentColor"
                                                 viewBox="0 0 24 24"
                                             >
-                                                <circle
-                                                    className="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
-                                                    stroke="currentColor"
-                                                    strokeWidth="4"
-                                                ></circle>
                                                 <path
-                                                    className="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                ></path>
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                />
                                             </svg>
                                         </div>
-                                    )}
-                                </motion.div>
+                                        {isSearching && (
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                <svg
+                                                    className="animate-spin h-5 w-5 text-blue-500"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    ></circle>
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                    ></path>
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                    <div className="relative col-span-2">
+                                        <input
+                                            type="text"
+                                            value={alamatTerm}
+                                            onChange={(e) => setAlamatTerm(e.target.value)}
+                                            placeholder="Filter alamat"
+                                            aria-label="Filter Alamat"
+                                            className="w-full px-4 py-2 lg:py-3 pl-10 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                        />
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                </div>
                             </motion.div>
 
                             
@@ -1972,7 +2011,7 @@ export default function Registration({
                             {/* Search Results */}
                             <div className="flex-1 overflow-y-auto max-h-[450px]">
                                 <AnimatePresence>
-                                    {searchTerm && (
+                                    {(searchTerm || alamatTerm) && (
                                         <motion.div
                                             className="space-y-2 lg:space-y-3"
                                             initial={{ opacity: 0 }}
@@ -2842,6 +2881,28 @@ export default function Registration({
                                                 </div>
                                             </motion.div>
 
+                                            {/* Filter by Address */}
+                                            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+                                                <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Filter Alamat
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        name="alamat"
+                                                        value={filters.alamat}
+                                                        onChange={handleFilterChange}
+                                                        placeholder="Filter alamat pasien"
+                                                        className="w-full px-3 py-2 pl-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                                    />
+                                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 12.414A4 4 0 1112 8a4 4 0 011.414 7.414l4.243 4.243-1.414 1.414z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+
                                             {/* Status Filter */}
                                             <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                                                 <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2914,6 +2975,7 @@ export default function Registration({
                                                             kd_poli: "",
                                                             kd_dokter: "",
                                                             search: "",
+                                                            alamat: "",
                                                             status: "",
                                                             status_poli: "",
                                                         });

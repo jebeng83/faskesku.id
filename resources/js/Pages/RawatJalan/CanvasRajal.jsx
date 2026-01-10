@@ -42,6 +42,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [kunjunganPreview, setKunjunganPreview] = useState(null);
   const [sendingKunjungan, setSendingKunjungan] = useState(false);
   const [kunjunganResult, setKunjunganResult] = useState(null);
+  const [noKunjungan, setNoKunjungan] = useState("");
   const [rujukForm, setRujukForm] = useState({ kdppk: "", tglEstRujuk: "", kdSubSpesialis1: "", kdSarana: "" });
   const [poliOptions, setPoliOptions] = useState([]);
   const [dokterOptions, setDokterOptions] = useState([]);
@@ -443,6 +444,27 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     setSubSpesialisOptions([]);
   };
 
+  const hapusPendaftaranPcare = async () => {
+    try {
+      const ok = typeof window !== 'undefined' ? window.confirm('Yakin ingin menghapus pendaftaran PCare?') : true;
+      if (!ok) return;
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise((r) => setTimeout(r, 200));
+      } catch (_) {}
+      await axios({
+        method: 'DELETE',
+        url: '/api/pcare/pendaftaran',
+        data: { no_rawat: noRawat },
+        withCredentials: true,
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      setPcarePendaftaran(null);
+      setBridgingVisible(false);
+      closeBridgingModal();
+    } catch (_) {}
+  };
+
   const toInputDate = (ddmmyyyy) => {
     if (!ddmmyyyy || typeof ddmmyyyy !== "string") return "";
     const parts = ddmmyyyy.split("-");
@@ -648,7 +670,20 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       const text = await res.text();
       let json; try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
       if (res.ok) {
-        const msg = (json && json.response && json.response.message) ? json.response.message : "CREATED";
+        const r = json && typeof json === "object" ? (json.response || json) : null;
+        let nk = "";
+        if (r && Array.isArray(r) && r[0]) {
+          if (typeof r[0].noKunjungan === "string") nk = String(r[0].noKunjungan);
+          else if (r[0].field === "noKunjungan" && r[0].message) nk = String(r[0].message);
+        } else if (r && typeof r === "object") {
+          if (typeof r.noKunjungan === "string") nk = String(r.noKunjungan);
+          else if (r.field === "noKunjungan" && r.message) nk = String(r.message);
+        }
+        if (nk) {
+          setNoKunjungan(nk);
+          setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: nk } : prev);
+        }
+        const msg = nk || ((json && json.response && json.response.message) ? json.response.message : "CREATED");
         if (payload.rujukLanjut && noRawat) {
           try {
             const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
@@ -1005,7 +1040,15 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           Kirim Kunjungan Pcare
                         </button>
                       )}
-                      <Icare noPeserta={bpjsNoPeserta} kodeDokter={doctorCode} noRawat={noRawat} label="Icare" buttonClassName="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60" />
+                      {bridgingVisible && (
+                        <Icare
+                          noPeserta={bpjsNoPeserta}
+                          kodeDokter={doctorCode}
+                          noRawat={noRawat}
+                          label="Icare"
+                          buttonClassName="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)] disabled:opacity-60"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -1280,6 +1323,9 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                             <div className="space-y-1"><div className="text-xs font-medium">Sistole/Diastole</div><div className="text-sm">{(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}</div></div>
                             <div className="space-y-1"><div className="text-xs font-medium">Berat/Tinggi</div><div className="text-sm">{(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''}kg / ${pcarePendaftaran.tinggiBadan || ''}cm` : '-'}</div></div>
                             <div className="space-y-1"><div className="text-xs font-medium">Resp/HR</div><div className="text-sm">{(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}</div></div>
+                            <div className="pt-2">
+                              <button type="button" onClick={hapusPendaftaranPcare} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white border border-red-700">Hapus Pendaftaran PCare</button>
+                            </div>
                           </div>
                         ) : (
                           <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
@@ -1287,11 +1333,12 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                         </div>
                         <div className="rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 shadow-sm p-4 lg:col-span-7">
                           <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                              <h4 className="text-sm font-semibold">Kunjungan PCare</h4>
-                            </div>
+                          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <h4 className="text-sm font-semibold">Kunjungan PCare</h4>
                           </div>
+                          <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">No Kunjungan: {noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan) || '-'}</div>
+                        </div>
                           <div className="space-y-3">
                             {kunjunganPreview && (
                               <div className="space-y-4 md:space-y-5">
@@ -1398,23 +1445,23 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                                 <div>
                                   <label className="block text-xs font-medium mb-1">Alergi Makan</label>
-                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiMakan ?? '00'} onChange={(val) => updateKunjunganField('alergiMakan', val)} placeholder="Pilih Alergi Makanan" searchPlaceholder="Cari alergi (makanan)…" sourceParams={{ jenis: '01' }} defaultDisplay="Tidak Ada" />
+                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiMakan ?? '00'} onChange={(val) => { updateKunjunganField('alergiMakan', val); if (!val) updateKunjunganField('nmAlergiMakanan', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiMakanan', label); }} placeholder="Pilih Alergi Makanan" searchPlaceholder="Cari alergi (makanan)…" sourceParams={{ jenis: '01' }} defaultDisplay="Tidak Ada" />
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium mb-1">Alergi Udara</label>
-                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiUdara ?? '00'} onChange={(val) => updateKunjunganField('alergiUdara', val)} placeholder="Pilih Alergi Udara" searchPlaceholder="Cari alergi (udara)…" sourceParams={{ jenis: '02' }} defaultDisplay="Tidak Ada" />
+                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiUdara ?? '00'} onChange={(val) => { updateKunjunganField('alergiUdara', val); if (!val) updateKunjunganField('nmAlergiUdara', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiUdara', label); }} placeholder="Pilih Alergi Udara" searchPlaceholder="Cari alergi (udara)…" sourceParams={{ jenis: '02' }} defaultDisplay="Tidak Ada" />
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium mb-1">Alergi Obat</label>
-                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiObat ?? '00'} onChange={(val) => updateKunjunganField('alergiObat', val)} placeholder="Pilih Alergi Obat" searchPlaceholder="Cari alergi (obat)…" sourceParams={{ jenis: '03' }} defaultDisplay="Tidak Ada" />
+                                  <SearchableSelect source="alergi" value={kunjunganPreview.alergiObat ?? '00'} onChange={(val) => { updateKunjunganField('alergiObat', val); if (!val) updateKunjunganField('nmAlergiObat', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiObat', label); }} placeholder="Pilih Alergi Obat" searchPlaceholder="Cari alergi (obat)…" sourceParams={{ jenis: '03' }} defaultDisplay="Tidak Ada" />
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium mb-1">KD Prognosa</label>
-                                  <SearchableSelect source="prognosa" value={kunjunganPreview.kdPrognosa ?? '02'} onChange={(val) => updateKunjunganField('kdPrognosa', val)} placeholder="Pilih Prognosa" searchPlaceholder="Cari prognosa…" defaultDisplay="Bonam (Baik)" />
+                                  <SearchableSelect source="prognosa" value={kunjunganPreview.kdPrognosa ?? '02'} onChange={(val) => { updateKunjunganField('kdPrognosa', val); if (!val) updateKunjunganField('nmPrognosa', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmPrognosa', label); }} placeholder="Pilih Prognosa" searchPlaceholder="Cari prognosa…" defaultDisplay="Bonam (Baik)" />
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium mb-1">KD Sadar</label>
-                                  <SearchableSelect source="kesadaran" value={kunjunganPreview.kdSadar ?? '01'} onChange={(val) => updateKunjunganField('kdSadar', val)} placeholder="Pilih Kesadaran" searchPlaceholder="Cari kesadaran…" defaultDisplay="Compos mentis" />
+                                  <SearchableSelect source="kesadaran" value={kunjunganPreview.kdSadar ?? '01'} onChange={(val) => { updateKunjunganField('kdSadar', val); if (!val) updateKunjunganField('nmSadar', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmSadar', label); }} placeholder="Pilih Kesadaran" searchPlaceholder="Cari kesadaran…" defaultDisplay="Compos mentis" />
                                 </div>
                               </div>
                               <div>
@@ -1560,7 +1607,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           <button type="button" onClick={closeBridgingModal} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Tutup</button>
                           <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview || (rujukanActive && !rujukForm.kdppk)} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 text-white shadow-lg">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                            Kirim Kunjungan{rujukanActive && rujukForm.kdppk ? ' + Rujuk' : ''}
+                            Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}
                           </button>
                         </div>
                       </div>

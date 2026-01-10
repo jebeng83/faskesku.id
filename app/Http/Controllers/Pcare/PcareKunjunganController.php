@@ -125,35 +125,53 @@ class PcareKunjunganController extends Controller
         try {
             $noRawat = trim((string) ($payload['no_rawat'] ?? ''));
             if ($noRawat !== '') {
-                $status = ($response->status() === 201) ? 'Terkirim' : 'Gagal';
-                // Ambil noKunjungan dari beberapa variasi struktur response
-                $noKunjungan = null;
-                if (is_array($processed)) {
-                    if (isset($processed['response'])) {
-                        $r = $processed['response'];
-                        if (is_array($r)) {
-                            if (isset($r['noKunjungan'])) {
-                                $noKunjungan = (string) $r['noKunjungan'];
-                            } elseif (isset($r[0]) && is_array($r[0]) && isset($r[0]['noKunjungan'])) {
-                                $noKunjungan = (string) $r[0]['noKunjungan'];
-                            } elseif (($r['field'] ?? '') === 'noKunjungan' && ! empty($r['message'])) {
-                                $noKunjungan = (string) $r['message'];
+                $status = ($response->status() >= 200 && $response->status() < 300) ? 'Terkirim' : 'Gagal';
+                $noKunjungan = $this->parseNoKunjunganFromResponse(is_array($processed) ? $processed : []);
+                if ($noKunjungan === null) {
+                    if (is_string($processed) && $processed !== '') {
+                        $noKunjungan = $this->parseNoKunjunganFromString($processed);
+                        if ($noKunjungan === null) {
+                            try {
+                                $decodedProcessed = json_decode($processed, true);
+                                if (is_array($decodedProcessed)) {
+                                    $noKunjungan = $this->parseNoKunjunganFromResponse($decodedProcessed);
+                                }
+                            } catch (\Throwable $e) {
                             }
                         }
-                    } elseif (isset($processed['noKunjungan'])) {
-                        $noKunjungan = (string) $processed['noKunjungan'];
+                    }
+                    if ($noKunjungan === null) {
+                        $rawBody = $response->body();
+                        if (is_string($rawBody) && $rawBody !== '') {
+                            $noKunjungan = $this->parseNoKunjunganFromString($rawBody);
+                            if ($noKunjungan === null) {
+                                try {
+                                    $decoded = json_decode($rawBody, true);
+                                    if (is_array($decoded)) {
+                                        $noKunjungan = $this->parseNoKunjunganFromResponse($decoded);
+                                    }
+                                } catch (\Throwable $e) {
+                                }
+                            }
+                        }
                     }
                 }
 
                 // Simpan status dan respon mentah ke reg_periksa (penyesuaian kolom bila ada)
                 try {
-                    DB::table('reg_periksa')
-                        ->where('no_rawat', $noRawat)
-                        ->update([
-                            'status_pcare' => $status,
-                            'response_pcare' => is_array($processed) ? json_encode($processed) : (string) $processed,
-                            'updated_at' => now(),
-                        ]);
+                    $updateData = [];
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'status_pcare')) {
+                        $updateData['status_pcare'] = $status;
+                    }
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'response_pcare')) {
+                        $updateData['response_pcare'] = is_array($processed) ? json_encode($processed) : (string) $processed;
+                    }
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'updated_at')) {
+                        $updateData['updated_at'] = now();
+                    }
+                    if (! empty($updateData)) {
+                        DB::table('reg_periksa')->where('no_rawat', $noRawat)->update($updateData);
+                    }
                 } catch (\Throwable $e) {
                     Log::warning('Gagal update status_pcare di reg_periksa', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
                 }
@@ -240,14 +258,23 @@ class PcareKunjunganController extends Controller
                             ->first();
 
                         $nmSadar = null;
-                        if (! empty($payload['kdSadar'])) {
+                        if (! empty($payload['kdSadar']) && \Illuminate\Support\Facades\Schema::hasTable('master_kesadaran')) {
                             $kesadaran = DB::table('master_kesadaran')->where('kd_kesadaran', $payload['kdSadar'])->first();
                             $nmSadar = $kesadaran->nm_kesadaran ?? null;
                         }
+                        if ($nmSadar === null || $nmSadar === '') {
+                            $nmSadar = isset($payload['nmSadar']) ? (string) $payload['nmSadar'] : $nmSadar;
+                        }
+                        if (($nmSadar === null || $nmSadar === '') && (($payload['kdSadar'] ?? '') === '01')) {
+                            $nmSadar = 'Compos mentis';
+                        }
                         $nmStatusPulang = null;
-                        if (! empty($payload['kdStatusPulang'])) {
+                        if (! empty($payload['kdStatusPulang']) && \Illuminate\Support\Facades\Schema::hasTable('status_pulang')) {
                             $sp = DB::table('status_pulang')->where('kd_status_pulang', $payload['kdStatusPulang'])->first();
                             $nmStatusPulang = $sp->nm_status_pulang ?? null;
+                        }
+                        if ($nmStatusPulang === null || $nmStatusPulang === '') {
+                            $nmStatusPulang = isset($payload['nmStatusPulang']) ? (string) $payload['nmStatusPulang'] : $nmStatusPulang;
                         }
 
                         $kdAlergiMakanan = (string) ($payload['alergiMakan'] ?? '00');
@@ -256,23 +283,32 @@ class PcareKunjunganController extends Controller
                         $nmAlergiMakanan = 'Tidak Ada';
                         $nmAlergiUdara = 'Tidak Ada';
                         $nmAlergiObat = 'Tidak Ada';
-                        if ($kdAlergiMakanan !== '00') {
-                            $am = DB::table('master_alergi')->where('kd_alergi', $kdAlergiMakanan)->first();
-                            $nmAlergiMakanan = $am->nm_alergi ?? $nmAlergiMakanan;
+                        if (\Illuminate\Support\Facades\Schema::hasTable('master_alergi')) {
+                            if ($kdAlergiMakanan !== '00') {
+                                $am = DB::table('master_alergi')->where('kd_alergi', $kdAlergiMakanan)->first();
+                                $nmAlergiMakanan = $am->nm_alergi ?? $nmAlergiMakanan;
+                            }
+                            if ($kdAlergiUdara !== '00') {
+                                $au = DB::table('master_alergi')->where('kd_alergi', $kdAlergiUdara)->first();
+                                $nmAlergiUdara = $au->nm_alergi ?? $nmAlergiUdara;
+                            }
+                            if ($kdAlergiObat !== '00') {
+                                $ao = DB::table('master_alergi')->where('kd_alergi', $kdAlergiObat)->first();
+                                $nmAlergiObat = $ao->nm_alergi ?? $nmAlergiObat;
+                            }
+                        } else {
+                            $nmAlergiMakanan = isset($payload['nmAlergiMakanan']) ? (string) $payload['nmAlergiMakanan'] : $nmAlergiMakanan;
+                            $nmAlergiUdara = isset($payload['nmAlergiUdara']) ? (string) $payload['nmAlergiUdara'] : $nmAlergiUdara;
+                            $nmAlergiObat = isset($payload['nmAlergiObat']) ? (string) $payload['nmAlergiObat'] : $nmAlergiObat;
                         }
-                        if ($kdAlergiUdara !== '00') {
-                            $au = DB::table('master_alergi')->where('kd_alergi', $kdAlergiUdara)->first();
-                            $nmAlergiUdara = $au->nm_alergi ?? $nmAlergiUdara;
-                        }
-                        if ($kdAlergiObat !== '00') {
-                            $ao = DB::table('master_alergi')->where('kd_alergi', $kdAlergiObat)->first();
-                            $nmAlergiObat = $ao->nm_alergi ?? $nmAlergiObat;
-                        }
-                        $kdPrognosa = (string) ($payload['kdPrognosa'] ?? '01');
+                        $kdPrognosa = (string) ($payload['kdPrognosa'] ?? '02');
                         $nmPrognosa = null;
-                        if ($kdPrognosa !== '') {
+                        if ($kdPrognosa !== '' && \Illuminate\Support\Facades\Schema::hasTable('master_prognosa')) {
                             $pr = DB::table('master_prognosa')->where('kd_prognosa', $kdPrognosa)->first();
                             $nmPrognosa = $pr->nm_prognosa ?? null;
+                        }
+                        if ($nmPrognosa === null || $nmPrognosa === '') {
+                            $nmPrognosa = isset($payload['nmPrognosa']) ? (string) $payload['nmPrognosa'] : $nmPrognosa;
                         }
                         if ($nmPrognosa === null || $nmPrognosa === '') {
                             $nmPrognosa = 'Bonam (Baik)';
@@ -336,6 +372,9 @@ class PcareKunjunganController extends Controller
                         ];
 
                         DB::table('pcare_kunjungan_umum')->updateOrInsert(['no_rawat' => $noRawat], $data);
+                        if (!$noKunjungan) {
+                            $this->fillNoKunjunganFromDbIfMissing($noRawat);
+                        }
                     }
                 } catch (\Throwable $e) {
                     Log::error('Gagal upsert pcare_kunjungan_umum', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
@@ -477,14 +516,23 @@ class PcareKunjunganController extends Controller
                     ->first();
 
                 $nmSadarR = null;
-                if (! empty($payload['kdSadar'])) {
+                if (! empty($payload['kdSadar']) && \Illuminate\Support\Facades\Schema::hasTable('master_kesadaran')) {
                     $kesadaran = DB::table('master_kesadaran')->where('kd_kesadaran', $payload['kdSadar'])->first();
                     $nmSadarR = $kesadaran->nm_kesadaran ?? null;
                 }
+                if ($nmSadarR === null || $nmSadarR === '') {
+                    $nmSadarR = isset($payload['nmSadar']) ? (string) $payload['nmSadar'] : $nmSadarR;
+                }
+                if (($nmSadarR === null || $nmSadarR === '') && (($payload['kdSadar'] ?? '') === '01')) {
+                    $nmSadarR = 'Compos mentis';
+                }
                 $nmStatusPulangR = null;
-                if (! empty($payload['kdStatusPulang'])) {
+                if (! empty($payload['kdStatusPulang']) && \Illuminate\Support\Facades\Schema::hasTable('status_pulang')) {
                     $sp = DB::table('status_pulang')->where('kd_status_pulang', $payload['kdStatusPulang'])->first();
                     $nmStatusPulangR = $sp->nm_status_pulang ?? null;
+                }
+                if ($nmStatusPulangR === null || $nmStatusPulangR === '') {
+                    $nmStatusPulangR = isset($payload['nmStatusPulang']) ? (string) $payload['nmStatusPulang'] : $nmStatusPulangR;
                 }
 
                 $nmSubSpesialisR = isset($payload['nmSubSpesialis']) ? $payload['nmSubSpesialis'] : null;
@@ -567,6 +615,163 @@ class PcareKunjunganController extends Controller
         // Fallback: bila processed bukan array (decrypt gagal atau bukan wrapper JSON)
         return response($processed, $response->status())
             ->header('Content-Type', 'application/json');
+    }
+
+    protected function parseNoKunjunganFromResponse(array $processed): ?string
+    {
+        if (isset($processed['response'])) {
+            $resp = $processed['response'];
+            if (is_array($resp)) {
+                if (($resp['field'] ?? '') === 'noKunjungan' && ! empty($resp['message'])) {
+                    return (string) $resp['message'];
+                }
+                if (! empty($resp['noKunjungan'])) {
+                    return (string) $resp['noKunjungan'];
+                }
+                if (isset($resp[0]) && is_array($resp[0]) && ! empty($resp[0]['noKunjungan'])) {
+                    return (string) $resp[0]['noKunjungan'];
+                }
+                if (isset($resp['data']) && is_array($resp['data'])) {
+                    $d = $resp['data'];
+                    if (! empty($d['noKunjungan'])) {
+                        return (string) $d['noKunjungan'];
+                    }
+                    if (isset($d[0]) && is_array($d[0]) && ! empty($d[0]['noKunjungan'])) {
+                        return (string) $d[0]['noKunjungan'];
+                    }
+                    if (isset($d['kunjungan']) && is_array($d['kunjungan']) && ! empty($d['kunjungan']['noKunjungan'])) {
+                        return (string) $d['kunjungan']['noKunjungan'];
+                    }
+                }
+                if (! empty($resp['message'])) {
+                    $m = (string) $resp['message'];
+                    if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                        return $m;
+                    }
+                    if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                        return (string) $mm[1];
+                    }
+                }
+            } elseif (is_string($resp) && $resp !== '') {
+                $candidate = $this->parseNoKunjunganFromString($resp);
+                if ($candidate !== null) {
+                    return $candidate;
+                }
+                try {
+                    $decodedResp = json_decode($resp, true);
+                    if (is_array($decodedResp)) {
+                        $candidate = $this->parseNoKunjunganFromResponse($decodedResp);
+                        if ($candidate !== null) {
+                            return $candidate;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+        }
+        if (isset($processed['metaData']) && is_array($processed['metaData'])) {
+            $m = (string) ($processed['metaData']['message'] ?? '');
+            if ($m !== '') {
+                if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                    return $m;
+                }
+                if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                    return (string) $mm[1];
+                }
+            }
+        }
+        if (isset($processed['metadata']) && is_array($processed['metadata'])) {
+            $m = (string) ($processed['metadata']['message'] ?? '');
+            if ($m !== '') {
+                if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                    return $m;
+                }
+                if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                    return (string) $mm[1];
+                }
+            }
+        }
+        if (! empty($processed['noKunjungan'])) {
+            return (string) $processed['noKunjungan'];
+        }
+        if (isset($processed['data']) && is_array($processed['data'])) {
+            $d = $processed['data'];
+            if (! empty($d['noKunjungan'])) {
+                return (string) $d['noKunjungan'];
+            }
+            if (isset($d['response']) && is_array($d['response']) && ! empty($d['response']['noKunjungan'])) {
+                return (string) $d['response']['noKunjungan'];
+            }
+        }
+        return null;
+    }
+
+    protected function parseNoKunjunganFromString(string $s): ?string
+    {
+        if ($s === '') {
+            return null;
+        }
+        if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $s, $m)) {
+            return (string) $m[1];
+        }
+        $j = null;
+        try {
+            $j = json_decode($s, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            $j = null;
+        }
+        if (is_array($j)) {
+            return $this->parseNoKunjunganFromResponse($j);
+        }
+        return null;
+    }
+
+    protected function fillNoKunjunganFromDbIfMissing(string $noRawat): ?string
+    {
+        $candidate = null;
+        try {
+            $reg = \Illuminate\Support\Facades\DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
+            if ($reg && isset($reg->response_pcare) && is_string($reg->response_pcare) && $reg->response_pcare !== '') {
+                $candidate = $this->parseNoKunjunganFromString($reg->response_pcare);
+            }
+        } catch (\Throwable $e) {
+        }
+        if ($candidate === null && \Illuminate\Support\Facades\Schema::hasTable('pcare_bpjs_log')) {
+            try {
+                $log = \Illuminate\Support\Facades\DB::table('pcare_bpjs_log')
+                    ->where('no_rawat', $noRawat)
+                    ->where('endpoint', 'kunjungan')
+                    ->orderByDesc('created_at')
+                    ->first();
+                if ($log) {
+                    $raw = (string) ($log->response_body_raw ?? '');
+                    $json = (string) ($log->response_body_json ?? '');
+                    $candidate = $this->parseNoKunjunganFromString($json);
+                    if ($candidate === null) {
+                        $candidate = $this->parseNoKunjunganFromString($raw);
+                    }
+                }
+            } catch (\Throwable $e) {
+            }
+        }
+        if ($candidate === null && \Illuminate\Support\Facades\Schema::hasTable('pcare_rujuk_subspesialis')) {
+            try {
+                $r = \Illuminate\Support\Facades\DB::table('pcare_rujuk_subspesialis')->where('no_rawat', $noRawat)->first();
+                if ($r && ! empty($r->noKunjungan)) {
+                    $candidate = (string) $r->noKunjungan;
+                }
+            } catch (\Throwable $e) {
+            }
+        }
+        if ($candidate && \Illuminate\Support\Facades\Schema::hasTable('pcare_kunjungan_umum')) {
+            try {
+                \Illuminate\Support\Facades\DB::table('pcare_kunjungan_umum')
+                    ->where('no_rawat', $noRawat)
+                    ->update(['noKunjungan' => $candidate]);
+            } catch (\Throwable $e) {
+            }
+        }
+        return $candidate;
     }
 
     /**

@@ -515,7 +515,13 @@ class PcareController extends Controller
             $noRawat = trim((string) ($payload['no_rawat'] ?? ''));
             if ($noRawat !== '') {
                 $noKunjungan = $this->parseNoKunjunganFromResponse(is_array($processed) ? $processed : []);
-                $status = ($response->status() === 201) ? 'Terkirim' : 'Gagal';
+                if ($noKunjungan === null) {
+                    $rawBody = $response->body();
+                    if (is_string($rawBody) && $rawBody !== '') {
+                        $noKunjungan = $this->parseNoKunjunganFromString($rawBody);
+                    }
+                }
+                $status = ($response->status() >= 200 && $response->status() < 300) ? 'Terkirim' : 'Gagal';
                 $this->savePcareKunjunganUmum($noRawat, $payload, $noKunjungan, $status);
                 if (! empty($payload['rujukLanjut']) && is_array($payload['rujukLanjut'])) {
                     $this->savePcareRujukSubspesialis($noRawat, $payload, $noKunjungan);
@@ -669,26 +675,93 @@ class PcareController extends Controller
      */
     protected function parseNoKunjunganFromResponse(array $processed): ?string
     {
-        // Pola 1: { response: { field: 'noKunjungan', message: '...' }, metaData: {...} }
         if (isset($processed['response']) && is_array($processed['response'])) {
             $resp = $processed['response'];
             if (($resp['field'] ?? '') === 'noKunjungan' && ! empty($resp['message'])) {
                 return (string) $resp['message'];
             }
-            // Pola 2: response berupa array list dengan item [0]['noKunjungan']
-            if (isset($resp[0]) && is_array($resp[0]) && ! empty($resp[0]['noKunjungan'])) {
-                return (string) $resp[0]['noKunjungan'];
-            }
-            // Pola 3: response memiliki key langsung 'noKunjungan'
             if (! empty($resp['noKunjungan'])) {
                 return (string) $resp['noKunjungan'];
             }
+            if (isset($resp[0]) && is_array($resp[0]) && ! empty($resp[0]['noKunjungan'])) {
+                return (string) $resp[0]['noKunjungan'];
+            }
+            if (isset($resp['data']) && is_array($resp['data'])) {
+                $d = $resp['data'];
+                if (! empty($d['noKunjungan'])) {
+                    return (string) $d['noKunjungan'];
+                }
+                if (isset($d[0]) && is_array($d[0]) && ! empty($d[0]['noKunjungan'])) {
+                    return (string) $d[0]['noKunjungan'];
+                }
+                if (isset($d['kunjungan']) && is_array($d['kunjungan']) && ! empty($d['kunjungan']['noKunjungan'])) {
+                    return (string) $d['kunjungan']['noKunjungan'];
+                }
+            }
+            if (! empty($resp['message'])) {
+                $m = (string) $resp['message'];
+                if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                    return $m;
+                }
+                if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                    return (string) $mm[1];
+                }
+            }
         }
-        // Pola 4: processed di atas langsung punya 'noKunjungan'
+        if (isset($processed['metaData']) && is_array($processed['metaData'])) {
+            $m = (string) ($processed['metaData']['message'] ?? '');
+            if ($m !== '') {
+                if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                    return $m;
+                }
+                if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                    return (string) $mm[1];
+                }
+            }
+        }
+        if (isset($processed['metadata']) && is_array($processed['metadata'])) {
+            $m = (string) ($processed['metadata']['message'] ?? '');
+            if ($m !== '') {
+                if (preg_match('/^[0-9]{10,}Y[0-9]{4,}$/', $m)) {
+                    return $m;
+                }
+                if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $m, $mm)) {
+                    return (string) $mm[1];
+                }
+            }
+        }
         if (! empty($processed['noKunjungan'])) {
             return (string) $processed['noKunjungan'];
         }
+        if (isset($processed['data']) && is_array($processed['data'])) {
+            $d = $processed['data'];
+            if (! empty($d['noKunjungan'])) {
+                return (string) $d['noKunjungan'];
+            }
+            if (isset($d['response']) && is_array($d['response']) && ! empty($d['response']['noKunjungan'])) {
+                return (string) $d['response']['noKunjungan'];
+            }
+        }
+        return null;
+    }
 
+    protected function parseNoKunjunganFromString(string $s): ?string
+    {
+        if ($s === '') {
+            return null;
+        }
+        if (preg_match('/\b([0-9]{10,}Y[0-9]{4,})\b/', $s, $m)) {
+            return (string) $m[1];
+        }
+        $j = null;
+        try {
+            $j = json_decode($s, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable $e) {
+            $j = null;
+        }
+        if (is_array($j)) {
+            return $this->parseNoKunjunganFromResponse($j);
+        }
         return null;
     }
 
@@ -2294,6 +2367,93 @@ class PcareController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+            } catch (\Throwable $e) {
+            }
+        }
+
+        return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Hapus Data Pendaftaran (BPJS PCare Catalog)
+     * Endpoint: DELETE {Base URL}/{Service Name}/pendaftaran/peserta/{noKartu}/tglDaftar/{tglDaftar}/noUrut/{noUrut}/kdPoli/{kdPoli}
+     * Content-Type: application/json; charset=utf-8
+     */
+    public function deletePendaftaran(Request $request)
+    {
+        $noRawat = trim((string) $request->input('no_rawat', ''));
+        $noKartu = trim((string) $request->input('noKartu', ''));
+        $tglDaftar = trim((string) $request->input('tglDaftar', ''));
+        $noUrut = trim((string) $request->input('noUrut', ''));
+        $kdPoli = trim((string) $request->input('kdPoli', ''));
+
+        if ($noRawat !== '' && ($noKartu === '' || $tglDaftar === '' || $noUrut === '' || $kdPoli === '')) {
+            $row = \Illuminate\Support\Facades\DB::table('pcare_pendaftaran')
+                ->where('no_rawat', $noRawat)
+                ->orderByDesc('tglDaftar')
+                ->orderByDesc('noUrut')
+                ->first();
+            if (! $row) {
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Data pendaftaran tidak ditemukan untuk no_rawat: '.$noRawat,
+                        'code' => 404,
+                    ],
+                ], 404);
+            }
+            $noKartu = $noKartu ?: (string) ($row->noKartu ?? '');
+            $noUrut = $noUrut ?: (string) ($row->noUrut ?? '');
+            $kdPoli = $kdPoli ?: (string) ($row->kdPoli ?? '');
+            $tglDb = (string) ($row->tglDaftar ?? '');
+            try {
+                $tglDaftar = (new \DateTime($tglDb))->format('d-m-Y');
+            } catch (\Throwable $e) {
+                $tglDaftar = date('d-m-Y');
+            }
+        } else {
+            if ($tglDaftar !== '') {
+                try {
+                    $tglDaftar = (new \DateTime($tglDaftar))->format('d-m-Y');
+                } catch (\Throwable $e) {
+                }
+            }
+        }
+
+        if ($noKartu === '' || $tglDaftar === '' || $noUrut === '' || $kdPoli === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter noKartu, tglDaftar, noUrut, dan kdPoli wajib diisi',
+                    'code' => 422,
+                ],
+            ], 422);
+        }
+
+        $endpoint = 'pendaftaran/peserta/'.urlencode($noKartu).'/tglDaftar/'.urlencode($tglDaftar).'/noUrut/'.urlencode($noUrut).'/kdPoli/'.urlencode($kdPoli);
+        try {
+            $result = $this->pcareRequest('DELETE', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal terhubung ke BPJS PCare: '.$e->getMessage(),
+                    'code' => 503,
+                ],
+            ], 503);
+        }
+
+        $response = $result['response'];
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+        if ($noRawat !== '' && $response->status() >= 200 && $response->status() < 300) {
+            try {
+                $tglDbUpdate = (new \DateTime(str_replace('/', '-', $tglDaftar)))->format('Y-m-d');
+                \Illuminate\Support\Facades\DB::table('pcare_pendaftaran')
+                    ->where('no_rawat', $noRawat)
+                    ->where('noKartu', $noKartu)
+                    ->where('kdPoli', $kdPoli)
+                    ->where('tglDaftar', $tglDbUpdate)
+                    ->update(['status' => 'Dihapus']);
             } catch (\Throwable $e) {
             }
         }

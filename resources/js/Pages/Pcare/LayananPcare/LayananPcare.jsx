@@ -47,9 +47,11 @@ export default function LayananPcare() {
   const [kdDokter, setKdDokter] = useState('');
   const [kdPoli, setKdPoli] = useState('');
   const [kdSadar, setKdSadar] = useState('');
+  const [nmSadar, setNmSadar] = useState('');
   const [kdStatusPulang, setKdStatusPulang] = useState(''); // default hidden; card Rujukan akan otomatis terbuka saat memilih kode 4
   const [nmStatusPulang, setNmStatusPulang] = useState(''); // label otomatis dari referensi Status Pulang
   const [kdPrognosa, setKdPrognosa] = useState('');
+  const [nmPrognosa, setNmPrognosa] = useState('');
   const [kdDiag1, setKdDiag1] = useState('');
   const [kdDiag2, setKdDiag2] = useState('');
   const [kdDiag3, setKdDiag3] = useState('');
@@ -262,6 +264,7 @@ export default function LayananPcare() {
         kdPoli: String(kdPoli),
         keluhan: keluhan || anamnesa || '-',
         kdSadar: String(kdSadar || ''),
+        nmSadar: String(nmSadar || ''),
         sistole: String(sistole || ''),
         diastole: String(diastole || ''),
         beratBadan: String(beratBadan || ''),
@@ -278,6 +281,7 @@ export default function LayananPcare() {
         kdDiag2: kdDiag2 ? String(kdDiag2) : '',
         kdDiag3: kdDiag3 ? String(kdDiag3) : '',
         kdPrognosa: String(kdPrognosa || ''),
+        nmPrognosa: String(nmPrognosa || ''),
         // Tambahan default sesuai beberapa implementasi
         kdTacc: -1,
         alasanTacc: '',
@@ -297,15 +301,32 @@ export default function LayananPcare() {
         };
       }
 
-      const res = await fetch('/api/pcare/kunjungan', {
+      try { await fetch('/sanctum/csrf-cookie', { credentials: 'include' }); } catch {}
+      let res = await fetch('/api/pcare/kunjungan', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
-      const json = await res.json();
+      if (res.status === 419) {
+        try { await fetch('/sanctum/csrf-cookie', { credentials: 'include' }); } catch {}
+        res = await fetch('/api/pcare/kunjungan', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+      }
+      const text = await res.text();
+      let json; try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
       if (res.ok) {
         setKirimResult(json);
       } else {
@@ -504,7 +525,7 @@ export default function LayananPcare() {
               <div className="mt-3 text-xs text-slate-500 mb-1">Poli</div>
               <SearchableSelect source="poli" value={kdPoli} onChange={setKdPoli} placeholder="Pilih poli" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Kesadaran</div>
-              <SearchableSelect source="kesadaran" value={kdSadar} onChange={setKdSadar} placeholder="Pilih kesadaran" />
+              <SearchableSelect source="kesadaran" value={kdSadar} onChange={(val) => { setKdSadar(val); if (!val) setNmSadar(''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); setNmSadar(label); }} placeholder="Pilih kesadaran" />
               <div className="mt-3 text-xs text-slate-500 mb-1">Status Pulang</div>
               <SearchableSelect 
                 source="statuspulang" 
@@ -520,7 +541,7 @@ export default function LayananPcare() {
                 placeholder="Pilih status pulang" 
               />
               <div className="mt-3 text-xs text-slate-500 mb-1">Prognosa</div>
-              <SearchableSelect source="prognosa" value={kdPrognosa} onChange={setKdPrognosa} placeholder="Pilih prognosa" />
+              <SearchableSelect source="prognosa" value={kdPrognosa} onChange={(val) => { setKdPrognosa(val); if (!val) setNmPrognosa(''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); setNmPrognosa(label); }} placeholder="Pilih prognosa" />
             </div>
             <div className="rounded-lg border border-slate-200 p-3">
               <div className="text-xs text-slate-500 mb-1">Diagnosa Utama</div>

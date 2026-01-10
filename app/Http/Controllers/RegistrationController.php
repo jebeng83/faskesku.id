@@ -53,13 +53,36 @@ class RegistrationController extends Controller
     {
         $query = Patient::query();
 
-        if ($request->has('search') && $request->search) {
-            $query->search($request->search);
+        $search = trim((string) $request->input('search', ''));
+        $alamat = trim((string) $request->input('alamat', ''));
+
+        if ($search !== '') {
+            $query->search($search);
+        }
+
+        if ($alamat !== '') {
+            $query->where(function ($q) use ($alamat) {
+                $q->where('alamat', 'like', '%'.$alamat.'%')
+                    ->orWhere('alamatpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kelurahanpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kecamatanpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kabupatenpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('propinsipj', 'like', '%'.$alamat.'%')
+                    ->orWhereHas('kelurahan', function ($sub) use ($alamat) {
+                        $sub->where('nm_kel', 'like', '%'.$alamat.'%');
+                    })
+                    ->orWhereHas('kecamatan', function ($sub) use ($alamat) {
+                        $sub->where('nm_kec', 'like', '%'.$alamat.'%');
+                    })
+                    ->orWhereHas('kabupaten', function ($sub) use ($alamat) {
+                        $sub->where('nm_kab', 'like', '%'.$alamat.'%');
+                    });
+            });
         }
 
         $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten'])
             ->orderBy('no_rkm_medis', 'desc')
-            ->limit(10)
+            ->limit(100)
             ->get();
 
         return response()->json([

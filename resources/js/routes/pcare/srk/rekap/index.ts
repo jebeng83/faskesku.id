@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import api3b9ccf from './api'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2719
+* @see app/Http/Controllers/Pcare/PcareController.php:2879
 * @route '/pcare/api/srk/rekap'
 */
 export const api = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2719
+* @see app/Http/Controllers/Pcare/PcareController.php:2879
 * @route '/pcare/api/srk/rekap'
 */
 api.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ api.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2719
+* @see app/Http/Controllers/Pcare/PcareController.php:2879
 * @route '/pcare/api/srk/rekap'
 */
 api.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ api.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:2719
+* @see app/Http/Controllers/Pcare/PcareController.php:2879
 * @route '/pcare/api/srk/rekap'
 */
 api.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

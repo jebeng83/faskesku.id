@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2084
+* @see app/Http/Controllers/Pcare/PcareController.php:2157
 * @route '/api/pcare/pendaftaran'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2084
+* @see app/Http/Controllers/Pcare/PcareController.php:2157
 * @route '/api/pcare/pendaftaran'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2084
+* @see app/Http/Controllers/Pcare/PcareController.php:2157
 * @route '/api/pcare/pendaftaran'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -34,8 +34,42 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
+* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @route '/api/pcare/pendaftaran'
+*/
+export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deleteMethod.url(options),
+    method: 'delete',
+})
+
+deleteMethod.definition = {
+    methods: ["delete"],
+    url: '/api/pcare/pendaftaran',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
+* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @route '/api/pcare/pendaftaran'
+*/
+deleteMethod.url = (options?: RouteQueryOptions) => {
+    return deleteMethod.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
+* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @route '/api/pcare/pendaftaran'
+*/
+deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deleteMethod.url(options),
+    method: 'delete',
+})
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2041
+* @see app/Http/Controllers/Pcare/PcareController.php:2114
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +84,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2041
+* @see app/Http/Controllers/Pcare/PcareController.php:2114
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +111,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2041
+* @see app/Http/Controllers/Pcare/PcareController.php:2114
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -87,7 +121,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2041
+* @see app/Http/Controllers/Pcare/PcareController.php:2114
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -97,6 +131,7 @@ byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 const pendaftaran = {
     store: Object.assign(store, store),
+    delete: Object.assign(deleteMethod, deleteMethod),
     byRawat: Object.assign(byRawat, byRawat),
 }
 

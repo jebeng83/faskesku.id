@@ -5,8 +5,6 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [iframeUrl, setIframeUrl] = useState("");
-  const [status, setStatus] = useState(null);
-  const [meta, setMeta] = useState(null);
 
   const showIcare = async () => {
     const noka = (noPeserta || "").toString().trim();
@@ -42,8 +40,6 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
       let json; try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
       const data = json?.data || {};
       const url = data?.response?.url || "";
-      setStatus(json?.status ?? null);
-      setMeta(data?.metaData ?? null);
       if (res.ok && url) {
         setIframeUrl(url);
       } else {
@@ -97,8 +93,7 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/80 backdrop-blur">
-              <div className="text-xs text-gray-500 dark:text-gray-400">Status: {status ?? '-'}{meta?.code ? `, Kode: ${meta.code}` : ''}{meta?.message ? `, Pesan: ${meta.message}` : ''}</div>
+            <div className="flex items-center justify-end px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/80 backdrop-blur">
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Tutup</button>
                 {iframeUrl ? (

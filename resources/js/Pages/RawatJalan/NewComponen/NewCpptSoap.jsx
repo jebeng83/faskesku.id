@@ -56,6 +56,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   const [bridgingLoading, setBridgingLoading] = useState(false);
   const [bridgingError, setBridgingError] = useState('');
   const [bridgingInfo, setBridgingInfo] = useState(null);
+  const [kunjunganInfo] = useState(null);
 
   useEffect(() => {
     if (currentNik && !formData.nip) {
@@ -472,6 +473,39 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
       setBridgingError(e?.message || String(e));
     } finally {
       setBridgingLoading(false);
+    }
+  };
+
+
+  const hapusPendaftaranPcare = async () => {
+    try {
+      const ok = typeof window !== 'undefined' ? window.confirm('Yakin ingin menghapus pendaftaran PCare?') : true;
+      if (!ok) return;
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch {}
+      const res = await axios({
+        method: 'DELETE',
+        url: '/api/pcare/pendaftaran',
+        data: { no_rawat: noRawat },
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
+        },
+      });
+      const json = res.data || {};
+      const msg = (json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+      setMessage(`Pendaftaran PCare dihapus (${msg})`);
+      setBridgingInfo({ status: 'Dihapus', noUrut: '', meta: msg });
+      setShowBridging(false);
+      setBridgingOpen(false);
+    } catch (e) {
+      const errorMessage = e?.response?.data?.metaData?.message || e?.message || 'Gagal menghapus pendaftaran PCare';
+      setBridgingError(errorMessage);
     }
   };
 
@@ -1011,7 +1045,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
               Bridging PCare
             </button>
           )}
-          {(rujukanBerhasil || previewDev) && (
+          {(rujukanBerhasil && (lastNoKunjungan || previewDev)) && (
             <button
               type="button"
               onClick={async () => {
@@ -1450,6 +1484,13 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   {bridgingInfo.meta ? (
                     <div>Keterangan: {bridgingInfo.meta}</div>
                   ) : null}
+                  <div className="pt-2">
+                    <button type="button" onClick={hapusPendaftaranPcare} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white border border-red-700">Hapus Pendaftaran PCare</button>
+                  </div>
+                  <div className="mt-3 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-2">
+                    <div className="font-medium text-emerald-800 dark:text-emerald-300">Kunjungan PCare</div>
+                    <div className="mt-1">No Kunjungan: {kunjunganInfo?.noKunjungan || lastNoKunjungan || '-'}</div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-gray-500">Tidak ada data</div>

@@ -4,7 +4,7 @@ import update from './update'
 import deleteMethod from './delete'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3033
+* @see app/Http/Controllers/Pcare/PcareController.php:3193
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 export const api = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,7 +19,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3033
+* @see app/Http/Controllers/Pcare/PcareController.php:3193
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 api.url = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ api.url = (args: { tanggal: string | number } | [tanggal: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3033
+* @see app/Http/Controllers/Pcare/PcareController.php:3193
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 api.get = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ api.get = (args: { tanggal: string | number } | [tanggal: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3033
+* @see app/Http/Controllers/Pcare/PcareController.php:3193
 * @route '/pcare/api/kelompok/kegiatan/{tanggal}'
 */
 api.head = (args: { tanggal: string | number } | [tanggal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
