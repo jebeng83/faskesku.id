@@ -44,6 +44,90 @@ const MonthlyInfoPanelLazy = React.lazy(() =>
     import("./DashboardComponents/MonthlyInfoPanel")
 );
 
+// Stats akan dibuat dinamis di dalam komponen menggunakan data dari endpoint
+
+const quickLinks = [
+    {
+        title: "Pengaturan",
+        description: "Kelola konfigurasi aplikasi & bridging",
+        href: route("profile.home"),
+    },
+    {
+        title: "Pendaftaran Pasien",
+        description: "Registrasi cepat atau tambah pasien baru",
+        href: "/registration/lanjutan",
+    },
+    {
+        title: "Monitoring Satusehat",
+        description: "Pantau status FHIR & Encounter",
+        href: "/satusehat/monitoring",
+    },
+    {
+        title: "Briding",
+        description: "Akses modul bridging",
+        href: "/pcare",
+    },
+    {
+        title: "PCare & Rujukan",
+        description: "Sinkron data PCare dan status rujukan",
+        href: "/pcare",
+    },
+    {
+        title: "Rawat Jalan",
+        description: "Kelola pemeriksaan & SOAP RME",
+        href: "/rawat-jalan",
+    },
+    {
+        title: "Laboratorium",
+        description: "Kelola pemeriksaan laboratorium & data hasil",
+        href: route("laboratorium.permintaan-lab.index"),
+    },
+    {
+        title: "Pembayaran",
+        description: "Kelola pembayaran Ralan & Ranap",
+        href: "/pembayaran",
+    },
+    {
+        title: "Keuangan",
+        description: "Kelola Rekening, Jurnal, dan Nota",
+        // Arahkan ke halaman Home Akutansi
+        href: "/akutansi/home",
+    },
+];
+
+const timeline = [
+    {
+        title: "Kunjungan diterima SATUSEHAT",
+        meta: "09:42 WIB • Dr. Sita Anindya",
+        status: "success",
+    },
+    {
+        title: "Bundle Rajal diproses",
+        meta: "09:10 WIB • IGD 01",
+        status: "info",
+    },
+    {
+        title: "Token SATUSEHAT diperbarui",
+        meta: "08:55 WIB • Otomatis",
+        status: "neutral",
+    },
+];
+
+const updates = [
+    {
+        label: "IGD",
+        text: "Flow triase baru mulai 08:00 - pastikan form SOAP terisi lengkap.",
+    },
+    {
+        label: "Farmasi",
+        text: "Resep favorit & stok kritikal kini tersedia di panel farmasi.",
+    },
+    {
+        label: "Keuangan",
+        text: "Laporan tarif baru dapat di-export di Pengaturan > Tarif.",
+    },
+];
+
 function AutoScrollRow({ items, renderItem, speed = 40 }) {
     const containerRef = useRef(null);
     const trackRef = useRef(null);
@@ -243,6 +327,47 @@ const TopNavbar = React.memo(function TopNavbar() {
                             <BarChart2 className="w-4 h-4 transition-transform group-hover:scale-110" />
                             <span className="relative">
                                 Laporan
+                                Pendaftaran
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
+                        <Link
+                            href={route("rawat-jalan.index")}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <Stethoscope className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Rawat Jalan
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
+                        <Link
+                            href={route("laboratorium.permintaan-lab.index")}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Laborat
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
+                        <Link
+                            href={route("farmasi.permintaan-resep")}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Farmasi
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+                            </span>
+                        </Link>
+                        <Link
+                            href={route("akutansi.kasir-ralan.page")}
+                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <CreditCard className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            <span className="relative">
+                                Kasir
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
                             </span>
                         </Link>
@@ -287,6 +412,35 @@ const TopNavbar = React.memo(function TopNavbar() {
                 </div>
             </div>
         </header>
+    );
+});
+
+const MobileBottomNav = React.memo(function MobileBottomNav() {
+    const navItems = [
+        { href: route("registration.index"), label: "Pendaftaran", icon: UserPlus },
+        { href: route("rawat-jalan.index"), label: "Rawat Jalan", icon: Stethoscope },
+        { href: route("laboratorium.permintaan-lab.index"), label: "Laborat", icon: FlaskConical },
+        { href: route("farmasi.permintaan-resep"), label: "Farmasi", icon: Pill },
+        { href: route("akutansi.kasir-ralan.page"), label: "Kasir", icon: CreditCard },
+    ];
+
+    return (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-gray-900/85 backdrop-blur border-t border-slate-200/70 dark:border-gray-800">
+            <div className="h-16 px-4 pb-[env(safe-area-inset-bottom)]">
+                <div className="grid grid-cols-5 gap-2 h-full">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            className="group flex flex-col items-center justify-center rounded-lg text-xs font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                        >
+                            <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                            <span className="mt-1">{item.label}</span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </nav>
     );
 });
 
@@ -401,11 +555,43 @@ const Footer = React.memo(function Footer() {
         }
     };
 
+    const resolveDisplayPoliUrl = () => {
+        try {
+            const { protocol, hostname, port } = window.location;
+            const base = `${protocol}//${hostname}`;
+            if (port === '5173') {
+                return `${base}:8000/antrian/poli`;
+            }
+            return `${base}${port ? ':' + port : ''}/antrian/poli`;
+        } catch (_) {
+            return '/antrian/poli';
+        }
+    };
+
+    const resolveWaGatewayUrl = () => {
+        try {
+            return route('wa-gateway.kredensial');
+        } catch (_) {
+            return '/wa-gateway/kredensial';
+        }
+    };
+
+    const resolveScanWhatsAppUrl = () => {
+        try {
+            return route('tools.whatsapp.credentials.scan');
+        } catch (_) {
+            return '/tools/scan-whatsapp-credentials';
+        }
+    };
+
     const footerLinks = [
         { label: "Loket Antrian", href: resolveLoketUrl(), target: "_blank" },
         { label: "Display TV Loket", href: resolveDisplayUrl(), target: "_blank" },
         { label: "APM", href: resolveApmUrl() },
+        { label: "Display TV Poli", href: resolveDisplayPoliUrl(), target: "_blank" },
+        { label: "APM", href: route("anjungan.pasien-mandiri") },
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
+        { label: "Scan QR Kredensial", href: resolveScanWhatsAppUrl() },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
         { label: "Berita Sistem", href: "/news" },
         { label: "Kehidupan Faskes", href: "/profile" },
@@ -443,6 +629,13 @@ const Footer = React.memo(function Footer() {
             href: "/farmasi",
             requiredPermission: "group.farmasi.access",
         },
+    const unitLinks = [
+        { label: "SATUSEHAT Monitoring", href: "/satusehat/monitoring" },
+        { label: "Penjaminan Mutu (Audit)", href: "/permissions" },
+        { label: "Laboratorium", href: route("laboratorium.permintaan-lab.index") },
+        { label: "Radiologi", href: "/radiologi" },
+        { label: "Farmasi", href: "/farmasi" },
+        { label: "Wa Gateway", href: resolveWaGatewayUrl() },
     ];
 
     return (
@@ -801,7 +994,7 @@ export default function Dashboard() {
                     setPasienHariIniCount(jsonToday?.data?.total ?? null);
                     setPasienKemarinCount(jsonYesterday?.data?.total ?? null);
                 }
-            } catch (e) {
+            } catch {
                 if (mounted) {
                     setPasienHariIniCount(null);
                     setPasienKemarinCount(null);
@@ -832,7 +1025,7 @@ export default function Dashboard() {
                 });
                 const json = await res.json();
                 if (active) setPoliMonthly(json?.data || null);
-            } catch (e) {
+            } catch {
                 if (active) setPoliMonthly(null);
             }
         };
@@ -844,10 +1037,49 @@ export default function Dashboard() {
 
     const [query, setQuery] = useState("");
 
+    useEffect(() => {
+        let active = true;
+        const controller = new AbortController();
+
+        const fetchMenus = async () => {
+            setLoading(true);
+            try {
+                const trimmed = query?.trim() ?? "";
+                const key = trimmed ? `search:${trimmed}` : `popular:8`;
+                const cached = cacheRef.current.get(key);
+                if (cached) {
+                    if (active) setResults(cached);
+                    if (active) setLoading(false);
+                    return;
+                }
+                const url = trimmed
+                    ? route("api.menu.search", { q: trimmed })
+                    : route("api.menu.popular", { limit: 8 });
+                const res = await fetch(url, { signal: controller.signal });
+                const json = await res.json();
+                const data = json.data || [];
+                cacheRef.current.set(key, data);
+                if (active) setResults(data);
+            } catch {
+                if (active) setResults([]);
+            } finally {
+                if (active) setLoading(false);
+            }
+        };
+
+        const t = setTimeout(fetchMenus, 250);
+        return () => {
+            active = false;
+            controller.abort();
+            clearTimeout(t);
+        };
+    }, [query]);
+
+    // Helper seperti di Landing.jsx
     const safeRoute = (name, params = {}) => {
         try {
             return route(name, params, false);
-        } catch (e) {
+        } catch {
             return "#";
         }
     };
@@ -935,6 +1167,108 @@ export default function Dashboard() {
                 },
             ].filter((item) => hasPermission(item.requiredPermission)),
         [permissionNames]
+    const aliasRoute = (raw) => {
+        const slug = String(raw || "")
+            .trim()
+            .toLowerCase();
+        const map = {
+            "rawat-jalan": "rawat-jalan.index",
+            "rawat inap": "rawat-inap.index",
+            "rawat-inap": "rawat-inap.index",
+            laboratorium: "laboratorium.permintaan-lab.index",
+            radiologi: "radiologi.index",
+            igd: "igd.index",
+            farmasi: "farmasi.index",
+            registration: "registration.index",
+            "reg-periksa": "reg-periksa.index",
+            dashboard: "dashboard",
+        };
+        return map[slug] || raw;
+    };
+
+    const getMenuHref = (item) => {
+        if (item?.url) {
+            try {
+                const currentOrigin = window.location?.origin || "";
+                const u = new URL(item.url, currentOrigin);
+                return u.pathname + u.search + u.hash;
+            } catch (_) {
+                if (String(item.url).startsWith("/")) return item.url;
+                return "/" + String(item.url).replace(/^https?:\/\/[^/]+/, "");
+            }
+        }
+        if (item?.route) {
+            const normalized = aliasRoute(item.route);
+            return safeRoute(normalized);
+        }
+        return "#";
+    };
+
+    const shortcuts = useMemo(
+        () => [
+            {
+                key: "register",
+                label: "Register",
+                href: safeRoute("registration.lanjutan"),
+                icon: <UserPlus className="w-5 h-5" />,
+            },
+            {
+                key: "bridging",
+                label: "Briding",
+                href: safeRoute("pcare.index"),
+                icon: <LinkIcon className="w-5 h-5" />,
+            },
+            {
+                key: "ugd",
+                label: "UGD",
+                href: safeRoute("igd.index"),
+                icon: <Ambulance className="w-5 h-5" />,
+            },
+            {
+                key: "lab",
+                label: "Laboratorium",
+                href: safeRoute("laboratorium.permintaan-lab.index"),
+                icon: <FlaskConical className="w-5 h-5" />,
+            },
+            {
+                key: "rad",
+                label: "Radiologi",
+                href: safeRoute("radiologi.index"),
+                icon: <Radiation className="w-5 h-5" />,
+            },
+            {
+                key: "farmasi",
+                label: "Farmasi",
+                href: safeRoute("farmasi.index"),
+                icon: <Pill className="w-5 h-5" />,
+            },
+            {
+                key: "rajal",
+                label: "Rawat Jalan",
+                href: safeRoute("rawat-jalan.index"),
+                icon: <Stethoscope className="w-5 h-5" />,
+            },
+            {
+                key: "ranap",
+                label: "Rawat Inap",
+                href: safeRoute("rawat-inap.index"),
+                icon: <Bed className="w-5 h-5" />,
+            },
+            {
+                key: "keuangan",
+                label: "Keuangan",
+                // Arahkan ke halaman Home Akutansi
+                href: "/akutansi/home",
+                icon: <Wallet className="w-5 h-5" />,
+            },
+            {
+                key: "settings",
+                label: "Pengaturan",
+                href: safeRoute("profile.home", "/profile/home"),
+                icon: <Settings className="w-5 h-5" />,
+            },
+        ],
+        []
     );
 
     const filteredShortcuts = useMemo(() => {
@@ -1000,11 +1334,10 @@ export default function Dashboard() {
     const removeNote = (id) => {
         setNotes((n) => n.filter((i) => i.id !== id));
     };
-    const [sipExpiring, setSipExpiring] = useState([]);
-    const { props: pageProps } = usePage();
-    useEffect(() => {
-        let active = true;
-        const controller = new AbortController();
+	const [sipExpiring, setSipExpiring] = useState([]);
+	useEffect(() => {
+		let active = true;
+		const controller = new AbortController();
         (async () => {
             try {
                 const res = await window.axios.get("/api/public/sip-pegawai/expiring", {

@@ -83,7 +83,7 @@ export default function Index({ employees, filters }) {
 				});
 				setShowAlert(true);
 			}
-		} catch (error) {
+		} catch (_error) {
 			setAlertConfig({
 				type: "error",
 				title: "Kesalahan Jaringan",
@@ -122,48 +122,6 @@ export default function Index({ employees, filters }) {
 		setShowAlert(true);
 	};
 
-	const getStatusBadge = (status) => {
-		const statusColors = {
-			AKTIF:
-				"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-			NONAKTIF: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-			CUTI:
-				"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-			RESIGN: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
-		};
-
-		return (
-			<span
-				className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-					statusColors[status] || "bg-gray-100 text-gray-800"
-				}`}
-			>
-				{status}
-			</span>
-		);
-	};
-
-	const getEmployeeTypeBadge = (type) => {
-		const typeColors = {
-			TETAP: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-			KONTRAK:
-				"bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-			MAGANG:
-				"bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-			HONORER:
-				"bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300",
-		};
-
-		return (
-			<span
-				className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-					typeColors[type] || "bg-gray-100 text-gray-800"
-				}`}
-			>
-				{type}
-			</span>
-		);
-	};
 
 	return (
 		<SidebarPengaturan title="Kepegawaian">

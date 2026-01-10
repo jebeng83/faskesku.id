@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
 export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', onInputSoap = null }) {
+import axios from 'axios';
+
+export default function Diagnosa({ noRawat = '' }) {
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +29,14 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
                 const json = await res.json();
                 const list = json?.data || [];
                 const mapped = list.map((it) => ({ kode: it.kode || '', nama: it.nama || '' }));
+                const response = await axios.get('/api/pcare/diagnosa', {
+                    params: { q: query, start: 0, limit: 25 },
+                    withCredentials: true,
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = response?.data || {};
+                const list = data?.response?.list || data?.list || data?.data || [];
+                const mapped = list.map((it) => ({ kode: it?.kdDiag || it?.kode || '', nama: it?.nmDiag || it?.nama || '' }));
                 setResults(mapped);
             } catch (e) {
                 setErrorMsg(e?.message || 'Gagal memuat data diagnosa');
@@ -52,6 +63,14 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
                     nama: it.nama,
                     status_penyakit: it.status_penyakit || null,
                 }));
+                try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); } catch {}
+                const response = await axios.get('/api/rawat-jalan/diagnosa', {
+                    params: { no_rawat: noRawat },
+                    withCredentials: true,
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const list = response?.data?.data || [];
+                const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
                 setSelected(mapped);
             } catch (e) {
                 // Abaikan error muat awal; tampilkan daftar kosong
@@ -59,7 +78,6 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
             }
         };
         loadSavedDiagnosa();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat]);
 
     const addDiagnosis = (diag) => {
@@ -104,6 +122,13 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
                 nama: it.nama,
                 status_penyakit: it.status_penyakit || null,
             }));
+            try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); } catch {}
+            const response = await axios.post('/api/rawat-jalan/diagnosa', { no_rawat: noRawat, list: selected }, {
+                withCredentials: true,
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const list = response?.data?.data || [];
+            const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
             setSelected(mapped);
             setSaveStatus({ type: 'success', message: 'Diagnosa berhasil disimpan' });
             if (typeof onInputSoap === 'function') {
@@ -334,12 +359,12 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
                         )}
                         <button 
                             type="submit" 
-                            className="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
                             disabled={isSubmitting || selected.length === 0}
                         >
                             {isSubmitting ? (
                                 <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
@@ -347,7 +372,7 @@ export default function Diagnosa({ token = '', noRkmMedis = '', noRawat = '', on
                                 </>
                             ) : (
                                 <>
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                     INPUT SOAP

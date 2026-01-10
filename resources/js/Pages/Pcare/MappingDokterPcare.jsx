@@ -5,12 +5,10 @@ import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem 
 import {
     ArrowPathIcon,
     CheckCircleIcon,
-    ExclamationTriangleIcon,
     MagnifyingGlassIcon,
     PlusIcon,
     PencilSquareIcon,
     TrashIcon,
-    XMarkIcon,
     ArrowsUpDownIcon,
     UserCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -47,11 +45,6 @@ const itemVariants = {
     show: { opacity: 1, y: 0 },
 };
 
-const buttonVariants = {
-    initial: { scale: 1 },
-    hover: { scale: 1.02 },
-    tap: { scale: 0.98 },
-};
 
 export default function MappingDokterPcare() {
     const [rsQuery, setRsQuery] = useState("");

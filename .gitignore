@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+public/wagateway/
+public/wa-gateway-main/
 /storage/*.key
 /storage/pail
 /vendor
@@ -26,3 +28,9 @@ Thumbs.db
 **/caddy
 frankenphp
 frankenphp-worker.php
+*_headers.txt
+*_out.json
+*_out.txt
+*cookies.txt
+.cookies
+.*.html

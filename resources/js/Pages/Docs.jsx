@@ -101,7 +101,7 @@ export default function Docs() {
                 steps: m?.steps || [],
             });
             if (Array.isArray(m?.children)) {
-                m.children.forEach((c, idx) => pushItem(c, `${id}-`));
+                m.children.forEach((c, _idx) => pushItem(c, `${id}-`));
             }
         };
         if (Array.isArray(rawMenu)) rawMenu.forEach((m) => pushItem(m));

@@ -1,8 +1,9 @@
 import React from "react";
+import { router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    Receipt,
     Search,
     Filter,
     RefreshCw,
@@ -38,14 +39,6 @@ const itemVariants = {
     },
 };
 
-const cardHoverVariants = {
-    rest: { scale: 1, y: 0 },
-    hover: {
-        scale: 1.01,
-        y: -4,
-        transition: { duration: 0.3, ease: "easeOut" },
-    },
-};
 
 const currency = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -120,6 +113,8 @@ export default function KasirRalanPage() {
                 });
                 days.push(dateStr);
             } catch (e) {
+            } catch {
+                // Fallback ke ISO jika parsing gagal
                 days.push(cur.toISOString().slice(0, 10));
             }
             cur.setDate(cur.getDate() + 1);
@@ -696,6 +691,93 @@ export default function KasirRalanPage() {
                                                     <div className="flex flex-col gap-0.5 text-[11px] text-gray-700 dark:text-gray-300">
                                                         <span>{r?.tgl_registrasi || "-"}</span>
                                                         <span>{String(r?.jam_reg || "").slice(0, 5) || "-"}</span>
+                                                <td className="px-4 py-3 font-medium">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-mono text-xs text-gray-900 dark:text-gray-100">
+                                                            {formatShortDateId(r?.tgl_registrasi)}{" "}
+                                                            {String(r?.jam_reg || "").slice(0, 5)}
+                                                        </span>
+                                                        <motion.button
+                                                            onClick={() => {
+                                                                try {
+                                                                    const url = route('rawat-jalan.canvas', {
+                                                                        no_rawat: r?.no_rawat,
+                                                                        no_rkm_medis: r?.no_rkm_medis,
+                                                                        kd_poli: r?.kd_poli
+                                                                    });
+                                                                    router.visit(url);
+                                                                } catch {
+                                                                    const params = new URLSearchParams({
+                                                                        no_rawat: r?.no_rawat || '',
+                                                                        no_rkm_medis: r?.no_rkm_medis || '',
+                                                                        kd_poli: r?.kd_poli || ''
+                                                                    }).toString();
+                                                                    router.visit(`/rawat-jalan/canvas?${params}`);
+                                                                }
+                                                            }}
+                                                            className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                        >
+                                                            {r?.no_rawat || "-"}
+                                                        </motion.button>
+                                                        <span className="text-[11px] truncate text-gray-900 dark:text-white mt-0.5">
+                                                            {r?.dokter?.nm_dokter ? `dr. ${r.dokter.nm_dokter}` : "-"}
+                                                        </span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-400 font-normal mt-0.5">
+                                                            {r?.no_reg || "-"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                    {r?.tgl_registrasi || "-"}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                    {r?.jam_reg || "-"}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col">
+                                                        <motion.span
+                                                            className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold w-fit ${statusBadgeClass}`}
+                                                            whileHover={{
+                                                                scale: 1.05,
+                                                            }}
+                                                        >
+                                                            {r?.status_bayar ||
+                                                                "-"}
+                                                        </motion.span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                            {r?.status_poli ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-gray-900 dark:text-gray-100">
+                                                            {r?.pasien
+                                                                ?.no_tlp || "-"}
+                                                        </span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                            {r?.keputusan ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-2">
+                                                        <motion.a
+                                                            href={`/akutansi/billing?no_rawat=${encodeURIComponent(
+                                                                r.no_rawat || ""
+                                                            )}`}
+                                                            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-slate-600 to-gray-700 hover:from-slate-700 hover:to-gray-800 text-white text-xs font-semibold shadow-md shadow-slate-500/25 hover:shadow-lg hover:shadow-slate-500/30 transition-all duration-200"
+                                                            whileHover={{
+                                                                scale: 1.05,
+                                                            }}
+                                                            whileTap={{
+                                                                scale: 0.95,
+                                                            }}
+                                                        >
+                                                            Billing
+                                                        </motion.a>
                                                     </div>
                                                 </td>
                                             </motion.tr>

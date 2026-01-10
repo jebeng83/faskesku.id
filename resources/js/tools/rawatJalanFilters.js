@@ -13,7 +13,7 @@ export function getRawatJalanFilters() {
       kd_dokter: parsed?.kd_dokter || '',
       kd_poli: parsed?.kd_poli || '',
     };
-  } catch (_) {
+  } catch {
     return {};
   }
 }
@@ -27,7 +27,7 @@ export function setRawatJalanFilters(partial) {
       kd_poli: partial?.kd_poli ?? current.kd_poli ?? '',
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch (_) {
+  } catch {
     // ignore
   }
 }
@@ -36,7 +36,7 @@ export function clearRawatJalanFilters() {
   try {
     if (typeof window === 'undefined' || !window.localStorage) return;
     window.localStorage.removeItem(STORAGE_KEY);
-  } catch (_) {
+  } catch {
     // ignore
   }
 }

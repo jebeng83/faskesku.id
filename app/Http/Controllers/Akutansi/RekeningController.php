@@ -23,10 +23,10 @@ class RekeningController extends Controller
     // API: list rekening (optional q filter)
     public function index(Request $request): JsonResponse
     {
-        $q = trim((string) $request->get('q', ''));
-        $perPage = max(1, (int) $request->get('per_page', 20));
-        $level = $request->has('level') ? (string) $request->get('level') : null; // '0' atau '1'
-        $indukKd = trim((string) $request->get('induk_kd', ''));
+        $q = trim((string) $request->query('q', ''));
+        $perPage = max(1, (int) $request->query('per_page', 20));
+        $level = $request->query->has('level') ? (string) $request->query('level') : null;
+        $indukKd = trim((string) $request->query('induk_kd', ''));
 
         $query = Rekening::query();
         // Filter level jika diberikan

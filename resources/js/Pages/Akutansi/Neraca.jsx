@@ -69,7 +69,6 @@ export default function NeracaPage() {
     // Memuat semua akun (R, M, N) untuk tahun terpilih
     const [itemsAll, setItemsAll] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
     const [serverFilters, setServerFilters] = useState(null);
 
     // Tab: Laba Rugi, Perubahan Modal, Neraca
@@ -139,12 +138,7 @@ export default function NeracaPage() {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        setRefreshing(true);
-        try {
-            await fetchItems();
-        } finally {
-            setRefreshing(false);
-        }
+        await fetchItems();
     };
 
     const resetSaldoForm = () => {
@@ -289,7 +283,6 @@ export default function NeracaPage() {
     const periodLabel = useMemo(() => {
         if (!serverFilters) return null;
         const p = serverFilters.period;
-        const from = serverFilters.from;
         const to = serverFilters.to;
         const y = serverFilters.thn;
         const m = serverFilters.month;

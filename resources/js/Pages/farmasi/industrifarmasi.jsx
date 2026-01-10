@@ -88,7 +88,6 @@ export default function IndustriFarmasiPage() {
     data,
     setData,
     post,
-    put,
     processing,
     errors,
     reset
@@ -389,4 +388,3 @@ export default function IndustriFarmasiPage() {
 
 // Pastikan halaman berada di dalam AppLayout utama
 IndustriFarmasiPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
-

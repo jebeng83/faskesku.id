@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { createPortal } from "react-dom";
 import { Head, Link, router } from "@inertiajs/react";
@@ -52,10 +52,6 @@ export default function Index({
 	});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toasts, setToasts] = useState([]);
-    const addToast = (type = "info", title = "", message = "", duration = 4000) => {
-        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-        setToasts((prev) => [...prev, { id, type, title, message, duration }]);
-    };
     const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
     // Kunjungan Sehat (PCare) modal states
@@ -65,6 +61,8 @@ export default function Index({
     const [pcareLoading, setPcareLoading] = useState(false);
     const [pcareError, setPcareError] = useState(null);
     const [pcareData, setPcareData] = useState(null); // { response, metaData }
+    const pcareAbortRef = useRef(null);
+    const pcareReqIdRef = useRef(0);
 
     // Motion variants (UI/UX Improvements Guide)
     // Ref: docs/UI_UX_IMPROVEMENTS_GUIDE.md
@@ -167,6 +165,10 @@ export default function Index({
         setPcareLoading(false);
         setPcareError(null);
         setPcareData(null);
+        if (pcareAbortRef.current) {
+            try { pcareAbortRef.current.abort(); } catch {}
+            pcareAbortRef.current = null;
+        }
     };
 
     const fetchPcareByNik = async (nik) => {
@@ -180,13 +182,25 @@ export default function Index({
         }
         setPcareLoading(true);
         try {
+            if (pcareAbortRef.current) {
+                try { pcareAbortRef.current.abort(); } catch {}
+            }
+            const controller = new AbortController();
+            pcareAbortRef.current = controller;
+            const reqId = (pcareReqIdRef.current += 1);
             const params = new URLSearchParams({ nik: n });
             const { data } = await axios.get(`/pcare/api/peserta/nik?${params.toString()}`, {
                 withCredentials: true,
                 headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                signal: controller.signal,
             });
-            setPcareData(data);
+            if (pcareReqIdRef.current === reqId && showKunjunganSehatModal) {
+                setPcareData(data);
+            }
         } catch (e) {
+            if (e?.name === "CanceledError" || e?.code === "ERR_CANCELED") {
+                return;
+            }
             setPcareError(e?.response?.data?.metaData?.message || e?.message || "Terjadi kesalahan jaringan");
         } finally {
             setPcareLoading(false);
@@ -321,18 +335,18 @@ export default function Index({
 					setShowAlert(true);
 					setIsSubmitting(false);
 				},
-				onError: (errors) => {
-					// Show error alert
-					setAlertConfig({
-						type: "error",
-						title: "Gagal!",
-						message:
-							"Terjadi kesalahan saat mendaftarkan pasien. Silakan coba lagi.",
-						autoClose: false,
-					});
-					setShowAlert(true);
-					setIsSubmitting(false);
-				},
+                onError: (_errors) => {
+                    // Show error alert
+                    setAlertConfig({
+                        type: "error",
+                        title: "Gagal!",
+                        message:
+                            "Terjadi kesalahan saat mendaftarkan pasien. Silakan coba lagi.",
+                        autoClose: false,
+                    });
+                    setShowAlert(true);
+                    setIsSubmitting(false);
+                },
 			}
 		);
 	};

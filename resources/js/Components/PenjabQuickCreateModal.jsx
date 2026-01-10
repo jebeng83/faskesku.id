@@ -46,9 +46,7 @@ export default function PenjabQuickCreateModal({ isOpen, onClose, onCreated }) {
                 if (data?.next_code) {
                     setForm((prev) => ({ ...prev, kd_pj: data.next_code }));
                 }
-            } catch (e) {
-                // abaikan error — pengguna tetap dapat mengisi manual
-            }
+            } catch {}
         };
 
         if (isOpen) {

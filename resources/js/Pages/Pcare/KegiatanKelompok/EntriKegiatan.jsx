@@ -514,7 +514,6 @@ export default function EntriKegiatan() {
         setSubmitting(true);
         setProposeAddInstead(false);
         try {
-            let lastStatus = 0;
             // Perbaikan 405 Method Not Allowed untuk PUT:
             // - Gunakan method spoofing via POST + FormData dengan _method=PUT ketika isEditing=true
             // - Biarkan browser yang menetapkan Content-Type (multipart/form-data) agar Laravel mengenali _method
@@ -539,7 +538,6 @@ export default function EntriKegiatan() {
                 credentials: "same-origin",
                 body: formData,
             });
-            lastStatus = res.status;
             const json = await res.json().catch(() => ({}));
             if (!res.ok) {
                 // Tampilkan pesan khusus untuk 405 (PCare Method Not Allowed) dan 412 (PCare bukan Administrator)

@@ -141,7 +141,7 @@ export default function Resep({
                         }))
                         .filter((d) => d.kd_dokter && d.nm_dokter);
                     setDokterOptions(normalized);
-                } catch (e) {
+                } catch {
                     setDokterOptions([]);
                 }
             }
@@ -567,23 +567,7 @@ export default function Resep({
         fetchRiwayatResep(true);
     };
 
-    // Cek stok obat
-    const cekStokObat = async (kodeObat, jumlah) => {
-        if (!kodeObat || !kdPoli) return false;
-
-        try {
-            const response = await axios.post("/api/obat/cek-stok", {
-                kode_brng: kodeObat,
-                kd_poli: kdPoli,
-                jumlah: jumlah,
-            });
-
-            return response.data.success ? response.data.data.tersedia : false;
-        } catch (error) {
-            console.error("Error checking stock:", error);
-            return false;
-        }
-    };
+    
 
     // Proses penyerahan obat untuk resep tertentu
     const handlePenyerahan = async (resep) => {
@@ -1351,7 +1335,7 @@ export default function Resep({
                                                     ]
                                                 }
                                                 className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 flex items-center gap-1 ${
-                                                    !!resep.tgl_penyerahan
+                                                    resep.tgl_penyerahan
                                                         ? "bg-green-100 text-green-700 cursor-not-allowed"
                                                         : penyerahanLoading[
                                                               resep.no_resep

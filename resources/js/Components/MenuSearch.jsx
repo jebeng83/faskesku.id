@@ -88,7 +88,7 @@ export default function MenuSearch({ isOpen, onClose }) {
 	}, [menu_hierarchy, activeTab]);
 
 	// Filter menus based on search query and group results
-	const { filteredMenus, filteredGroups, displayGroups } = useMemo(() => {
+    const { filteredMenus, displayGroups } = useMemo(() => {
 		if (!query.trim()) {
 			// Show all groups when no query, more items per group for desktop-style display
 			const limitedGroups = Object.keys(groupedMenus).reduce(
@@ -103,11 +103,10 @@ export default function MenuSearch({ isOpen, onClose }) {
 				{}
 			);
 
-			return {
-				filteredMenus: flattenedMenus.slice(0, 30),
-				filteredGroups: limitedGroups,
-				displayGroups: limitedGroups,
-			};
+            return {
+                filteredMenus: flattenedMenus.slice(0, 30),
+                displayGroups: limitedGroups,
+            };
 		}
 
 		const searchTerms = query.toLowerCase().trim().split(/\s+/);
@@ -145,12 +144,11 @@ export default function MenuSearch({ isOpen, onClose }) {
 			return acc;
 		}, {});
 
-		return {
-			filteredMenus: filtered,
-			filteredGroups: searchGroups,
-			displayGroups: query.trim() ? searchGroups : groupedMenus,
-		};
-	}, [query, flattenedMenus, groupedMenus]);
+        return {
+            filteredMenus: filtered,
+            displayGroups: query.trim() ? searchGroups : groupedMenus,
+        };
+    }, [query, flattenedMenus, groupedMenus]);
 
 	// Reset selected index when filtered results change
 	useEffect(() => {
@@ -205,19 +203,19 @@ export default function MenuSearch({ isOpen, onClose }) {
 				const currentOrigin = window.location.origin;
 				const u = new URL(menu.url, currentOrigin);
 				return u.pathname + u.search + u.hash;
-			} catch (e) {
-				if (menu.url.startsWith("/")) return menu.url;
-				return "/" + menu.url.replace(/^https?:\/\/[^/]+/, "");
-			}
+            } catch (_e) {
+                if (menu.url.startsWith("/")) return menu.url;
+                return "/" + menu.url.replace(/^https?:\/\/[^/]+/, "");
+            }
 		}
 
 		if (menu.route) {
 			try {
 				return route(menu.route, {}, false);
-			} catch (error) {
-				console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
-				return "#";
-			}
+            } catch (_error) {
+                console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+                return "#";
+            }
 		}
 
 		return "#";

@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, usePage } from "@inertiajs/react";
-import { ChevronDownIcon, ChevronRightIcon, HomeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, CalculatorIcon, BeakerIcon, HeartIcon, CameraIcon, ClockIcon, DocumentIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, HomeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, CalculatorIcon, BeakerIcon, HeartIcon, CameraIcon, ClockIcon, DocumentIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
@@ -10,10 +9,8 @@ export default function LanjutanRalanSidebar({
     collapsed = false,
     title = "Lanjutan Rawat Jalan",
     menuConfig = {},
-    onToggle,
     context = "ralan",
 }) {
-	const { auth, menu_hierarchy, current_menu } = usePage().props;
 	const [expandedMenus, setExpandedMenus] = useState(new Set());
 
 	// Map icon names to Heroicon components
@@ -110,7 +107,7 @@ export default function LanjutanRalanSidebar({
         url: (() => {
             try {
                 return route('dashboard');
-            } catch (error) {
+            } catch {
                 return '/';
             }
         })(),
@@ -125,7 +122,7 @@ export default function LanjutanRalanSidebar({
         url: (() => {
             try {
                 return route(isRanap ? 'rawat-inap.index' : 'rawat-jalan.index');
-            } catch (error) {
+            } catch {
                 return isRanap ? '/rawat-inap' : '/rawat-jalan';
             }
         })(),
@@ -268,6 +265,7 @@ export default function LanjutanRalanSidebar({
 				if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
 				return basePath + (qs.length ? `?${qs.join('&')}` : '');
         }
+        }
 
         if (menu.id === 'rawat-inap-list' || (menu.name && menu.name.toLowerCase().includes('rawat inap'))) {
             let basePath = '/rawat-inap';
@@ -276,17 +274,16 @@ export default function LanjutanRalanSidebar({
             } catch (_) {}
             return basePath;
         }
-		}
 
 		if (menu.url) return menu.url;
-		if (menu.route) {
-			try {
-				return route(menu.route);
-			} catch (error) {
-				console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
-				return "#";
-			}
-		}
+        if (menu.route) {
+            try {
+                return route(menu.route);
+            } catch {
+                console.warn(`Route ${menu.route} not found for menu ${menu.name}`);
+                return "#";
+            }
+        }
 		return "#";
 	};
 

@@ -18,12 +18,12 @@ class DaftarTarifController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->get('search', '');
-        $category = $request->get('category', 'rawat-jalan');
-        $perPage = $request->get('per_page', 10);
-        $poliklinikFilter = $request->get('poliklinik'); // Add poliklinik filter parameter
-        $bangsalFilter = $request->get('bangsal'); // Add bangsal filter parameter
-        $statusFilter = $request->get('status', '1'); // Add status filter parameter with default '1' (aktif)
+        $search = $request->query('search', '');
+        $category = $request->query('category', 'rawat-jalan');
+        $perPage = $request->query('per_page', 10);
+        $poliklinikFilter = $request->query('poliklinik');
+        $bangsalFilter = $request->query('bangsal');
+        $statusFilter = $request->query('status', '1');
 
         $data = [];
 
@@ -159,7 +159,7 @@ class DaftarTarifController extends Controller
      */
     public function create(Request $request)
     {
-        $category = $request->get('category', 'rawat-jalan');
+        $category = $request->query('category', 'rawat-jalan');
 
         // Get data untuk dropdown
         $polikliniks = Poliklinik::where('status', '1')->get();
@@ -182,7 +182,7 @@ class DaftarTarifController extends Controller
      */
     public function store(Request $request)
     {
-        $category = $request->get('category', 'rawat-jalan');
+        $category = $request->input('category', 'rawat-jalan');
 
         switch ($category) {
             case 'rawat-jalan':
@@ -315,8 +315,8 @@ class DaftarTarifController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $category = $request->get('category', 'rawat-jalan');
-        $status = $request->get('status', '0'); // Default nonaktifkan
+        $category = $request->input('category', 'rawat-jalan');
+        $status = $request->input('status', '0');
 
         try {
             switch ($category) {
@@ -353,7 +353,7 @@ class DaftarTarifController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $category = $request->get('category', 'rawat-jalan');
+        $category = $request->input('category', 'rawat-jalan');
 
         try {
             switch ($category) {
@@ -388,8 +388,8 @@ class DaftarTarifController extends Controller
      */
     public function generateKode(Request $request)
     {
-        $kdKategori = $request->get('kd_kategori');
-        $category = $request->get('category', 'rawat-jalan');
+        $kdKategori = $request->query('kd_kategori');
+        $category = $request->query('category', 'rawat-jalan');
 
         if (! $kdKategori && $category !== 'laboratorium') {
             return response()->json([
@@ -702,7 +702,7 @@ class DaftarTarifController extends Controller
     {
         try {
             // Determine category from request parameter
-            $category = request()->get('category', 'rawat-jalan');
+            $category = request()->query('category', 'rawat-jalan');
 
             if ($category === 'rawat-inap') {
                 // For rawat-inap, use JnsPerawatanInap model

@@ -113,7 +113,9 @@ class PermintaanLab extends Model
      */
     public function scopeByStatus($query, $status)
     {
-        return $query->where('status', $status);
+        if ($status === null || $status === '') return $query;
+        $status = strtolower((string) $status);
+        return $query->whereRaw('LOWER(status) = ?', [$status]);
     }
 
     /**
@@ -176,14 +178,96 @@ class PermintaanLab extends Model
             return false;
         }
 
-        // Cek apakah semua template yang diminta sudah memiliki hasil di detail_periksa_lab
+        // Optimasi: Query semua detail sekaligus untuk menghindari N+1 query
+        $detailKeys = $detailPermintaan->map(function ($detail) {
+            return [
+                'kd_jenis_prw' => $detail->kd_jenis_prw,
+                'id_template' => $detail->id_template,
+            ];
+        })->unique(function ($item) {
+            return $item['kd_jenis_prw'].'-'.$item['id_template'];
+        });
+
+        // Query semua hasil sekaligus
+        $existingResults = \App\Models\DetailPeriksaLab::where('no_rawat', $this->no_rawat)
+            ->whereNotNull('nilai')
+            ->where('nilai', '!=', '')
+            ->get()
+            ->map(function ($result) {
+                return [
+                    'kd_jenis_prw' => $result->kd_jenis_prw,
+                    'id_template' => $result->id_template,
+                ];
+            })
+            ->unique(function ($item) {
+                return $item['kd_jenis_prw'].'-'.$item['id_template'];
+            });
+
+        // Cek apakah semua detail permintaan memiliki hasil
+        foreach ($detailKeys as $key) {
+            $hasResult = $existingResults->contains(function ($result) use ($key) {
+                return $result['kd_jenis_prw'] === $key['kd_jenis_prw']
+                    && $result['id_template'] === $key['id_template'];
+            });
+
+            if (! $hasResult) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Optimized version untuk menghindari N+1 query
+     * Menggunakan pre-loaded DetailPeriksaLab collection
+     */
+    public function hasHasilTersediaOptimized($detailPeriksaLabCollection): bool
+    {
+        // Jika tgl_hasil tidak valid, pasti belum ada hasil
+        if (! $this->tgl_hasil || $this->tgl_hasil === '0000-00-00') {
+            return false;
+        }
+
+        // Validasi format tanggal invalid lainnya
+        $tglHasilStr = is_string($this->tgl_hasil) ? $this->tgl_hasil : (string) $this->tgl_hasil;
+        $invalidDates = ['0000-00-00', '-0001-11-30', '-0001-11-29', '1970-01-01'];
+        foreach ($invalidDates as $invalid) {
+            if (str_contains($tglHasilStr, $invalid)) {
+                return false;
+            }
+        }
+
+        if (str_starts_with(trim($tglHasilStr), '-')) {
+            return false;
+        }
+
+        // Pastikan relasi detailPermintaan sudah dimuat (seharusnya sudah dari eager loading)
+        // Jangan load lagi untuk menghindari memory issue
+        $detailPermintaan = $this->relationLoaded('detailPermintaan') 
+            ? $this->detailPermintaan 
+            : collect();
+
+        if ($detailPermintaan->isEmpty()) {
+            return false;
+        }
+
+        // Gunakan pre-loaded collection untuk menghindari query database
+        $existingResults = $detailPeriksaLabCollection->map(function ($result) {
+            return [
+                'kd_jenis_prw' => $result->kd_jenis_prw,
+                'id_template' => $result->id_template,
+            ];
+        })->unique(function ($item) {
+            return $item['kd_jenis_prw'].'-'.$item['id_template'];
+        });
+
+        // Cek apakah semua detail permintaan memiliki hasil
         foreach ($detailPermintaan as $detail) {
-            $hasResult = \App\Models\DetailPeriksaLab::where('no_rawat', $this->no_rawat)
-                ->where('kd_jenis_prw', $detail->kd_jenis_prw)
-                ->where('id_template', $detail->id_template)
-                ->whereNotNull('nilai')
-                ->where('nilai', '!=', '')
-                ->exists();
+            $hasResult = $existingResults->contains(function ($result) use ($detail) {
+                return $result['kd_jenis_prw'] === $detail->kd_jenis_prw
+                    && $result['id_template'] === $detail->id_template;
+            });
 
             if (! $hasResult) {
                 return false;

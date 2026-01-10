@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Head, Link, useForm, Form, router } from "@inertiajs/react";
+import { Head, Link, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import SelectWithAdd from "@/Components/SelectWithAdd";
@@ -206,12 +206,7 @@ export default function Create() {
             : errors[fieldName];
     };
 
-    // Helper to get label from options
-    const findLabelByValue = (options, value) => {
-        if (!value) return "";
-        const found = options.find((o) => o.value === value);
-        return found ? found.label : "";
-    };
+    
 
     // Debug: Log errors to console
     React.useEffect(() => {
@@ -703,7 +698,7 @@ export default function Create() {
                 onSuccess={handleSuccess}
             />
 
-            {false && (
+            {isOpenModal ? null : (
                 <motion.div
                     className="py-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen"
                     initial="hidden"
@@ -750,6 +745,27 @@ export default function Create() {
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
+                                const missing = [];
+                                if (!String(data.nm_pasien || "").trim()) missing.push("Nama Lengkap");
+                                if (!String(data.jk || "").trim()) missing.push("Jenis Kelamin");
+                                if (!String(data.tmp_lahir || "").trim()) missing.push("Tempat Lahir");
+                                if (!String(data.tgl_lahir || "").trim()) missing.push("Tanggal Lahir");
+                                if (!String(data.alamat || "").trim()) missing.push("Alamat");
+                                if (!String(data.no_tlp || "").trim()) missing.push("No. Telepon");
+                                if (!String(data.kode_wilayah || "").trim()) missing.push("Kelurahan/Desa");
+                                const pj = String(data.perusahaan_pasien ?? "");
+                                if (!pj || pj === "-" || pj === "0") missing.push("Perusahaan Pasien");
+                                if (!String(data.pnd ?? "").trim()) missing.push("Pendidikan");
+                                if (!String(data.suku_bangsa ?? "").trim()) missing.push("Suku Bangsa");
+                                if (!String(data.bahasa_pasien ?? "").trim()) missing.push("Bahasa Pasien");
+                                if (!String(data.cacat_fisik ?? "").trim()) missing.push("Cacat Fisik");
+                                if (missing.length) {
+                                    alert(
+                                        "Field wajib bertanda * belum diisi:\n- " +
+                                            missing.join("\n- ")
+                                    );
+                                    return;
+                                }
                                 post(route("patients.store"));
                             }}
                             className="space-y-6"

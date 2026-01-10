@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useMemo, useState } from "react";
 import { Head, Link } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import { route } from "ziggy-js";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -161,10 +161,10 @@ export default function MenuUtamaMasterData() {
         animate: "visible",
       };
   return (
-    <AppLayout title="Master Data">
+    <SidebarPengaturan title="Master Data">
       <Head title="Master Data" />
 
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div>
         {/* Header dengan textbox pencarian di kanan */}
         <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
           <div className="min-w-[220px]">
@@ -245,6 +245,6 @@ export default function MenuUtamaMasterData() {
           ))}
         </motion.div>
       </div>
-    </AppLayout>
+    </SidebarPengaturan>
   );
 }

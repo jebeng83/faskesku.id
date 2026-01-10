@@ -3,6 +3,21 @@ import { createPortal } from "react-dom";
 
 // Konfigurasi sumber referensi PCare agar SearchableSelect bisa memuat opsi secara remote
 const REFERENSI_CONFIG = {
+    pegawai: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/pegawai/search?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => ({
+                value: it?.nik || "",
+                label: `${it?.nik ?? ""} — ${it?.nama ?? ""}`.trim(),
+            }));
+        },
+    },
     // Sumber lokal: departemen (untuk mapping ke SATUSEHAT Organization)
     // Endpoint: GET /api/departemen
     // Mendukung pencarian dengan parameter q, serta pagination start & limit
@@ -223,6 +238,21 @@ const REFERENSI_CONFIG = {
             return list.map((it) => ({
                 value: it?.kdAlergi || it?.kode || "",
                 label: it?.nmAlergi || it?.nama || "",
+            }));
+        },
+    },
+    alergi_local: {
+        supportsSearch: true,
+        defaultParams: { kode_jenis: "", q: "" },
+        buildUrl: ({ kode_jenis = "", q = "" } = {}) => {
+            const params = new URLSearchParams({ kode_jenis, q });
+            return `/api/alergi?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => ({
+                value: it?.kd_alergi || it?.kdAlergi || it?.kode || "",
+                label: it?.nm_alergi || it?.nmAlergi || it?.nama || "",
             }));
         },
     },
@@ -518,6 +548,15 @@ const SearchableSelect = ({
     debounceMs = 350,
     // Label default untuk ditampilkan ketika value sudah ada tetapi opsi belum dimuat
     defaultDisplay = null,
+    // Kustomisasi tampilan dropdown
+    dropdownClassName = "",
+    searchInputClassName = "",
+    optionClassName = "",
+    selectedOptionClassName = "",
+    displayClassName = "",
+    // Kustomisasi hover state
+    optionHoverClassName = "",
+    selectedOptionHoverClassName = "",
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -528,6 +567,9 @@ const SearchableSelect = ({
     const [remoteOptions, setRemoteOptions] = useState([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
     const [remoteError, setRemoteError] = useState("");
+    const abortRef = useRef(null);
+    const cacheRef = useRef(new Map());
+    const reqIdRef = useRef(0);
 
     const useRemote = !!source && !!REFERENSI_CONFIG[source];
     const cfg = useRemote ? REFERENSI_CONFIG[source] : null;
@@ -648,19 +690,38 @@ const SearchableSelect = ({
                     (params.q ?? "").length >= minChars;
                 if (canLoadInitial) {
                     (async () => {
+                        const url = cfg.buildUrl(params);
+                        const cached = cacheRef.current.get(url);
+                        if (cached) {
+                            setRemoteOptions(Array.isArray(cached) ? cached : []);
+                            setRemoteLoading(false);
+                            setRemoteError("");
+                            return;
+                        }
                         try {
+                            if (abortRef.current) {
+                                try { abortRef.current.abort(); } catch {}
+                            }
+                            const controller = new AbortController();
+                            abortRef.current = controller;
+                            reqIdRef.current += 1;
                             setRemoteLoading(true);
                             setRemoteError("");
-                            const url = cfg.buildUrl(params);
                             const res = await fetch(url, {
-                                headers: { Accept: "application/json" },
+                                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
                                 credentials: "include",
+                                signal: controller.signal,
                             });
                             const json = await res.json();
                             const opts = cfg.parse(json);
-                            setRemoteOptions(Array.isArray(opts) ? opts : []);
-                        } catch (e) {
-                            setRemoteError(e?.message || "Gagal memuat data");
+                            const arr = Array.isArray(opts) ? opts : [];
+                            setRemoteOptions(arr);
+                            cacheRef.current.set(url, arr);
+                        } catch (_e) {
+                            if (_e?.name === "AbortError") {
+                            } else {
+                                setRemoteError(_e?.message || "Gagal memuat data");
+                            }
                         } finally {
                             setRemoteLoading(false);
                         }
@@ -676,14 +737,18 @@ const SearchableSelect = ({
         return () => {
             window.removeEventListener("scroll", updatePosition, true);
             window.removeEventListener("resize", updatePosition);
+            if (abortRef.current) {
+                try { abortRef.current.abort(); } catch {}
+                abortRef.current = null;
+            }
             if (!isOpen && portalElRef.current) {
                 try {
                     document.body.removeChild(portalElRef.current);
-                } catch (e) {}
+                } catch {}
                 portalElRef.current = null;
             }
         };
-    }, [isOpen]);
+    }, [isOpen, source, JSON.stringify(sourceParams)]);
 
     // Pencarian remote dengan debounce untuk sumber yang mendukung (mis. diagnosa)
     useEffect(() => {
@@ -691,13 +756,11 @@ const SearchableSelect = ({
         if (!isOpen) return; // hanya fetch saat dropdown terbuka
         const handle = setTimeout(async () => {
             try {
-                setRemoteLoading(true);
                 setRemoteError("");
                 const minChars = cfg?.minChars ?? 0;
                 if (minChars > 0 && (searchTerm ?? "").length < minChars) {
                     setRemoteOptions([]);
                     setRemoteLoading(false);
-                    setRemoteError("");
                     return;
                 }
                 const params = {
@@ -706,15 +769,34 @@ const SearchableSelect = ({
                     q: searchTerm,
                 };
                 const url = cfg.buildUrl(params);
+                const cached = cacheRef.current.get(url);
+                if (cached) {
+                    setRemoteOptions(Array.isArray(cached) ? cached : []);
+                    setRemoteLoading(false);
+                    return;
+                }
+                if (abortRef.current) {
+                    try { abortRef.current.abort(); } catch {}
+                }
+                const controller = new AbortController();
+                abortRef.current = controller;
+                reqIdRef.current += 1;
+                setRemoteLoading(true);
                 const res = await fetch(url, {
-                    headers: { Accept: "application/json" },
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
                     credentials: "include",
+                    signal: controller.signal,
                 });
                 const json = await res.json();
                 const opts = cfg.parse(json);
-                setRemoteOptions(Array.isArray(opts) ? opts : []);
-            } catch (e) {
-                setRemoteError(e?.message || "Gagal memuat data");
+                const arr = Array.isArray(opts) ? opts : [];
+                setRemoteOptions(arr);
+                cacheRef.current.set(url, arr);
+            } catch (_e) {
+                if (_e?.name === "AbortError") {
+                } else {
+                    setRemoteError(_e?.message || "Gagal memuat data");
+                }
             } finally {
                 setRemoteLoading(false);
             }
@@ -740,9 +822,7 @@ const SearchableSelect = ({
             >
                 <span
                     className={
-                        value
-                            ? "text-gray-900 dark:text-white"
-                            : "text-gray-500 dark:text-gray-400"
+                        displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")
                     }
                 >
                     {getSelectedDisplay()}
@@ -777,7 +857,7 @@ const SearchableSelect = ({
                             // Pastikan dropdown berada di atas modal overlay (z-[9999])
                             zIndex: 10000,
                         }}
-                        className="mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-hidden"
+                        className={`mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-hidden ${dropdownClassName}`}
                     >
                         {/* Search input */}
                         <div className="p-2 border-b border-gray-200 dark:border-gray-600">
@@ -787,7 +867,7 @@ const SearchableSelect = ({
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder={searchPlaceholder}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-white"
+                                className={`w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-600 dark:text-white ${searchInputClassName}`}
                             />
                         </div>
 
@@ -815,18 +895,28 @@ const SearchableSelect = ({
                                             : option[displayKey];
                                     const isSelected = optionValue === value;
 
+                                    const unselectedClasses = optionClassName || "text-gray-900 dark:text-white";
+                                    const selectedClasses = selectedOptionClassName || "bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300";
+                                    const unselectedHover = optionHoverClassName || "hover:bg-gray-100 dark:hover:bg-gray-600";
+                                    const selectedHover = selectedOptionHoverClassName || unselectedHover;
                                     return (
                                         <button
                                             key={index}
                                             type="button"
                                             onClick={() => handleSelect(option)}
-                                            className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 ${
-                                                isSelected
-                                                    ? "bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300"
-                                                    : "text-gray-900 dark:text-white"
-                                            }`}
+                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                                                isSelected ? selectedHover : unselectedHover
+                                            } ${isSelected ? selectedClasses : unselectedClasses}`}
                                         >
-                                            {optionDisplay}
+                                            <div className="flex flex-col">
+                                                <div>{optionDisplay}</div>
+                                                {typeof option === "object" && option?.meta?.jadwal && (
+                                                    <div className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-300">Jadwal: {option.meta.jadwal}</div>
+                                                )}
+                                                {typeof option === "object" && (option?.meta?.kapasitas != null || option?.meta?.jmlRujuk != null || option?.meta?.persentase != null) && (
+                                                    <div className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-300">Kapasitas: {option.meta.kapasitas ?? '-'} • Rujuk: {option.meta.jmlRujuk ?? '-'} • %: {option.meta.persentase ?? '-'}</div>
+                                                )}
+                                            </div>
                                         </button>
                                     );
                                 })

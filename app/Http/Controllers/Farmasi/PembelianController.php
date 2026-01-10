@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Farmasi;
 
+use App\Models\DetailBeli;
 use App\Models\Farmasi\DataBatch;
 use App\Models\Farmasi\Pembelian as HeaderPembelian;
-use App\Models\DetailBeli;
 use App\Models\Farmasi\SetAkun;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PembelianController extends BaseInventoryController
 {
@@ -72,7 +73,7 @@ class PembelianController extends BaseInventoryController
                         'no_faktur' => $nf,
                     ])
                     ->first();
-                $stokSebelum = (double) ($beforeRow->stok ?? 0);
+                $stokSebelum = (float) ($beforeRow->stok ?? 0);
 
                 $this->adjustStockPlus($row['kode_brng'], $data['kd_bangsal'], $qty, $nb, $nf);
 
@@ -84,7 +85,7 @@ class PembelianController extends BaseInventoryController
                         'no_faktur' => $nf,
                     ])
                     ->first();
-                $stokSesudah = (double) ($afterRow->stok ?? 0);
+                $stokSesudah = (float) ($afterRow->stok ?? 0);
 
                 if ($nb) {
                     $exists = DB::table('data_batch')->where(['kode_brng' => $row['kode_brng'], 'no_batch' => $nb, 'no_faktur' => $nf])->exists();
@@ -102,45 +103,47 @@ class PembelianController extends BaseInventoryController
                     }
                 }
 
-                if ($beforeRow) {
-                    \App\Models\RiwayatTransaksiGudangBarang::catatUpdate(
-                        $row['kode_brng'],
-                        $data['kd_bangsal'],
-                        $nb ?? '',
-                        $nf ?? '',
-                        $stokSebelum,
-                        $stokSesudah,
-                        'pembelian',
-                        'Pembelian '.($data['no_faktur'] ?? ''),
-                        (array) $beforeRow,
-                        (array) $afterRow,
-                    );
-                } else {
-                    \App\Models\RiwayatTransaksiGudangBarang::catatInsert(
-                        $row['kode_brng'],
-                        $data['kd_bangsal'],
-                        $nb ?? '',
-                        $nf ?? '',
-                        $stokSesudah,
-                        'pembelian',
-                        'Pembelian '.($data['no_faktur'] ?? ''),
-                        (array) $afterRow,
-                    );
+                if (Schema::hasTable('riwayat_transaksi_gudangbarang')) {
+                    if ($beforeRow) {
+                        \App\Models\RiwayatTransaksiGudangBarang::catatUpdate(
+                            $row['kode_brng'],
+                            $data['kd_bangsal'],
+                            $nb ?? '',
+                            $nf ?? '',
+                            $stokSebelum,
+                            $stokSesudah,
+                            'pembelian',
+                            'Pembelian '.($data['no_faktur'] ?? ''),
+                            (array) $beforeRow,
+                            (array) $afterRow,
+                        );
+                    } else {
+                        \App\Models\RiwayatTransaksiGudangBarang::catatInsert(
+                            $row['kode_brng'],
+                            $data['kd_bangsal'],
+                            $nb ?? '',
+                            $nf ?? '',
+                            $stokSesudah,
+                            'pembelian',
+                            'Pembelian '.($data['no_faktur'] ?? ''),
+                            (array) $afterRow,
+                        );
+                    }
                 }
 
                 $this->recordRiwayat($row['kode_brng'], $data['kd_bangsal'], $qty, 0, 'Pengadaan', $nb, $nf, $data['no_faktur'], $data['nip']);
             }
 
-                $akun = SetAkun::query()->first();
-                if ($akun) {
-                    $lines = [];
-                    $lines[] = [$akun->Pengadaan_Obat, 'PEMBELIAN', $data['total2'], 0];
-                    if ((float) $data['ppn'] > 0) {
-                        $lines[] = [$akun->PPN_Masukan, 'PPN Masukan Obat', $data['ppn'], 0];
-                    }
-                    $lines[] = [$data['kd_rek'], 'AKUN BAYAR', 0, $data['total2'] + $data['ppn']];
-                    $this->stageJurnal($lines);
+            $akun = SetAkun::query()->first();
+            if ($akun) {
+                $lines = [];
+                $lines[] = [$akun->Pengadaan_Obat, 'PEMBELIAN', $data['total2'], 0];
+                if ((float) $data['ppn'] > 0) {
+                    $lines[] = [$akun->PPN_Masukan, 'PPN Masukan Obat', $data['ppn'], 0];
                 }
+                $lines[] = [$data['kd_rek'], 'AKUN BAYAR', 0, $data['total2'] + $data['ppn']];
+                $this->stageJurnal($lines);
+            }
 
             $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
             foreach ($data['items'] as $it) {
@@ -157,14 +160,14 @@ class PembelianController extends BaseInventoryController
                 if ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Jenis') {
                     $kdjns = DB::table('databarang')->where('kode_brng', $it['kode_brng'])->value('kdjns');
                     if ($kdjns) {
-                        $p = DB::table('setpenjualan')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->where('kdjns', $kdjns)->first();
+                        $p = DB::table('setpenjualan')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->where('kdjns', $kdjns)->first();
                     }
                 } elseif ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Barang') {
-                    $p = DB::table('setpenjualanperbarang')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->where('kode_brng', $it['kode_brng'])->first();
+                    $p = DB::table('setpenjualanperbarang')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->where('kode_brng', $it['kode_brng'])->first();
                 }
                 if (! $p) {
                     try {
-                        $p = DB::table('setpenjualanumum')->select('ralan','kelas1','kelas2','kelas3','utama','vip','vvip','beliluar','jualbebas','karyawan')->first();
+                        $p = DB::table('setpenjualanumum')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->first();
                     } catch (\Throwable $e) {
                         $p = null;
                     }
@@ -187,6 +190,7 @@ class PembelianController extends BaseInventoryController
                 $apply = function (float $b, float $percent) use ($ppnMult): float {
                     $harga = $b * (1.0 + ($percent / 100.0));
                     $harga *= $ppnMult;
+
                     return round($harga, 2);
                 };
 
@@ -221,6 +225,7 @@ class PembelianController extends BaseInventoryController
             ->select('akun_bayar.kd_rek', 'akun_bayar.nama_bayar', 'rekening.nm_rek')
             ->orderBy('akun_bayar.nama_bayar')
             ->get();
+
         return response()->json(['success' => true, 'data' => $rows]);
     }
 
@@ -230,6 +235,7 @@ class PembelianController extends BaseInventoryController
             ->select('kode_suplier', 'nama_suplier')
             ->orderBy('nama_suplier')
             ->get();
+
         return response()->json(['success' => true, 'data' => $rows]);
     }
 
@@ -238,14 +244,15 @@ class PembelianController extends BaseInventoryController
         $q = DB::table('petugas')
             ->select('nip', 'nama')
             ->orderBy('nama');
-        if ($request->has('q') && !empty($request->q)) {
+        if ($request->has('q') && ! empty($request->q)) {
             $term = $request->q;
             $q->where(function ($w) use ($term) {
                 $w->where('nip', 'like', "%{$term}%")
-                  ->orWhere('nama', 'like', "%{$term}%");
+                    ->orWhere('nama', 'like', "%{$term}%");
             });
         }
         $rows = $q->get();
+
         return response()->json(['success' => true, 'data' => $rows])
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
             ->header('Pragma', 'no-cache')
@@ -258,6 +265,7 @@ class PembelianController extends BaseInventoryController
             ->select('kd_bangsal', 'nm_bangsal')
             ->orderBy('nm_bangsal')
             ->get();
+
         return response()->json(['success' => true, 'data' => $rows]);
     }
 
@@ -265,7 +273,8 @@ class PembelianController extends BaseInventoryController
     {
         try {
             $today = now()->format('Ymd');
-            $prefix = 'PB-' . $today . '-';
+            $prefix = 'PB-'.$today.'-';
+
             return DB::transaction(function () use ($prefix) {
                 $last = DB::table('pembelian')
                     ->where('no_faktur', 'LIKE', $prefix.'%')
@@ -282,6 +291,7 @@ class PembelianController extends BaseInventoryController
                     $next++;
                     $no = $prefix.str_pad($next, 3, '0', STR_PAD_LEFT);
                 }
+
                 return response()->json(['success' => true, 'no_faktur' => $no]);
             });
         } catch (\Exception $e) {

@@ -196,11 +196,6 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         }
     };
 
-    // Handle kategori change
-    const handleKategoriChange = (value) => {
-        setData('kd_kategori', value);
-        generateAutoCode(value);
-    };
 
     // Handler untuk submit popup Kategori Perawatan
     const handleTambahKategori = (e) => {

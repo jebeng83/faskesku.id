@@ -20,6 +20,7 @@ class LaboratoriumController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Redirect ke permintaan lab karena view Laboratorium/Index.jsx mengharapkan permintaanLab
      */
     public function index(Request $request)
     {
@@ -68,6 +69,8 @@ class LaboratoriumController extends Controller
                 'search' => $request->input('search'),
             ],
         ]);
+        // Redirect ke route permintaan lab yang benar
+        return redirect()->route('laboratorium.permintaan-lab.index', $request->query());
     }
 
     /**

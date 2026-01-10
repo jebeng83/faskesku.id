@@ -310,9 +310,7 @@ function SectionForm({
                                     level: match?.level ?? null,
                                 };
                             }
-                        } catch (e) {
-                            // abaikan error prefetch agar UI tetap bisa dipakai
-                        }
+                        } catch {}
                     })()
                 );
             });

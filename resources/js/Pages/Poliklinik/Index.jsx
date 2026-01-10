@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Head, usePage, router } from "@inertiajs/react";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, Plus, Search as SearchIcon, Edit2, Globe } from "lucide-react";
+import { Building2, Plus, Search as SearchIcon, Edit2, Globe, Trash } from "lucide-react";
 import { Toaster } from "@/Components/ui";
 
 // Notion Variants (UI/UX Improvements Guide)
@@ -37,10 +37,11 @@ const cardHoverVariants = {
 };
 
 export default function PoliklinikIndex() {
-    const { polikliniks, filters, errors } = usePage().props;
+    const { polikliniks, filters } = usePage().props;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [search, setSearch] = useState(filters?.search || "");
+    const [filterStatus, setFilterStatus] = useState(filters?.status ?? "1");
     const [editing, setEditing] = useState(null);
     const [tableLoading, setTableLoading] = useState(false);
     const [toasts, setToasts] = useState([]);
@@ -50,6 +51,21 @@ export default function PoliklinikIndex() {
         setToasts((prev) => [...prev, { id, type, title, message, duration }]);
     };
     const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+
+    useEffect(() => {
+        if (!filters?.status && filterStatus === "1") {
+            router.get(route("poliklinik.index"), {
+                search,
+                status: "1",
+            }, {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                onStart: () => setTableLoading(true),
+                onFinish: () => setTableLoading(false),
+            });
+        }
+    }, []);
 
 	const tableItems = useMemo(() => polikliniks?.data || [], [polikliniks]);
 
@@ -66,7 +82,10 @@ export default function PoliklinikIndex() {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route("poliklinik.index"), { search }, {
+        router.get(route("poliklinik.index"), {
+            search,
+            status: filterStatus !== "all" ? filterStatus : undefined,
+        }, {
             preserveScroll: true,
             preserveState: true,
             replace: true,
@@ -75,12 +94,46 @@ export default function PoliklinikIndex() {
         });
     };
 
+    const handleDelete = (item) => {
+        if (!item) return;
+        if (confirm(`Yakin ingin menghapus poliklinik "${item.nm_poli}"?`)) {
+            router.post(route("poliklinik.destroy", item.kd_poli), { _method: "DELETE" }, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    addToast("success", "Berhasil", "Poliklinik berhasil dihapus.");
+                    router.get(route("poliklinik.index"), {
+                        search,
+                        status: filterStatus !== "all" ? filterStatus : undefined,
+                    }, {
+                        preserveScroll: true,
+                        preserveState: true,
+                        replace: true,
+                        onStart: () => setTableLoading(true),
+                        onFinish: () => setTableLoading(false),
+                    });
+                },
+                onError: () => {
+                    addToast("error", "Gagal menghapus", "Silakan coba lagi.");
+                },
+            });
+        }
+    };
+
     const toggleStatus = (item) => {
         const newStatus = item.status === "1" ? "0" : "1";
         router.patch(route("poliklinik.toggle-status", item.kd_poli), { status: newStatus }, {
             onSuccess: () => {
                 addToast("success", "Status diperbarui", `Poliklinik ${item.nm_poli} ${newStatus === "1" ? "diaktifkan" : "dinonaktifkan"}.`);
-                router.reload();
+                router.get(route("poliklinik.index"), {
+                    search,
+                    status: filterStatus !== "all" ? filterStatus : undefined,
+                }, {
+                    preserveScroll: true,
+                    preserveState: true,
+                    replace: true,
+                    onStart: () => setTableLoading(true),
+                    onFinish: () => setTableLoading(false),
+                });
             },
             onError: () => {
                 addToast("error", "Gagal memperbarui status", "Silakan coba lagi.");
@@ -134,9 +187,9 @@ export default function PoliklinikIndex() {
             </div>
 
             <div className="w-full md:w-auto flex items-center gap-3">
-              <form onSubmit={handleSearch} className="hidden sm:flex items-center gap-2">
-                <div className="relative">
-                  <SearchIcon className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <form onSubmit={handleSearch} className="hidden sm:flex items-center gap-2">
+                  <div className="relative">
+                    <SearchIcon className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -144,26 +197,49 @@ export default function PoliklinikIndex() {
                     placeholder="Cari kode/nama poliklinik"
                     aria-label="Cari Poliklinik"
                   />
-                </div>
-                <button
-                  type="submit"
-                  className="px-3 py-2 text-sm rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition-all"
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-3 py-2 text-sm rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition-all"
+                  >
+                    Cari
+                  </button>
+                </form>
+                <motion.button
+                  onClick={openCreate}
+                  variants={cardHoverVariants}
+                  initial="rest"
+                  whileHover="hover"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 text-sm"
                 >
-                  Cari
-                </button>
-              </form>
-              <motion.button
-                onClick={openCreate}
-                variants={cardHoverVariants}
-                initial="rest"
-                whileHover="hover"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Tambah
-              </motion.button>
+                  <Plus className="w-4 h-4" />
+                  Tambah
+                </motion.button>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFilterStatus(val);
+                    router.get(route("poliklinik.index"), {
+                      search,
+                      status: val !== "all" ? val : undefined,
+                    }, {
+                      preserveScroll: true,
+                      preserveState: true,
+                      replace: true,
+                      onStart: () => setTableLoading(true),
+                      onFinish: () => setTableLoading(false),
+                    });
+                  }}
+                  className="px-3 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                  aria-label="Filter Status"
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="1">Aktif</option>
+                  <option value="0">Non-Aktif</option>
+                </select>
+              </div>
             </div>
-          </div>
         </motion.div>
 
         {/* Table */}
@@ -267,6 +343,12 @@ export default function PoliklinikIndex() {
                           >
                             <Edit2 className="w-3.5 h-3.5" /> Edit
                           </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20 text-xs font-semibold"
+                          >
+                            <Trash className="w-3.5 h-3.5" /> Hapus
+                          </button>
                         </div>
                       </td>
                     </motion.tr>
@@ -315,7 +397,6 @@ export default function PoliklinikIndex() {
 }
 
 function CreateModal({ isOpen, onClose, addToast }) {
-	const { errors } = usePage().props;
 	const [form, setForm] = useState({
 		kd_poli: "",
 		nm_poli: "",
@@ -456,7 +537,6 @@ function CreateModal({ isOpen, onClose, addToast }) {
 }
 
 function EditModal({ isOpen, onClose, item, addToast }) {
-	const { errors } = usePage().props;
 	const [form, setForm] = useState(() => ({
 		nm_poli: item?.nm_poli || "",
 		registrasi: item?.registrasi || "",

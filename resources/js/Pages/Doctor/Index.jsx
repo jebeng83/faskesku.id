@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import DoctorModal from "@/Components/DoctorModal";
 import DoctorDetail from "@/Components/DoctorDetail";
-import { Plus, Search, Pencil, Trash, Stethoscope, User as UserIcon } from "lucide-react";
+import { Plus, Search, Pencil, Trash, Stethoscope } from "lucide-react";
 import { router } from "@inertiajs/react";
 
 const containerVariants = {
@@ -49,7 +49,7 @@ export default function Index({ doctors, availableEmployees, spesialisList }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredDoctors, setFilteredDoctors] = useState(doctors);
     const [filterSpesialis, setFilterSpesialis] = useState("all");
-    const [filterStatus, setFilterStatus] = useState("all");
+    const [filterStatus, setFilterStatus] = useState("aktif");
 
     const reduceMotion = useMemo(() =>
       typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -145,7 +145,36 @@ useEffect(() => {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manajemen Dokter</h2>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Cari dokter (nama/kode)…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-[220px] md:w-[280px] pl-8 pr-3 py-2 text-sm bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                />
+              </div>
+              <select
+                value={filterSpesialis}
+                onChange={(e) => setFilterSpesialis(e.target.value)}
+                className="px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+              >
+                <option value="all">Semua Spesialis</option>
+                {Array.isArray(spesialisList) && spesialisList.map((s) => (
+                  <option key={s.kd_sps ?? s.kdSps} value={s.kd_sps ?? s.kdSps}>{s.nm_sps ?? s.nmSps}</option>
+                ))}
+              </select>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+              >
+                <option value="all">Semua Status</option>
+                <option value="aktif">Aktif</option>
+                <option value="non">Non-Aktif</option>
+              </select>
               <div className="hidden md:flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                 <span className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">Total: {doctors?.length ?? 0}</span>
                 <span className="px-2 py-1 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Aktif: {doctors?.filter?.(d => d.status === "1")?.length ?? 0}</span>
@@ -192,44 +221,9 @@ useEffect(() => {
 										Daftar Dokter ({filteredDoctors.length})
 									</span>
 								</h3>
-								<div className="hidden lg:flex items-center gap-2 text-xs">
-									<span className="px-2 py-1 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200/50 dark:ring-gray-700/50">Spesialis: {filterSpesialis === "all" ? "Semua" : getSpesialisName(filterSpesialis)}</span>
-									<span className="px-2 py-1 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200/50 dark:ring-gray-700/50">Status: {filterStatus === "all" ? "Semua" : filterStatus === "aktif" ? "Aktif" : "Non-Aktif"}</span>
-								</div>
+                                
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-5 gap-2 flex-shrink-0">
-								<div className="relative md:col-span-2">
-									<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
-									<input
-										type="text"
-										placeholder="Cari dokter (nama/kode)…"
-										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
-										className="w-full pl-8 pr-3 py-2 text-sm bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
-									/>
-								</div>
-								<div className="flex items-center gap-2 md:col-span-3">
-									<select
-										value={filterSpesialis}
-										onChange={(e) => setFilterSpesialis(e.target.value)}
-										className="flex-1 px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
-									>
-										<option value="all">Semua Spesialis</option>
-										{Array.isArray(spesialisList) && spesialisList.map((s) => (
-											<option key={s.kd_sps ?? s.kdSps} value={s.kd_sps ?? s.kdSps}>{s.nm_sps ?? s.nmSps}</option>
-										))}
-									</select>
-									<select
-										value={filterStatus}
-										onChange={(e) => setFilterStatus(e.target.value)}
-										className="flex-1 px-2 py-2 text-sm rounded-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
-									>
-										<option value="all">Semua Status</option>
-										<option value="aktif">Aktif</option>
-										<option value="non">Non-Aktif</option>
-									</select>
-								</div>
-							</div>
+                            
 						</div>
 
 						{/* Doctor List */}
@@ -272,26 +266,26 @@ useEffect(() => {
 														<h4 className="font-semibold text-gray-900 dark:text-white truncate">
 															{doctor.nm_dokter}
 														</h4>
-														<p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-															Kode: {doctor.kd_dokter}
-														</p>
-														<div className="flex flex-wrap items-center gap-2 mt-2">
-															<span className="text-xs px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-gray-700">
-																{doctor.jk === "L" ? "Laki-laki" : "Perempuan"}
-															</span>
-															<span className="text-xs px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ring-1 ring-indigo-200 dark:ring-indigo-800">
-																{getSpesialisName(doctor.kd_sps)}
-															</span>
-															{doctor.status === "1" ? (
-																<span className="text-xs px-2 py-1 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800">
-																	Aktif
-																</span>
-															) : (
-																<span className="text-xs px-2 py-1 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">
-																	Non-Aktif
-																</span>
-															)}
-														</div>
+                                                        <div className="mt-1 flex items-center flex-wrap gap-[6px]">
+                                                            <p className="text-sm text-gray-600 dark:text-gray-300 m-0">
+                                                                Kode: {doctor.kd_dokter}
+                                                            </p>
+                                                            <span className="text-[11px] px-2 py-0.5 rounded-md bg-gray-50 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 border border-gray-200/40 dark:border-gray-700/40">
+                                                                {doctor.jk === "L" ? "Laki-laki" : "Perempuan"}
+                                                            </span>
+                                                            <span className="text-[11px] px-2 py-0.5 rounded-md bg-indigo-50/60 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 border border-indigo-200/40 dark:border-indigo-800/30">
+                                                                {getSpesialisName(doctor.kd_sps)}
+                                                            </span>
+                                                            {doctor.status === "1" ? (
+                                                                <span className="text-[11px] px-2 py-0.5 rounded-md bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200/40 dark:border-green-800/30">
+                                                                    Aktif
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200/40 dark:border-red-800/30">
+                                                                    Non-Aktif
+                                                                </span>
+                                                            )}
+                                                        </div>
 													</div>
 													<div className="flex gap-1 ml-4">
 														<motion.button
@@ -335,26 +329,10 @@ useEffect(() => {
 						{/* Overlay gradient for premium feel */}
 						<div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
 						<div className="relative z-[1]">
-							{/* Header - Card Header Compact Design */}
-							<div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm flex items-center">
-								<h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-									<motion.div
-										className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
-										whileHover={{ rotate: 90, scale: 1.1 }}
-										transition={{ duration: 0.3 }}
-									>
-										<UserIcon className="w-4 h-4 text-white" />
-									</motion.div>
-									<span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-										Informasi Dokter
-									</span>
-								</h3>
-							</div>
-
-							{/* Doctor Detail Content */}
-							<div className="flex-1">
-								<DoctorDetail doctor={selectedDoctor} />
-							</div>
+                            {/* Doctor Detail Content */}
+                            <div className="flex-1">
+                                <DoctorDetail doctor={selectedDoctor} />
+                            </div>
 						</div>
 					</motion.div>
 				</motion.div>

@@ -3,8 +3,7 @@ import { Head, usePage } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
-import Button from "@/Components/ui/Button";
-import { Ticket, Printer, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Ticket, AlertCircle, CheckCircle2 } from "lucide-react";
 import { nowDateTimeString, todayDateString } from "@/tools/datetime";
 
 const containerVariants = {
@@ -48,7 +47,7 @@ export default function AntrialLoket() {
   const [ticket, setTicket] = useState(null);
   const [lastNumber, setLastNumber] = useState(null);
   const [error, setError] = useState("");
-  const [toasts, setToasts] = useState([]);
+  const [, setToasts] = useState([]);
   const [clock, setClock] = useState({ date: todayDateString(), time: new Date().toLocaleTimeString("id-ID", { hour12: false }) });
   const todayPoli = useMemo(() => Array.isArray(props?.today_poli) ? props.today_poli : [], [props]);
 
@@ -56,7 +55,7 @@ export default function AntrialLoket() {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     setToasts((prev) => [...prev, { id, type, title, message, duration }]);
   };
-  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+  
 
   useEffect(() => {
     let mounted = true;
@@ -109,39 +108,7 @@ export default function AntrialLoket() {
     return n > 999 ? 1 : n;
   }, [lastNumber]);
 
-  const handleTakeNumber = async () => {
-    if (processing || cooldown) return;
-    setProcessing(true);
-    setError("");
-    const key = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    try {
-      const res = await axios.post(`/api/queue/tickets?channel=kiosk`, {}, {
-        headers: {
-          Accept: "application/json",
-          "Idempotency-Key": key,
-        },
-      });
-      const data = res?.data || {};
-      const nomor = data?.number ?? data?.nomor ?? null;
-      const prefix = data?.prefix ?? null;
-      const kode_tiket = data?.kode_tiket ?? null;
-      const tanggal = data?.tanggal ?? todayDateString();
-      const created_at = data?.created_at ?? nowDateTimeString();
-      const t = { nomor, prefix, kode_tiket, tanggal, created_at };
-      setTicket(t);
-      setLastNumber(nomor);
-      addToast("success", "Nomor diambil", `Nomor ${formatNomor(nomor, prefix)} berhasil dibuat.`);
-      setCooldown(true);
-      setTimeout(() => setCooldown(false), 2000);
-      requestAnimationFrame(() => handlePrint());
-    } catch (e) {
-      const msg = e?.response?.data?.message || e?.message || "Gagal mengambil nomor. Silakan menuju loket.";
-      setError(msg);
-      addToast("danger", "Gagal mengambil nomor", msg);
-    } finally {
-      setProcessing(false);
-    }
-  };
+  
 
   const handleTakeNumberForPoli = async (kd_poli) => {
     if (processing || cooldown) return;
@@ -185,7 +152,7 @@ export default function AntrialLoket() {
     } catch {}
   };
 
-  const headerTitle = useMemo(() => "Antrian Loket — Kiosk Self-Service", []);
+  
 
   return (
     <div className="min-h-screen min-h-dvh w-full bg-black">

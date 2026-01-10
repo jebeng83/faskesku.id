@@ -108,7 +108,7 @@ class PcareController extends Controller
                                 'request_payload' => json_encode($reqPayload),
                                 'response_body_raw' => $rawBody,
                                 'response_body_json' => is_array($processed) ? json_encode($processed) : null,
-                                'triggered_by' => optional(auth()->user())->nik ?? (string) optional(auth()->user())->id ?? null,
+                                'triggered_by' => optional(\Illuminate\Support\Facades\Auth::user())->nik ?? (string) optional(\Illuminate\Support\Facades\Auth::user())->id ?? null,
                                 'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
                                 'created_at' => now(),
                                 'updated_at' => now(),
@@ -435,12 +435,49 @@ class PcareController extends Controller
         } catch (\Throwable $e) {
             // abaikan jika normalisasi gagal
         }
-        // Sesuai katalog BPJS PCare, body harus dikirim dengan Content-Type: text/plain
+        // Sanitasi rujukan: hapus key rujukLanjut bila null/empty untuk menghindari JValue error di server PCare
         try {
-            $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, ['Content-Type' => 'text/plain']);
+            if (array_key_exists('rujukLanjut', $payload)) {
+                $rl = $payload['rujukLanjut'];
+                if ($rl === null || $rl === '' || (is_array($rl) && empty($rl))) {
+                    unset($payload['rujukLanjut']);
+                } elseif (is_array($rl)) {
+                    if (array_key_exists('khusus', $rl) && ($rl['khusus'] === null || $rl['khusus'] === '')) {
+                        unset($rl['khusus']);
+                    }
+                    if (array_key_exists('subSpesialis', $rl) && (is_null($rl['subSpesialis']) || (is_array($rl['subSpesialis']) && empty($rl['subSpesialis'])))) {
+                        unset($rl['subSpesialis']);
+                    }
+                    if (! empty($rl['tglEstRujuk']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $rl['tglEstRujuk'])) {
+                        $dtR = new \DateTime($rl['tglEstRujuk']);
+                        $rl['tglEstRujuk'] = $dtR->format('d-m-Y');
+                    }
+                    if (empty($rl)) {
+                        unset($payload['rujukLanjut']);
+                    } else {
+                        $payload['rujukLanjut'] = $rl;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        try {
+            $ct = (string) config('bpjs.pcare.kunjungan_content_type', 'text/plain');
+            $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, ['Content-Type' => $ct]);
             $response = $result['response'];
             $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
             if ($response->status() >= 400) {
+                $meta = is_array($processed) ? ($processed['metaData'] ?? $processed['metadata'] ?? null) : null;
+                $msg = is_array($meta) ? (string) ($meta['message'] ?? '') : '';
+                if ($msg !== '' && stripos($msg, 'JValue') !== false) {
+                    $alt = strtolower($ct) === 'text/plain' ? 'application/json' : 'text/plain';
+                    try {
+                        $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, ['Content-Type' => $alt]);
+                        $response = $result['response'];
+                        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+                    } catch (\Throwable $inner) {
+                    }
+                }
                 try {
                     Log::channel('bpjs')->error('PCare daftarKunjungan error detail', [
                         'http_status' => $response->status(),
@@ -2166,7 +2203,7 @@ class PcareController extends Controller
                     'request_payload' => json_encode($reqPayload),
                     'response_body_raw' => $response->body(),
                     'response_body_json' => is_array($processed) ? json_encode($processed) : null,
-                    'triggered_by' => optional(auth()->user())->nik ?? (string) optional(auth()->user())->id ?? null,
+                    'triggered_by' => optional(\Illuminate\Support\Facades\Auth::user())->nik ?? (string) optional(\Illuminate\Support\Facades\Auth::user())->id ?? null,
                     'correlation_id' => $request->header('X-BPJS-LOG-ID') ?: null,
                     'created_at' => now(),
                     'updated_at' => now(),

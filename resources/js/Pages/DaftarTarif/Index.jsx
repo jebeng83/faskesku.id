@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import SidebarLaboratorium from '@/Layouts/SidebarLaboratorium';
@@ -23,7 +23,7 @@ const Badge = ({ children, variant = 'default' }) => {
 
 // Modal Component for Add Tarif
 const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals = [], penjaabs = [], kategoris = [], editData = null }) => {
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, processing, errors, reset } = useForm({
         kd_jenis_prw: '',
         nm_perawatan: '',
         kd_kategori: '',
@@ -497,7 +497,7 @@ const AddTarifModal = ({ isOpen, onClose, category, polikliniks = [], bangsals =
             const notification = document.createElement('div');
             notification.className = 'fixed top-4 right-4 z-50 bg-orange-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md';
             
-            const errorList = Object.entries(validationErrors).map(([field, message]) => {
+            const errorList = Object.entries(validationErrors).map(([_field, message]) => {
                 return `<li>${message}</li>`;
             }).join('');
             
@@ -2012,7 +2012,6 @@ export default function Index({ title, data, category, search, filters, poliklin
     const [editingItem, setEditingItem] = useState(null);
     const [selectedLab, setSelectedLab] = useState(null);
     const [selectedRadiologi, setSelectedRadiologi] = useState(null);
-    const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(null);
     const [showTemplateDetails, setShowTemplateDetails] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [templateRows, setTemplateRows] = useState([]);
@@ -2179,7 +2178,6 @@ export default function Index({ title, data, category, search, filters, poliklin
 
     // Reset pilihan item template saat tarif laboratorium berganti
     useEffect(() => {
-        setSelectedTemplateIndex(null);
         setShowTemplateDetails(false);
     }, [selectedLab]);
 
@@ -3071,7 +3069,7 @@ export default function Index({ title, data, category, search, filters, poliklin
                                     try {
                                         const u = new URL(link.url, window.location.origin);
                                         page = u.searchParams.get('page');
-                                    } catch (e) {
+                                    } catch {
                                         const match = /[?&]page=(\d+)/.exec(link.url);
                                         page = match ? match[1] : null;
                                     }

@@ -90,6 +90,7 @@ checkDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1185
 * @route '/rawat-jalan/surat-sehat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -105,6 +106,7 @@ store.definition = {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1185
 * @route '/rawat-jalan/surat-sehat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -114,6 +116,7 @@ store.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1185
 * @route '/rawat-jalan/surat-sehat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -10,10 +10,8 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue as BaseSelectValue,
 } from "@/Components/ui/Select";
-import Badge from "@/Components/ui/Badge";
-import { Filter, Search, Eye, ClipboardList, Pill, Printer, Loader2, Inbox } from "lucide-react";
+import { Filter, Search, Eye, Pill, Printer, Loader2, Inbox, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import QRCode from "qrcode";
 
 // Custom SelectValue yang menampilkan label berdasarkan value
@@ -55,27 +53,7 @@ const DaftarPermintaanResep = () => {
         }
     };
     
-    // Helper untuk mendapatkan tanggal N hari yang lalu dalam format YYYY-MM-DD
-    // Menggunakan timezone Asia/Jakarta (UTC+7)
-    const minusDaysStr = (days) => {
-        try {
-            const now = new Date();
-            // Kurangi hari dalam millisecond
-            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-            return pastDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
-        } catch {
-            // Fallback jika toLocaleDateString tidak didukung
-            const now = new Date();
-            const pastDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-            const formatter = new Intl.DateTimeFormat('en-CA', {
-                timeZone: 'Asia/Jakarta',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-            return formatter.format(pastDate);
-        }
-    };
+    
 
     // Helper untuk mendapatkan label berdasarkan value
     const getJenisLabel = (value) => {
@@ -107,12 +85,20 @@ const DaftarPermintaanResep = () => {
         no_rawat: "",
         no_rkm_medis: "",
         // paginasi sederhana
-        limit: 10,
+        limit: 20,
         page: 1,
     });
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    // State untuk informasi pagination dari backend
+    const [pagination, setPagination] = useState({
+        total: 0,
+        page: 1,
+        limit: 20,
+        has_more: false,
+    });
     const [selectedResep, setSelectedResep] = useState(null);
     const [showDetail, setShowDetail] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -148,7 +134,7 @@ const DaftarPermintaanResep = () => {
                     end_date: today
                 }));
             }
-        } catch (_) {
+        } catch {
             // Jika error, set default dengan tanggal hari ini
             const today = todayStr();
             setFilters(prev => ({
@@ -165,12 +151,17 @@ const DaftarPermintaanResep = () => {
                 "permintaanResepFilters",
                 JSON.stringify(filters)
             );
-        } catch (_) {}
+        } catch {}
     }, [filters]);
 
     const handleFilterChange = (key, value) => {
         setError("");
-        setFilters((prev) => ({ ...prev, [key]: value }));
+        // Reset ke halaman 1 jika filter berubah (kecuali jika yang diubah adalah page)
+        if (key !== "page") {
+            setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+        } else {
+            setFilters((prev) => ({ ...prev, [key]: value }));
+        }
     };
 
     const fetchByNoRawat = async () => {
@@ -186,10 +177,24 @@ const DaftarPermintaanResep = () => {
                 throw new Error(json.message || "Gagal memuat data resep");
             }
             // API mengembalikan array resep untuk no_rawat tersebut
-            setData(json.data || []);
+            const dataArray = json.data || [];
+            setData(dataArray);
+            // Set pagination untuk pencarian no_rawat (biasanya hanya 1 atau beberapa resep)
+            setPagination({
+                total: dataArray.length,
+                page: 1,
+                limit: dataArray.length || 20,
+                has_more: false,
+            });
         } catch (e) {
             setError(e.message);
             setData([]);
+            setPagination({
+                total: 0,
+                page: 1,
+                limit: filters.limit || 20,
+                has_more: false,
+            });
         } finally {
             setLoading(false);
         }
@@ -200,7 +205,8 @@ const DaftarPermintaanResep = () => {
         setError("");
         try {
             const params = new URLSearchParams({
-                limit: String(filters.limit || 10),
+                limit: String(filters.limit || 20),
+                offset: String((filters.page - 1) * (filters.limit || 20)),
             });
             const resp = await fetch(
                 `/api/resep/pasien/${encodeURIComponent(
@@ -214,9 +220,22 @@ const DaftarPermintaanResep = () => {
                 );
             }
             setData(json.data || []);
+            // Set pagination dari response backend
+            setPagination({
+                total: json.total || 0,
+                page: filters.page || 1,
+                limit: filters.limit || 20,
+                has_more: json.has_more || false,
+            });
         } catch (e) {
             setError(e.message);
             setData([]);
+            setPagination({
+                total: 0,
+                page: 1,
+                limit: filters.limit || 20,
+                has_more: false,
+            });
         } finally {
             setLoading(false);
         }
@@ -258,10 +277,44 @@ const DaftarPermintaanResep = () => {
             if (!json.success) {
                 throw new Error(json.message || "Gagal memuat daftar resep");
             }
-            setData(json.data || []);
+            const responseData = json.data || [];
+            setData(responseData);
+            // Simpan informasi pagination dari backend
+            // Pastikan total selalu di-set, gunakan responseData.length sebagai fallback jika backend tidak mengirim total
+            const total = typeof json.total === 'number' ? json.total : (responseData.length > 0 ? responseData.length : 0);
+            const page = typeof json.page === 'number' ? json.page : (filters.page || 1);
+            const limit = typeof json.limit === 'number' ? json.limit : (filters.limit || 20);
+            // has_more: true jika ada data lebih dari limit atau jika backend mengirim has_more = true
+            const hasMore = typeof json.has_more === 'boolean' ? json.has_more : (responseData.length >= limit);
+            
+            setPagination({
+                total: total,
+                page: page,
+                limit: limit,
+                has_more: hasMore,
+            });
+            
+            // Debug log untuk melihat data pagination
+            console.log('Pagination data:', { 
+                total, 
+                page, 
+                limit, 
+                hasMore, 
+                dataLength: responseData.length,
+                jsonTotal: json.total,
+                jsonHasMore: json.has_more,
+                jsonPage: json.page,
+                jsonLimit: json.limit
+            });
         } catch (e) {
             setError(e.message);
             setData([]);
+            setPagination({
+                total: 0,
+                page: 1,
+                limit: filters.limit || 20,
+                has_more: false,
+            });
         } finally {
             setLoading(false);
         }
@@ -295,7 +348,7 @@ const DaftarPermintaanResep = () => {
                 // Reset stok info cache ketika membuka resep baru
                 setStokInfoMap({});
             }
-        } catch (e) {}
+        } catch {}
     };
 
     // Ambil stok info per item obat
@@ -430,15 +483,8 @@ const DaftarPermintaanResep = () => {
                           selectedResep.pasien?.nama_pasien ||
                           detailContext.nm_pasien ||
                           "";
-        const noRM = selectedResep.no_rkm_medis || 
-                    selectedResep.no_rkm || 
-                    selectedResep.pasien?.no_rkm_medis ||
-                    selectedResep.pasien?.no_rkm ||
-                    detailContext.no_rkm_medis ||
-                    "";
         const noResep = selectedResep.no_resep || "-";
         const tglResep = formatDate(selectedResep.tgl_peresepan) || "-";
-        const jamResep = formatTime(selectedResep.jam_peresepan) || "-";
 
         // Buat kop dari setting - hanya nama instansi saja
         const kop = kopData.nama_instansi || "ETIKET OBAT";
@@ -1291,14 +1337,31 @@ const DaftarPermintaanResep = () => {
                 <Card className="relative overflow-visible rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                     <CardHeader className="relative z-0 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-600/50">
-                        <CardTitle className="flex items-center gap-2">
-                            <Filter className="h-5 w-5" />
-                            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Filter Pencarian
-                            </span>
-                        </CardTitle>
+                        <div
+                            className="flex items-center justify-between cursor-pointer select-none"
+                            onClick={() => setFiltersOpen((prev) => !prev)}
+                            aria-expanded={filtersOpen}
+                            aria-controls="filter-content"
+                        >
+                            <CardTitle className="flex items-center gap-2">
+                                <Filter className="h-5 w-5" />
+                                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                    Filter Pencarian
+                                </span>
+                            </CardTitle>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setFiltersOpen((prev) => !prev); }}
+                                className="inline-flex items-center gap-2 px-2 py-1 text-sm rounded-md bg-white/70 dark:bg-gray-700/70 border border-gray-200/50 dark:border-gray-600/50 text-gray-700 dark:text-gray-200 hover:bg-white/90 dark:hover:bg-gray-700"
+                                aria-label={filtersOpen ? "Tutup Filter" : "Buka Filter"}
+                            >
+                                {filtersOpen ? "Tutup" : "Buka"}
+                                <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? "rotate-180" : "rotate-0"}`} />
+                            </button>
+                        </div>
                     </CardHeader>
-                    <CardContent className="p-8 overflow-visible">
+                    {filtersOpen && (
+                    <CardContent id="filter-content" className="p-8 overflow-visible">
                         <div className="grid grid-cols-5 gap-4">
                             <div className="relative z-[9999]" style={{ zIndex: 9999 }}>
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
@@ -1509,26 +1572,9 @@ const DaftarPermintaanResep = () => {
                                     </div>
                                 </>
                             )}
-                            <div className="hidden">
-                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-                                    Limit
-                                </label>
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    max={50}
-                                    value={filters.limit}
-                                    onChange={(e) =>
-                                        handleFilterChange(
-                                            "limit",
-                                            Number(e.target.value) || 10
-                                        )
-                                    }
-                                    className="dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
-                                />
-                            </div>
+                            
                         </div>
-                        <div className="flex gap-2 mt-4">
+                        <div className="w-full flex gap-2 mt-4 justify-end">
                             <Button
                                 onClick={handleSearch}
                                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
@@ -1552,11 +1598,17 @@ const DaftarPermintaanResep = () => {
                                         kd_depo: "",
                                         no_rawat: "",
                                         no_rkm_medis: "",
-                                        limit: 10,
+                                        limit: 20,
                                         page: 1,
                                     });
                                     setData([]);
                                     setError("");
+                                    setPagination({
+                                        total: 0,
+                                        page: 1,
+                                        limit: 20,
+                                        has_more: false,
+                                    });
                                 }}
                             >
                                 Reset
@@ -1569,6 +1621,7 @@ const DaftarPermintaanResep = () => {
                             </div>
                         )}
                     </CardContent>
+                    )}
                 </Card>
 
                 {/* Data Table */}
@@ -1596,14 +1649,39 @@ const DaftarPermintaanResep = () => {
                                     Hasil Pencarian
                                 </span>
                             </h3>
-                            <motion.span
-                                className="text-sm text-gray-600 dark:text-gray-400 font-medium"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.2 }}
-                            >
-                                {data.length} data resep
-                            </motion.span>
+                            <div className="flex items-center gap-3">
+                                <motion.span
+                                    className="text-sm text-gray-600 dark:text-gray-400 font-medium"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                >
+                                    {pagination.total > 0 ? (
+                                        <>
+                                            Menampilkan {data.length} dari {pagination.total} data resep
+                                            {pagination.page > 1 && ` (Halaman ${pagination.page})`}
+                                        </>
+                                    ) : (
+                                        `${data.length} data resep`
+                                    )}
+                                </motion.span>
+                                <div className="w-14">
+                                    <Input
+                                        type="number"
+                                        min={10}
+                                        max={100}
+                                        step={10}
+                                        value={filters.limit}
+                                        onChange={(e) =>
+                                            handleFilterChange(
+                                                "limit",
+                                                Number(e.target.value) || 20
+                                            )
+                                        }
+                                        className="text-xs dark:border-gray-600 focus:ring-2 focus:ring-blue-500/50"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1858,6 +1936,85 @@ const DaftarPermintaanResep = () => {
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
+                            </div>
+                        )}
+                        {/* Pagination Controls */}
+                        {!loading && data.length > 0 && (
+                            pagination.total > pagination.limit || 
+                            pagination.has_more === true || 
+                            pagination.page > 1
+                        ) && (
+                            <div className="mt-6 flex items-center justify-between border-t border-gray-200/50 dark:border-gray-700/50 pt-4">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    Menampilkan {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} dari {pagination.total} data
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (pagination.page > 1) {
+                                                handleFilterChange("page", pagination.page - 1);
+                                                setTimeout(() => handleSearch(), 100);
+                                            }
+                                        }}
+                                        disabled={pagination.page === 1}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Sebelumnya
+                                    </Button>
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: Math.min(5, Math.ceil(pagination.total / pagination.limit)) }, (_, i) => {
+                                            const totalPages = Math.ceil(pagination.total / pagination.limit);
+                                            let pageNum;
+                                            if (totalPages <= 5) {
+                                                pageNum = i + 1;
+                                            } else if (pagination.page <= 3) {
+                                                pageNum = i + 1;
+                                            } else if (pagination.page >= totalPages - 2) {
+                                                pageNum = totalPages - 4 + i;
+                                            } else {
+                                                pageNum = pagination.page - 2 + i;
+                                            }
+                                            return (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={pagination.page === pageNum ? "default" : "outline"}
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        if (pagination.page !== pageNum) {
+                                                            handleFilterChange("page", pageNum);
+                                                            setTimeout(() => handleSearch(), 100);
+                                                        }
+                                                    }}
+                                                    className={`min-w-[40px] ${
+                                                        pagination.page === pageNum
+                                                            ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {pageNum}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (pagination.has_more) {
+                                                handleFilterChange("page", pagination.page + 1);
+                                                setTimeout(() => handleSearch(), 100);
+                                            }
+                                        }}
+                                        disabled={!pagination.has_more}
+                                        className="flex items-center gap-1"
+                                    >
+                                        Selanjutnya
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>

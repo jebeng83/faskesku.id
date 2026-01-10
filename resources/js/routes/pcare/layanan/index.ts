@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see routes/web.php:1307
+* @see routes/web.php:1527
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,6 +16,7 @@ cekPesertaNik.definition = {
 
 /**
 * @see routes/web.php:1307
+* @see routes/web.php:1527
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -23,6 +25,7 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:1307
+* @see routes/web.php:1527
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +35,7 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:1307
+* @see routes/web.php:1527
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -41,6 +45,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see routes/web.php:1312
+* @see routes/web.php:1532
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,6 +60,7 @@ pcare.definition = {
 
 /**
 * @see routes/web.php:1312
+* @see routes/web.php:1532
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -63,6 +69,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:1312
+* @see routes/web.php:1532
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,6 +79,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:1312
+* @see routes/web.php:1532
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

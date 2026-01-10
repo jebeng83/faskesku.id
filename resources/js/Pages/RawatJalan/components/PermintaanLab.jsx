@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
-import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 
-export default function PermintaanLab({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function PermintaanLab({ noRawat = '' }) {
     const [selectedTests, setSelectedTests] = useState([]);
     const [availableTests, setAvailableTests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -1040,7 +1039,7 @@ export function RiwayatPermintaanLab({ noRawat = '', refreshKey = 0 }) {
                 year: 'numeric',
                 timeZone: tz
             });
-        } catch (e) {
+        } catch {
             return new Date(date).toLocaleDateString('id-ID', {
                 day: '2-digit',
                 month: '2-digit', 

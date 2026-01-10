@@ -2,7 +2,6 @@ import React from 'react';
 import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import { router } from '@inertiajs/react';
 
 // Robust resolver: support .jsx/.js/.tsx and handle case sensitivity gracefully
 createInertiaApp({

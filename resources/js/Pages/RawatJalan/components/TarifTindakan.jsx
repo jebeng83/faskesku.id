@@ -441,7 +441,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat }) => {
                     // Gunakan metode HTTP DELETE langsung dengan payload di body
                     // Laravel route: Route::delete('/api/tarif-tindakan', deleteTindakan)
                     // axios mendukung body pada DELETE melalui opsi { data }
-                    const response = await axios.delete('/api/tarif-tindakan', {
+                    await axios.delete('/api/tarif-tindakan', {
                         data: deleteData,
                     });
                     

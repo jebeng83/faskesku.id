@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { router, usePage } from "@inertiajs/react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
 import Breadcrumb from "@/Components/Breadcrumb";
@@ -12,7 +13,35 @@ export default function LanjutanRalanLayout({
     menuConfig = {},
     context = "ralan",
 }) {
-	const { auth, menu_hierarchy, current_menu } = usePage().props;
+    const page = usePage();
+    const { auth } = page.props;
+    const currentUrl = page?.url || (typeof window !== "undefined" ? window.location.pathname : "");
+    const prefersReducedMotion = useReducedMotion();
+    const pageVariants = {
+        hidden: {
+            opacity: 0,
+            y: prefersReducedMotion ? 0 : 12,
+            filter: prefersReducedMotion ? "none" : "blur(2px)",
+        },
+        visible: {
+            opacity: 1,
+            y: 0,
+            filter: "none",
+            transition: {
+                duration: prefersReducedMotion ? 0 : 0.35,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
+        exit: {
+            opacity: 0,
+            y: prefersReducedMotion ? 0 : -8,
+            filter: prefersReducedMotion ? "none" : "blur(1px)",
+            transition: {
+                duration: prefersReducedMotion ? 0 : 0.25,
+                ease: "easeInOut",
+            },
+        },
+    };
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 	const [isDark, setIsDark] = useState(false);
@@ -290,6 +319,18 @@ export default function LanjutanRalanLayout({
 			>
 				<div className="min-h-[calc(100vh-3.5rem)] pb-24">
 					{children}
+				<div className="min-h-[calc(100vh-3.5rem)]">
+					<AnimatePresence mode="wait" initial={false}>
+						<motion.div
+							key={currentUrl}
+							initial="hidden"
+							animate="visible"
+							exit="exit"
+							variants={pageVariants}
+						>
+							{children}
+						</motion.div>
+					</AnimatePresence>
 				</div>
 			</main>
 			<MobileBottomNav />

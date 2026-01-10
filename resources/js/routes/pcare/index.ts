@@ -18,6 +18,7 @@ import massSend from './mass-send'
 import setting from './setting'
 /**
 * @see routes/web.php:1194
+* @see routes/web.php:1410
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +33,7 @@ index.definition = {
 
 /**
 * @see routes/web.php:1194
+* @see routes/web.php:1410
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -40,6 +42,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:1194
+* @see routes/web.php:1410
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,6 +52,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:1194
+* @see routes/web.php:1410
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -58,6 +62,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:1213
+* @see routes/web.php:1429
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,6 +77,7 @@ monitoring.definition = {
 
 /**
 * @see routes/web.php:1213
+* @see routes/web.php:1429
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -80,6 +86,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:1213
+* @see routes/web.php:1429
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -89,6 +96,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:1213
+* @see routes/web.php:1429
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -96,10 +104,51 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:1437
+* @route '/pcare/data-pendaftaran'
+*/
+export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'get',
+})
+
+dataPendaftaran.definition = {
+    methods: ["get","head"],
+    url: '/pcare/data-pendaftaran',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1437
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.url = (options?: RouteQueryOptions) => {
+    return dataPendaftaran.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1437
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1437
+* @route '/pcare/data-pendaftaran'
+*/
+dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dataPendaftaran.url(options),
+    method: 'head',
+})
+
 const pcare = {
     index: Object.assign(index, index),
     mapping: Object.assign(mapping, mapping),
     monitoring: Object.assign(monitoring, monitoringBb077c),
+    dataPendaftaran: Object.assign(dataPendaftaran, dataPendaftaran),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
     kelompok: Object.assign(kelompok, kelompok),

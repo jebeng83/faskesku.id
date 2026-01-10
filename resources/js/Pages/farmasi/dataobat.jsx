@@ -940,7 +940,7 @@ export default function DataObatPage() {
                     ppn: d.ppn || "Yes",
                 });
             }
-        } catch (e) {
+        } catch {
             // fallback tetap gunakan default
             console.warn("Gagal mengambil konfigurasi set_harga_obat");
         }
@@ -956,7 +956,7 @@ export default function DataObatPage() {
                 setPersenUmum(json.data);
                 return;
             }
-        } catch (e) {
+        } catch {
             console.warn("Gagal mengambil persentase umum");
         }
         try {
@@ -972,7 +972,7 @@ export default function DataObatPage() {
                 });
                 setPersenUmum(p);
             }
-        } catch (e2) {
+        } catch {
             console.warn(
                 "Gagal mengambil fallback persentase umum dari set_harga_obat"
             );
@@ -990,7 +990,7 @@ export default function DataObatPage() {
             if (json && json.success && json.data) {
                 setPersenJenis(json.data);
             }
-        } catch (e) {
+        } catch {
             console.warn("Gagal mengambil persentase per jenis");
         }
     }
@@ -1394,7 +1394,7 @@ export default function DataObatPage() {
                         <div className="mt-3 max-h-[480px] overflow-y-auto">
                             {isSearching ? (
                                 <div className="space-y-2">
-                                    {[...Array(8)].map((_, i) => (
+                                    {[...Array(8).keys()].map((i) => (
                                         <motion.div
                                             key={i}
                                             className="h-12 rounded-md bg-gray-100"

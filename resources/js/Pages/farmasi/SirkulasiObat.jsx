@@ -84,7 +84,7 @@ export default function SirkulasiObat() {
             if (id !== requestIdRef.current) return;
             const it = data?.items ?? [];
             setItems(it);
-        } catch (e) {
+        } catch {
             if (id !== requestIdRef.current) return;
             setItems([]);
         } finally {
@@ -391,8 +391,8 @@ export default function SirkulasiObat() {
                         <tbody>
                             {loading && (
                                 <tr className="animate-pulse">
-                                    {Array.from({ length: 21 }).map(
-                                        (_, idx) => (
+                                    {[...Array(21).keys()].map(
+                                        (idx) => (
                                             <td
                                                 key={`skel_${idx}`}
                                                 className="px-3 py-2"

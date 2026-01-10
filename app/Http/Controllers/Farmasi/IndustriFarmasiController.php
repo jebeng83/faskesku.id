@@ -14,7 +14,7 @@ class IndustriFarmasiController extends Controller
      */
     public function index(Request $request)
     {
-        $search = trim($request->get('q', ''));
+        $search = trim($request->query('q', ''));
 
         $query = IndustriFarmasi::query();
 
@@ -28,7 +28,7 @@ class IndustriFarmasiController extends Controller
             });
         }
 
-        $perPage = (int) $request->get('perPage', 10);
+        $perPage = (int) $request->query('perPage', 10);
         $perPage = $perPage > 0 ? $perPage : 10;
 
         $items = $query->orderBy('kode_industri')->paginate($perPage)->withQueryString();

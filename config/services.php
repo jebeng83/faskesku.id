@@ -45,4 +45,13 @@ return [
         'organization_id' => env('SATUSEHAT_ORG_ID', ''),
     ],
 
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'app_secret' => env('WHATSAPP_APP_SECRET'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v19.0'),
+        'graph_base' => env('WHATSAPP_GRAPH_BASE', 'https://graph.facebook.com'),
+    ],
+
 ];

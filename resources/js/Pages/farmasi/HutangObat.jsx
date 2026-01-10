@@ -12,7 +12,7 @@ function currency(n) {
             currency: "IDR",
             maximumFractionDigits: 0,
         }).format(Number(n || 0));
-    } catch (_) {
+    } catch {
         return String(n || 0);
     }
 }
@@ -68,7 +68,7 @@ export default function HutangObat() {
             const url = "/farmasi/akun-bayar";
             const { data } = await axios.get(url);
             setAkunBayar(Array.isArray(data.data) ? data.data : []);
-        } catch (_) {}
+        } catch {}
     };
 
     useEffect(() => {
@@ -362,7 +362,7 @@ export default function HutangObat() {
                                     </thead>
                                     <tbody className="bg-white/70 dark:bg-gray-900/50 divide-y divide-gray-200 dark:divide-gray-700">
                                         {loading ? (
-                                            [...Array(6)].map((_, idx) => (
+                                            [...Array(6).keys()].map((idx) => (
                                                 <tr key={`skeleton-${idx}`}>
                                                     <td className="px-4 py-2">
                                                         <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />

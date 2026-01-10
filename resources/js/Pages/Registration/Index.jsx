@@ -19,7 +19,7 @@ import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
 import { todayDateString, nowDateTimeString } from "@/tools/datetime";
 
 export default function Registration({
-    auth,
+    _auth,
     dokters,
     polikliniks,
     penjabs,
@@ -35,17 +35,127 @@ export default function Registration({
     const [selectedRegistration, setSelectedRegistration] = useState(null);
     const [selectedRegForQueue, setSelectedRegForQueue] = useState(null);
     const [queueCurrent, setQueueCurrent] = useState(null);
-    const [queueCallStatus, setQueueCallStatus] = useState("");
-    const [queueLastCalledAt, setQueueLastCalledAt] = useState("");
+    
     const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
     const [queueStatusCode, setQueueStatusCode] = useState(null);
     const [queueTodayList, setQueueTodayList] = useState([]);
+    const [selectedLoket, setSelectedLoket] = useState(1);
+
+    useEffect(() => {
+        try {
+            const v = parseInt(String(localStorage.getItem("selectedLoket") || ""), 10);
+            if ([1,2,3,4].includes(v)) setSelectedLoket(v);
+        } catch {}
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("selectedLoket", String(selectedLoket));
+        } catch {}
+    }, [selectedLoket]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editPatient, setEditPatient] = useState(null);
+    const [isSkriningVisualOpen, setIsSkriningVisualOpen] = useState(false);
+    const [skriningVisualRecords, setSkriningVisualRecords] = useState([]);
+    const [srkStatus, setSrkStatus] = useState({ status: "UNKNOWN", message: "" });
+    const [srkLoading, setSrkLoading] = useState(false);
+    const [resikoSelections, setResikoSelections] = useState([]);
+    const [isIdentityCollapsed, setIsIdentityCollapsed] = useState(false);
+    const resikoOptions = [
+        "Tidak Ada",
+        "Alat Bantu Jalan",
+        "Gangguan Pola Jalan",
+        "Ada Penutup Mata",
+    ];
+    const formatBirthDate = (value) => {
+        if (!value) return "-";
+        const s = String(value);
+        const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (m) return m[1];
+        try {
+            return new Date(s).toLocaleDateString("en-CA");
+        } catch (_) {
+            return s;
+        }
+    };
+    const formatSkriningTanggal = (value) => {
+        if (!value) return "-";
+        const s = String(value);
+        const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (m) return m[1];
+        try {
+            const tz = getAppTimeZone();
+            return new Date(s).toLocaleDateString("en-CA", { timeZone: tz });
+        } catch (_) {
+            const p = s.split("T")[0];
+            return p || s;
+        }
+    };
+    const hasilBadgeClasses = (v) => {
+        if (v === "Merah") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+        if (v === "Oranye") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
+        if (v === "Kuning") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300";
+        if (v === "Hijau") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const srkBadgeClasses = (s) => {
+        if (s === "SUDAH_SRK") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
+        if (s === "BELUM_SRK") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const keputusanBadgeClasses = (v) => {
+        if (v === "UGD") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+        if (v === "Prioritas") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300";
+        if (v === "Sesuai Antrian") return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
+        return "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
+    };
+    const skriningInfo = {
+        Merah: [
+            "Tidak Sadar/Pingsan",
+            "Kesulitan/Tdk Bernafas",
+            "Nadi/Jantung tidak berdetak",
+            "Kejang Lama/Berulang",
+        ],
+        Oranye: [
+            "Nyeri Hebat",
+            "Nyeri Dada",
+        ],
+        Kuning: [
+            "Pucat",
+            "lemas",
+            "Sempoyongan",
+        ],
+        Hijau: [
+            "Kondisi Stabil",
+        ],
+    };
+    const infoAccentBg = (v) => {
+        if (v === "Merah") return "from-red-500 to-rose-600";
+        if (v === "Oranye") return "from-amber-500 to-orange-600";
+        if (v === "Kuning") return "from-yellow-400 to-amber-500";
+        if (v === "Hijau") return "from-green-500 to-emerald-600";
+        return "from-gray-500 to-gray-700";
+    };
+    const dotBg = (v) => {
+        if (v === "Merah") return "bg-red-500";
+        if (v === "Oranye") return "bg-amber-500";
+        if (v === "Kuning") return "bg-yellow-500";
+        if (v === "Hijau") return "bg-green-500";
+        return "bg-gray-500";
+    };
+    const [skriningVisualForm, setSkriningVisualForm] = useState({
+        no_rkm_medis: "",
+        tanggal: todayDateString(),
+        jam: nowDateTimeString().split(" ")[1].substring(0, 5),
+        hasil_skrining: "Hijau",
+        skrining_resiko_jatuh: "",
+        skor_resiko_jatuh: "",
+        keputusan: "Sesuai Antrian",
+    });
     const [registrationData, setRegistrationData] = useState(registrations);
-    const [currentPage, setCurrentPage] = useState(1);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [isFilterExpanded, setIsFilterExpanded] = useState(false);
     const [stats, setStats] = useState({
@@ -92,8 +202,26 @@ export default function Registration({
     // Daftar penjamin lokal (agar bisa di-update setelah tambah penjab tanpa reload penuh)
     const [penjabsList, setPenjabsList] = useState(penjabs || []);
     useEffect(() => {
-        setPenjabsList(penjabs || []);
+        const arr = Array.isArray(penjabs) ? penjabs : [];
+        const hasStatus = arr.some((p) => p && typeof p === "object" && ("status" in p));
+        const filtered = hasStatus ? arr.filter((p) => String(p.status) === "1") : arr;
+        setPenjabsList(filtered);
     }, [penjabs]);
+
+    useEffect(() => {
+        const arr = Array.isArray(penjabs) ? penjabs : [];
+        const hasStatus = arr.some((p) => p && typeof p === "object" && ("status" in p));
+        if (!hasStatus) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/penjab');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.data) ? d.data : (Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []));
+                    setPenjabsList(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
 
     // Modal tambah penjab cepat
     const [isPenjabCreateOpen, setIsPenjabCreateOpen] = useState(false);
@@ -121,6 +249,45 @@ export default function Registration({
     // State untuk popup menu cetak
     const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
     const [selectedRegForPrint, setSelectedRegForPrint] = useState(null);
+
+    const [poliOptions, setPoliOptions] = useState(Array.isArray(polikliniks) ? polikliniks : []);
+    useEffect(() => {
+        setPoliOptions(Array.isArray(polikliniks) ? polikliniks : []);
+    }, [polikliniks]);
+    useEffect(() => {
+        if (!Array.isArray(poliOptions) || poliOptions.length === 0) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/poliklinik?status=1&limit=200');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.list) ? d.list : (Array.isArray(d.data) ? d.data : (Array.isArray(d) ? d : []));
+                    setPoliOptions(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
+
+    const [doctorOptions, setDoctorOptions] = useState(Array.isArray(dokters) ? dokters : []);
+    useEffect(() => {
+        const arr = Array.isArray(dokters) ? dokters : [];
+        const hasStatus = arr.some((d) => d && typeof d === "object" && ("status" in d));
+        const filtered = hasStatus ? arr.filter((d) => String(d.status) === "1") : arr;
+        setDoctorOptions(filtered);
+    }, [dokters]);
+    useEffect(() => {
+        const arr = Array.isArray(dokters) ? dokters : [];
+        const hasStatus = arr.some((d) => d && typeof d === "object" && ("status" in d));
+        if (!hasStatus || !Array.isArray(arr) || arr.length === 0) {
+            (async () => {
+                try {
+                    const res = await httpGet('/api/dokter');
+                    const d = res?.data || {};
+                    const list = Array.isArray(d.data) ? d.data : (Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []));
+                    setDoctorOptions(list);
+                } catch (_) {}
+            })();
+        }
+    }, []);
 
     const openBpjsPopup = ({ status, message, data, raw }) => {
         setBpjsPopup({
@@ -262,6 +429,12 @@ export default function Registration({
             const targetNomor = repeat ? (queueLastCalledNumber ?? queueCurrent?.nomor) : queueCurrent.nomor;
             const res = await httpPost("/api/queue/call", { nomor: targetNomor, loket: 1 });
             const data = res?.data || {};
+            await httpPost("/api/queue/call", { nomor: targetNomor, loket: selectedLoket });
+            try {
+                const bc = new BroadcastChannel("queue-call");
+                bc.postMessage({ nomor: targetNomor, loket: selectedLoket, prefix: queueCurrent?.prefix || "", repeat });
+                bc.close();
+            } catch (_) {}
             if (repeat) {
                 // Ulang: panggil kembali nomor terakhir dipanggil tanpa mengubah panel
                 // Panel tetap menampilkan kandidat berikutnya berstatus "baru"
@@ -306,35 +479,7 @@ export default function Registration({
     };
 
     // Buka halaman Layanan PCare (Inertia page)
-    const openLayananPcare = (patient) => {
-        try {
-            // Gunakan Ziggy route jika tersedia; fallback ke path hardcode jika tidak
-            let url = "/pcare/layanan";
-            try {
-                url = route("layanan.pcare");
-            } catch (_) {}
-            // Kirim NIK dan/atau No. Kartu (BPJS) sebagai query agar halaman Layanan PCare otomatis terisi
-            const nik = sanitizeNik(patient?.no_ktp || "");
-            const noka = String(patient?.no_peserta || "").replace(/[^0-9]/g, "");
-            const query = {};
-            if (nik) query.nik = nik;
-            if (noka) query.noka = noka;
-            // Tambahkan preferensi mode pencarian agar form langsung menampilkan field yang sesuai
-            if (noka) {
-                query.mode = "noka";
-            } else if (nik) {
-                query.mode = "nik";
-            }
-            // Simpan prefill ke localStorage sebagai fallback bila user membuka via sidebar tanpa query
-            try {
-                const prefill = { mode: query.mode || '', nik: nik || '', noka: noka || '', ts: Date.now() };
-                localStorage.setItem('pcarePrefill', JSON.stringify(prefill));
-            } catch (_) {}
-            router.get(url, query, { preserveScroll: true });
-        } catch (e) {
-            console.error("Gagal membuka Layanan PCare:", e);
-        }
-    };
+    
 
     // Hanya kirim antrean ke Mobile JKN bila jenis bayar termasuk BPJ / PBI
     const isJenisBayarAllowedForAntrean = (kd_pj) => {
@@ -359,18 +504,10 @@ export default function Registration({
         }
     };
 
+    
+
     // Simpan filter yang relevan untuk halaman Rawat Jalan sebelum navigasi
-    const setRawatJalanFiltersForNavigation = (reg) => {
-        try {
-            const filters = {
-                date: reg?.tgl_registrasi || "",
-                kd_poli: reg?.kd_poli || reg?.poliklinik?.kd_poli || "",
-                kd_dokter: reg?.kd_dokter || "",
-                per_page: 50,
-            };
-            localStorage.setItem("rawatJalanFilters", JSON.stringify(filters));
-        } catch (_) {}
-    };
+    
 
     // Panggil antrean (status hadir=1) lalu buka halaman Rawat Jalan index
     const handleCallAntreanAndOpenRawatJalan = async (reg) => {
@@ -382,7 +519,7 @@ export default function Registration({
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
                     status: 1, // Hadir
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
                 try {
                     await axios.post("/api/mobilejkn/antrean/panggil", payload);
@@ -397,9 +534,7 @@ export default function Registration({
             // Setelah memanggil antrean, langsung buka halaman Rawat Jalan Lanjutan sesuai permintaan
             try {
                 goToLanjutan(reg.no_rawat, reg.no_rkm_medis);
-            } catch (e) {
-                // Fallback: jika terjadi error saat konstruksi token atau route ziggy tidak tersedia,
-                // tetap arahkan ke laman /rawat-jalan/lanjutan menggunakan path hardcode
+            } catch {
                 let url = "/rawat-jalan/lanjutan";
                 router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })) }, { preserveScroll: true });
             }
@@ -411,33 +546,7 @@ export default function Registration({
         }
     };
 
-    const handleRepeatCallAntrean = async (reg) => {
-        if (!reg) return;
-        try {
-            if (isRegistrationAllowedForAntrean(reg)) {
-                const payload = {
-                    no_rkm_medis: reg.no_rkm_medis,
-                    kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    status: 1,
-                    tanggalperiksa: reg.tgl_registrasi,
-                };
-                try {
-                    await axios.post("/api/mobilejkn/antrean/panggil", payload);
-                    alert("Nomor dipanggil ulang");
-                } catch (err) {
-                    console.warn(
-                        "Gagal memanggil ulang antrean:",
-                        err?.response?.data || err?.message
-                    );
-                    alert("Gagal memanggil ulang antrean");
-                }
-            } else {
-                alert("Jenis bayar bukan BPJ/PBI, panggilan antrean tidak tersedia");
-            }
-        } catch (e) {
-            console.error("Error saat memanggil ulang antrean:", e);
-        }
-    };
+    
 
     const handleCheckIn = async (reg) => {
         try {
@@ -602,6 +711,14 @@ export default function Registration({
         if (name === "kd_poli" && value && selectedPatient) {
             checkPoliStatus(value);
         }
+        if ((name === "kd_poli" || name === "kd_dokter" || name === "tgl_registrasi") && selectedPatient) {
+            const vPoli = name === "kd_poli" ? value : formData.kd_poli;
+            const vDokter = name === "kd_dokter" ? value : formData.kd_dokter;
+            const vTanggal = name === "tgl_registrasi" ? value : formData.tgl_registrasi;
+            if (vPoli && vDokter && vTanggal) {
+                checkSrk(vPoli, vDokter, vTanggal);
+            }
+        }
     };
 
     // Check patient status in polyclinic
@@ -619,12 +736,108 @@ export default function Registration({
         }
     };
 
+    const checkSrk = async (kdPoli, kdDokter, tanggal) => {
+        try {
+            if (!selectedPatient) return;
+            const kdPoliSim = String(kdPoli || formData.kd_poli || 'INT');
+            const kdDokterSim = String(kdDokter || formData.kd_dokter || '999999');
+            const tanggalSim = String(tanggal || formData.tgl_registrasi || todayDateString());
+            const p = {
+                no_rkm_medis: selectedPatient.no_rkm_medis,
+                kd_poli: kdPoliSim,
+                kd_dokter: kdDokterSim,
+                tanggalperiksa: tanggalSim,
+                nomorkartu: String(selectedPatient?.no_peserta || ''),
+                nik: String(selectedPatient?.no_ktp || ''),
+                kodepoli: kdPoliSim,
+                namapoli: 'Poli Internal',
+                norm: String(selectedPatient?.no_rkm_medis || ''),
+                kodedokter: 999999,
+                namadokter: 'Dokter SRK Check',
+                jampraktek: '00:01-00:02',
+                nomorantrean: '000',
+                angkaantrean: 0,
+                keterangan: 'SRK check only',
+                nohp: String(selectedPatient?.no_tlp || ''),
+            };
+            if (!p.no_rkm_medis) return;
+            setSrkLoading(true);
+            setSrkStatus({ status: "UNKNOWN", message: "" });
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            } catch (_) {}
+            const r = await axios.post("/api/mobilejkn/srk/check", p, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+            let st = typeof r?.data?.status === 'string' && r.data.status ? String(r.data.status) : 'UNKNOWN';
+            let msg = typeof r?.data?.message === 'string' ? r.data.message : '';
+            if (st === 'UNKNOWN') {
+                const meta = r?.data?.metadata || r?.data?.metaData || null;
+                const code = meta && typeof meta.code === 'number' ? meta.code : null;
+                const m = msg || (meta && typeof meta.message === 'string' ? meta.message : '');
+                const indikasiBelum = m && /skrining kesehatan|skrining/i.test(m);
+                if (indikasiBelum) {
+                    st = 'BELUM_SRK';
+                    msg = m;
+                } else if (code !== null && code >= 200 && code < 300) {
+                    st = 'SUDAH_SRK';
+                    msg = m;
+                }
+            }
+            if (st === 'UNKNOWN') {
+                try {
+                    const t = await axios.post("/api/mobilejkn/srk/check/test", p, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" } });
+                    const metaT = t?.data?.metadata || t?.data?.metaData || null;
+                    const codeT = metaT && typeof metaT.code === 'number' ? metaT.code : null;
+                    const mT = typeof t?.data?.message === 'string' ? t.data.message : (metaT && typeof metaT.message === 'string' ? metaT.message : '');
+                    let stT = typeof t?.data?.status === 'string' && t.data.status ? String(t.data.status) : 'UNKNOWN';
+                    if (stT === 'UNKNOWN') {
+                        const indikasiBelumT = mT && /skrining kesehatan|skrining/i.test(mT);
+                        if (indikasiBelumT) stT = 'BELUM_SRK';
+                        else if (codeT !== null && codeT >= 200 && codeT < 300) stT = 'SUDAH_SRK';
+                    }
+                    st = stT;
+                    msg = mT || msg;
+                } catch (_) {}
+            }
+            setSrkStatus({ status: st, message: msg });
+        } catch (e) {
+            const msg = String(e?.response?.data?.message || e?.message || "");
+            setSrkStatus({ status: "UNKNOWN", message: msg });
+        } finally {
+            setSrkLoading(false);
+        }
+    };
+
     // Handle registration submission
     const handleSubmitRegister = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
+            if (!selectedPatient || !selectedPatient.no_rkm_medis) {
+                setIsSubmitting(false);
+                alert('Silakan pilih pasien terlebih dahulu');
+                return;
+            }
+            
+            // Validasi frontend
+            const requiredFields = ['kd_dokter','kd_poli','kd_pj','p_jawab','almt_pj','hubunganpj'];
+            const missing = requiredFields.filter((k) => !formData[k] || String(formData[k]).trim() === '');
+            if (missing.length) {
+                setIsSubmitting(false);
+                const missingLabels = {
+                    kd_dokter: 'Dokter',
+                    kd_poli: 'Poliklinik',
+                    kd_pj: 'Cara Bayar',
+                    p_jawab: 'Nama Penanggung Jawab',
+                    almt_pj: 'Alamat Penanggung Jawab',
+                    hubunganpj: 'Hubungan',
+                };
+                const missingList = missing.map(f => missingLabels[f] || f).join(', ');
+                alert(`Lengkapi data registrasi: ${missingList}`);
+                return;
+            }
+            
             // Pastikan URL benar. Gunakan fallback eksplisit dan hanya terima hasil Ziggy jika valid.
             let url = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
             try {
@@ -642,6 +855,59 @@ export default function Registration({
             try { console.debug("RegisterPatient POST URL:", url); } catch (_) {}
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            } catch (_) {}
+            
+            // Helper untuk mendapatkan token dari cookie
+            const getCookieToken = () => {
+                try {
+                    const cookieStr = '; ' + document.cookie;
+                    const xsrfPart = cookieStr.split('; XSRF-TOKEN=');
+                    if (xsrfPart.length === 2) {
+                        const token = decodeURIComponent(xsrfPart.pop().split(';').shift());
+                        return token || '';
+                    }
+                } catch (e) {
+                    console.warn('Error reading cookie:', e);
+                }
+                return '';
+            };
+            
+            // Helper untuk mendapatkan token dari meta tag
+            
+            
+            // PENTING: Biarkan axios membaca token dari cookie secara otomatis
+            // Jangan set token secara manual di headers karena bisa berbeda dengan session
+            // Axios sudah dikonfigurasi dengan xsrfCookieName dan xsrfHeaderName di bootstrap.js
+            // Yang perlu kita lakukan adalah memastikan cookie ter-set dengan benar
+            
+            // Refresh CSRF cookie untuk memastikan token terbaru dari session
+            try {
+                await axios.get('/sanctum/csrf-cookie', { 
+                    withCredentials: true,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+                
+                // Tunggu cukup lama untuk memastikan cookie benar-benar ter-set
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // Verifikasi cookie ter-set
+                const cookieToken = getCookieToken();
+                
+                if (!cookieToken || cookieToken.length <= 10) {
+                    setIsSubmitting(false);
+                    alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
+                    return;
+                }
+            } catch {
+                setIsSubmitting(false);
+                alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
+                return;
+            }
+
+            // Siapkan payload
             const payload = { ...formData };
             if (typeof payload.jam_reg === "string" && /^\d{2}:\d{2}$/.test(payload.jam_reg)) {
                 payload.jam_reg = `${payload.jam_reg}:00`;
@@ -657,6 +923,85 @@ export default function Registration({
                     },
                     withCredentials: true,
                 }
+
+            let response;
+            // PENTING: Jangan set token secara manual di headers
+            // Biarkan axios membaca token dari cookie secara otomatis menggunakan xsrfCookieName dan xsrfHeaderName
+            // Ini memastikan token yang dikirim sama dengan token di session
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    // JANGAN set X-CSRF-TOKEN atau X-XSRF-TOKEN di sini
+                    // Biarkan axios membaca dari cookie secara otomatis
+                },
+                withCredentials: true, // Penting untuk mengirim cookie
+                responseType: 'json',
+                maxRedirects: 0,
+                validateStatus: function (status) {
+                    return status >= 200 && status < 600;
+                },
+            };
+
+            const doPost = async () => {
+                const finalUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+                const cookieToken = getCookieToken();
+                if (!cookieToken || cookieToken.length <= 10) {
+                    throw new Error('CSRF token tidak ditemukan di cookie');
+                }
+                const res = await axios.post(finalUrl, payload, config);
+                const contentType = res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '';
+                const isHtml = contentType.includes('text/html') ||
+                    (typeof res?.data === 'string' && (
+                        res.data.trim().startsWith('<!DOCTYPE') ||
+                        res.data.trim().startsWith('<html') ||
+                        res.data.trim().startsWith('<HTML')
+                    ));
+                if (res?.status === 419) {
+                    const error = new Error('CSRF token expired');
+                    error.response = {
+                        status: 419,
+                        statusText: 'CSRF Token Expired',
+                        data: res?.data,
+                        headers: res?.headers,
+                    };
+                    throw error;
+                }
+                if (isHtml) {
+                    const error = new Error('Server mengembalikan HTML bukan JSON. Kemungkinan route tidak ditemukan atau redirect.');
+                    error.response = {
+                        status: res?.status || 500,
+                        statusText: 'HTML Response',
+                        data: res?.data,
+                        headers: res?.headers,
+                    };
+                    throw error;
+                }
+                if (typeof res?.data === 'string') {
+                    try {
+                        res.data = JSON.parse(res.data);
+                    } catch {
+                        const error = new Error('Response data tidak dapat di-parse sebagai JSON');
+                        error.response = {
+                            status: res?.status || 500,
+                            statusText: 'Invalid JSON',
+                            data: res?.data,
+                        };
+                        throw error;
+                    }
+                }
+                return res;
+            };
+
+            response = await doPost();
+
+            // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
+            const contentType = response?.headers?.['content-type'] || '';
+            const isHtmlResponse = typeof response?.data === 'string' && (
+                response.data.trim().startsWith('<!DOCTYPE') ||
+                response.data.trim().startsWith('<html') ||
+                contentType.includes('text/html')
             );
 
             if (response.data.success) {
@@ -773,6 +1118,45 @@ export default function Registration({
         } catch (error) {
             console.error("Error registering patient:", error);
             if (error.response?.data?.message) {
+            // Handle validation errors dari backend
+            if (error?.response?.status === 422) {
+                const validationErrors = error?.response?.data?.errors || {};
+                const errorMessages = Object.entries(validationErrors)
+                    .map(([field, messages]) => {
+                        const fieldLabels = {
+                            kd_dokter: 'Dokter',
+                            kd_poli: 'Poliklinik',
+                            kd_pj: 'Cara Bayar',
+                            p_jawab: 'Nama Penanggung Jawab',
+                            almt_pj: 'Alamat Penanggung Jawab',
+                            hubunganpj: 'Hubungan',
+                            tgl_registrasi: 'Tanggal Registrasi',
+                            jam_reg: 'Jam Registrasi',
+                        };
+                        const label = fieldLabels[field] || field;
+                        const msg = Array.isArray(messages) ? messages.join(', ') : messages;
+                        return `${label}: ${msg}`;
+                    })
+                    .join('\n');
+                
+                alert(`Validasi gagal:\n${errorMessages}`);
+            } else if (error?.response?.status === 404) {
+                alert('Endpoint tidak ditemukan. Pastikan URL benar.');
+            } else if (error?.response?.status === 403) {
+                alert('Anda tidak memiliki izin untuk melakukan aksi ini.');
+            } else if (error?.response?.status === 419 || error?.message?.includes('Session expired')) {
+                // Jika masih 419 setelah interceptor retry, berarti session benar-benar expired
+                const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
+                alert(errorMessage);
+                // Refresh halaman untuk mendapatkan session baru
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                return;
+            } else if (error?.response?.status === 500) {
+                alert('Terjadi kesalahan pada server. Silakan cek log untuk detail.');
+            } else if (error?.response?.data?.message) {
+                // Error message dari backend
                 alert(error.response.data.message);
             } else {
                 alert("Gagal mendaftarkan pasien");
@@ -940,7 +1324,6 @@ export default function Registration({
             );
             setRegistrationData(response.data.data);
             setStats(calculateStats(response.data.data));
-            setCurrentPage(page);
         } catch (error) {
             console.error("Error loading registrations:", error);
         } finally {
@@ -1052,7 +1435,7 @@ export default function Registration({
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
                     status: 2, // Tidak Hadir
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
                 try {
                     await axios.post(
@@ -1070,7 +1453,7 @@ export default function Registration({
                 const payloadBatal = {
                     no_rkm_medis: reg.no_rkm_medis,
                     kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    tanggalperiksa: reg.tgl_registrasi,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
                     alasan: "Batal registrasi oleh petugas",
                 };
                 try {
@@ -1264,24 +1647,40 @@ export default function Registration({
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5, delay: 0.5 }}
                             >
-                                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 lg:mb-4">
                                     <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
                                         Cari Pasien
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-2">
                                             <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 w-full">
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Loket</label>
+                                                <select
+                                                    value={selectedLoket}
+                                                    onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
+                                                    className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 w-full sm:w-auto"
+                                                >
+                                                    <option value={1}>Loket 1</option>
+                                                    <option value={2}>Loket 2</option>
+                                                    <option value={3}>Loket 3</option>
+                                                    <option value={4}>Loket 4</option>
+                                                </select>
+                                            </div>
+                                            <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
                                                 <div className="flex items-center gap-2">
                                                     <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
                                                     <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
                                                 </div>
                                             </div>
-                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
-                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
-                                        </div>
+                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
+                                            </div>
                                         <motion.button
                                             onClick={openPatientModal}
-                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm w-full sm:w-auto mt-2 sm:mt-0 justify-center"
                                             whileHover={{ scale: 1.05, y: -1 }}
                                             whileTap={{ scale: 0.95 }}
                                             initial={{ opacity: 0, scale: 0.8 }}
@@ -1304,7 +1703,7 @@ export default function Registration({
                                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                                 />
                                             </svg>
-                                            Tambah
+                                        Tambah
                                         </motion.button>
                                     </div>
                                 </div>
@@ -1612,6 +2011,27 @@ export default function Registration({
                                                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
                                                     whileHover={{ scale: 1.05, y: -1 }}
                                                     whileTap={{ scale: 0.95 }}
+                                        <div className="flex items-center gap-2">
+                                            <span className={srkBadgeClasses(srkStatus.status)}>
+                                                {srkStatus.status === "SUDAH_SRK" ? "Sudah SRK" : (srkStatus.status === "BELUM_SRK" ? "Belum SRK" : "Unknown")}
+                                            </span>
+                                            <motion.button
+                                                onClick={() => checkSrk()}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                                whileHover={{ scale: 1.05, y: -1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.2 }}
+                                                disabled={srkLoading}
+                                            >
+                                                {srkLoading ? "Memeriksa..." : "Cek SRK"}
+                                            </motion.button>
+                                            <motion.button
+                                                onClick={() => openSkriningVisualModal(selectedPatient)}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm"
+                                                whileHover={{ scale: 1.05, y: -1 }}
+                                                whileTap={{ scale: 0.95 }}
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     transition={{ duration: 0.2 }}
@@ -1676,11 +2096,11 @@ export default function Registration({
                                                         className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
                                                         <option value="">Pilih Dokter</option>
-                                                        {dokters?.map((dokter) => (
-                                                            <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
-                                                                {dokter.nm_dokter}
-                                                            </option>
-                                                        ))}
+                                                            {(Array.isArray(doctorOptions) ? doctorOptions.filter((dokter) => !("status" in dokter) || String(dokter.status) === "1") : []).map((dokter) => (
+                                                                <option key={dokter.kd_dokter} value={dokter.kd_dokter}>
+                                                                    {dokter.nm_dokter}
+                                                                </option>
+                                                            ))}
                                                     </select>
                                                 </motion.div>
                                                 <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: 0.25 }}>
@@ -1692,13 +2112,15 @@ export default function Registration({
                                                         required
                                                         className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                     >
-                                                        <option value="">Pilih Poliklinik</option>
-                                                        {polikliniks?.map((poli) => (
-                                                            <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                                {poli.nm_poli}
-                                                            </option>
-                                                        ))}
-                                                    </select>
+                                                    <option value="">Pilih Poliklinik</option>
+                                                        {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                            .filter((p) => p.status === "1")
+                                                            .map((poli) => (
+                                                             <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                                 {poli.nm_poli}
+                                                             </option>
+                                                         ))}
+                                                     </select>
                                                 </motion.div>
                                             </div>
 
@@ -1791,7 +2213,7 @@ export default function Registration({
                                                             className="flex-1 w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                         >
                                                             <option value="">Pilih Cara Bayar</option>
-                                                            {penjabsList?.map((penjab) => (
+                                                            {(Array.isArray(penjabsList) ? penjabsList.filter((penjab) => !("status" in penjab) || String(penjab.status) === "1") : []).map((penjab) => (
                                                                 <option key={penjab.kd_pj} value={penjab.kd_pj}>
                                                                     {penjab.png_jawab}
                                                                 </option>
@@ -2164,12 +2586,14 @@ export default function Registration({
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                                 >
                                                     <option value="">Semua Poliklinik</option>
-                                                    {polikliniks?.map((poli) => (
-                                                        <option key={poli.kd_poli} value={poli.kd_poli}>
-                                                            {poli.nm_poli}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                        .filter((p) => p.status === "1")
+                                                        .map((poli) => (
+                                                         <option key={poli.kd_poli} value={poli.kd_poli}>
+                                                             {poli.nm_poli}
+                                                         </option>
+                                                     ))}
+                                                 </select>
                                             </motion.div>
                                             <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                                                 <label className="block text-xs lg:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -2352,6 +2776,9 @@ export default function Registration({
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
+                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                                Aksi
+                                            </th>
                                             <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 No Reg
                                             </th>
@@ -2388,9 +2815,6 @@ export default function Registration({
                                             <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
                                                 Biaya
                                             </th>
-                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                                Aksi
-                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
@@ -2405,80 +2829,7 @@ export default function Registration({
                                                         : "")
                                                 }
                                             >
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.no_reg}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    <button
-                                                        type="button"
-                                                        title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            // Otomatis panggil antrean (status=1/Hadir) ke Mobile JKN, lalu buka halaman Rawat Jalan
-                                                            handleCallAntreanAndOpenRawatJalan(reg);
-                                                        }}
-                                                        className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-                                                    >
-                                                        {reg.no_rawat}
-                                                    </button>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.pasien?.nm_pasien}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.no_rkm_medis}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.poliklinik?.nm_poli}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.dokter?.nm_dokter}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.penjab?.png_jawab}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
-                                                    <span
-                                                        className={
-                                                            "px-2 py-1 rounded-full text-xs " +
-                                                            (reg.stts ===
-                                                            "Belum"
-                                                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
-                                                                : reg.stts ===
-                                                                  "Batal"
-                                                                ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
-                                                                : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300")
-                                                        }
-                                                    >
-                                                        {reg.stts}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
-                                                    <span
-                                                        className={
-                                                            "px-2 py-1 rounded-full text-xs " +
-                                                            (reg.status_poli ===
-                                                            "Baru"
-                                                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
-                                                                : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300")
-                                                        }
-                                                    >
-                                                        {reg.status_poli}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.keputusan ?? "-"}
-                                                </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    {reg.jam_reg?.slice(0, 5)}
-                                                </td>
-                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
-                                                    Rp{" "}
-                                                    {(
-                                                        reg.biaya_reg ?? 0
-                                                    ).toLocaleString("id-ID")}
-                                                </td>
-                                                <td className="px-3 py-2 text-center">
+                                                <td className="px-3 py-2 text-center overflow-visible">
                                                     <div className="relative action-dropdown">
                                                         <button
                                                             onClick={(e) => {
@@ -2507,7 +2858,7 @@ export default function Registration({
                                                             </svg>
                                                         </button>
                                                         {openDropdown === reg.no_rawat && (
-                                                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-52 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-[1000]">
                                                                 <div className="py-1">
                                                                     <button
                                                                         onClick={(e) => {
@@ -2607,6 +2958,80 @@ export default function Registration({
                                                             </div>
                                                         )}
                                                     </div>
+                                                </td>
+                                                
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.no_reg}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    <button
+                                                        type="button"
+                                                        title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            // Otomatis panggil antrean (status=1/Hadir) ke Mobile JKN, lalu buka halaman Rawat Jalan
+                                                            handleCallAntreanAndOpenRawatJalan(reg);
+                                                        }}
+                                                        className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                    >
+                                                        {reg.no_rawat}
+                                                    </button>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.pasien?.nm_pasien}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.no_rkm_medis}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.poliklinik?.nm_poli}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.dokter?.nm_dokter}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.penjab?.png_jawab}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                    <span
+                                                        className={
+                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            (reg.stts ===
+                                                            "Belum"
+                                                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
+                                                                : reg.stts ===
+                                                                  "Batal"
+                                                                ? "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300"
+                                                                : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300")
+                                                        }
+                                                    >
+                                                        {reg.stts}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                    <span
+                                                        className={
+                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            (reg.status_poli ===
+                                                            "Baru"
+                                                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                                                                : "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300")
+                                                        }
+                                                    >
+                                                        {reg.status_poli}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.keputusan ?? "-"}
+                                                </td>
+                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    {reg.jam_reg?.slice(0, 5)}
+                                                </td>
+                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                    Rp{" "}
+                                                    {(
+                                                        reg.biaya_reg ?? 0
+                                                    ).toLocaleString("id-ID")}
                                                 </td>
                                             </tr>
                                         ))}
@@ -2865,7 +3290,7 @@ export default function Registration({
                                                 <option value="">
                                                     Pilih Dokter
                                                 </option>
-                                                {dokters?.map((dokter) => (
+                                                {(Array.isArray(doctorOptions) ? doctorOptions.filter((dokter) => !("status" in dokter) || String(dokter.status) === "1") : []).map((dokter) => (
                                                     <option
                                                         key={dokter.kd_dokter}
                                                         value={dokter.kd_dokter}
@@ -2895,18 +3320,20 @@ export default function Registration({
                                                 required
                                                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                             >
-                                                <option value="">
-                                                    Pilih Poliklinik
-                                                </option>
-                                                {polikliniks?.map((poli) => (
-                                                    <option
-                                                        key={poli.kd_poli}
-                                                        value={poli.kd_poli}
-                                                    >
-                                                        {poli.nm_poli}
+                                                    <option value="">
+                                                        Pilih Poliklinik
                                                     </option>
-                                                ))}
-                                            </select>
+                                                {(Array.isArray(poliOptions) ? poliOptions : [])
+                                                    .filter((p) => p.status === "1")
+                                                    .map((poli) => (
+                                                     <option
+                                                         key={poli.kd_poli}
+                                                         value={poli.kd_poli}
+                                                     >
+                                                         {poli.nm_poli}
+                                                     </option>
+                                                 ))}
+                                              </select>
                                         </motion.div>
 
                                         {/* Penanggung Jawab */}
@@ -2930,7 +3357,7 @@ export default function Registration({
                                                     <option value="">
                                                         Pilih Penanggung Jawab
                                                     </option>
-                                                    {penjabsList?.map((penjab) => (
+                                                    {(Array.isArray(penjabsList) ? penjabsList.filter((penjab) => !("status" in penjab) || String(penjab.status) === "1") : []).map((penjab) => (
                                                         <option
                                                             key={penjab.kd_pj}
                                                             value={penjab.kd_pj}

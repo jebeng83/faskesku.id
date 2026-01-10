@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { route } from 'ziggy-js';
@@ -107,7 +107,7 @@ export default function JenisSelector({ value, onChange, className = '' }) {
         <a
           href={route('farmasi.jenis-obat.index')}
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           className="rounded border border-indigo-200 px-2 py-1 font-medium text-indigo-700 hover:bg-indigo-50"
         >
           Buka Daftar Jenis Obat

@@ -147,17 +147,17 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 				});
 				setShowAlert(true);
 			}
-		} catch (error) {
-			setAlertConfig({
-				type: "error",
-				title: "Kesalahan Jaringan",
-				message: "Terjadi kesalahan jaringan saat menyimpan data.",
-				autoClose: false,
-			});
-			setShowAlert(true);
-		} finally {
-			setIsSubmitting(false);
-		}
+        } catch {
+            setAlertConfig({
+                type: "error",
+                title: "Kesalahan Jaringan",
+                message: "Terjadi kesalahan jaringan saat menyimpan data.",
+                autoClose: false,
+            });
+            setShowAlert(true);
+        } finally {
+            setIsSubmitting(false);
+        }
 	};
 
 	const handleClose = () => {
@@ -180,10 +180,8 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 				if (json?.next_code) {
 					setData("kd_pj", json.next_code);
 				}
-			} catch (e) {
-				// abaikan error—pengguna masih bisa mengisi manual
-			}
-		};
+            } catch {}
+        };
 
 		if (isOpen) {
 			loadNextCode();

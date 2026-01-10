@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRegPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:936
+* @see app/Http/Controllers/PermintaanLabController.php:1004
 * @route '/api/reg-periksa'
 */
 export const getRegPeriksa = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,6 +18,7 @@ getRegPeriksa.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRegPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:936
+* @see app/Http/Controllers/PermintaanLabController.php:1004
 * @route '/api/reg-periksa'
 */
 getRegPeriksa.url = (options?: RouteQueryOptions) => {
@@ -26,6 +28,7 @@ getRegPeriksa.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRegPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:936
+* @see app/Http/Controllers/PermintaanLabController.php:1004
 * @route '/api/reg-periksa'
 */
 getRegPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,6 +39,7 @@ getRegPeriksa.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRegPeriksa
 * @see app/Http/Controllers/PermintaanLabController.php:936
+* @see app/Http/Controllers/PermintaanLabController.php:1004
 * @route '/api/reg-periksa'
 */
 getRegPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,6 +50,7 @@ getRegPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getLabTests
 * @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1254
 * @route '/api/lab-tests'
 */
 export const getLabTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -61,6 +66,7 @@ getLabTests.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getLabTests
 * @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1254
 * @route '/api/lab-tests'
 */
 getLabTests.url = (options?: RouteQueryOptions) => {
@@ -70,6 +76,7 @@ getLabTests.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getLabTests
 * @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1254
 * @route '/api/lab-tests'
 */
 getLabTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -80,6 +87,7 @@ getLabTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getLabTests
 * @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1254
 * @route '/api/lab-tests'
 */
 getLabTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -90,6 +98,7 @@ getLabTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates/{kdJenisPrw}'
 */
 const getTemplates6a6595dc9fc5a37828d43ae65eedd12f = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,6 +114,7 @@ getTemplates6a6595dc9fc5a37828d43ae65eedd12f.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates/{kdJenisPrw}'
 */
 getTemplates6a6595dc9fc5a37828d43ae65eedd12f.url = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -132,6 +142,7 @@ getTemplates6a6595dc9fc5a37828d43ae65eedd12f.url = (args: { kdJenisPrw: string |
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates/{kdJenisPrw}'
 */
 getTemplates6a6595dc9fc5a37828d43ae65eedd12f.get = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -142,6 +153,7 @@ getTemplates6a6595dc9fc5a37828d43ae65eedd12f.get = (args: { kdJenisPrw: string |
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates/{kdJenisPrw}'
 */
 getTemplates6a6595dc9fc5a37828d43ae65eedd12f.head = (args: { kdJenisPrw: string | number } | [kdJenisPrw: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -152,6 +164,7 @@ getTemplates6a6595dc9fc5a37828d43ae65eedd12f.head = (args: { kdJenisPrw: string 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates'
 */
 const getTemplatese3864f5d9ffcba777565e6d4754874f6 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,6 +180,7 @@ getTemplatese3864f5d9ffcba777565e6d4754874f6.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates'
 */
 getTemplatese3864f5d9ffcba777565e6d4754874f6.url = (options?: RouteQueryOptions) => {
@@ -176,6 +190,7 @@ getTemplatese3864f5d9ffcba777565e6d4754874f6.url = (options?: RouteQueryOptions)
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates'
 */
 getTemplatese3864f5d9ffcba777565e6d4754874f6.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -186,6 +201,7 @@ getTemplatese3864f5d9ffcba777565e6d4754874f6.get = (options?: RouteQueryOptions)
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getTemplates
 * @see app/Http/Controllers/PermintaanLabController.php:1235
+* @see app/Http/Controllers/PermintaanLabController.php:1290
 * @route '/api/permintaan-lab/templates'
 */
 getTemplatese3864f5d9ffcba777565e6d4754874f6.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -201,6 +217,7 @@ export const getTemplates = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/api/permintaan-lab'
 */
 const store9cab9cc9ce8e71e84002a8c1dffbaf04 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -216,6 +233,7 @@ store9cab9cc9ce8e71e84002a8c1dffbaf04.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/api/permintaan-lab'
 */
 store9cab9cc9ce8e71e84002a8c1dffbaf04.url = (options?: RouteQueryOptions) => {
@@ -225,6 +243,7 @@ store9cab9cc9ce8e71e84002a8c1dffbaf04.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/api/permintaan-lab'
 */
 store9cab9cc9ce8e71e84002a8c1dffbaf04.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -235,6 +254,7 @@ store9cab9cc9ce8e71e84002a8c1dffbaf04.post = (options?: RouteQueryOptions): Rout
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/laboratorium/permintaan-lab'
 */
 const store38ad935317b4bfca976bd9395bbe0a7b = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -250,6 +270,7 @@ store38ad935317b4bfca976bd9395bbe0a7b.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/laboratorium/permintaan-lab'
 */
 store38ad935317b4bfca976bd9395bbe0a7b.url = (options?: RouteQueryOptions) => {
@@ -259,6 +280,7 @@ store38ad935317b4bfca976bd9395bbe0a7b.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::store
 * @see app/Http/Controllers/PermintaanLabController.php:147
+* @see app/Http/Controllers/PermintaanLabController.php:191
 * @route '/laboratorium/permintaan-lab'
 */
 store38ad935317b4bfca976bd9395bbe0a7b.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -274,6 +296,7 @@ export const store = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::stageJurnalLab
 * @see app/Http/Controllers/PermintaanLabController.php:1270
+* @see app/Http/Controllers/PermintaanLabController.php:1325
 * @route '/api/permintaan-lab/stage-lab'
 */
 export const stageJurnalLab = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -289,6 +312,7 @@ stageJurnalLab.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::stageJurnalLab
 * @see app/Http/Controllers/PermintaanLabController.php:1270
+* @see app/Http/Controllers/PermintaanLabController.php:1325
 * @route '/api/permintaan-lab/stage-lab'
 */
 stageJurnalLab.url = (options?: RouteQueryOptions) => {
@@ -298,6 +322,7 @@ stageJurnalLab.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::stageJurnalLab
 * @see app/Http/Controllers/PermintaanLabController.php:1270
+* @see app/Http/Controllers/PermintaanLabController.php:1325
 * @route '/api/permintaan-lab/stage-lab'
 */
 stageJurnalLab.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -308,6 +333,7 @@ stageJurnalLab.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
 * @see app/Http/Controllers/PermintaanLabController.php:968
+* @see app/Http/Controllers/PermintaanLabController.php:1036
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 export const getByNoRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -323,6 +349,7 @@ getByNoRawat.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
 * @see app/Http/Controllers/PermintaanLabController.php:968
+* @see app/Http/Controllers/PermintaanLabController.php:1036
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -350,6 +377,7 @@ getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | nu
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
 * @see app/Http/Controllers/PermintaanLabController.php:968
+* @see app/Http/Controllers/PermintaanLabController.php:1036
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -360,6 +388,7 @@ getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | nu
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getByNoRawat
 * @see app/Http/Controllers/PermintaanLabController.php:968
+* @see app/Http/Controllers/PermintaanLabController.php:1036
 * @route '/api/permintaan-lab/rawat/{no_rawat}'
 */
 getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -370,6 +399,7 @@ getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRiwayat
 * @see app/Http/Controllers/PermintaanLabController.php:1305
+* @see app/Http/Controllers/PermintaanLabController.php:1360
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 export const getRiwayat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -385,6 +415,7 @@ getRiwayat.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRiwayat
 * @see app/Http/Controllers/PermintaanLabController.php:1305
+* @see app/Http/Controllers/PermintaanLabController.php:1360
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -412,6 +443,7 @@ getRiwayat.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRiwayat
 * @see app/Http/Controllers/PermintaanLabController.php:1305
+* @see app/Http/Controllers/PermintaanLabController.php:1360
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -422,6 +454,7 @@ getRiwayat.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 /**
 * @see \App\Http\Controllers\PermintaanLabController::getRiwayat
 * @see app/Http/Controllers/PermintaanLabController.php:1305
+* @see app/Http/Controllers/PermintaanLabController.php:1360
 * @route '/api/permintaan-lab/riwayat/{no_rawat}'
 */
 getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -432,6 +465,7 @@ getRiwayat.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/api/permintaan-lab/{noorder}'
 */
 const destroy9ae3c762fa6ebfe394bf40e8319c90c7 = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -447,6 +481,7 @@ destroy9ae3c762fa6ebfe394bf40e8319c90c7.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/api/permintaan-lab/{noorder}'
 */
 destroy9ae3c762fa6ebfe394bf40e8319c90c7.url = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -474,6 +509,7 @@ destroy9ae3c762fa6ebfe394bf40e8319c90c7.url = (args: { noorder: string | number 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/api/permintaan-lab/{noorder}'
 */
 destroy9ae3c762fa6ebfe394bf40e8319c90c7.delete = (args: { noorder: string | number } | [noorder: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -484,6 +520,7 @@ destroy9ae3c762fa6ebfe394bf40e8319c90c7.delete = (args: { noorder: string | numb
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 const destroy035fe378d56a482c234f96ea103923b0 = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -499,6 +536,7 @@ destroy035fe378d56a482c234f96ea103923b0.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 destroy035fe378d56a482c234f96ea103923b0.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -526,6 +564,7 @@ destroy035fe378d56a482c234f96ea103923b0.url = (args: { permintaan_lab: string | 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::destroy
 * @see app/Http/Controllers/PermintaanLabController.php:789
+* @see app/Http/Controllers/PermintaanLabController.php:857
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 destroy035fe378d56a482c234f96ea103923b0.delete = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -540,7 +579,7 @@ export const destroy = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::index
-* @see app/Http/Controllers/PermintaanLabController.php:33
+* @see app/Http/Controllers/PermintaanLabController.php:32
 * @route '/laboratorium/permintaan-lab'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -555,7 +594,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::index
-* @see app/Http/Controllers/PermintaanLabController.php:33
+* @see app/Http/Controllers/PermintaanLabController.php:32
 * @route '/laboratorium/permintaan-lab'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -564,7 +603,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::index
-* @see app/Http/Controllers/PermintaanLabController.php:33
+* @see app/Http/Controllers/PermintaanLabController.php:32
 * @route '/laboratorium/permintaan-lab'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -574,7 +613,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::index
-* @see app/Http/Controllers/PermintaanLabController.php:33
+* @see app/Http/Controllers/PermintaanLabController.php:32
 * @route '/laboratorium/permintaan-lab'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -585,6 +624,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::create
 * @see app/Http/Controllers/PermintaanLabController.php:130
+* @see app/Http/Controllers/PermintaanLabController.php:174
 * @route '/laboratorium/permintaan-lab/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -600,6 +640,7 @@ create.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::create
 * @see app/Http/Controllers/PermintaanLabController.php:130
+* @see app/Http/Controllers/PermintaanLabController.php:174
 * @route '/laboratorium/permintaan-lab/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -609,6 +650,7 @@ create.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::create
 * @see app/Http/Controllers/PermintaanLabController.php:130
+* @see app/Http/Controllers/PermintaanLabController.php:174
 * @route '/laboratorium/permintaan-lab/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -619,6 +661,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::create
 * @see app/Http/Controllers/PermintaanLabController.php:130
+* @see app/Http/Controllers/PermintaanLabController.php:174
 * @route '/laboratorium/permintaan-lab/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -629,6 +672,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::show
 * @see app/Http/Controllers/PermintaanLabController.php:257
+* @see app/Http/Controllers/PermintaanLabController.php:325
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 export const show = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -644,6 +688,7 @@ show.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::show
 * @see app/Http/Controllers/PermintaanLabController.php:257
+* @see app/Http/Controllers/PermintaanLabController.php:325
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 show.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -671,6 +716,7 @@ show.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::show
 * @see app/Http/Controllers/PermintaanLabController.php:257
+* @see app/Http/Controllers/PermintaanLabController.php:325
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 show.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -681,6 +727,7 @@ show.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::show
 * @see app/Http/Controllers/PermintaanLabController.php:257
+* @see app/Http/Controllers/PermintaanLabController.php:325
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 show.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -691,6 +738,7 @@ show.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 /**
 * @see \App\Http\Controllers\PermintaanLabController::edit
 * @see app/Http/Controllers/PermintaanLabController.php:723
+* @see app/Http/Controllers/PermintaanLabController.php:791
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/edit'
 */
 export const edit = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -706,6 +754,7 @@ edit.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::edit
 * @see app/Http/Controllers/PermintaanLabController.php:723
+* @see app/Http/Controllers/PermintaanLabController.php:791
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/edit'
 */
 edit.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -733,6 +782,7 @@ edit.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::edit
 * @see app/Http/Controllers/PermintaanLabController.php:723
+* @see app/Http/Controllers/PermintaanLabController.php:791
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/edit'
 */
 edit.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -743,6 +793,7 @@ edit.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::edit
 * @see app/Http/Controllers/PermintaanLabController.php:723
+* @see app/Http/Controllers/PermintaanLabController.php:791
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/edit'
 */
 edit.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -753,6 +804,7 @@ edit.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 /**
 * @see \App\Http\Controllers\PermintaanLabController::update
 * @see app/Http/Controllers/PermintaanLabController.php:741
+* @see app/Http/Controllers/PermintaanLabController.php:809
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 export const update = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -768,6 +820,7 @@ update.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::update
 * @see app/Http/Controllers/PermintaanLabController.php:741
+* @see app/Http/Controllers/PermintaanLabController.php:809
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 update.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -795,6 +848,7 @@ update.url = (args: { permintaan_lab: string | number } | [permintaan_lab: strin
 /**
 * @see \App\Http\Controllers\PermintaanLabController::update
 * @see app/Http/Controllers/PermintaanLabController.php:741
+* @see app/Http/Controllers/PermintaanLabController.php:809
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 update.put = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -805,6 +859,7 @@ update.put = (args: { permintaan_lab: string | number } | [permintaan_lab: strin
 /**
 * @see \App\Http\Controllers\PermintaanLabController::update
 * @see app/Http/Controllers/PermintaanLabController.php:741
+* @see app/Http/Controllers/PermintaanLabController.php:809
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}'
 */
 update.patch = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -815,6 +870,7 @@ update.patch = (args: { permintaan_lab: string | number } | [permintaan_lab: str
 /**
 * @see \App\Http\Controllers\PermintaanLabController::ambilSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1333
+* @see app/Http/Controllers/PermintaanLabController.php:1388
 * @route '/laboratorium/permintaan-lab/ambil-sampel'
 */
 export const ambilSampel = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -830,6 +886,7 @@ ambilSampel.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::ambilSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1333
+* @see app/Http/Controllers/PermintaanLabController.php:1388
 * @route '/laboratorium/permintaan-lab/ambil-sampel'
 */
 ambilSampel.url = (options?: RouteQueryOptions) => {
@@ -839,6 +896,7 @@ ambilSampel.url = (options?: RouteQueryOptions) => {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::ambilSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1333
+* @see app/Http/Controllers/PermintaanLabController.php:1388
 * @route '/laboratorium/permintaan-lab/ambil-sampel'
 */
 ambilSampel.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -849,6 +907,7 @@ ambilSampel.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 /**
 * @see \App\Http\Controllers\PermintaanLabController::updateSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1384
+* @see app/Http/Controllers/PermintaanLabController.php:1439
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/sampel'
 */
 export const updateSampel = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -864,6 +923,7 @@ updateSampel.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::updateSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1384
+* @see app/Http/Controllers/PermintaanLabController.php:1439
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/sampel'
 */
 updateSampel.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -891,6 +951,7 @@ updateSampel.url = (args: { permintaan_lab: string | number } | [permintaan_lab:
 /**
 * @see \App\Http\Controllers\PermintaanLabController::updateSampel
 * @see app/Http/Controllers/PermintaanLabController.php:1384
+* @see app/Http/Controllers/PermintaanLabController.php:1439
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/sampel'
 */
 updateSampel.put = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -901,6 +962,7 @@ updateSampel.put = (args: { permintaan_lab: string | number } | [permintaan_lab:
 /**
 * @see \App\Http\Controllers\PermintaanLabController::inputHasil
 * @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:355
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 export const inputHasil = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -916,6 +978,7 @@ inputHasil.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::inputHasil
 * @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:355
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 inputHasil.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -943,6 +1006,7 @@ inputHasil.url = (args: { permintaan_lab: string | number } | [permintaan_lab: s
 /**
 * @see \App\Http\Controllers\PermintaanLabController::inputHasil
 * @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:355
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 inputHasil.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -953,6 +1017,7 @@ inputHasil.get = (args: { permintaan_lab: string | number } | [permintaan_lab: s
 /**
 * @see \App\Http\Controllers\PermintaanLabController::inputHasil
 * @see app/Http/Controllers/PermintaanLabController.php:287
+* @see app/Http/Controllers/PermintaanLabController.php:355
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 inputHasil.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -963,6 +1028,7 @@ inputHasil.head = (args: { permintaan_lab: string | number } | [permintaan_lab: 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::storeHasil
 * @see app/Http/Controllers/PermintaanLabController.php:363
+* @see app/Http/Controllers/PermintaanLabController.php:431
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 export const storeHasil = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -978,6 +1044,7 @@ storeHasil.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::storeHasil
 * @see app/Http/Controllers/PermintaanLabController.php:363
+* @see app/Http/Controllers/PermintaanLabController.php:431
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 storeHasil.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1005,6 +1072,7 @@ storeHasil.url = (args: { permintaan_lab: string | number } | [permintaan_lab: s
 /**
 * @see \App\Http\Controllers\PermintaanLabController::storeHasil
 * @see app/Http/Controllers/PermintaanLabController.php:363
+* @see app/Http/Controllers/PermintaanLabController.php:431
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/hasil'
 */
 storeHasil.post = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1015,6 +1083,7 @@ storeHasil.post = (args: { permintaan_lab: string | number } | [permintaan_lab: 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::preview
 * @see app/Http/Controllers/PermintaanLabController.php:1528
+* @see app/Http/Controllers/PermintaanLabController.php:1583
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/preview'
 */
 export const preview = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1030,6 +1099,7 @@ preview.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::preview
 * @see app/Http/Controllers/PermintaanLabController.php:1528
+* @see app/Http/Controllers/PermintaanLabController.php:1583
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/preview'
 */
 preview.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1057,6 +1127,7 @@ preview.url = (args: { permintaan_lab: string | number } | [permintaan_lab: stri
 /**
 * @see \App\Http\Controllers\PermintaanLabController::preview
 * @see app/Http/Controllers/PermintaanLabController.php:1528
+* @see app/Http/Controllers/PermintaanLabController.php:1583
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/preview'
 */
 preview.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1067,6 +1138,7 @@ preview.get = (args: { permintaan_lab: string | number } | [permintaan_lab: stri
 /**
 * @see \App\Http\Controllers\PermintaanLabController::preview
 * @see app/Http/Controllers/PermintaanLabController.php:1528
+* @see app/Http/Controllers/PermintaanLabController.php:1583
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/preview'
 */
 preview.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1077,6 +1149,7 @@ preview.head = (args: { permintaan_lab: string | number } | [permintaan_lab: str
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
 * @see app/Http/Controllers/PermintaanLabController.php:1737
+* @see app/Http/Controllers/PermintaanLabController.php:1792
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 export const cetak = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1092,6 +1165,7 @@ cetak.definition = {
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
 * @see app/Http/Controllers/PermintaanLabController.php:1737
+* @see app/Http/Controllers/PermintaanLabController.php:1792
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1119,6 +1193,7 @@ cetak.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
 * @see app/Http/Controllers/PermintaanLabController.php:1737
+* @see app/Http/Controllers/PermintaanLabController.php:1792
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1129,6 +1204,7 @@ cetak.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
 * @see app/Http/Controllers/PermintaanLabController.php:1737
+* @see app/Http/Controllers/PermintaanLabController.php:1792
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

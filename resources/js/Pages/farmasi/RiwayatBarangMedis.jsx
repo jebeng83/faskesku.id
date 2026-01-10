@@ -98,7 +98,7 @@ export default function RiwayatBarangMedis() {
             if (id !== requestIdRef.current) return;
             setItems(Array.isArray(data?.items) ? data.items : []);
             setTotal(Number(data?.total ?? 0));
-        } catch (e) {
+        } catch {
             if (id !== requestIdRef.current) return;
             setItems([]);
             setTotal(0);
@@ -377,13 +377,13 @@ export default function RiwayatBarangMedis() {
                         </thead>
                         <tbody>
                             {loading &&
-                                Array.from({ length: 5 }).map((_, i) => (
+                                [...Array(5).keys()].map((i) => (
                                     <tr
                                         key={`s-${i}`}
                                         className="animate-pulse"
                                     >
-                                        {Array.from({ length: 14 }).map(
-                                            (__, j) => (
+                                        {[...Array(14).keys()].map(
+                                            (j) => (
                                                 <td
                                                     key={j}
                                                     className="px-3 py-2"

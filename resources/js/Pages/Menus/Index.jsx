@@ -21,14 +21,13 @@ import {
 	useSensors,
 } from "@dnd-kit/core";
 import {
-	arrayMove,
-	SortableContext,
-	verticalListSortingStrategy,
-	useSortable,
+    SortableContext,
+    verticalListSortingStrategy,
+    useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export default function Index({ menus, parentOptions, permissions, filters }) {
+export default function Index({ menus, parentOptions, filters }) {
 	const { flash } = usePage().props;
 	const [searchTerm, setSearchTerm] = useState(filters.search || "");
 	const [selectedParent, setSelectedParent] = useState(filters.parent_id || "");
@@ -73,8 +72,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 	};
 
 	// Initialize menuItems state with hierarchical structure
-	const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus.data || []));
-	const [isDragging, setIsDragging] = useState(false);
+    const [menuItems, setMenuItems] = useState(buildMenuHierarchy(menus.data || []));
 
 
 
@@ -121,9 +119,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		}
 	};
 
-	const handleDragStart = (event) => {
-		setIsDragging(true);
-	};
+    const handleDragStart = (_) => {
+    };
 
 	// Flatten hierarchical menu structure for backend
 	const flattenMenus = (menuList, parentId = null) => {
@@ -179,9 +176,8 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		}).filter(Boolean);
 	};
 
-	const handleDragEnd = (event) => {
-		setIsDragging(false);
-		const { active, over, delta } = event;
+    const handleDragEnd = (event) => {
+        const { active, over, delta } = event;
 
 		if (!over || active.id === over.id) {
 			return;
@@ -340,7 +336,7 @@ export default function Index({ menus, parentOptions, permissions, filters }) {
 		const isExpanded = expandedMenus.has(menu.id);
 		
 		// Check if this item is being hovered over during drag for submenu creation
-		const isDropTarget = over?.id === menu.id && isDragging && !menu.parent_id;
+        
 		const isActiveItem = active?.id === menu.id;
 		const isBeingDraggedOver = over?.id === menu.id && active && active.id !== menu.id;
 		const canBecomeSubmenu = isBeingDraggedOver && !menu.parent_id;

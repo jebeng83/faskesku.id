@@ -286,7 +286,7 @@ const TarifTindakan = ({ noRawat, kdDokter, nipPerawat, onTindakanAdded }) => {
                         <button
                             onClick={handleSubmitTindakan}
                             disabled={!selectedTindakan || loading}
-                            className="w-full mt-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                            className="w-full mt-4 bg-black hover:bg-neutral-800 disabled:bg-gray-300 text-white py-1.5 px-3 rounded-md font-medium transition-colors"
                         >
                             {loading ? 'Menyimpan...' : 'Simpan Tindakan'}
                         </button>

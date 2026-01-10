@@ -90,7 +90,7 @@ class SecurityHeadersMiddleware
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 "connect-src 'self' https://cloudflareinsights.com ".implode(' ', array_merge($httpAllowed, $wsAllowed)).'; '.
                 "worker-src 'self' blob:; ".
-                "frame-src 'self' https://www.google.com https://maps.google.com";
+                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com";
         } else {
             // CSP untuk production - lebih ketat
             $style = "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com";
@@ -111,7 +111,7 @@ class SecurityHeadersMiddleware
                 "img-src 'self' data: https:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 $connect.'; '.
-                "frame-src 'self' https://www.google.com https://maps.google.com";
+                "frame-src 'self' blob: data: https://www.google.com https://maps.google.com";
         }
 
         $response->headers->set('Content-Security-Policy', $csp);

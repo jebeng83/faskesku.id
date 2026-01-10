@@ -22,8 +22,8 @@ class AkunBayarController extends Controller
     // API: list akun bayar (optional q filter)
     public function index(Request $request): JsonResponse
     {
-        $q = trim((string) $request->get('q', ''));
-        $perPage = max(1, (int) $request->get('per_page', 20));
+        $q = trim((string) $request->query('q', ''));
+        $perPage = max(1, (int) $request->query('per_page', 20));
 
         $query = AkunBayar::query()
             ->leftJoin('rekening', 'akun_bayar.kd_rek', '=', 'rekening.kd_rek')

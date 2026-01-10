@@ -10,13 +10,13 @@ export default function Cetak({ permintaanLab, periksaLab, hasilPemeriksaan = []
 	// Format tanggal Indonesia
 	const formatTanggal = (tanggal) => {
 		if (!tanggal || tanggal === "0000-00-00") return "-";
-		try {
-			const date = new Date(tanggal);
-			const options = { day: "2-digit", month: "long", year: "numeric" };
-			return date.toLocaleDateString("id-ID", options);
-		} catch (e) {
-			return tanggal;
-		}
+    try {
+        const date = new Date(tanggal);
+        const options = { day: "2-digit", month: "long", year: "numeric" };
+        return date.toLocaleDateString("id-ID", options);
+    } catch {
+        return tanggal;
+    }
 	};
 
 	// Format jam
@@ -44,17 +44,17 @@ export default function Cetak({ permintaanLab, periksaLab, hasilPemeriksaan = []
 	// Hitung usia
 	let usia = "-";
 	if (patient?.tgl_lahir) {
-		try {
-			const tglLahir = new Date(patient.tgl_lahir);
-			const tglPeriksa = permintaanLab?.tgl_hasil 
-				? new Date(permintaanLab.tgl_hasil) 
-				: new Date();
-			const diffTime = Math.abs(tglPeriksa - tglLahir);
-			const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
-			usia = `${diffYears} tahun`;
-		} catch (e) {
-			usia = "-";
-		}
+    try {
+            const tglLahir = new Date(patient.tgl_lahir);
+            const tglPeriksa = permintaanLab?.tgl_hasil 
+                ? new Date(permintaanLab.tgl_hasil) 
+                : new Date();
+            const diffTime = Math.abs(tglPeriksa - tglLahir);
+            const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
+            usia = `${diffYears} tahun`;
+        } catch {
+            usia = "-";
+        }
 	}
 
 	return (

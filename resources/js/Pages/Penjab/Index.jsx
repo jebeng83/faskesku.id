@@ -1,16 +1,30 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Head, usePage, router } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import { motion, AnimatePresence } from "framer-motion";
+import { route } from "ziggy-js";
 
 export default function PenjabIndex() {
-	const { penjabs, filters, errors } = usePage().props;
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const [isEditOpen, setIsEditOpen] = useState(false);
-	const [search, setSearch] = useState(filters?.search || "");
-	const [editing, setEditing] = useState(null);
+    const { penjabs, filters } = usePage().props;
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [search, setSearch] = useState(filters?.search || "");
+    const [status, setStatus] = useState(filters?.status ?? "1");
+    const [editing, setEditing] = useState(null);
 
-	const tableItems = useMemo(() => penjabs?.data || [], [penjabs]);
+    React.useEffect(() => {
+        const hasStatusParam = typeof filters?.status !== 'undefined' && filters?.status !== null && filters?.status !== '';
+        if (!hasStatusParam) {
+            router.get(
+                route("penjab.index"),
+                { search, status: "1" },
+                { preserveScroll: true, preserveState: true, replace: true }
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const tableItems = penjabs?.data || [];
 
 	const openCreate = () => setIsCreateOpen(true);
 	const closeCreate = () => setIsCreateOpen(false);
@@ -23,33 +37,75 @@ export default function PenjabIndex() {
 		setIsEditOpen(false);
 	};
 
-	const handleSearch = (e) => {
-		e.preventDefault();
-		router.get(
-			route("penjab.index"),
-			{ search },
-			{ preserveScroll: true, preserveState: true, replace: true }
-		);
-	};
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get(
+            route("penjab.index"),
+            { search, status: status || undefined },
+            { preserveScroll: true, preserveState: false, replace: true, only: ["penjabs", "filters"] }
+        );
+    };
 
-	const toggleStatus = (item) => {
-		const newStatus = item.status === "1" ? "0" : "1";
-		router.patch(
-			route("penjab.toggle-status", item.kd_pj),
-			{
-				status: newStatus,
-			},
-			{
-				onSuccess: () => {
-					// Refresh the page to show updated status
-					router.reload();
-				},
-			}
-		);
-	};
+    const getPageFromUrl = (url) => {
+        if (!url) return undefined;
+        try {
+            const u = new URL(url, window.location.origin);
+            const p = u.searchParams.get("page");
+            return p ? Number(p) : undefined;
+        } catch (_) {
+            return undefined;
+        }
+    };
+
+    const decodeLabel = (label) => {
+        if (!label) return "";
+        return String(label)
+            .replace(/&laquo;/g, "«")
+            .replace(/&raquo;/g, "»");
+    };
+
+    const toggleStatus = (item) => {
+        const newStatus = item.status === "1" ? "0" : "1";
+        router.patch(
+            route("penjab.toggle-status", item.kd_pj),
+            {
+                status: newStatus,
+            },
+            {
+                onSuccess: () => {
+                    router.get(
+                        route("penjab.index"),
+                        { search, status: status || undefined },
+                        { preserveScroll: true, preserveState: false, replace: true, only: ["penjabs", "filters"] }
+                    );
+                },
+            }
+        );
+    };
+
+    const deleteItem = (item) => {
+        const ok = window.confirm(`Hapus penjamin ${item.png_jawab} (${item.kd_pj})?`);
+        if (!ok) return;
+        router.delete(
+            route("penjab.destroy", item.kd_pj),
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+                only: ["penjabs", "filters"],
+                onSuccess: () => {
+                    router.get(
+                        route("penjab.index"),
+                        { search, status: status || undefined },
+                        { preserveScroll: true, preserveState: false, replace: true, only: ["penjabs", "filters"] }
+                    );
+                },
+            }
+        );
+    };
 
 	return (
-		<AppLayout title="Manajemen Penjamin">
+		<SidebarPengaturan title="Manajemen Penjamin">
 			<Head title="Manajemen Penjamin" />
 
 			<div className="space-y-4">
@@ -57,18 +113,32 @@ export default function PenjabIndex() {
 				<div className="flex items-center justify-between">
 					<div>
 						<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-							Penjamin
+							Data Penjamin
 						</h1>
-						<p className="text-sm text-gray-500">
-							Kelola data penjamin (penjab)
-						</p>
 					</div>
-					<div className="flex items-center gap-2">
-						<form
-							onSubmit={handleSearch}
-							className="hidden sm:flex items-center"
-						>
-							<input
+                <div className="flex items-center gap-2">
+                    <select
+                        value={status}
+                        onChange={(e) => {
+                            const next = e.target.value;
+                            setStatus(next);
+                            router.get(
+                                route("penjab.index"),
+                                { search, status: next || undefined },
+                                { preserveScroll: true, preserveState: false, replace: true, only: ["penjabs", "filters"] }
+                            );
+                        }}
+                        className="px-3 py-2 w-36 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                    >
+                        <option value="">Semua Status</option>
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+                    <form
+                        onSubmit={handleSearch}
+                        className="hidden sm:flex items-center"
+                    >
+                        <input
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
 								className="px-3 py-2 w-64 text-sm rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-gray-400 focus:border-transparent"
@@ -127,22 +197,28 @@ export default function PenjabIndex() {
 										</td>
 										<td className="px-4 py-3 text-right">
 											<div className="flex items-center gap-2 justify-end">
-												<button
-													onClick={() => toggleStatus(item)}
-													className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-														item.status === "1"
-															? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
-															: "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30"
-													}`}
-												>
-													{item.status === "1" ? "Nonaktifkan" : "Aktifkan"}
-												</button>
-												<button
-													onClick={() => openEdit(item)}
-													className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-												>
-													Edit
-												</button>
+                                            <button
+                                                onClick={() => toggleStatus(item)}
+                                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                                    item.status === "1"
+                                                        ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+                                                        : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30"
+                                                }`}
+                                            >
+                                                {item.status === "1" ? "Nonaktifkan" : "Aktifkan"}
+                                            </button>
+                                            <button
+                                                onClick={() => openEdit(item)}
+                                                className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => deleteItem(item)}
+                                                className="px-3 py-1.5 rounded-md text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+                                            >
+                                                Hapus
+                                            </button>
 											</div>
 										</td>
 									</tr>
@@ -152,51 +228,55 @@ export default function PenjabIndex() {
 					</div>
 
 					{/* Pagination (sederhana) */}
-					{penjabs?.links && (
-						<div className="flex justify-between items-center px-4 py-3 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
-							<div>
-								Menampilkan {penjabs.from || 0} - {penjabs.to || 0} dari{" "}
-								{penjabs.total || 0}
-							</div>
-							<div className="flex gap-1">
-								{penjabs.links.map((link, idx) => {
-									if (idx === 0 || idx === penjabs.links.length - 1)
-										return null;
-									const isActive = link.active;
-									return (
-										<button
-											key={idx}
-											onClick={() =>
-												router.get(
-													link.url,
-													{},
-													{ preserveState: true, preserveScroll: true }
-												)
-											}
-											className={`px-3 py-1.5 rounded-md ${
-												isActive
-													? "bg-black text-white"
-													: "border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-											}`}
-										>
-											{link.label}
-										</button>
-									);
-								})}
-							</div>
-						</div>
-					)}
+                    {penjabs?.links && (
+                        <div className="flex justify-between items-center px-4 py-3 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-300">
+                            <div>
+                                Menampilkan {penjabs.from || 0} - {penjabs.to || 0} dari{" "}
+                                {penjabs.total || 0}
+                            </div>
+                            <div className="flex gap-1">
+                                {penjabs.links.map((link, idx) => {
+                                    const isActive = !!link.active;
+                                    const disabled = !link.url;
+                                    const page = getPageFromUrl(link.url);
+                                    return (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            disabled={disabled}
+                                        onClick={() => {
+                                            if (disabled || page === undefined) return;
+                                            router.get(
+                                                route("penjab.index"),
+                                                { page, status: status || undefined, search },
+                                                { preserveScroll: true, preserveState: false, replace: true, only: ["penjabs", "filters"] }
+                                            );
+                                        }}
+                                            className={`px-3 py-1.5 rounded-md transition-colors ${
+                                                isActive
+                                                    ? "bg-black text-white"
+                                                    : "border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                                            aria-current={isActive ? "page" : undefined}
+                                            aria-label={decodeLabel(link.label)}
+                                        >
+                                            {decodeLabel(link.label)}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 				</div>
 
 				<CreateModal isOpen={isCreateOpen} onClose={closeCreate} />
 				<EditModal isOpen={isEditOpen} onClose={closeEdit} item={editing} />
 			</div>
-		</AppLayout>
+		</SidebarPengaturan>
 	);
 }
 
 function CreateModal({ isOpen, onClose }) {
-	const { errors } = usePage().props;
 	const [form, setForm] = useState({
 		kd_pj: "",
 		png_jawab: "",
@@ -337,7 +417,6 @@ function CreateModal({ isOpen, onClose }) {
 }
 
 function EditModal({ isOpen, onClose, item }) {
-	const { errors } = usePage().props;
 	const [form, setForm] = useState(() => ({
 		png_jawab: item?.png_jawab || "",
 		nama_perusahaan: item?.nama_perusahaan || "",

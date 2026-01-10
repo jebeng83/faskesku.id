@@ -195,6 +195,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             return String(date);
         }
     };
+    
 
     const safeText = (value) => {
         const v = (value ?? '').toString().trim();

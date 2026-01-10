@@ -624,8 +624,8 @@ class ResepController extends Controller
             $decodedNoRkmMedis = urldecode($noRkmMedis);
 
             // Ambil parameter pagination dari request
-            $limit = request()->get('limit', 5); // Default 5 untuk loading awal
-            $offset = request()->get('offset', 0);
+            $limit = request()->query('limit', 5);
+            $offset = request()->query('offset', 0);
 
             // Pertama, ambil semua no_rawat berdasarkan no_rkm_medis dari reg_periksa
             $noRawatArray = DB::table('reg_periksa')
@@ -973,19 +973,19 @@ class ResepController extends Controller
                 'status_perawatan' => 'nullable|in:Belum,Sudah,Belum Terlayani,Sudah Terlayani,Semua',
             ]);
 
-            $jenis = $request->get('jenis', 'ralan');
-            $startDate = $request->get('start_date');
-            $endDate = $request->get('end_date');
-            $limit = (int) ($request->get('limit', 20));
-            $page = (int) ($request->get('page', 1));
+            $jenis = $request->query('jenis', 'ralan');
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
+            $limit = (int) ($request->query('limit', 20));
+            $page = (int) ($request->query('page', 1));
             $offset = ($page - 1) * $limit;
-            $dokterName = trim((string) $request->get('dokter', ''));
-            $poliOrBangsalName = trim((string) $request->get('poli', ''));
-            $bangsalName = trim((string) $request->get('bangsal', ''));
-            $q = trim((string) $request->get('q', ''));
-            $kdBangsal = trim((string) $request->get('kd_bangsal', ''));
-            $kdDepo = trim((string) $request->get('kd_depo', ''));
-            $statusPerawatanFilter = $request->get('status_perawatan'); // Belum / Sudah / (variasi label)
+            $dokterName = trim((string) $request->query('dokter', ''));
+            $poliOrBangsalName = trim((string) $request->query('poli', ''));
+            $bangsalName = trim((string) $request->query('bangsal', ''));
+            $q = trim((string) $request->query('q', ''));
+            $kdBangsal = trim((string) $request->query('kd_bangsal', ''));
+            $kdDepo = trim((string) $request->query('kd_depo', ''));
+            $statusPerawatanFilter = $request->query('status_perawatan');
             if ($statusPerawatanFilter === 'Belum Terlayani') {
                 $statusPerawatanFilter = 'Belum';
             } elseif ($statusPerawatanFilter === 'Sudah Terlayani') {
@@ -1121,6 +1121,71 @@ class ResepController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function masterAturanPakai(Request $request): JsonResponse
+    {
+        try {
+            $search = trim((string) $request->query('search', ''));
+            $limit = (int) ($request->query('limit', 20));
+
+            $q = DB::table('master_aturan_pakai')->select('aturan');
+            if ($search !== '') {
+                $q->where('aturan', 'like', '%' . $search . '%');
+            }
+            $rows = $q->orderBy('aturan')->limit($limit)->get();
+
+            if ($rows->isEmpty()) {
+                $q2 = DB::table('aturan_pakai')->select('aturan')->distinct();
+                if ($search !== '') {
+                    $q2->where('aturan', 'like', '%' . $search . '%');
+                }
+                $rows = $q2->orderBy('aturan')->limit($limit)->get();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $rows,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat master aturan pakai: ' . $e->getMessage(),
+                'data' => [],
+            ], 500);
+        }
+    }
+
+    public function createAturanPakai(Request $request): JsonResponse
+    {
+        $request->validate([
+            'aturan' => 'required|string|max:150',
+        ]);
+
+        try {
+            $aturan = trim((string) $request->input('aturan', ''));
+            if ($aturan === '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aturan tidak boleh kosong',
+                ], 422);
+            }
+
+            $exists = DB::table('master_aturan_pakai')->where('aturan', $aturan)->exists();
+            if (! $exists) {
+                DB::table('master_aturan_pakai')->insert(['aturan' => $aturan]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => ['aturan' => $aturan],
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan aturan pakai: ' . $e->getMessage(),
             ], 500);
         }
     }

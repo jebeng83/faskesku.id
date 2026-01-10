@@ -365,9 +365,9 @@ const cardsByTab = {
     },
     {
       key: 'statusPendaftaran',
-      title: 'Status Pendaftaran',
+      title: 'Monitoring Status Bridging',
       desc: 'Lihat status terkini',
-      href: '/pcare/status-pendaftaran',
+      href: '/pcare/monitoring-status',
       gradient: 'from-sky-500 to-blue-600',
       icon: (
         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">

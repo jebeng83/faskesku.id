@@ -17,13 +17,13 @@ class RekeningTahunController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $thn = (string) $request->get('thn', date('Y'));
-        $q = (string) $request->get('q', '');
-        $period = (string) $request->get('period', 'year'); // 'year' | 'month' | 'day' | 'range'
-        $month = $request->get('month'); // 1..12
-        $date = $request->get('date'); // YYYY-MM-DD
-        $from = $request->get('from'); // YYYY-MM-DD
-        $to = $request->get('to');   // YYYY-MM-DD
+        $thn = (string) $request->query('thn', date('Y'));
+        $q = (string) $request->query('q', '');
+        $period = (string) $request->query('period', 'year');
+        $month = $request->query('month');
+        $date = $request->query('date');
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         $baseQuery = DB::table('rekening')
             ->join('rekeningtahun', 'rekeningtahun.kd_rek', '=', 'rekening.kd_rek')

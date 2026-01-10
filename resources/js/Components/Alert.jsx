@@ -29,7 +29,6 @@ export default function Alert({
 	const isSuccess = type === "success";
 	const isError = type === "error";
 	const isWarning = type === "warning";
-	const isInfo = type === "info";
 
 	const getIcon = () => {
 		if (isSuccess) {

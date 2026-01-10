@@ -7,7 +7,7 @@ import axios from "axios";
 
 export default function Lanjutan() {
   // Set tab aktif ke "registrasi" agar item sidebar "Registrasi" disorot pada halaman ini
-  const [activeTab, setActiveTab] = useState("registrasi");
+  const [activeTab] = useState("registrasi");
   const [queueCurrent, setQueueCurrent] = useState(null);
   const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
   const [queueStatusCode, setQueueStatusCode] = useState(null);
@@ -25,6 +25,9 @@ export default function Lanjutan() {
       if (envUrl) c.push(envUrl);
     } catch (_) {}
     // Prefer backend localhost first
+    } catch {}
+    c.push(window.location.origin);
+    c.push("http://127.0.0.1:8000");
     c.push("http://localhost:8000");
     // Then current origin
     c.push(window.location.origin);
@@ -78,7 +81,7 @@ export default function Lanjutan() {
         setQueueCurrent(null);
         setQueueStatusCode(null);
       }
-    } catch (_) {
+    } catch {
       setQueueCurrent(null);
       setQueueStatusCode(null);
     }
@@ -95,8 +98,7 @@ export default function Lanjutan() {
         setQueueLastCalledNumber(queueCurrent.nomor);
         setQueueStatusCode(1);
       }
-    } catch (_) {
-    }
+    } catch {}
   };
 
   const menuTabs = [

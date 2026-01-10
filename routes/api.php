@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\NotaJalanController;
+use App\Http\Controllers\Alergi\AlergiController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
 use App\Http\Controllers\API\PatientController as ApiPatientController;
@@ -35,10 +36,18 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
+use App\Http\Controllers\Odontogram\OdontogramController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
+
+// WhatsApp Webhook endpoints
+Route::get('/webhooks/whatsapp', [\App\Http\Controllers\Webhook\WhatsAppWebhookController::class, 'verify'])->name('webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [\App\Http\Controllers\Webhook\WhatsAppWebhookController::class, 'handle'])->name('webhooks.whatsapp.handle');
 
 // Wilayah routes (public karena digunakan untuk form dropdown) - Tanpa prefix 'public'
 Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.public.wilayah.provinces');
@@ -46,9 +55,10 @@ Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'rege
 Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.public.wilayah.districts');
 Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.public.wilayah.villages');
 Route::get('/wilayah/search', [WilayahController::class, 'search'])->name('api.public.wilayah.search');
+Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
+Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.public.wilayah.show');
 
 // Public endpoints for Registration (Pasien Baru) - Tanpa prefix 'public' agar sesuai dengan frontend
-Route::get('/wilayah/all-villages', [WilayahController::class, 'allVillages'])->name('api.public.wilayah.all-villages');
 Route::get('/pasien/next-no-rm', [ApiPatientController::class, 'nextNoRM'])->name('api.public.pasien.next-no-rm');
 Route::get('/pasien/exists-no-rm', [ApiPatientController::class, 'existsNoRM'])->name('api.public.pasien.exists-no-rm');
 Route::get('/penjab', [PenjabController::class, 'index'])->name('api.public.penjab.index');
@@ -61,6 +71,16 @@ Route::get('/bahasa-pasien', [ReferenceController::class, 'bahasaPasien'])->name
 Route::get('/cacat-fisik', [ReferenceController::class, 'cacatFisik'])->name('api.public.cacat-fisik.index');
 // Public endpoint for doctors list (minimal fields) for dev preview dropdowns
 Route::get('/public/dokter', [DokterController::class, 'index'])->name('api.public.dokter');
+
+// Public lookup: master Aturan Pakai (digunakan untuk dropdown resep)
+Route::get('/aturan-pakai', [ResepController::class, 'masterAturanPakai'])->name('api.resep.master-aturan-pakai');
+// Public create: master Aturan Pakai (untuk dev/testing)
+Route::post('/aturan-pakai/public-store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.public');
+
+// PCare referensi diagnosa (public untuk autocomplete ICD)
+Route::prefix('pcare')->group(function () {
+    Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
+});
 
 // Public endpoint: SIP Pegawai yang akan habis dalam 30 hari (sanitized fields)
 Route::get('/public/sip-pegawai/expiring', function () {
@@ -96,6 +116,12 @@ Route::get('/public/sip-pegawai/expiring', function () {
     ]);
 })->name('api.public.sip-pegawai.expiring');
 
+// Public verification endpoint for Surat Sakit TTD
+Route::get('/rawat-jalan/surat-sakit/verify', function (Request $request) {
+    $noRawat = (string) $request->query('no_rawat', '');
+    return app(RawatJalanController::class)->verifySuratSakit($request, $noRawat);
+})->name('api.rawat-jalan.surat-sakit.verify');
+
 // Public endpoints for Queue (Kiosk)
 Route::prefix('queue')->group(function () {
     Route::post('/tickets', [QueueController::class, 'create'])->name('api.queue.tickets.create');
@@ -106,11 +132,13 @@ Route::prefix('queue')->group(function () {
     Route::post('/cancel', [QueueController::class, 'cancel'])->name('api.queue.cancel');
 });
 
-// Protected API endpoints (memerlukan authentication)
-// Menggunakan 'auth:sanctum' untuk Inertia.js SPA authentication
-// Sanctum akan otomatis menggunakan session-based auth untuk requests dari stateful domains
-// (localhost, 127.0.0.1:8000, dll) dan token-based auth untuk external API
-Route::middleware('auth:sanctum')->group(function () {
+// Poli voice mapping (public) - tidak membutuhkan CSRF stateful
+Route::get('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'index'])->name('api.poli.voice.mapping.index');
+Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceController::class, 'store'])->name('api.poli.voice.mapping.store');
+
+// Protected API endpoints (require authentication)
+// Use web session guard to fully support Inertia.js SPA with same-origin cookies
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -122,13 +150,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reference lookup endpoints - moved to public
 
-    // Wilayah routes (protected version)
-    Route::get('/wilayah/provinces', [WilayahController::class, 'provinces'])->name('api.wilayah.provinces');
-    Route::get('/wilayah/regencies/{provinceCode}', [WilayahController::class, 'regencies'])->name('api.wilayah.regencies');
-    Route::get('/wilayah/districts/{regencyCode}', [WilayahController::class, 'districts'])->name('api.wilayah.districts');
-    Route::get('/wilayah/villages/{districtCode}', [WilayahController::class, 'villages'])->name('api.wilayah.villages');
-    // all-villages moved to public
-    Route::get('/wilayah/{code}', [WilayahController::class, 'show'])->name('api.wilayah.show');
+    // Wilayah routes sudah didefinisikan sebagai public di atas untuk kebutuhan form dropdown
 
     // Permission Management Routes
     Route::prefix('permissions')->group(function () {
@@ -210,6 +232,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Pencarian penyakit (ICD-10) dari tabel lokal `penyakit`
     Route::get('/penyakit', [RawatJalanController::class, 'searchPenyakit'])->name('api.penyakit.index');
 
+    Route::post('/aturan-pakai', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store');
+    Route::post('/aturan-pakai/store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.alt');
+
     // API routes untuk resep
     Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
     Route::get('/resep/list', [ResepController::class, 'list'])->name('api.resep.list');
@@ -225,6 +250,57 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
 
+    Route::prefix('odontogram')->group(function () {
+        Route::get('/pasien/{no_rkm_medis}', [OdontogramController::class, 'byPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.by-pasien');
+        Route::get('/rawat/{no_rawat}', [OdontogramController::class, 'byVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.by-rawat');
+        Route::get('/kondisi', [OdontogramController::class, 'kondisi'])
+            ->name('api.odontogram.kondisi');
+        Route::post('/rawat/{no_rawat}', [OdontogramController::class, 'storeByVisit'])
+            ->where('no_rawat', '.*')
+            ->name('api.odontogram.store-by-rawat');
+        Route::post('/medis/{no_rkm_medis}', [OdontogramController::class, 'storeByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.store-by-medis');
+        Route::delete('/medis/{no_rkm_medis}/{tanggal}/{elemen_gigi}', [OdontogramController::class, 'destroyByPatient'])
+            ->where('no_rkm_medis', '.*')
+            ->name('api.odontogram.destroy-by-medis');
+    });
+
+    // WhatsApp outbound
+    Route::post('/whatsapp/send', function (Request $request) {
+        $to = (string) $request->input('to', '');
+        $text = (string) $request->input('text', '');
+        $key = (string) $request->input('idempotency_key', '');
+        if ($key !== '') {
+            $cacheKey = 'wa:idempotency:' . $key;
+            if (! Cache::add($cacheKey, 1, now()->addDay())) {
+                return response()->json(['ok' => false, 'status' => 'duplicate'], 409);
+            }
+        }
+        $credentialId = $request->input('credential_id');
+        $phoneNumberId = $request->input('phone_number_id');
+        dispatch(new \App\Jobs\WhatsAppSendJob($to, $text, $key, $credentialId ? (int) $credentialId : null, $phoneNumberId ? (string) $phoneNumberId : null));
+        return response()->json(['ok' => true, 'status' => 'queued'], 202);
+    })->middleware('throttle:30,1')->name('api.whatsapp.send');
+
+    Route::post('/messages', [\App\Http\Controllers\WhatsApp\MessageController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('api.messages.store');
+
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'index'])->name('api.whatsapp.credentials.index');
+        Route::post('/credentials', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'store'])->name('api.whatsapp.credentials.store');
+        Route::get('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'show'])->name('api.whatsapp.credentials.show');
+        Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
+        Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
+    });
+
+    
+
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
     Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');
@@ -232,6 +308,21 @@ Route::middleware('auth:sanctum')->group(function () {
     // API routes untuk dokter
     Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');
     Route::get('/dokter/{kd_dokter}', [DokterController::class, 'show'])->name('api.dokter.show');
+
+    Route::prefix('alergi')->group(function () {
+        Route::get('/', [AlergiController::class, 'index'])->name('api.alergi.index');
+        Route::post('/', [AlergiController::class, 'store'])->name('api.alergi.store');
+        // Route spesifik harus didefinisikan sebelum route dengan parameter
+        Route::get('/next-code', [AlergiController::class, 'nextCode'])->name('api.alergi.next-code');
+        Route::get('/pasien', [AlergiController::class, 'getAlergiPasien'])->name('api.alergi.pasien.index');
+        Route::get('/jenis', [AlergiController::class, 'jenisIndex'])->name('api.alergi.jenis.index');
+        Route::post('/jenis', [AlergiController::class, 'jenisStore'])->name('api.alergi.jenis.store');
+        Route::put('/jenis/{kode_jenis}', [AlergiController::class, 'jenisUpdate'])->name('api.alergi.jenis.update');
+        Route::delete('/jenis/{kode_jenis}', [AlergiController::class, 'jenisDestroy'])->name('api.alergi.jenis.destroy');
+        // Route dengan parameter harus didefinisikan setelah route spesifik
+        Route::put('/{kd_alergi}', [AlergiController::class, 'update'])->name('api.alergi.update');
+        Route::delete('/{kd_alergi}', [AlergiController::class, 'destroy'])->name('api.alergi.destroy');
+    });
 
     // API routes untuk permintaan laboratorium
     Route::get('/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests.index');
@@ -374,8 +465,8 @@ Route::middleware('auth:sanctum')->group(function () {
             ->where('endpoint', '.*')
             ->name('api.pcare.proxy');
         Route::get('/dokter', [PcareController::class, 'getDokter'])->name('api.pcare.dokter');
-        // Referensi Diagnosa (PCare)
-        Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
+        // Referensi Diagnosa (PCare) - dipindahkan ke public agar autocomplete ICD tidak terblokir auth
+        // Route::get('/diagnosa', [PcareController::class, 'getDiagnosa'])->name('api.pcare.diagnosa');
         Route::get('/faskes', [PcareController::class, 'getFaskes'])->name('api.pcare.faskes');
         Route::get('/poli', [PcareController::class, 'getPoli'])->name('api.pcare.poli');
         Route::get('/kesadaran', [PcareController::class, 'getKesadaran'])->name('api.pcare.kesadaran');
@@ -494,8 +585,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/antrean/add', [MobileJknController::class, 'addAntrean'])->name('api.mobilejkn.antrean.add');
         // Panggil/Update Status Antrean
         Route::post('/antrean/panggil', [MobileJknController::class, 'panggilAntrean'])->name('api.mobilejkn.antrean.panggil');
+        // Endpoint uji panggil tanpa middleware auth/CSRF (khusus testing lokal)
+        Route::post('/antrean/panggil/test', [MobileJknController::class, 'panggilAntrean'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.mobilejkn.antrean.panggil.test');
         // Batal Antrean
         Route::post('/antrean/batal', [MobileJknController::class, 'batalAntrean'])->name('api.mobilejkn.antrean.batal');
+        Route::post('/srk/check', [MobileJknController::class, 'cekSrk'])->name('api.mobilejkn.srk.check');
+        Route::post('/srk/check/test', [MobileJknController::class, 'cekSrk'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.mobilejkn.srk.check.test');
     });
 
     // Jadwal API Routes

@@ -33,7 +33,6 @@ export default function ConfirmationAlert({
 
 	if (!isOpen) return null;
 
-	const isWarning = type === "warning";
 	const isDanger = type === "danger";
 	const isInfo = type === "info";
 

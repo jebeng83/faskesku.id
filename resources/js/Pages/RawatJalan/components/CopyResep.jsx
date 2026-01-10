@@ -5,8 +5,8 @@ export default function CopyResep({
     isOpen, 
     onClose, 
     resepData, 
-    token = '', 
-    noRkmMedis = '', 
+    token: _token = '', 
+    noRkmMedis: _noRkmMedis = '', 
     noRawat = '', 
     kdPoli = '',
     onResepSaved = () => {} 
@@ -15,11 +15,11 @@ export default function CopyResep({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [obatOptions, setObatOptions] = useState([]);
     const [searchObat, setSearchObat] = useState({});
-    const [loadingObat, setLoadingObat] = useState(false);
+    const [, setLoadingObat] = useState(false);
     const [showDropdown, setShowDropdown] = useState({});
     const [dokterOptions, setDokterOptions] = useState([]);
     const [selectedDokter, setSelectedDokter] = useState('');
-    const [loadingDokter, setLoadingDokter] = useState(false);
+    const [, setLoadingDokter] = useState(false);
 
     // Initialize items from resep data when modal opens
     useEffect(() => {

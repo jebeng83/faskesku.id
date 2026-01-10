@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import {
@@ -7,7 +7,6 @@ import {
     DocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import AppLayout from '@/Layouts/AppLayout';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // Simple Dropdown Component
 function SimpleDropdown({ children, trigger }) {

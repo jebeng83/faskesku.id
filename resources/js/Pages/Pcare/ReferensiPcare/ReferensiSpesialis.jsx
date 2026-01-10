@@ -35,8 +35,8 @@ export default function ReferensiSpesialis() {
       const list = json?.response?.list || [];
       setData(list);
       setCount(json?.response?.count || list.length);
-    } catch (e) {
-      setError(e.message || 'Terjadi kesalahan');
+    } catch {
+      setError('Terjadi kesalahan');
     } finally {
       setLoading(false);
     }

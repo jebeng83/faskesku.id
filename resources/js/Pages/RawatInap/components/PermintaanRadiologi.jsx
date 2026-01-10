@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { todayDateString, nowDateTimeString } from '@/tools/datetime';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { 
+    PlusIcon, 
+    MagnifyingGlassIcon, 
+    ClipboardDocumentCheckIcon,
+    CameraIcon,
+    ClockIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
 
 export default function PermintaanRadiologi({ token = '', noRkmMedis = '', noRawat = '' }) {
     const [availableTests, setAvailableTests] = useState([]);
@@ -610,3 +622,6 @@ export default function PermintaanRadiologi({ token = '', noRkmMedis = '', noRaw
         </div>
     );
 }
+};
+
+export default PermintaanRadiologi;

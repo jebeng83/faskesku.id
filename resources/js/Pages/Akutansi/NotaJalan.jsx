@@ -1,20 +1,12 @@
 import React from "react";
 import axios from "axios";
 import { usePage, router } from "@inertiajs/react";
-import { motion } from "framer-motion";
 import {
-    Receipt,
     Printer,
     Download,
     ArrowLeft,
     Loader2,
     AlertCircle,
-    Building2,
-    User,
-    Calendar,
-    Clock,
-    FileText,
-    CreditCard,
 } from "lucide-react";
 import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
 
@@ -125,9 +117,7 @@ export default function NotaJalanPage() {
         poliklinik,
         penjab,
         billing_items,
-        billing_summary,
         billing_grand_total,
-        detail_pembayaran,
         pembayaran_total,
         setting,
         logo_base64,
@@ -225,7 +215,7 @@ export default function NotaJalanPage() {
                                     // Fallback: buka langsung URL agar browser menangani download
                                     try {
                                         window.open(url, "_blank");
-                                    } catch (e) {
+                                    } catch {
                                         alert(
                                             "Gagal mengunduh PDF: " +
                                                 (error?.message ||

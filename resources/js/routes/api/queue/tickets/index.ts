@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\QueueController::create
-* @see app/Http/Controllers/QueueController.php:13
+* @see app/Http/Controllers/QueueController.php:35
 * @route '/api/queue/tickets'
 */
 create.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

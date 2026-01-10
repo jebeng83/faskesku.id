@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
-use Inertia\Response;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PermintaanLabController extends Controller
@@ -32,14 +31,15 @@ class PermintaanLabController extends Controller
      */
     public function index(Request $request)
     {
+        // Optimasi: Batasi eager loading untuk menghindari memory issue
+        // Hanya load relasi yang benar-benar diperlukan, hindari nested terlalu dalam
         $query = PermintaanLab::with([
-            'regPeriksa.patient',
-            'regPeriksa.poliklinik',
-            'regPeriksa.penjab',
-            'dokter',
-            // Eager-load detail permintaan beserta templatenya
-            'detailPermintaan.templateLaboratorium',
-            'detailPermintaan.jnsPerawatanLab',
+            'regPeriksa:no_rawat,no_rkm_medis,kd_poli,kd_pj',
+            'regPeriksa.patient:no_rkm_medis,nm_pasien',
+            'regPeriksa.poliklinik:kd_poli,nm_poli',
+            'regPeriksa.penjab:kd_pj,png_jawab',
+            'dokter:kd_dokter,nm_dokter',
+            'detailPermintaan:noorder,kd_jenis_prw,id_template,stts_bayar',
         ]);
 
         $start = $request->get('start_date');
@@ -64,6 +64,16 @@ class PermintaanLabController extends Controller
             $query->whereDate('tgl_permintaan', '>=', $start);
         } elseif ($end) {
             $query->whereDate('tgl_permintaan', '<=', $end);
+        if ($request->filled('start_date') || $request->filled('end_date')) {
+            $start = $request->query('start_date');
+            $end = $request->query('end_date');
+            if ($start && $end) {
+                $query->whereBetween('tgl_permintaan', [$start, $end]);
+            } elseif ($start) {
+                $query->whereDate('tgl_permintaan', '>=', $start);
+            } elseif ($end) {
+                $query->whereDate('tgl_permintaan', '<=', $end);
+            }
         }
 
         // Filter berdasarkan status
@@ -92,18 +102,79 @@ class PermintaanLabController extends Controller
             ->orderBy('jam_permintaan', 'desc')
             ->paginate(15)
             ->withQueryString();
+        try {
+            // Batasi pagination untuk menghindari memory issue
+            $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
+                ->orderBy('jam_permintaan', 'desc')
+                ->paginate(10); // Kurangi dari 15 ke 10 untuk mengurangi memory usage
 
-        // Tambahkan informasi has_hasil untuk setiap permintaan
-        // Pastikan detailPermintaan sudah dimuat untuk setiap item
-        $permintaanLab->getCollection()->transform(function ($item) {
-            // Pastikan relasi detailPermintaan sudah dimuat
-            if (! $item->relationLoaded('detailPermintaan')) {
-                $item->load('detailPermintaan');
+            // Optimasi: Pre-load semua DetailPeriksaLab yang diperlukan untuk menghindari N+1 query
+            $noRawatList = $permintaanLab->getCollection()->pluck('no_rawat')->unique()->filter()->values();
+            $allDetailPeriksaLab = collect();
+
+            if ($noRawatList->isNotEmpty() && $noRawatList->count() > 0) {
+                // Batasi jumlah no_rawat yang di-query untuk menghindari memory issue
+                $noRawatArray = $noRawatList->take(100)->toArray();
+
+                try {
+                    $allDetailPeriksaLab = \App\Models\DetailPeriksaLab::whereIn('no_rawat', $noRawatArray)
+                        ->whereNotNull('nilai')
+                        ->where('nilai', '!=', '')
+                        ->select('no_rawat', 'kd_jenis_prw', 'id_template')
+                        ->get()
+                        ->groupBy('no_rawat');
+                } catch (\Exception $e) {
+                    Log::warning('[PermintaanLabController] Error loading DetailPeriksaLab', [
+                        'error' => $e->getMessage(),
+                        'noRawatCount' => count($noRawatArray),
+                    ]);
+                    $allDetailPeriksaLab = collect();
+                }
             }
-            $item->has_hasil = $item->hasHasilTersedia();
 
-            return $item;
-        });
+            // Tambahkan informasi has_hasil untuk setiap permintaan
+            // Pastikan detailPermintaan sudah dimuat dari eager loading sebelumnya
+            $permintaanLab->getCollection()->transform(function ($item) use ($allDetailPeriksaLab) {
+                // detailPermintaan sudah dimuat dari eager loading di query awal
+                // Tidak perlu load lagi untuk menghindari memory issue
+
+                try {
+                    // Pastikan detailPermintaan sudah dimuat, jika belum skip perhitungan
+                    if (! $item->relationLoaded('detailPermintaan')) {
+                        $item->has_hasil = false;
+                        return $item;
+                    }
+
+                    // Gunakan cached data untuk menghindari query berulang
+                    $detailPeriksaLabForItem = $allDetailPeriksaLab->get($item->no_rawat, collect());
+                    $item->has_hasil = $item->hasHasilTersediaOptimized($detailPeriksaLabForItem);
+                } catch (\Throwable $e) {
+                    // Jika terjadi error, set has_hasil ke false untuk menghindari crash
+                    Log::warning('[PermintaanLabController] Error calculating has_hasil', [
+                        'error' => $e->getMessage(),
+                        'noorder' => $item->noorder ?? 'unknown',
+                    ]);
+                    $item->has_hasil = false;
+                }
+
+                return $item;
+            });
+        } catch (\Throwable $e) {
+            Log::error('[PermintaanLabController::index] Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Return empty pagination jika terjadi error untuk menghindari crash
+            $permintaanLab = new \Illuminate\Pagination\LengthAwarePaginator(
+                collect(),
+                0,
+                10,
+                1
+            );
+        }
 
         // Get list of doctors for filter dropdown
         $dokters = \App\Models\Dokter::select('kd_dokter', 'nm_dokter')
@@ -172,6 +243,14 @@ class PermintaanLabController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -237,7 +316,16 @@ class PermintaanLabController extends Controller
 
             DB::commit();
 
-            // Return Inertia response with success message
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'noorder' => $permintaanLab->noorder,
+                    ],
+                    'message' => 'Permintaan laboratorium berhasil dibuat',
+                ], 201);
+            }
+
             return redirect()->back()->with('success', 'Permintaan laboratorium berhasil dibuat dengan nomor order: '.$permintaanLab->noorder);
         } catch (\Exception $e) {
             DB::rollback();
@@ -246,6 +334,13 @@ class PermintaanLabController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage(),
+                ], 500);
+            }
 
             return redirect()->back()->withErrors(['error' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage()])->withInput();
         }
@@ -1199,8 +1294,8 @@ class PermintaanLabController extends Controller
     public function getLabTests(Request $request): JsonResponse
     {
         try {
-            $search = $request->get('search', '');
-            $kelas = $request->get('kelas', '');
+            $search = $request->query('search', '');
+            $kelas = $request->query('kelas', '');
 
             $query = JnsPerawatanLab::where('status', '1');
 
@@ -1235,7 +1330,7 @@ class PermintaanLabController extends Controller
     public function getTemplates(Request $request, $kdJenisPrw = null): JsonResponse
     {
         try {
-            $kdJenisPrw = $kdJenisPrw ?? $request->get('kd_jenis_prw');
+            $kdJenisPrw = $kdJenisPrw ?? $request->query('kd_jenis_prw');
 
             if (! $kdJenisPrw) {
                 return response()->json([

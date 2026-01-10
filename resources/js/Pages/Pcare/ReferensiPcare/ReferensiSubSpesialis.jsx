@@ -73,7 +73,7 @@ export default function ReferensiSubSpesialis() {
         setKdSpesialis(list[0]?.kdSpesialis || '');
         setSpQuery(list[0]?.nmSpesialis || '');
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   };

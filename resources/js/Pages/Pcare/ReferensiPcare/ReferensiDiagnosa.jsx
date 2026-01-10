@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MagnifyingGlassIcon, ArrowPathIcon, InformationCircleIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, ArrowPathIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -42,8 +42,8 @@ export default function ReferensiDiagnosa() {
       const res = await fetch(`/pcare/api/diagnosa?${params.toString()}`, { headers: { Accept: 'application/json' } });
       const json = await res.json();
       setData(json);
-    } catch (e) {
-      setError(e?.message || 'Gagal memuat data');
+    } catch {
+      setError('Gagal memuat data');
     } finally {
       setLoading(false);
     }

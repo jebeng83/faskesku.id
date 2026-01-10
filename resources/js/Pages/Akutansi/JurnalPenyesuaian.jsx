@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
-import { BookOpen, Calendar, Clock, Info, Plus, RefreshCcw, Search, Trash2 } from 'lucide-react';
+import { BookOpen, Calendar, Clock, Info, Plus, Trash2 } from 'lucide-react';
 
 const Card = ({ title, children, right }) => (
   <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
@@ -280,4 +280,3 @@ export default function JurnalPenyesuaianPage() {
     </SidebarKeuangan>
   );
 }
-

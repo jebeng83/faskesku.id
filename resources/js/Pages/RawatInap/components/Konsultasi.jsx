@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function Konsultasi({ token = '', noRkmMedis = '', noRawat = '' }) {
+export default function Konsultasi({ token: _token = '', noRkmMedis: _noRkmMedis = '', noRawat = '' }) {
     const [formData, setFormData] = useState({
         tgl_konsultasi: new Date().toISOString().slice(0, 10),
         jam_konsultasi: new Date().toTimeString().slice(0, 5),

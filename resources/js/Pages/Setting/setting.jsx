@@ -22,7 +22,7 @@ import { toast } from "@/tools/toast";
 // - Sumber data: tabel `setting` (fallback ke `settings` jika ada)
 // - Fitur: list, tambah, edit inline, hapus, dan describe struktur tabel
 
-export default function SettingIndex({ settings = [], table, flash }) {
+export default function SettingIndex({ settings = [], flash }) {
     // Animasi Framer Motion
     const cardVariants = {
         hidden: { opacity: 0, y: 8 },

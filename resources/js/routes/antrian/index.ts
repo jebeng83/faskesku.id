@@ -41,6 +41,7 @@ loket.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:236
+* @see routes/web.php:240
 * @route '/antrian/display'
 */
 export const display = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,6 +56,7 @@ display.definition = {
 
 /**
 * @see routes/web.php:236
+* @see routes/web.php:240
 * @route '/antrian/display'
 */
 display.url = (options?: RouteQueryOptions) => {
@@ -63,6 +65,7 @@ display.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:236
+* @see routes/web.php:240
 * @route '/antrian/display'
 */
 display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,6 +75,7 @@ display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:236
+* @see routes/web.php:240
 * @route '/antrian/display'
 */
 display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -79,9 +83,91 @@ display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see routes/web.php:273
+* @route '/antrian/poli'
+*/
+export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+poli.definition = {
+    methods: ["get","head"],
+    url: '/antrian/poli',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:273
+* @route '/antrian/poli'
+*/
+poli.url = (options?: RouteQueryOptions) => {
+    return poli.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:273
+* @route '/antrian/poli'
+*/
+poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: poli.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:273
+* @route '/antrian/poli'
+*/
+poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: poli.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:397
+* @route '/antrian/suara'
+*/
+export const suara = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suara.url(options),
+    method: 'get',
+})
+
+suara.definition = {
+    methods: ["get","head"],
+    url: '/antrian/suara',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:397
+* @route '/antrian/suara'
+*/
+suara.url = (options?: RouteQueryOptions) => {
+    return suara.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:397
+* @route '/antrian/suara'
+*/
+suara.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: suara.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:397
+* @route '/antrian/suara'
+*/
+suara.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: suara.url(options),
+    method: 'head',
+})
+
 const antrian = {
     loket: Object.assign(loket, loket),
     display: Object.assign(display, display),
+    poli: Object.assign(poli, poli),
+    suara: Object.assign(suara, suara),
 }
 
 export default antrian

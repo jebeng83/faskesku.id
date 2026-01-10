@@ -22,9 +22,7 @@ const resolveRouteUrl = (routeName, absolute = false) => {
         try {
             const url = route(name, {}, absolute);
             if (url) return url;
-        } catch (e) {
-            // try next candidate
-        }
+        } catch {}
     }
     return null;
 };
@@ -48,7 +46,6 @@ const isMenuEnabled = (menu) => {
 export default function SidebarMenu({
     collapsed = false,
     title = "Faskesku",
-    onToggle,
 }) {
     const { menu_hierarchy = [], current_menu } = usePage().props;
     const normalizedMenus = Array.isArray(menu_hierarchy)
@@ -221,9 +218,8 @@ export default function SidebarMenu({
 		// Special case: Farmasi root menu should navigate directly to Farmasi Index
         if ((menu.slug && menu.slug === "farmasi") || (menu.name && menu.name.toLowerCase() === "farmasi")) {
             try {
-                // gunakan URL relatif agar mengikuti origin aktif
                 return route("farmasi.index", {}, false);
-            } catch (error) {
+            } catch {
                 console.warn("Route farmasi.index not found, falling back to /farmasi");
                 return "/farmasi";
             }
@@ -236,7 +232,7 @@ export default function SidebarMenu({
         ) {
             try {
                 return route("satusehat.index", {}, false);
-            } catch (error) {
+            } catch {
                 console.warn("Route satusehat.index not found, falling back to /satusehat");
                 return "/satusehat";
             }
@@ -247,9 +243,8 @@ export default function SidebarMenu({
             (menu.name && menu.name.toLowerCase().includes("pcare"))
         ) {
             try {
-                // gunakan URL relatif agar mengikuti origin aktif
                 return route("pcare.index", {}, false);
-            } catch (error) {
+            } catch {
                 console.warn("Route pcare.index not found, falling back to /pcare");
                 return "/pcare";
             }
@@ -263,7 +258,7 @@ export default function SidebarMenu({
             let basePath = "/rawat-jalan";
             try {
                 basePath = route("rawat-jalan.index", {}, false) || "/rawat-jalan";
-            } catch (error) {
+            } catch {
                 console.warn(
                     "Route rawat-jalan.index not found, falling back to /rawat-jalan"
                 );
@@ -277,7 +272,7 @@ export default function SidebarMenu({
                 if (kd_dokter) u.searchParams.set("kd_dokter", kd_dokter);
                 if (kd_poli) u.searchParams.set("kd_poli", kd_poli);
                 return u.pathname + u.search + u.hash;
-            } catch (e) {
+            } catch {
                 const qs = [];
                 if (kd_dokter) qs.push(`kd_dokter=${encodeURIComponent(kd_dokter)}`);
                 if (kd_poli) qs.push(`kd_poli=${encodeURIComponent(kd_poli)}`);
@@ -285,16 +280,14 @@ export default function SidebarMenu({
             }
         }
 		if (menu.url) {
-			try {
-				const currentOrigin = window.location.origin;
-				const u = new URL(menu.url, currentOrigin);
-				// Kembalikan path relatif agar selalu mengikuti origin aktif
-				return u.pathname + u.search + u.hash;
-			} catch (e) {
-				// Jika parsing gagal, paksa menjadi relatif
-				if (menu.url.startsWith("/")) return menu.url;
-				return "/" + menu.url.replace(/^https?:\/\/[^/]+/, "");
-			}
+            try {
+                const currentOrigin = window.location.origin;
+                const u = new URL(menu.url, currentOrigin);
+                return u.pathname + u.search + u.hash;
+            } catch {
+                if (menu.url.startsWith("/")) return menu.url;
+                return "/" + menu.url.replace(/^https?:\/\/[^/]+/, "");
+            }
 		}
 
 		if (menu.route) {

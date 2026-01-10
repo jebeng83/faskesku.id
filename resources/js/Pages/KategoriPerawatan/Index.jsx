@@ -5,7 +5,7 @@ import AppLayout from '@/Layouts/AppLayout';
 
 // Modal Component for Add/Edit Kategori
 const KategoriModal = ({ isOpen, onClose, editData = null }) => {
-    const { data, setData, post, put, processing, errors, reset, transform } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
         kd_kategori: editData?.kd_kategori || '',
         nm_kategori: editData?.nm_kategori || ''
     });
@@ -143,7 +143,7 @@ const KategoriModal = ({ isOpen, onClose, editData = null }) => {
     );
 };
 
-export default function Index({ title, data, search, filters }) {
+export default function Index({ title, data, search, _filters }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [searchTerm, setSearchTerm] = useState(search || '');

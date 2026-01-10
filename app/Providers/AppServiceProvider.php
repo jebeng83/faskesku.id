@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -100,5 +102,35 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        try {
+            $connections = (array) config('database.connections', []);
+            foreach ($connections as $name => $cfg) {
+                if (($cfg['driver'] ?? null) === 'mysql') {
+                    $conn = DB::connection($name);
+                    $conn->setSchemaGrammar(new \App\Database\Schema\Grammars\MySqlGrammar($conn));
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to override MySQL schema grammar: '.$e->getMessage());
+        }
+
+        try {
+            Queue::failing(function (JobFailed $event) {
+                try {
+                    $resolved = method_exists($event->job, 'resolveName') ? $event->job->resolveName() : null;
+                } catch (\Throwable $e) {
+                    $resolved = null;
+                }
+                Log::error('queue.job.failed', [
+                    'connection' => $event->connectionName,
+                    'job_resolved' => $resolved,
+                    'exception' => get_class($event->exception),
+                    'message' => $event->exception->getMessage(),
+                ]);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to register Queue failing listener: '.$e->getMessage());
+        }
     }
 }

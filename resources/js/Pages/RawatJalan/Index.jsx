@@ -16,6 +16,7 @@ import {
   UserIcon,
   BanknotesIcon,
   EllipsisVerticalIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
@@ -176,22 +177,26 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         document.body.style.userSelect = 'none';
     };
 
+    const debounceRef = useRef(null);
     const handleFilterChange = (key, value) => {
         const newParams = { ...searchParams, [key]: value };
         setSearchParams(newParams);
 
-        // Persist pilihan Dokter/Poli via helper agar konsisten di seluruh aplikasi
         if (key === 'kd_dokter' || key === 'kd_poli') {
             setRawatJalanFilters({
                 kd_dokter: (key === 'kd_dokter' ? value : newParams.kd_dokter) || '',
                 kd_poli: (key === 'kd_poli' ? value : newParams.kd_poli) || '',
             });
+            router.get(route('rawat-jalan.index'), newParams, { preserveState: true, replace: true });
+            return;
         }
-        
-        router.get(route('rawat-jalan.index'), newParams, {
-            preserveState: true,
-            replace: true
-        });
+
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+            router.get(route('rawat-jalan.index'), newParams, { preserveState: true, replace: true });
+        }, 350);
     };
 
     const resetFilters = () => {
@@ -236,6 +241,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
 
     const handleBuatSurat = (noRawat) => {
         router.get(route('rawat-jalan.buat-surat', { no_rawat: noRawat }));
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    
+
+    const handleSuratSehat = (noRawAt) => {
+        router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
 
     const toBase64Url = (obj) => {
@@ -274,6 +285,98 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         const token = toBase64Url({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' });
         try { router.get(route('rawat-jalan.lanjutan'), { t: token }, { preserveScroll: true }); }
         catch { router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true }); }
+    };
+
+    const toBase64Url = (obj) => {
+        try {
+            const b = btoa(JSON.stringify(obj));
+            return b.replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+        } catch (_) { return ''; }
+    };
+
+    const isAllowedForAntrean = (row) => {
+        try {
+            const label = String(row?.nm_penjamin || row?.penjab?.png_jawab || row?.png_jawab || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '');
+            if (!label) return false;
+            if (/pbi/.test(label)) return true;
+            if (/bpjs|bpj|jkn|kis/.test(label)) return true;
+            return false;
+        } catch (_) { return false; }
+    };
+
+    const handleClickPasien = async (e, item) => {
+        e.preventDefault();
+        try {
+            if (isAllowedForAntrean(item)) {
+                const payload = {
+                    no_rkm_medis: item.no_rkm_medis || '',
+                    kd_poli: item.kd_poli || item.poliklinik?.kd_poli || '',
+                    status: 1,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
+                };
+                try { await axios.post('/api/mobilejkn/antrean/panggil', payload); } catch (_) {}
+            }
+        } catch (_) {}
+        const token = toBase64Url({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' });
+        try { router.get(route('rawat-jalan.lanjutan'), { t: token }, { preserveScroll: true }); }
+        catch { router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true }); }
+    };
+
+    const [panggilLoadingMap, setPanggilLoadingMap] = useState({});
+
+    const setPanggilLoading = (noRawat, loading) => {
+        setPanggilLoadingMap((prev) => ({ ...prev, [noRawat]: !!loading }));
+    };
+
+    const handleOpenCanvasAndPanggil = async (item) => {
+        const noRawat = item?.no_rawat;
+        const allowed = isAllowedForAntrean(item);
+        if (allowed && noRawat) setPanggilLoading(noRawat, true);
+        try {
+            if (allowed) {
+                const payload = {
+                    no_rkm_medis: item.no_rkm_medis || '',
+                    kd_poli: item.kd_poli || item.poliklinik?.kd_poli || '',
+                    status: 1,
+                    tanggalperiksa: todayDateString(getAppTimeZone()),
+                };
+                let success = false;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        const res = await axios.post('/api/mobilejkn/antrean/panggil', payload);
+                        if (res && res.status === 200) {
+                            success = true;
+                            break;
+                        }
+                    } catch (_) {
+                        const backoff = 300 * Math.pow(2, attempt - 1);
+                        await sleep(backoff);
+                    }
+                }
+                if (!success) {
+                    // Gagal panggil setelah retry, lanjutkan navigasi tanpa mengganggu alur
+                }
+            }
+        } catch (_) {}
+        try {
+            const url = route('rawat-jalan.canvas', {
+                no_rawat: item.no_rawat,
+                no_rkm_medis: item.no_rkm_medis || '',
+                kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+            });
+            router.visit(url);
+        } catch {
+            const params = new URLSearchParams({
+                no_rawat: item.no_rawat || '',
+                no_rkm_medis: item.no_rkm_medis || '',
+                kd_poli: item.kd_poli || item.poliklinik?.kd_poli || ''
+            }).toString();
+            router.visit(`/rawat-jalan/canvas?${params}`);
+        }
+        if (allowed && noRawat) setPanggilLoading(noRawat, false);
     };
 
     return (
@@ -556,6 +659,16 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         >
                                             <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
                                                 {item.no_rawat}
+                                            onClick={() => handleOpenCanvasAndPanggil(item)}
+                                            title="Buka Canvas Rawat Jalan"
+                                        >
+                                            <span className="inline-flex items-center gap-2">
+                                                <span className="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                    {item.no_rawat}
+                                                </span>
+                                                {panggilLoadingMap[item.no_rawat] && (
+                                                    <ArrowPathIcon className="w-3 h-3 text-blue-500 animate-spin" />
+                                                )}
                                             </span>
                                         </td>
 
@@ -653,13 +766,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
                                 Belum ada data rawat jalan yang sesuai dengan filter yang dipilih. Silakan ubah filter atau tambah data baru.
                             </p>
-                            <Link
-                                href={route('rawat-jalan.create')}
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl inline-flex items-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl font-medium transform hover:scale-105"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                                Tambah Data Rawat Jalan Pertama
-                            </Link>
                         </div>
                     </motion.div>
                 )}

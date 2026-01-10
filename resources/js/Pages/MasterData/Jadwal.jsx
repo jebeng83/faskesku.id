@@ -131,8 +131,8 @@ export default function Jadwal() {
   const [tableLoading, setTableLoading] = useState(false);
   const [tableQ, setTableQ] = useState('');
   const [tableHari, setTableHari] = useState('');
-  const [schemaOpen, setSchemaOpen] = useState(false);
-  const [schema, setSchema] = useState([]);
+  const [schemaOpen] = useState(false);
+  const [schema] = useState([]);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -154,7 +154,7 @@ export default function Jadwal() {
         const res = await fetch('/api/jadwal/hari');
         const data = await res.json();
         setHariOptions(Array.isArray(data?.data) ? data.data : []);
-      } catch (e) {
+      } catch {
         setHariOptions(['SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU','AKHAD']);
       }
     }
@@ -179,19 +179,7 @@ export default function Jadwal() {
     }
   }
 
-  async function loadSchema() {
-    try {
-      const res = await fetch('/api/jadwal/describe');
-      const json = await res.json();
-      // Backend mengembalikan { columns: [...] }
-      const arr = Array.isArray(json?.columns)
-        ? json.columns
-        : (Array.isArray(json?.data) ? json.data : []);
-      setSchema(arr);
-    } catch (_) {
-      setSchema([]);
-    }
-  }
+  
 
   useEffect(() => {
     reloadTable(1);
@@ -222,7 +210,7 @@ export default function Jadwal() {
       } else {
         setMessage(json?.message || 'Gagal menyimpan jadwal');
       }
-    } catch (e) {
+    } catch {
       setMessage('Terjadi kesalahan saat menyimpan jadwal');
     } finally {
       setSaving(false);
@@ -289,7 +277,7 @@ export default function Jadwal() {
       } else {
         setEditMessage(json?.message || 'Gagal menyimpan perubahan');
       }
-    } catch (e) {
+    } catch {
       setEditMessage('Terjadi kesalahan saat menyimpan perubahan');
     } finally {
       setEditSaving(false);
@@ -316,7 +304,7 @@ export default function Jadwal() {
       } else {
         alert(json?.message || 'Gagal menghapus jadwal');
       }
-    } catch (e) {
+    } catch {
       alert('Terjadi kesalahan saat menghapus jadwal');
     }
   }

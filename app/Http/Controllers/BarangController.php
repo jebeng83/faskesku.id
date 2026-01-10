@@ -10,7 +10,7 @@ class BarangController extends Controller
     public function search(Request $request)
     {
         try {
-            $query = $request->get('q', '');
+            $query = $request->query('q', '');
 
             if (strlen($query) < 2) {
                 return response()->json([

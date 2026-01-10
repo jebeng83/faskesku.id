@@ -50,7 +50,7 @@ export default function SisaStok() {
             const it = data?.items ?? [];
             setGudangs(gs);
             setItems(it);
-        } catch (e) {
+        } catch {
             if (id !== requestIdRef.current) return;
             setGudangs([]);
             setItems([]);

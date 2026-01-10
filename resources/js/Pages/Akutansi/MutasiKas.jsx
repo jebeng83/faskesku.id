@@ -88,7 +88,7 @@ export default function MutasiKasPage() {
             });
             setRekeningOptions(items);
             if (!selectedRek && items.length) setSelectedRek(items[0].kd_rek);
-        } catch (e) {
+        } catch (_e) {
             setRekeningOptions([]);
         }
     };
@@ -110,7 +110,7 @@ export default function MutasiKasPage() {
             setTotals(
                 res.data?.totals || { debet: 0, kredit: 0, saldo_akhir: 0 }
             );
-        } catch (e) {
+        } catch (_e) {
             setRows([]);
             setMeta(null);
             setTotals({ debet: 0, kredit: 0, saldo_akhir: 0 });

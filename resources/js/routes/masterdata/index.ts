@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see routes/web.php:615
+* @see routes/web.php:866
 * @route '/masterdata'
 */
 export const alias = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,6 +16,7 @@ alias.definition = {
 
 /**
 * @see routes/web.php:615
+* @see routes/web.php:866
 * @route '/masterdata'
 */
 alias.url = (options?: RouteQueryOptions) => {
@@ -23,6 +25,7 @@ alias.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:615
+* @see routes/web.php:866
 * @route '/masterdata'
 */
 alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +35,7 @@ alias.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:615
+* @see routes/web.php:866
 * @route '/masterdata'
 */
 alias.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

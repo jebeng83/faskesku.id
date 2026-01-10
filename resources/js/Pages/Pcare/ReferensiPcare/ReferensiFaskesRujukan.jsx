@@ -67,7 +67,6 @@ export default function ReferensiFaskesRujukan() {
     });
   }, [list, query]);
 
-  const total = data?.response?.count ?? list.length;
   const filteredTotal = filteredList.length;
   const pageCount = Math.max(1, Math.ceil(filteredTotal / perPage));
   const currentPage = Math.min(page, pageCount);
@@ -92,8 +91,8 @@ export default function ReferensiFaskesRujukan() {
       const json = await res.json();
       setData(json);
       setPage(1);
-    } catch (e) {
-      setError(e?.message || 'Gagal memuat data');
+    } catch {
+      setError('Gagal memuat data');
     } finally {
       setLoading(false);
     }
@@ -143,7 +142,7 @@ export default function ReferensiFaskesRujukan() {
         setKdSpesialis(list[0]?.kdSpesialis || '');
         setSpQuery(list[0]?.nmSpesialis || '');
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
@@ -156,7 +155,7 @@ export default function ReferensiFaskesRujukan() {
       const json = await res.json();
       const list = json?.response?.list || [];
       setSubSpList(list);
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
@@ -167,7 +166,7 @@ export default function ReferensiFaskesRujukan() {
       const json = await res.json();
       const list = json?.response?.list || [];
       setSaranaList(list);
-    } catch (e) {
+    } catch {
       // ignore
     }
   };

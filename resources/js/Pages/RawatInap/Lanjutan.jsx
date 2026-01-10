@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import LanjutanRalanLayout from '@/Layouts/LanjutanRalanLayout';
 import RiwayatKunjunganRanap from './components/RiwayatKunjungan';
@@ -17,6 +18,7 @@ export default function Lanjutan({ rawatInap, params }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const isRanap = String(rawatInap?.status_lanjut || '').toLowerCase() === 'ranap';
+    const [openAcc, setOpenAcc] = useState({ pemeriksaan: true });
 
     const handleTabChange = (tab) => setActiveTab(tab);
     const toggle = (section) => setOpenAcc(prev => ({ ...prev, [section]: !prev[section] }));

@@ -145,6 +145,7 @@ export default function DisplayLoket() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const lastPlayAtRef = useRef(0);
   const baseSuara = "/Suara";
+  const currentAudioRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const enterFullscreen = () => {
     try {
@@ -157,6 +158,8 @@ export default function DisplayLoket() {
     return new Promise((resolve) => {
       try {
         const a = new Audio(url);
+        a.preload = 'auto';
+        currentAudioRef.current = a;
         a.onended = () => resolve();
         a.onerror = () => resolve();
         a.play().catch(() => resolve());
@@ -164,6 +167,13 @@ export default function DisplayLoket() {
         resolve();
       }
     });
+  };
+  const stopAudio = () => {
+    try {
+      const a = currentAudioRef.current;
+      if (a) { a.pause(); a.src = ''; }
+    } catch {}
+    currentAudioRef.current = null;
   };
   const playSequence = async (urls) => {
     for (const u of urls) {
@@ -226,6 +236,7 @@ export default function DisplayLoket() {
       `${baseSuara}/menuju/${encodeURIComponent("Silahkan ke.mp3")}`,
       ...numberAudio(calledNow?.loket ?? 0),
     ];
+    stopAudio();
     playSequence(seq);
   }, [calledNow, soundEnabled]);
 
@@ -265,7 +276,7 @@ export default function DisplayLoket() {
       const d = ev?.data || {};
       if (!soundEnabled) return;
       const k2 = `${d?.prefix || ""}-${d?.nomor}-${d?.loket || ""}`;
-      if (Date.now() - lastPlayAtRef.current < 3000) return;
+      if (Date.now() - lastPlayAtRef.current < 3000 && !d.repeat) return;
       audioLastKeyRef.current = k2;
       lastPlayAtRef.current = Date.now();
       const seq = [
@@ -275,6 +286,7 @@ export default function DisplayLoket() {
         `${baseSuara}/menuju/${encodeURIComponent("Silahkan ke.mp3")}`,
         ...numberAudio(d?.loket ?? 0),
       ];
+      stopAudio();
       playSequence(seq);
     };
     return () => { ch.close(); };
@@ -322,7 +334,7 @@ export default function DisplayLoket() {
             </div>
           </div>
         </motion.div>
-        {!soundEnabled && (
+        {!isFullscreen && (
           <div className="fixed top-2 left-2 z-50">
             <button className="px-3 py-1 rounded bg-amber-600 text-white text-xs font-bold" onClick={() => { setSoundEnabled(true); try { localStorage.setItem("displaySoundEnabled", "1"); } catch (_) {} }}>
               Aktifkan Suara
@@ -350,7 +362,7 @@ export default function DisplayLoket() {
                     <div className="text-center">
                       <AnimatePresence mode="wait">
                         <motion.div key={calledNow ? `${calledNow.prefix || ""}-${calledNow.nomor}` : "none"} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }} className="text-7xl sm:text-8xl md:text-9xl lg:text-[9rem] leading-none font-extrabold tracking-widest text-gray-900" style={{ fontFamily: 'Bookman Old Style, Bookman, URW Bookman L, serif' }}>
-                          {calledNow ? formatNomor(calledNow.nomor, calledNow.prefix) : "MENUNGGU"}
+                          {calledNow ? formatNomor(calledNow.nomor, calledNow.prefix) : "000"}
                         </motion.div>
                       </AnimatePresence>
                       <div className="mt-1 text-sm sm:text-base md:text-lg font-bold text-gray-700">Nomer Antrian</div>
@@ -359,7 +371,7 @@ export default function DisplayLoket() {
                       <ArrowRight className="text-rose-600 w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" strokeWidth={3} />
                     </div>
                     <div className="text-center">
-                      <div className="text-7xl sm:text-8xl md:text-9xl lg:text-[9rem] leading-none font-extrabold text-gray-900" style={{ fontFamily: 'Bookman Old Style, Bookman, URW Bookman L, serif' }}>{calledNow?.loket ? calledNow.loket : "-"}</div>
+                      <div className="text-7xl sm:text-8xl md:text-9xl lg:text-[9rem] leading-none font-extrabold text-gray-900" style={{ fontFamily: 'Bookman Old Style, Bookman, URW Bookman L, serif' }}>{calledNow?.loket ? String(calledNow.loket) : "1"}</div>
                       <div className="mt-1 text-sm sm:text-base md:text-lg font-bold text-gray-700">Loket</div>
                     </div>
                   </div>
@@ -396,10 +408,10 @@ export default function DisplayLoket() {
         <motion.div variants={itemVariants} className="mt-2">
           <div className="w-full overflow-x-auto">
             <div className="grid grid-flow-col auto-cols-[minmax(200px,1fr)] gap-3">
-              {[1,2,3,4].map((lk) => (
+                  {[1,2,3,4].map((lk) => (
                 <div key={`lk-row-${lk}`} className="rounded-xl bg-gradient-to-b from-green-600 to-green-700 text-white shadow flex flex-col items-center justify-center h-32 sm:h-36 md:h-40">
                   <div className="text-5xl sm:text-6xl font-extrabold tracking-widest text-white text-center">
-                    {lastByLoket[lk] ? formatNomor(lastByLoket[lk].nomor, lastByLoket[lk].prefix) : "-"}
+                    {lastByLoket[lk] ? formatNomor(lastByLoket[lk].nomor, lastByLoket[lk].prefix) : "000"}
                   </div>
                   <div className="mt-2 h-1 w-full max-w-[92%] bg-white/80 rounded"></div>
                   <div className="mt-2 text-xl sm:text-2xl md:text-3xl font-extrabold uppercase tracking-widest text-center" style={{ fontFamily: 'Expletus Sans, sans-serif', color: '#FFD700' }}>LOKET {lk}</div>

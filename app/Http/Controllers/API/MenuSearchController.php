@@ -14,7 +14,7 @@ class MenuSearchController extends Controller
      */
     public function search(Request $request)
     {
-        $query = $request->get('q', '');
+        $query = $request->query('q', '');
         $userId = Auth::id();
 
         if (empty(trim($query))) {
@@ -50,7 +50,7 @@ class MenuSearchController extends Controller
      */
     public function popular(Request $request)
     {
-        $limit = $request->get('limit', 8);
+        $limit = $request->query('limit', 8);
         $userId = Auth::id();
 
         $results = Menu::getPopular($userId, $limit);

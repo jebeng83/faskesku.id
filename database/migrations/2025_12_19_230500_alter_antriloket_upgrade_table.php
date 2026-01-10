@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -27,10 +27,10 @@ return new class extends Migration
                 $table->date('tanggal')->nullable()->after('prefix');
             }
             if (! Schema::hasColumn('antriloket', 'status')) {
-                $table->enum('status', ['baru','dicetak','dipanggil','batal'])->default('baru')->after('tanggal');
+                $table->enum('status', ['baru', 'dicetak', 'dipanggil', 'batal'])->default('baru')->after('tanggal');
             }
             if (! Schema::hasColumn('antriloket', 'asal')) {
-                $table->enum('asal', ['kiosk','loket'])->default('kiosk')->after('status');
+                $table->enum('asal', ['kiosk', 'loket'])->default('kiosk')->after('status');
             }
             if (! Schema::hasColumn('antriloket', 'kode_tiket')) {
                 $table->char('kode_tiket', 8)->nullable()->after('loket');
@@ -83,14 +83,29 @@ return new class extends Migration
         }
         Schema::table('antriloket', function (Blueprint $table) {
             // Drop indexes first to avoid errors
-            try { $table->dropUnique('uq_antriloket_harian'); } catch (\Throwable $e) {}
-            try { $table->dropUnique('uq_antriloket_kode'); } catch (\Throwable $e) {}
-            try { $table->dropIndex(['status']); } catch (\Throwable $e) {}
-            try { $table->dropIndex(['asal']); } catch (\Throwable $e) {}
-            try { $table->dropIndex(['created_at']); } catch (\Throwable $e) {}
+            try {
+                $table->dropUnique('uq_antriloket_harian');
+            } catch (\Throwable $e) {
+            }
+            try {
+                $table->dropUnique('uq_antriloket_kode');
+            } catch (\Throwable $e) {
+            }
+            try {
+                $table->dropIndex(['status']);
+            } catch (\Throwable $e) {
+            }
+            try {
+                $table->dropIndex(['asal']);
+            } catch (\Throwable $e) {
+            }
+            try {
+                $table->dropIndex(['created_at']);
+            } catch (\Throwable $e) {
+            }
 
             // Drop added columns (keep original: antrian, loket)
-            foreach (['nomor','prefix','tanggal','status','asal','kode_tiket','dibuat_oleh','dicetak_pada','dipanggil_pada','dibatalkan_pada','created_at','updated_at'] as $col) {
+            foreach (['nomor', 'prefix', 'tanggal', 'status', 'asal', 'kode_tiket', 'dibuat_oleh', 'dicetak_pada', 'dipanggil_pada', 'dibatalkan_pada', 'created_at', 'updated_at'] as $col) {
                 if (Schema::hasColumn('antriloket', $col)) {
                     $table->dropColumn($col);
                 }

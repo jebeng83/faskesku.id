@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Head } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { motion, useReducedMotion } from "framer-motion";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
 import CpptSoap from "./components/CpptSoap";
@@ -12,21 +14,9 @@ import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
 import VitalSignsChart from "./components/VitalSignsChart";
 import { getAppTimeZone } from '@/tools/datetime';
+ 
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
-    // UI/UX variants (guided by docs/UI_UX_IMPROVEMENTS_GUIDE.md)
-    const prefersReducedMotion = useReducedMotion();
-    const itemVariants = {
-        hidden: { opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : 24, scale: prefersReducedMotion ? 1 : 0.98 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: prefersReducedMotion
-                ? { duration: 0 }
-                : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
-        }
-    };
 
     const [activeTab, setActiveTab] = useState("cppt");
     const [openAcc, setOpenAcc] = useState({
@@ -37,7 +27,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
-    const [showPatientDetails, setShowPatientDetails] = useState(false);
+    
     const [resepAppendItems, setResepAppendItems] = useState(null);
     const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
@@ -69,6 +59,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         document.addEventListener("mousedown", onMouseDown);
         return () => document.removeEventListener("mousedown", onMouseDown);
     }, [suratMenuOpen]);
+    const [skriningVisual, setSkriningVisual] = useState(null);
+    const [loadingSkriningVisual, setLoadingSkriningVisual] = useState(false);
+    const [poliCalling, setPoliCalling] = useState(false);
+    const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -81,31 +75,68 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         setActiveTab(tab);
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "-";
-        try {
-            const tz = getAppTimeZone();
-            const date = new Date(dateString);
-            return date.toLocaleDateString("id-ID", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                timeZone: tz
-            });
-        } catch (error) {
-            return dateString;
-        }
+    
+    const getSkriningBadgeClasses = (v) => {
+        const k = String(v || '').toLowerCase();
+        if (k === 'merah') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+        if (k === 'oranye') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800';
+        if (k === 'kuning') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+        if (k === 'hijau') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+        return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-800';
     };
 
-    const formatTime = (timeString) => {
-        if (!timeString) return "-";
-        try {
-            return timeString.substring(0, 8);
-        } catch (error) {
-            return timeString;
+    useEffect(() => {
+        const noRM = params?.no_rkm_medis || rawatJalan?.patient?.no_rkm_medis || rawatJalan?.no_rkm_medis;
+        const tanggal = rawatJalan?.tgl_registrasi || lastVisitDate || null;
+        if (!noRM) {
+            setSkriningVisual(null);
+            return;
         }
-    };
+        let aborted = false;
+        setLoadingSkriningVisual(true);
+        const fetchLatest = async () => {
+            try {
+                const res = await fetch(route('skrining-visual.index', { no_rkm_medis: noRM }), { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error(String(res.status));
+                const json = await res.json();
+                const arr = Array.isArray(json?.data) ? json.data : [];
+                const first = arr[0] || null;
+                if (!aborted && first) {
+                    setSkriningVisual(first);
+                    return;
+                }
+                if (!aborted && tanggal) {
+                    const tanggalOnly = (() => {
+                        try {
+                            if (typeof tanggal === 'string') {
+                                if (/^\d{4}-\d{2}-\d{2}$/.test(tanggal)) return tanggal;
+                                const d = new Date(tanggal);
+                                if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+                                return tanggal.slice(0, 10);
+                            }
+                            const d = new Date(tanggal);
+                            return d.toISOString().slice(0, 10);
+                        } catch {
+                            return String(tanggal).slice(0, 10);
+                        }
+                    })();
+                    const res2 = await fetch(route('skrining-visual.show', { no_rkm_medis: noRM, tanggal: tanggalOnly }), { headers: { 'Accept': 'application/json' } });
+                    if (res2.ok) {
+                        const json2 = await res2.json();
+                        if (!aborted) setSkriningVisual(json2?.data || null);
+                        return;
+                    }
+                }
+                if (!aborted) setSkriningVisual(null);
+            } catch {
+                if (!aborted) setSkriningVisual(null);
+            } finally {
+                if (!aborted) setLoadingSkriningVisual(false);
+            }
+        };
+        fetchLatest();
+        return () => { aborted = true; };
+    }, [params?.no_rkm_medis, rawatJalan?.patient?.no_rkm_medis, rawatJalan?.no_rkm_medis, rawatJalan?.tgl_registrasi, lastVisitDate]);
 
     const parseNumber = (value) => {
         const raw = String(value ?? "").trim();
@@ -297,39 +328,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         },
     ];
 
-    const getTabColorClasses = (color, isActive) => {
-        const colors = {
-            blue: {
-                active: "bg-blue-100 text-blue-700 border-blue-500",
-                inactive: "text-gray-600 hover:text-blue-600 hover:bg-blue-50",
-            },
-            orange: {
-                active: "bg-orange-100 text-orange-700 border-orange-500",
-                inactive:
-                    "text-gray-600 hover:text-orange-600 hover:bg-orange-50",
-            },
-            green: {
-                active: "bg-green-100 text-green-700 border-green-500",
-                inactive:
-                    "text-gray-600 hover:text-green-600 hover:bg-green-50",
-            },
-            red: {
-                active: "bg-red-100 text-red-700 border-red-500",
-                inactive: "text-gray-600 hover:text-red-600 hover:bg-red-50",
-            },
-            purple: {
-                active: "bg-purple-100 text-purple-700 border-purple-500",
-                inactive:
-                    "text-gray-600 hover:text-purple-600 hover:bg-purple-50",
-            },
-            indigo: {
-                active: "bg-indigo-100 text-indigo-700 border-indigo-500",
-                inactive:
-                    "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50",
-            },
-        };
-        return colors[color][isActive ? "active" : "inactive"];
-    };
+    
 
     const renderActiveTabContent = () => {
         const commonProps = {
@@ -366,6 +365,126 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 return <PermintaanRadiologi {...commonProps} />;
             default:
                 return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} onOpenDiagnosa={() => setActiveTab("diagnosa")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} appendToAssessment={diagnosaAppendItems} onAssessmentAppended={() => setDiagnosaAppendItems(null)} />;
+        }
+    };
+
+    const handlePanggilPasien = async () => {
+        if (poliCalling) return;
+        setPoliCalling(true);
+        try {
+            const no_rawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || '';
+            const kd_poli = rawatJalan?.kd_poli || rawatJalan?.poliklinik?.kd_poli || params?.kd_poli || '';
+            const kd_dokter = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || '';
+            const payload = { no_rawat, kd_poli, kd_dokter, status: '1' };
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                await new Promise(r => setTimeout(r, 150));
+            } catch (_) {}
+            try {
+                await axios.post('/api/antrian-poli/call', payload, {
+                    withCredentials: true,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+            } catch (_) {}
+            try {
+                let no_reg_bc = '';
+                try {
+                    const resAP = await axios.get('/api/antrian-poli', { headers: { 'Accept': 'application/json' }, withCredentials: false });
+                    const dataAP = resAP?.data || {};
+                    const cardsAP = Array.isArray(dataAP.cards) ? dataAP.cards : [];
+                    const cardAP = cardsAP.find((c) => String(c.kd_poli || '') === String(kd_poli || '')) || null;
+                    const rowAP = cardAP && Array.isArray(cardAP.upcoming)
+                        ? cardAP.upcoming.find((r) => String(r.no_rawat || '') === String(no_rawat || ''))
+                        : null;
+                    no_reg_bc = String(rowAP?.no_reg || '');
+                    if (!no_reg_bc) {
+                        const h = dataAP.highlight || null;
+                        if (h && String(h.kd_poli || '') === String(kd_poli || '') && String(h.no_rawat || '') === String(no_rawat || '')) {
+                            no_reg_bc = String(h.no_reg || '');
+                        }
+                    }
+                } catch (_) {}
+                const bc = new BroadcastChannel('antrian-poli-call');
+                bc.postMessage({
+                    no_rawat,
+                    kd_poli,
+                    kd_dokter,
+                    ts: Date.now(),
+                    no_reg: no_reg_bc,
+                    nm_pasien: rawatJalan?.patient?.nm_pasien || rawatJalan?.nama_pasien || '',
+                    nm_poli: rawatJalan?.poliklinik?.nm_poli || rawatJalan?.nm_poli || kd_poli || '',
+                    repeat: false,
+                });
+                bc.close();
+            } catch (_) {}
+        } catch (_) {
+        } finally {
+            setPoliCalling(false);
+        }
+    };
+
+    const handleUlangPanggilPasien = async () => {
+        if (poliRepeatCalling) return;
+        setPoliRepeatCalling(true);
+        try {
+            const no_rawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || '';
+            const kd_poli = rawatJalan?.kd_poli || rawatJalan?.poliklinik?.kd_poli || params?.kd_poli || '';
+            const kd_dokter = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || '';
+            const payload = { no_rawat, kd_poli, kd_dokter, status: '1' };
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                await new Promise(r => setTimeout(r, 150));
+            } catch (_) {}
+            try {
+                const ck = typeof document !== 'undefined' ? document.cookie || '' : '';
+                const hasSession = ck.includes('laravel_session=');
+                if (hasSession) {
+                    await axios.post('/api/antrian-poli/repeat', payload, {
+                        withCredentials: true,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                }
+            } catch (_) {}
+            try {
+                let no_reg_bc = '';
+                try {
+                    const resAP = await axios.get('/api/antrian-poli', { headers: { 'Accept': 'application/json' }, withCredentials: false });
+                    const dataAP = resAP?.data || {};
+                    const cardsAP = Array.isArray(dataAP.cards) ? dataAP.cards : [];
+                    const cardAP = cardsAP.find((c) => String(c.kd_poli || '') === String(kd_poli || '')) || null;
+                    const rowAP = cardAP && Array.isArray(cardAP.upcoming)
+                        ? cardAP.upcoming.find((r) => String(r.no_rawat || '') === String(no_rawat || ''))
+                        : null;
+                    no_reg_bc = String(rowAP?.no_reg || '');
+                    if (!no_reg_bc) {
+                        const h = dataAP.highlight || null;
+                        if (h && String(h.kd_poli || '') === String(kd_poli || '') && String(h.no_rawat || '') === String(no_rawat || '')) {
+                            no_reg_bc = String(h.no_reg || '');
+                        }
+                    }
+                } catch (_) {}
+                const bc = new BroadcastChannel('antrian-poli-call');
+                bc.postMessage({
+                    no_rawat,
+                    kd_poli,
+                    kd_dokter,
+                    ts: Date.now(),
+                    no_reg: no_reg_bc,
+                    nm_pasien: rawatJalan?.patient?.nm_pasien || rawatJalan?.nama_pasien || '',
+                    nm_poli: rawatJalan?.poliklinik?.nm_poli || rawatJalan?.nm_poli || kd_poli || '',
+                    repeat: true,
+                });
+                bc.close();
+            } catch (_) {}
+        } catch (_) {
+        } finally {
+            setPoliRepeatCalling(false);
         }
     };
 
@@ -746,6 +865,20 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         <span className="text-gray-900 dark:text-white font-mono">{rawatJalan?.patient?.no_rkm_medis || rawatJalan?.no_rkm_medis || '-'}</span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Skrining Visual</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        {loadingSkriningVisual || !skriningVisual?.hasil_skrining ? (
+                                            <span className="text-gray-900 dark:text-white font-semibold">-</span>
+                                        ) : (
+                                            <span className={getSkriningBadgeClasses(skriningVisual?.hasil_skrining)}>{skriningVisual?.hasil_skrining}</span>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
+                                        <span className="text-left text-gray-700 dark:text-gray-300">Skor Resiko Jatuh</span>
+                                        <span className="text-gray-400 text-center">:</span>
+                                        <span className="text-gray-900 dark:text-white font-semibold">{loadingSkriningVisual ? '-' : (skriningVisual?.skor_resiko_jatuh || '-')}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Umur</span>
                                         <span className="text-gray-400 text-center">:</span>
                                         <span className="text-gray-900 dark:text-white">{(rawatJalan?.patient?.umur || rawatJalan?.umurdaftar) ? `${rawatJalan?.patient?.umur || rawatJalan?.umurdaftar} ${rawatJalan?.sttsumur || 'Th'}` : '-'}</span>
@@ -822,6 +955,31 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                     </Link>
                                                 </div>
                                             )}
+                                    <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <button
+                                                onClick={openSoapHistoryModal}
+                                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
+                                                title="Tampilkan Riwayat SOAP"
+                                            >
+                                                CPPT
+                                            </button>
+                                            <button
+                                                onClick={handlePanggilPasien}
+                                                disabled={poliCalling}
+                                                className={`text-xs px-3 py-1.5 rounded border ${poliCalling ? 'bg-green-100 text-green-400 border-green-200' : 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'}`}
+                                                title="Panggil pasien"
+                                            >
+                                                {poliCalling ? 'Memanggil...' : 'Panggil'}
+                                            </button>
+                                            <button
+                                                onClick={handleUlangPanggilPasien}
+                                                disabled={poliRepeatCalling}
+                                                className={`text-xs px-3 py-1.5 rounded border ${poliRepeatCalling ? 'bg-amber-100 text-amber-400 border-amber-200' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'}`}
+                                                title="Ulang panggil pasien"
+                                            >
+                                                {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -1077,7 +1235,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                             {(() => {
                                                                 let rowIndex = -1;
                                                                 return soapModalItems.map((h) => {
-                                                                    const latest = h.latest || {};
                                                                     let tanggal = '-';
                                                                     try {
                                                                         if (typeof h.no_rawat === 'string') {

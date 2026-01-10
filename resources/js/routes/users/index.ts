@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
 * @see routes/web.php:774
+* @see routes/web.php:1025
 * @route '/users'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,6 +16,7 @@ index.definition = {
 
 /**
 * @see routes/web.php:774
+* @see routes/web.php:1025
 * @route '/users'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -23,6 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:774
+* @see routes/web.php:1025
 * @route '/users'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:774
+* @see routes/web.php:1025
 * @route '/users'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

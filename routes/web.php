@@ -43,6 +43,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RadiologiController;
+use App\Http\Controllers\SuratController;
 use App\Http\Controllers\RawatInapController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
@@ -139,6 +140,10 @@ Route::get('/antrian/loket', function () {
         'today_poli' => $todayPoli,
     ]);
 })->name('antrian.loket');
+
+// Surat: preview HTML (public untuk preview)
+Route::get('/surat/preview', [SuratController::class, 'preview'])
+    ->name('surat.preview');
 
 Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
@@ -272,11 +277,347 @@ Route::get('/anjungan/cetak-label', function () {
 
     // API routes that don't require authentication
     Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
+Route::get('/antrian/poli', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+
+    $cards = [];
+    $highlight = null;
+    $today = date('Y-m-d');
+    if (Schema::hasTable('reg_periksa')) {
+        $kdPolis = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->pluck('kd_poli')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ($kdPolis as $kd) {
+            $nm_poli = $kd;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli = DB::table('poliklinik')->where('kd_poli', $kd)->value('nm_poli') ?: $kd;
+                if (is_string($nm_poli)) {
+                    $nm_poli = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli);
+                }
+            }
+            $lastCalled = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Sudah')
+                ->orderBy('jam_reg', 'desc')
+                ->value('no_reg');
+
+            $rows = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Belum')
+                ->orderBy('jam_reg')
+                ->limit(3)
+                ->get();
+            $upcoming = [];
+            foreach ($rows as $r) {
+                $nm_pasien = null;
+                if (Schema::hasTable('pasien')) {
+                    $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $r->no_rkm_medis)->value('nm_pasien');
+                    if (is_string($nm_pasien)) {
+                        $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                    }
+                }
+                $upcoming[] = [
+                    'no_reg' => $r->no_reg,
+                    'no_rawat' => $r->no_rawat,
+                    'nm_pasien' => $nm_pasien,
+                    'nm_poli' => $nm_poli,
+                    'stts' => $r->stts,
+                    'jam_reg' => $r->jam_reg,
+                ];
+            }
+            $cards[] = [
+                'kd_poli' => $kd,
+                'nm_poli' => $nm_poli,
+                'last_called' => $lastCalled,
+                'upcoming' => $upcoming,
+            ];
+        }
+
+        $latest = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->where('stts', 'Sudah')
+            ->orderBy('jam_reg', 'desc')
+            ->first();
+        if ($latest) {
+            $nm_pasien = null;
+            if (Schema::hasTable('pasien')) {
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $latest->no_rkm_medis)->value('nm_pasien');
+                if (is_string($nm_pasien)) {
+                    $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                }
+            }
+            $nm_poli_h = $latest->kd_poli;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $latest->kd_poli)->value('nm_poli') ?: $latest->kd_poli;
+                if (is_string($nm_poli_h)) {
+                    $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
+                }
+            }
+            $highlight = [
+                'kd_poli' => $latest->kd_poli,
+                'no_reg' => $latest->no_reg,
+                'nm_poli' => $nm_poli_h,
+                'nm_pasien' => $nm_pasien,
+            ];
+        }
+    }
+
+    return Inertia::render('Antrian/DisplayPoli', [
+        'setting' => $setting,
+        'cards' => $cards,
+        'highlight' => $highlight,
+    ]);
+})->name('antrian.poli');
+
+Route::get('/antrian/suara', function () {
+    $setting = null;
+    if (Schema::hasTable('setting')) {
+        $fields = [];
+        foreach (['logo', 'nama_instansi', 'alamat_instansi', 'kabupaten', 'propinsi', 'kontak', 'email', 'kode_ppk'] as $col) {
+            if (Schema::hasColumn('setting', $col)) {
+                $fields[] = $col;
+            }
+        }
+        if (! empty($fields)) {
+            $query = DB::table('setting')->select($fields);
+            if (Schema::hasColumn('setting', 'aktifkan')) {
+                $query->where('aktifkan', 'Yes');
+            }
+            $row = $query->orderBy('nama_instansi')->first();
+            if ($row) {
+                $setting = [];
+                foreach ($fields as $f) {
+                    $v = $row->{$f} ?? null;
+                    if (is_string($v)) {
+                        $v = preg_replace('/[\x00-\x1F\x7F]/u', '', $v);
+                    }
+                    $setting[$f] = $v;
+                }
+            }
+        }
+    }
+
+    return Inertia::render('Antrian/SuaraDisplay', [
+        'setting' => $setting,
+    ]);
+})->name('antrian.suara');
+
+// API routes that don't require authentication
+Route::get('/api/lab-tests', [PermintaanLabController::class, 'getLabTests'])->name('api.lab-tests');
+Route::get('/api/antrian-poli', function () {
+    $today = date('Y-m-d');
+    $cards = [];
+    $highlight = null;
+    if (Schema::hasTable('reg_periksa')) {
+        $kdPolis = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->pluck('kd_poli')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach ($kdPolis as $kd) {
+            $nm_poli = $kd;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli = DB::table('poliklinik')->where('kd_poli', $kd)->value('nm_poli') ?: $kd;
+                if (is_string($nm_poli)) {
+                    $nm_poli = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli);
+                }
+            }
+            $lastCalled = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Sudah')
+                ->orderBy('jam_reg', 'desc')
+                ->value('no_reg');
+
+            $rows = DB::table('reg_periksa')
+                ->whereDate('tgl_registrasi', $today)
+                ->where('kd_poli', $kd)
+                ->where('stts', 'Belum')
+                ->orderBy('jam_reg')
+                ->limit(3)
+                ->get();
+            $upcoming = [];
+            foreach ($rows as $r) {
+                $nm_pasien = null;
+                if (Schema::hasTable('pasien')) {
+                    $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $r->no_rkm_medis)->value('nm_pasien');
+                    if (is_string($nm_pasien)) {
+                        $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                    }
+                }
+                $upcoming[] = [
+                    'no_reg' => $r->no_reg,
+                    'no_rawat' => $r->no_rawat,
+                    'nm_pasien' => $nm_pasien,
+                    'nm_poli' => $nm_poli,
+                    'stts' => $r->stts,
+                    'jam_reg' => $r->jam_reg,
+                ];
+            }
+            $cards[] = [
+                'kd_poli' => $kd,
+                'nm_poli' => $nm_poli,
+                'last_called' => $lastCalled,
+                'upcoming' => $upcoming,
+            ];
+        }
+
+        $latest = DB::table('reg_periksa')
+            ->whereDate('tgl_registrasi', $today)
+            ->where('stts', 'Sudah')
+            ->orderBy('jam_reg', 'desc')
+            ->first();
+        if ($latest) {
+            $nm_pasien = null;
+            if (Schema::hasTable('pasien')) {
+                $nm_pasien = DB::table('pasien')->where('no_rkm_medis', $latest->no_rkm_medis)->value('nm_pasien');
+                if (is_string($nm_pasien)) {
+                    $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_pasien);
+                }
+            }
+            $nm_poli_h = $latest->kd_poli;
+            if (Schema::hasTable('poliklinik')) {
+                $nm_poli_h = DB::table('poliklinik')->where('kd_poli', $latest->kd_poli)->value('nm_poli') ?: $latest->kd_poli;
+                if (is_string($nm_poli_h)) {
+                    $nm_poli_h = preg_replace('/[\x00-\x1F\x7F]/u', '', $nm_poli_h);
+                }
+            }
+            $highlight = [
+                'kd_poli' => $latest->kd_poli,
+                'no_reg' => $latest->no_reg,
+                'nm_poli' => $nm_poli_h,
+                'nm_pasien' => $nm_pasien,
+            ];
+        }
+    }
+
+    return response()->json([
+        'cards' => $cards,
+        'highlight' => $highlight,
+        'date' => $today,
+        'status' => 'ok',
+    ]);
+})->name('api.antrian-poli');
 
 // API routes that require authentication
 Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/menu/search', [\App\Http\Controllers\API\MenuSearchController::class, 'search'])->name('api.menu.search');
     Route::get('/menu/popular', [\App\Http\Controllers\API\MenuSearchController::class, 'popular'])->name('api.menu.popular');
+
+    Route::post('/antrian-poli/call', function (\Illuminate\Http\Request $request) {
+        $noRawat = (string) $request->input('no_rawat');
+        $kdPoli = (string) $request->input('kd_poli');
+        $kdDokter = $request->input('kd_dokter');
+        $status = (string) ($request->input('status') ?: '1');
+        if (! $noRawat) {
+            return response()->json(['ok' => false, 'message' => 'no_rawat required'], 422);
+        }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('antripoli')) {
+            return response()->json(['ok' => false, 'message' => 'tabel antripoli tidak tersedia'], 500);
+        }
+        $exists = \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->first();
+        $payload = [
+            'kd_dokter' => $kdDokter,
+            'kd_poli' => $kdPoli,
+            'status' => in_array($status, ['0', '1']) ? $status : '1',
+            'no_rawat' => $noRawat,
+        ];
+        if ($exists) {
+            \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->update($payload);
+        } else {
+            \Illuminate\Support\Facades\DB::table('antripoli')->insert($payload);
+        }
+        if (\Illuminate\Support\Facades\Schema::hasTable('reg_periksa') && \Illuminate\Support\Facades\Schema::hasColumn('reg_periksa', 'stts')) {
+            \Illuminate\Support\Facades\DB::table('reg_periksa')->where('no_rawat', $noRawat)->update(['stts' => 'Sudah']);
+        }
+
+        return response()->json(['ok' => true, 'data' => $payload]);
+    })->name('api.antrian-poli.call');
+
+    Route::post('/antrian-poli/repeat', function (\Illuminate\Http\Request $request) {
+        $noRawat = (string) $request->input('no_rawat');
+        $kdPoli = (string) $request->input('kd_poli');
+        $kdDokter = $request->input('kd_dokter');
+        $status = (string) ($request->input('status') ?: '1');
+        if (! $noRawat) {
+            return response()->json(['ok' => false, 'message' => 'no_rawat required'], 422);
+        }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('antripoli')) {
+            return response()->json(['ok' => false, 'message' => 'tabel antripoli tidak tersedia'], 500);
+        }
+        $exists = \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->first();
+        $payload = [
+            'kd_dokter' => $kdDokter,
+            'kd_poli' => $kdPoli,
+            'status' => in_array($status, ['0', '1']) ? $status : '1',
+            'no_rawat' => $noRawat,
+        ];
+        if ($exists) {
+            \Illuminate\Support\Facades\DB::table('antripoli')->where('no_rawat', $noRawat)->update($payload);
+        } else {
+            \Illuminate\Support\Facades\DB::table('antripoli')->insert($payload);
+        }
+
+        return response()->json(['ok' => true, 'data' => $payload]);
+    })->name('api.antrian-poli.repeat');
+});
+
+Route::get('rawat-jalan/surat-sakit/{no_rawat}/verify', [RawatJalanController::class, 'verifySuratSakit'])
+    ->name('rawat-jalan.surat-sakit.verify')
+    ->where('no_rawat', '.*');
+
+Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextNoSuratSakit'])
+    ->name('rawat-jalan.surat-sakit.next-no-surat');
+
+Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}', [RawatJalanController::class, 'suratSakitByNomor'])
+    ->name('rawat-jalan.surat-sakit.by-nomor')
+    ->where('no_surat', '.*');
+Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}/verify', [RawatJalanController::class, 'verifySuratSakitByNomor'])
+    ->name('rawat-jalan.surat-sakit.verify.by-nomor')
+    ->where('no_surat', '.*');
+
+Route::middleware('auth')->group(function () {
+    Route::post('rawat-jalan/validasi-ttd', [RawatJalanController::class, 'storeValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.store');
+    Route::get('rawat-jalan/validasi-ttd/describe', [RawatJalanController::class, 'describeValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.describe');
+    Route::get('rawat-jalan/validasi-ttd/find', [RawatJalanController::class, 'findValidasiTtd'])
+        ->name('rawat-jalan.validasi-ttd.find');
 });
 
 Route::middleware('auth')->group(function () {
@@ -343,6 +684,10 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('dashboard');
 
+    Route::get('/tools/scan-whatsapp-credentials', function () {
+        return Inertia::render('Tools/ScanWhatsAppCredentials');
+    })->name('tools.whatsapp.credentials.scan');
+
     Route::get('/docs/{section?}', function ($section = null) {
         return Inertia::render('Docs', ['section' => $section]);
     })->name('docs');
@@ -382,6 +727,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan/bor', function () {
         return Inertia::render('Laporan/BOR');
     })->name('laporan.bor');
+    Route::get('/wa-gateway/kredensial', function () {
+        return Inertia::render('WaGateway/KredensialWaGateway');
+    })->name('wa-gateway.kredensial');
 
     // Akutansi: preview invoice berbasis billing/nota
     Route::get('/akutansi/invoice/{no_rawat}', [AkutansiController::class, 'invoice'])
@@ -467,6 +815,12 @@ Route::middleware('auth')->group(function () {
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
         ->name('akutansi.nota-jalan.page');
+
+    // Surat: generate PDF via DOMPDF
+    Route::post('/surat/pdf', [SuratController::class, 'pdf'])
+        ->name('surat.pdf');
+    Route::get('/surat/pdf', [SuratController::class, 'pdf'])
+        ->name('surat.pdf.get');
 
     // Akutansi: Kasir Ralan page (Inertia)
     Route::get('/akutansi/kasir-ralan', [BillingController::class, 'kasirRalanPage'])
@@ -798,6 +1152,23 @@ Route::middleware('auth')->group(function () {
 
     Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
     // Rawat Jalan landing/index page (Inertia)
+    Route::get('rawat-jalan/canvas', function () {
+        return Inertia::render('RawatJalan/CanvasRajal', [
+            'token' => request()->query('token'),
+            'noRawat' => request()->query('no_rawat'),
+            'noRkmMedis' => request()->query('no_rkm_medis'),
+            'kdPoli' => request()->query('kd_poli'),
+            'tab' => request()->query('tab'),
+        ]);
+    })->name('rawat-jalan.canvas');
+    Route::get('rawat-jalan/canvas-surat', function () {
+        return Inertia::render('RawatJalan/CanvasSurat', [
+            'token' => request()->query('token'),
+            'noRawat' => request()->query('no_rawat'),
+            'noRkmMedis' => request()->query('no_rkm_medis'),
+            'defaultDate' => request()->query('tanggal'),
+        ]);
+    })->name('rawat-jalan.canvas-surat');
     Route::get('rawat-jalan', function () {
         return Inertia::render('RawatJalan/Index');
     })->name('rawat-jalan.index');
@@ -845,15 +1216,16 @@ Route::middleware('auth')->group(function () {
         ->name('rawat-jalan.buat-surat');
     Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkSuratSehatDuplicate'])->name('rawat-jalan.surat-sehat.check-duplicate');
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
-        ->where('no_rawat', '.*')
-        ->name('rawat-jalan.surat-sehat');
+        ->name('rawat-jalan.surat-sehat')
+        ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
     Route::get('rawat-jalan/surat-sakit', [RawatJalanController::class, 'indexSuratSakit'])->name('rawat-jalan.surat-sakit.index');
     Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextSuratSakitNoSurat'])->name('rawat-jalan.surat-sakit.next-no-surat');
     Route::get('rawat-jalan/surat-sakit/check-duplicate', [RawatJalanController::class, 'checkSuratSakitDuplicate'])->name('rawat-jalan.surat-sakit.check-duplicate');
+    // moved to public routes above
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
-        ->where('no_rawat', '.*')
-        ->name('rawat-jalan.surat-sakit');
+        ->name('rawat-jalan.surat-sakit')
+        ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
 
     // API routes untuk obat
@@ -1218,6 +1590,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MonitoringStatusPcare');
         })->name('monitoring.status');
 
+        Route::get('/data-pendaftaran', function () {
+            return Inertia::render('Pcare/MonitoringPcare');
+        })->name('data-pendaftaran');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -1490,6 +1866,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/penjab', [\App\Http\Controllers\PenjabController::class, 'index'])->name('penjab.index');
     Route::post('/penjab', [\App\Http\Controllers\PenjabController::class, 'store'])->name('penjab.store');
     Route::put('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'update'])->name('penjab.update');
+    Route::delete('/penjab/{kd_pj}', [\App\Http\Controllers\PenjabController::class, 'destroy'])->name('penjab.destroy');
     Route::patch('/penjab/{kd_pj}/toggle-status', [\App\Http\Controllers\PenjabController::class, 'toggleStatus'])->name('penjab.toggle-status');
     Route::get('/penjab/generate-kode', [\App\Http\Controllers\PenjabController::class, 'generateKode'])->name('penjab.generate-kode');
 
@@ -1497,6 +1874,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'index'])->name('poliklinik.index');
     Route::post('/poliklinik', [\App\Http\Controllers\PoliklinikController::class, 'store'])->name('poliklinik.store');
     Route::put('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'update'])->name('poliklinik.update');
+    Route::delete('/poliklinik/{kd_poli}', [\App\Http\Controllers\PoliklinikController::class, 'destroy'])->name('poliklinik.destroy');
     Route::patch('/poliklinik/{kd_poli}/toggle-status', [\App\Http\Controllers\PoliklinikController::class, 'toggleStatus'])->name('poliklinik.toggle-status');
     Route::get('/poliklinik/generate-kode', [\App\Http\Controllers\PoliklinikController::class, 'generateKode'])->name('poliklinik.generate-kode');
 

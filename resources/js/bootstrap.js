@@ -69,17 +69,19 @@ if (token) {
                 const url = new URL(input.url, window.location.href);
                 return url.origin === window.location.origin;
             }
-        } catch (_) {}
+        } catch {}
         return false;
     };
 
     window.fetch = async (input, init = {}) => {
         try {
             if (isSameOrigin(input) && needsCsrf(init.method)) {
-                // Normalisasi headers
                 const headers = new Headers(init.headers || {});
                 if (!headers.has('X-CSRF-TOKEN')) {
                     headers.set('X-CSRF-TOKEN', csrfToken);
+                }
+                if (!headers.has('X-XSRF-TOKEN')) {
+                    headers.set('X-XSRF-TOKEN', csrfToken);
                 }
                 if (!headers.has('X-Requested-With')) {
                     headers.set('X-Requested-With', 'XMLHttpRequest');
@@ -88,14 +90,11 @@ if (token) {
                     headers.set('Accept', 'application/json');
                 }
                 init.headers = headers;
-
-                // Pastikan cookie sesi terkirim
                 if (!init.credentials) {
                     init.credentials = 'same-origin';
                 }
             }
         } catch (e) {
-            // Jangan blokir request bila terjadi error pada wrapper
             console.warn('CSRF fetch wrapper warning:', e?.message || e);
         }
         return origFetch(input, init);
@@ -122,7 +121,7 @@ const refreshCsrfToken = async () => {
             window.axios.defaults.headers.common['X-CSRF-TOKEN'] = t;
         }
         return t;
-    } catch (_) {
+    } catch {
         return '';
     }
 };
@@ -132,7 +131,6 @@ window.axios.interceptors.response.use(
     async (error) => {
         const status = error?.response?.status;
         const is419 = status === 419;
-        const is401 = status === 401;
         
         // Cek CSRF mismatch dari string response atau JSON response
         const responseData = error?.response?.data;
@@ -213,7 +211,7 @@ window.axios.interceptors.response.use(
                     data: config.data,
                 });
             }
-        } catch (e) {
+        } catch {
             // jangan blokir request jika logging gagal
         }
         return config;
@@ -241,7 +239,7 @@ window.axios.interceptors.response.use(
                     preview,
                 });
             }
-        } catch (e) {
+        } catch {
             // abaikan error logging
         }
         return response;
@@ -257,7 +255,7 @@ window.axios.interceptors.response.use(
                     data: error.response?.data,
                 });
             }
-        } catch (e) {
+        } catch {
             // abaikan error logging
         }
         return Promise.reject(error);

@@ -7,7 +7,7 @@ import ActionDropdown from "@/Components/ActionDropdown";
 import Pagination from "@/Components/Pagination";
 import ConfirmationAlert from "@/Components/ConfirmationAlert";
 import Alert from "@/Components/Alert";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Plus, Search, FileText, Calendar, CheckCircle2, XCircle } from "lucide-react";
 
 export default function SipPegawai({ sipPegawai, filters, mode, sipPegawai: sipPegawaiDetail, refs }) {
@@ -22,7 +22,7 @@ export default function SipPegawai({ sipPegawai, filters, mode, sipPegawai: sipP
 		autoClose: false,
 	});
 
-	const { data, setData, post, put, processing, errors, reset } = useForm({
+	const { data, setData, post, put, processing, errors } = useForm({
 		nik: sipPegawaiDetail?.nik || "",
 		jnj_jabatan: sipPegawaiDetail?.jnj_jabatan || "",
 		no_sip: sipPegawaiDetail?.no_sip || "",
