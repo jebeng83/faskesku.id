@@ -33,6 +33,27 @@ class PatientController extends Controller
             $query->search($request->search);
         }
 
+        if ($request->has('alamat') && $request->alamat) {
+            $alamat = $request->alamat;
+            $query->where(function ($q) use ($alamat) {
+                $q->where('alamat', 'like', '%'.$alamat.'%')
+                    ->orWhere('alamatpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kelurahanpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kecamatanpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('kabupatenpj', 'like', '%'.$alamat.'%')
+                    ->orWhere('propinsipj', 'like', '%'.$alamat.'%')
+                    ->orWhereHas('kelurahan', function ($sub) use ($alamat) {
+                        $sub->where('nm_kel', 'like', '%'.$alamat.'%');
+                    })
+                    ->orWhereHas('kecamatan', function ($sub) use ($alamat) {
+                        $sub->where('nm_kec', 'like', '%'.$alamat.'%');
+                    })
+                    ->orWhereHas('kabupaten', function ($sub) use ($alamat) {
+                        $sub->where('nm_kab', 'like', '%'.$alamat.'%');
+                    });
+            });
+        }
+
         // Pagination
         $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten', 'penjab'])
             ->orderBy('no_rkm_medis', 'desc')
@@ -45,7 +66,7 @@ class PatientController extends Controller
 
         return inertia('Patients/Index', [
             'patients' => $patients,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'alamat']),
             'dokters' => $dokters,
             'polikliniks' => $polikliniks,
             'penjabs' => $penjabs,

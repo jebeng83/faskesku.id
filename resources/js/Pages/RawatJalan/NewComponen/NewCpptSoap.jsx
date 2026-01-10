@@ -7,6 +7,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import DataAlergi from '../../../Alergi/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import axios from 'axios';
+import JsBarcode from 'jsbarcode';
 
 export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = '', _onOpenResep = null, onOpenBridging = null }) {
   const page = usePage();
@@ -22,6 +23,8 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   const [editKey, setEditKey] = useState(null);
   const [pegawaiMap, setPegawaiMap] = useState({});
   const now = useMemo(() => new Date(), []);
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const previewDev = !!(searchParams && ['1','true','yes','on'].includes((searchParams.get('preview_dev') || '').toLowerCase()));
   const [formData, setFormData] = useState({
     tgl_perawatan: now.toISOString().slice(0, 10),
     jam_rawat: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
@@ -996,7 +999,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
               Bridging PCare
             </button>
           )}
-          {rujukanBerhasil && (
+          {(rujukanBerhasil || previewDev) && (
             <button
               type="button"
               onClick={async () => {
@@ -1043,13 +1046,12 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                       return `${dd}-${mm}-${yy}`;
                     } catch { return String(d); }
                   };
-                  const noKunjungan = r.noKunjungan || lastNoKunjungan || '';
-                  const kdPPK = r.kdPPK || '';
-                  const nmPPK = r.nmPPK || '';
-                  const kdSubSpesialis = r.kdSubSpesialis || '';
-                  const nmSubSpesialis = r.nmSubSpesialis || '';
-                  const kdSarana = r.kdSarana || '';
-                  const tglEstRujuk = r.tglEstRujuk || '';
+                  let noKunjungan = r.noKunjungan || lastNoKunjungan || '';
+                  let kdPPK = r.kdPPK || '';
+                  let nmPPK = r.nmPPK || '';
+                  let kdSubSpesialis = r.kdSubSpesialis || '';
+                  let nmSubSpesialis = r.nmSubSpesialis || '';
+                  let tglEstRujuk = r.tglEstRujuk || '';
                   let tglValiditasStr = '-';
                   if (tglEstRujuk) {
                     try {
@@ -1068,22 +1070,44 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                       tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
                     } catch { tglValiditasStr = '-'; }
                   }
-                  const namaPasien = r.nm_pasien || pd?.nm_pasien || pd?.nama || '-';
-                  const noKartu = r.noKartu || pd?.noKartu || pd?.no_kartu || '-';
-                  const kdDiag1 = r.kdDiag1 || '';
-                  const nmDiag1 = r.nmDiag1 || '';
-                  const diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : (kdDiag1 || '-');
-                  const umur = r.umur || r.umurdaftar || '';
-                  const umurDisplay = umur ? String(umur) : '-';
-                  const tglLahir = r.tgl_lahir || '';
-                  const tglLahirStr = tglLahir ? fmtIdDateShort(tglLahir) : '-';
-                  const statusPeserta = r.statusPeserta || '1';
-                  const statusDisplay = statusPeserta === '1' ? '1 Utama/Tanggungan' : statusPeserta === '2' ? '2 Istri' : statusPeserta === '3' ? '3 Anak' : `${statusPeserta} Lainnya`;
-                  const jenisKelamin = r.jenisKelamin || pd?.jk || pd?.jenis_kelamin || 'L';
-                  const genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : jenisKelamin === 'P' ? 'P (L / P)' : 'L (L / P)';
-                  const tglDaftar = r.tglDaftar || '';
-                  const tglDaftarStr = tglDaftar ? fmtIdDateShort(tglDaftar) : '-';
-                  const nmDokter = r.nm_dokter || '';
+                  let namaPasien = r.nm_pasien || pd?.nm_pasien || pd?.nama || '-';
+                  let noKartu = r.noKartu || pd?.noKartu || pd?.no_kartu || '-';
+                  let kdDiag1 = r.kdDiag1 || '';
+                  let nmDiag1 = r.nmDiag1 || '';
+                  let diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : (kdDiag1 || '-');
+                  let umur = r.umur || r.umurdaftar || '';
+                  let umurDisplay = umur ? String(umur) : '-';
+                  let statusPeserta = r.statusPeserta || '1';
+                  let statusDisplay = statusPeserta === '1' ? '1 Utama/Tanggungan' : statusPeserta === '2' ? '2 Istri' : statusPeserta === '3' ? '3 Anak' : `${statusPeserta} Lainnya`;
+                  let jenisKelamin = r.jenisKelamin || pd?.jk || pd?.jenis_kelamin || 'L';
+                  let genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : jenisKelamin === 'P' ? 'P (L / P)' : 'L (L / P)';
+                  let tglDaftar = r.tglDaftar || '';
+                  let tglDaftarStr = tglDaftar ? fmtIdDateShort(tglDaftar) : '-';
+                  let nmDokter = r.nm_dokter || '';
+
+                  if (previewDev) {
+                    if (!noKunjungan) noKunjungan = lastNoKunjungan || 'DEV-000001';
+                    if (!kdPPK) kdPPK = '0999';
+                    if (!nmPPK) nmPPK = 'FKTP Contoh Dev';
+                    if (!kdSubSpesialis) kdSubSpesialis = 'INT';
+                    if (!nmSubSpesialis) nmSubSpesialis = 'Penyakit Dalam';
+                    if (!tglEstRujuk) tglEstRujuk = new Date().toISOString().split('T')[0];
+                    if (!kdDiag1) kdDiag1 = 'J11';
+                    if (!nmDiag1) nmDiag1 = 'Influenza';
+                    diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : kdDiag1;
+                    if (!umur) umur = '30 Th';
+                    umurDisplay = String(umur);
+                    if (!statusPeserta) statusPeserta = '1';
+                    statusDisplay = '1 Utama/Tanggungan';
+                    if (!jenisKelamin) jenisKelamin = 'L';
+                    genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : 'P (L / P)';
+                    if (!tglDaftar) tglDaftar = new Date().toISOString().split('T')[0];
+                    tglDaftarStr = fmtIdDateShort(tglDaftar);
+                    if (!nmDokter) nmDokter = 'dr. Demo';
+                    if (!namaPasien || namaPasien === '-') namaPasien = 'Contoh Pasien';
+                    if (!noKartu || noKartu === '-') noKartu = '0000000000000';
+                    if (!kabupatenKota) kabupatenKota = 'Kota Demo';
+                  }
                   const base = typeof window !== 'undefined' && window.location ? window.location.origin || '' : '';
                   const logoCandidates = [ `${base}/img/BPJS_Kesehatan_logo.png`, '/img/BPJS_Kesehatan_logo.png' ];
                   let logoSrc = '/img/BPJS_Kesehatan_logo.png';
@@ -1114,8 +1138,16 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                     win = typeof window !== 'undefined' ? window.open('', 'CetakRujukan', 'width=900,height=1000') : null;
                     if (!win || win.closed || typeof win.closed === 'undefined') { alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.'); return; }
                   } catch (e) { setError('Gagal membuka window cetak: ' + (e.message || e)); return; }
-                  const barcodeSvg = noKunjungan ? `<svg id="barcode"></svg>` : '';
-                  const html = `<!doctype html><html lang="id"><head><meta charset="utf-8"/><title>Surat Rujukan FKTP</title><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script><style>@page{size:A4 portrait;margin:12mm}html,body{height:100%;margin:0;padding:0}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:Arial, Helvetica, sans-serif;color:#111;width:186mm}.wrap{width:100%;margin:0 auto;padding:0}.header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #0d47a1;padding-bottom:10px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:16px}.brand img{height:50px;object-fit:contain;image-rendering:-webkit-optimize-contrast}.brand-title{font-size:30px;font-weight:bold;line-height:1}.brand-title .bpjs{color:#1a237e}.brand-title .kesehatan{color:#2e7d32}.brand-sub{font-size:14px;color:#1a237e;margin-top:2px}.header-right{text-align:right;font-size:12px;color:#444}.header-right div{margin-bottom:4px}.doc-title{font-size:20px;font-weight:bold;text-align:center;margin:12px 0}.rujukan-box{border:2px solid #333;padding:12px;margin:12px 0;background:#fff;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}.rujukan-left{flex:1}.rujukan-right{text-align:center}.rujukan-row{display:flex;gap:8px;margin:6px 0;font-size:13px}.rujukan-label{min-width:140px;font-weight:bold}.rujukan-value{flex:1}#barcode{max-width:120px;height:auto}.pasien-section{margin:16px 0}.pasien-title{font-weight:bold;margin-bottom:8px;font-size:13px}.pasien-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pasien-row{display:flex;gap:8px;margin:4px 0;font-size:13px}.pasien-label{min-width:140px;font-weight:bold}.pasien-value{flex:1}.footer-section{margin-top:20px}.footer-row{display:flex;justify-content:space-between;margin:8px 0;font-size:13px}.footer-left{flex:1}.footer-right{text-align:right}.small{font-size:11px;color:#666}.terimakasih{margin-top:0;margin-bottom:8px;font-size:13px}.footer-row-top{margin-bottom:8px;font-size:13px}.validitas-wrapper{flex:1;text-align:left;display:flex;flex-direction:column}.validitas{font-size:12px;margin-top:0}.ttd-section{margin-top:20px;font-size:13px}.ttd-date{text-align:right}.ttd-name{font-weight:bold;margin-top:0;text-align:right}.ttd-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-top:0}</style></head><body><div class="wrap"><div class="header"><div class="brand">${logoSrc?`<img src="${logoSrc}" alt="BPJS Kesehatan"/>`:''}</div><div class="header-right"><div><strong>Kedeputian Wilayah</strong></div><div>KEDEPUTIAN WILAYAH VI</div><div style="margin-top:8px;"><strong>Kantor Cabang</strong></div><div>SURAKARTA</div></div></div><div class="doc-title">Surat Rujukan FKTP</div><div class="rujukan-box"><div class="rujukan-left"><div class="rujukan-row"><div class="rujukan-label">No. Rujukan</div><div class="rujukan-value">: ${noKunjungan}</div></div><div class="rujukan-row"><div class="rujukan-label">FKTP</div><div class="rujukan-value">: ${fktpDisplay}</div></div>${kabupatenKota?`<div class="rujukan-row"><div class="rujukan-label">Kabupaten / Kota</div><div class="rujukan-value">: ${kabupatenKota}</div></div>`:''}<div class="rujukan-row"><div class="rujukan-label">Kepada Yth. TS Dokter</div><div class="rujukan-value">: ${subSpDisplay}</div></div><div class="rujukan-row"><div class="rujukan-label">Di</div><div class="rujukan-value">: ${diDisplay}</div></div>${kdSarana?`<div class="rujukan-row"><div class="rujukan-label">Sarana</div><div class="rujukan-value">: ${kdSarana}</div></div>`:''}</div><div class="rujukan-right">${barcodeSvg}</div></div><div class="pasien-section"><div class="pasien-title">Mohon pemeriksaan dan penangan lebih lanjut pasien :</div><div class="pasien-grid"><div class="pasien-row"><div class="pasien-label">Nama</div><div class="pasien-value">: ${namaPasien}</div></div><div class="pasien-row"><div class="pasien-label">No. Kartu BPJS</div><div class="pasien-value">: ${noKartu}</div></div><div class="pasien-row"><div class="pasien-label">Diagnosa</div><div class="pasien-value">: ${diagnosaDisplay}</div></div><div class="pasien-row"><div class="pasien-label">Umur</div><div class="pasien-value">: ${umurDisplay}</div></div><div class="pasien-row"><div class="pasien-label">Tahun</div><div class="pasien-value">: ${tglLahirStr}</div></div><div class="pasien-row"><div class="pasien-label">Status</div><div class="pasien-value">: ${statusDisplay}</div></div><div class="pasien-row"><div class="pasien-label">Gender</div><div class="pasien-value">: ${genderDisplay}</div></div><div class="pasien-row"><div class="pasien-label">Catatan</div><div class="pasien-value">:</div></div><div class="pasien-row"><div class="pasien-label">Telah diberikan</div><div class="pasien-value">:</div></div></div></div><div class="footer-section"><div class="ttd-section"><div style="margin-bottom:4px;text-align:right;">Salam sejawat,</div><div class="ttd-date">${tglDaftarStr}</div><div style="height:50px;margin-top:8px;"></div><div class="ttd-row"><div class="validitas-wrapper"><div class="terimakasih">Atas bantuannya, diucapkan terima kasih</div><div class="footer-row-top"><div><strong>Tgl. Rencana Berkunjung</strong>: ${fmtIdDateShort(tglEstRujuk)||'-'}</div><div class="small">Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : ${tglValiditasStr}</div></div></div><div class="ttd-name">${nmDokter||'-'}</div></div></div></div><script>${noKunjungan?`JsBarcode("#barcode","${noKunjungan}",{format:"CODE128",width:2,height:50,displayValue:false});`:''}window.onload=function(){window.print();setTimeout(function(){window.close();},600);};</script></body></html>`;
+                  let barcodeSvg = '';
+                  try {
+                    if (noKunjungan) {
+                      const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                      svgEl.setAttribute('id', 'barcode');
+                      JsBarcode(svgEl, String(noKunjungan), { format: 'CODE128', width: 2, height: 50, margin: 0, displayValue: false });
+                      barcodeSvg = svgEl.outerHTML;
+                    }
+                  } catch {}
+                  const html = `<!doctype html><html lang="id"><head><meta charset="utf-8"/><title>Surat Rujukan FKTP</title><style>@page{size:A4 portrait;margin:12mm}html,body{height:100%;margin:0;padding:0}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-family:Arial, Helvetica, sans-serif;color:#111;width:186mm}.wrap{width:100%;margin:0 auto;padding:0}.header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #0d47a1;padding-bottom:10px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:16px}.brand img{height:50px;object-fit:contain}.brand-title{font-size:24px;font-weight:bold;line-height:1}.brand-sub{font-size:12px;color:#1a237e;margin-top:2px}.header-right{text-align:right;font-size:12px;color:#444}.header-right div{margin-bottom:2px}.doc-title{font-size:18px;font-weight:bold;text-align:center;margin:10px 0}.rujukan-box{border:2px solid #333;padding:10px;margin:10px 0;background:#fff;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}.rujukan-left{flex:1}.rujukan-right{text-align:center}.rujukan-row{display:flex;gap:8px;margin:4px 0;font-size:13px}.rujukan-label{min-width:140px;font-weight:bold}.rujukan-value{flex:1}#barcode{max-width:160px;height:auto}.line{height:1px;background:#333;margin:12px 0}.section-title{font-weight:bold;text-align:center;margin:6px 0}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row{display:flex;gap:8px;margin:4px 0;font-size:13px}.label{min-width:140px;font-weight:bold}.value{flex:1}.signature{display:flex;justify-content:space-between;align-items:flex-start;margin-top:20px}.signature .left{flex:1}.signature .right{text-align:right}.small{font-size:11px;color:#666}.box{border:2px solid #333;padding:10px;margin-top:14px}.checkbox-row{display:flex;align-items:center;gap:10px;margin:6px 0}.checkbox{width:14px;height:14px;border:1.5px solid #333;display:inline-block}.spacer{height:10px}</style></head><body><div class="wrap"><div class="header"><div class="brand"><img src="${logoSrc}" alt="BPJS"/><div><div class="brand-title">BPJS Kesehatan</div><div class="brand-sub">Badan Penyelenggara Jaminan Sosial</div></div></div><div class="header-right"><div>Kedeputian Wilayah VI</div><div>Kantor Cabang</div></div></div><div class="doc-title">Surat Rujukan FKTP</div><div class="rujukan-box"><div class="rujukan-left"><div class="rujukan-row"><div class="rujukan-label">No. Rujukan</div><div class="rujukan-value">: ${noKunjungan || '-'}</div></div><div class="rujukan-row"><div class="rujukan-label">FKTP</div><div class="rujukan-value">: ${fktpDisplay}</div></div>${kabupatenKota ? `<div class="rujukan-row"><div class="rujukan-label">Kabupaten / Kota</div><div class="rujukan-value">: ${kabupatenKota}</div></div>` : ''}</div><div class="rujukan-right">${barcodeSvg}</div></div><div class="grid-2"><div class="row"><div class="label">Kepada Yth. TS Dokter</div><div class="value">: ${subSpDisplay}</div></div><div class="row"><div class="label">Di</div><div class="value">: ${diDisplay}</div></div></div><div class="line"></div><div class="section-title">Mohon pemeriksaan dan penangan lebih lanjut pasien :</div><div class="grid-2"><div><div class="row"><div class="label">Nama</div><div class="value">: ${namaPasien}</div></div><div class="row"><div class="label">No. Kartu BPJS</div><div class="value">: ${noKartu}</div></div><div class="row"><div class="label">Diagnosa</div><div class="value">: ${diagnosaDisplay}</div></div><div class="row"><div class="label">Catatan</div><div class="value">: </div></div><div class="row"><div class="label">Telah diberikan</div><div class="value">: </div></div></div><div><div class="row"><div class="label">Umur</div><div class="value">: ${umurDisplay}</div></div><div class="row"><div class="label">Tahun</div><div class="value">: ${new Date().getFullYear()}</div></div><div class="row"><div class="label">Tanggal</div><div class="value">: ${tglDaftarStr}</div></div><div class="row"><div class="label">Status</div><div class="value">: ${statusDisplay}</div></div><div class="row"><div class="label">Jenis Kelamin</div><div class="value">: ${genderDisplay}</div></div></div></div><div class="spacer"></div><div class="row"><div class="value">Atas bantuannya, diucapkan terima kasih</div><div class="value" style="text-align:right">Salam sejawat,</div></div><div class="signature"><div class="left"><div class="small">Tgl. Rencana Berkunjung : ${tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-'}</div><div class="small">Jadwal Praktek : ${r.jadwalParsed || r.jadwal || ''}</div><div class="small">Surat rujukan berlaku 1 kali kunjungan, berlaku sampai dengan : ${tglValiditasStr}</div></div><div class="right"><div class="small">${new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' })}</div><div style="margin-top:40px;">${nmDokter || ''}</div></div></div><div class="box"><div class="section-title">SURAT RUJUKAN BALIK</div><div class="row"><div class="label">Teman sejawat Yth.</div><div class="value"></div></div><div class="row"><div class="label">Mohon kontrol selanjutnya penderita :</div><div class="value"></div></div><div class="row"><div class="label">Nama</div><div class="value">: ${namaPasien}</div></div><div class="row"><div class="label">Diagnosa</div><div class="value">: </div></div><div class="row"><div class="label">Terapi</div><div class="value">: ........................................................</div></div><div class="row"><div class="label">Tindak lanjut yang dianjurkan</div><div class="value"></div></div><div class="checkbox-row"><span class="checkbox"></span><span>Pengobatan dengan obat-obatan :</span></div><div class="checkbox-row"><span class="checkbox"></span><span>Perlu rawat inap</span></div><div class="checkbox-row"><span class="checkbox"></span><span>Konsultasi selesai</span></div><div class="checkbox-row"><span class="checkbox"></span><span>Kontrol kembali ke RS tanggal : .......................</span></div><div class="checkbox-row"><span class="checkbox"></span><span>Lain-lain : .................................................</span></div><div class="row" style="justify-content:flex-end"><div style="text-align:center"><div>Dokter RS,</div><div style="margin-top:50px">(........................................)</div></div></div></div></div><script>setTimeout(function(){window.focus();window.print();},400);</script></body></html>`;
                   try { win.document.write(html); win.document.close(); } catch (e) { setError('Gagal menulis konten cetak: ' + (e.message || e)); if (win && !win.closed) { win.close(); } }
                 } catch (e) { setError(`Gagal mencetak rujukan: ${e.message || e}`); }
               }}
