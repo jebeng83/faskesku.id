@@ -34,24 +34,33 @@ class PatientController extends Controller
         }
 
         if ($request->has('alamat') && $request->alamat) {
-            $alamat = $request->alamat;
-            $query->where(function ($q) use ($alamat) {
-                $q->where('alamat', 'like', '%'.$alamat.'%')
-                    ->orWhere('alamatpj', 'like', '%'.$alamat.'%')
-                    ->orWhere('kelurahanpj', 'like', '%'.$alamat.'%')
-                    ->orWhere('kecamatanpj', 'like', '%'.$alamat.'%')
-                    ->orWhere('kabupatenpj', 'like', '%'.$alamat.'%')
-                    ->orWhere('propinsipj', 'like', '%'.$alamat.'%')
-                    ->orWhereHas('kelurahan', function ($sub) use ($alamat) {
-                        $sub->where('nm_kel', 'like', '%'.$alamat.'%');
-                    })
-                    ->orWhereHas('kecamatan', function ($sub) use ($alamat) {
-                        $sub->where('nm_kec', 'like', '%'.$alamat.'%');
-                    })
-                    ->orWhereHas('kabupaten', function ($sub) use ($alamat) {
-                        $sub->where('nm_kab', 'like', '%'.$alamat.'%');
-                    });
-            });
+            $alamat = trim((string) $request->alamat);
+            $driver = Schema::getConnection()->getDriverName();
+            if ($driver === 'mysql') {
+                $tokens = array_values(array_filter(preg_split('/\s+/', $alamat), function ($t) {
+                    return strlen($t) >= 2;
+                }));
+                $booleanQuery = implode(' ', array_map(function ($t) {
+                    return '+'.$t.'*';
+                }, $tokens));
+                if ($booleanQuery === '') {
+                    $booleanQuery = '+'.$alamat.'*';
+                }
+                $query->whereRaw(
+                    'MATCH(alamat, alamatpj, kelurahanpj, kecamatanpj, kabupatenpj) AGAINST (? IN BOOLEAN MODE)',
+                    [$booleanQuery]
+                );
+            } else {
+                $query->where(function ($q) use ($alamat) {
+                    $like = '%'.$alamat.'%';
+                    $q->where('alamat', 'like', $like)
+                        ->orWhere('alamatpj', 'like', $like)
+                        ->orWhere('kelurahanpj', 'like', $like)
+                        ->orWhere('kecamatanpj', 'like', $like)
+                        ->orWhere('kabupatenpj', 'like', $like)
+                        ->orWhere('propinsipj', 'like', $like);
+                });
+            }
         }
 
         // Pagination

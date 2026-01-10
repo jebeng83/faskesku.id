@@ -650,13 +650,11 @@ export default function Registration({
                 ? data.filter((p) => {
                       const addr = [
                           p?.alamat,
-                          p?.kelurahan?.nm_kel,
-                          p?.kecamatan?.nm_kec,
-                          p?.kabupaten?.nm_kab,
                           p?.alamatpj,
                           p?.kelurahanpj,
                           p?.kecamatanpj,
                           p?.kabupatenpj,
+                          p?.propinsipj,
                       ]
                           .filter(Boolean)
                           .join(", ")
