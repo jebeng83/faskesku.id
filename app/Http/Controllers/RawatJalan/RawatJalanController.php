@@ -1795,10 +1795,6 @@ class RawatJalanController extends Controller
 
                 if ($existing) {
                     $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
-<<<<<<< HEAD
-
-=======
->>>>>>> 28d88caf (surat sehat - sakit buttom)
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         'tanggalawal' => $message,
                     ]);
@@ -1837,11 +1833,8 @@ class RawatJalanController extends Controller
 
                     try {
                         DB::table('suratsakitpihak2')->insert($row);
-<<<<<<< HEAD
-=======
                         // Hapus dari tabel lain jika ada (should not happen in store, but safety check)
                         DB::table('suratsakit')->where('no_surat', $noSurat)->delete();
->>>>>>> 28d88caf (surat sehat - sakit buttom)
 
                         return;
                     } catch (\Illuminate\Database\QueryException $e) {
@@ -1892,10 +1885,6 @@ class RawatJalanController extends Controller
 
                 if ($existing) {
                     $message = "Tidak bisa simpan. Surat sakit untuk No. Rawat {$validated['no_rawat']} pada tanggal {$existing->tanggalawal} sudah ada (No Surat: {$existing->no_surat}).";
-<<<<<<< HEAD
-
-=======
->>>>>>> 28d88caf (surat sehat - sakit buttom)
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         'tanggalawal' => $message,
                     ]);
@@ -1926,11 +1915,8 @@ class RawatJalanController extends Controller
 
                     try {
                         DB::table('suratsakit')->insert($row);
-<<<<<<< HEAD
-=======
                         // Hapus dari tabel lain jika ada
                         DB::table('suratsakitpihak2')->where('no_surat', $noSurat)->delete();
->>>>>>> 28d88caf (surat sehat - sakit buttom)
 
                         return;
                     } catch (\Illuminate\Database\QueryException $e) {

@@ -123,7 +123,7 @@ storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::validasiSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2087
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
 * @route '/validasi/surat/{type}'
 */
 export const validasiSurat = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ validasiSurat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::validasiSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2087
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
 * @route '/validasi/surat/{type}'
 */
 validasiSurat.url = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -165,7 +165,7 @@ validasiSurat.url = (args: { type: string | number } | [type: string | number ] 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::validasiSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2087
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
 * @route '/validasi/surat/{type}'
 */
 validasiSurat.get = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -175,7 +175,7 @@ validasiSurat.get = (args: { type: string | number } | [type: string | number ] 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::validasiSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2087
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2037
 * @route '/validasi/surat/{type}'
 */
 validasiSurat.head = (args: { type: string | number } | [type: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -781,15 +781,7 @@ getStatistics.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1331
 * @route '/rawat-jalan/surat-sehat'
 */
 export const indexSuratSehat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -804,15 +796,7 @@ indexSuratSehat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1331
 * @route '/rawat-jalan/surat-sehat'
 */
 indexSuratSehat.url = (options?: RouteQueryOptions) => {
@@ -821,15 +805,7 @@ indexSuratSehat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1331
 * @route '/rawat-jalan/surat-sehat'
 */
 indexSuratSehat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -839,15 +815,7 @@ indexSuratSehat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1240
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1306
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1328
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1331
 * @route '/rawat-jalan/surat-sehat'
 */
 indexSuratSehat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -856,79 +824,8 @@ indexSuratSehat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-<<<<<<< HEAD
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSehatDuplicate
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::buatSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1209
-* @route '/rawat-jalan/buat-surat/{no_rawat}'
-*/
-export const buatSurat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: buatSurat.url(args, options),
-    method: 'get',
-})
-
-buatSurat.definition = {
-    methods: ["get","head"],
-    url: '/rawat-jalan/buat-surat/{no_rawat}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::buatSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1209
-* @route '/rawat-jalan/buat-surat/{no_rawat}'
-*/
-buatSurat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { no_rawat: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            no_rawat: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
-
-    return buatSurat.definition.url
-            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::buatSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1209
-* @route '/rawat-jalan/buat-surat/{no_rawat}'
-*/
-buatSurat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: buatSurat.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::buatSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1209
-* @route '/rawat-jalan/buat-surat/{no_rawat}'
-*/
-buatSurat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: buatSurat.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSehatDuplicate
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1401
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 export const checkSuratSehatDuplicate = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -943,15 +840,7 @@ checkSuratSehatDuplicate.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSehatDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1401
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkSuratSehatDuplicate.url = (options?: RouteQueryOptions) => {
@@ -960,15 +849,7 @@ checkSuratSehatDuplicate.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSehatDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1401
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkSuratSehatDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -978,15 +859,7 @@ checkSuratSehatDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'g
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSehatDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1310
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1429
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1451
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1401
 * @route '/rawat-jalan/surat-sehat/check-duplicate'
 */
 checkSuratSehatDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -996,15 +869,7 @@ checkSuratSehatDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1208
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1274
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1290
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1293
 * @route '/rawat-jalan/surat-sehat/{no_rawat}'
 */
 export const suratSehat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1019,15 +884,7 @@ suratSehat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1208
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1274
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1290
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1293
 * @route '/rawat-jalan/surat-sehat/{no_rawat}'
 */
 suratSehat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1054,15 +911,7 @@ suratSehat.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1208
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1274
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1290
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1293
 * @route '/rawat-jalan/surat-sehat/{no_rawat}'
 */
 suratSehat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1072,15 +921,7 @@ suratSehat.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1208
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1274
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1290
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1293
 * @route '/rawat-jalan/surat-sehat/{no_rawat}'
 */
 suratSehat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1090,15 +931,7 @@ suratSehat.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1461
 * @route '/rawat-jalan/surat-sehat'
 */
 export const storeSuratSehat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1113,15 +946,7 @@ storeSuratSehat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1461
 * @route '/rawat-jalan/surat-sehat'
 */
 storeSuratSehat.url = (options?: RouteQueryOptions) => {
@@ -1130,15 +955,7 @@ storeSuratSehat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSehat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1370
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1489
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1511
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1461
 * @route '/rawat-jalan/surat-sehat'
 */
 storeSuratSehat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1148,15 +965,7 @@ storeSuratSehat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1617
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1646
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1596
 * @route '/rawat-jalan/surat-sakit'
 */
 export const indexSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1171,15 +980,7 @@ indexSuratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1617
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1646
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1596
 * @route '/rawat-jalan/surat-sakit'
 */
 indexSuratSakit.url = (options?: RouteQueryOptions) => {
@@ -1188,15 +989,7 @@ indexSuratSakit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1617
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1646
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1596
 * @route '/rawat-jalan/surat-sakit'
 */
 indexSuratSakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1206,15 +999,7 @@ indexSuratSakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::indexSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1450
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1617
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1646
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1596
 * @route '/rawat-jalan/surat-sakit'
 */
 indexSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1224,15 +1009,7 @@ indexSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1711
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1740
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1690
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 export const nextSuratSakitNoSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1247,15 +1024,7 @@ nextSuratSakitNoSurat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1711
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1740
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1690
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.url = (options?: RouteQueryOptions) => {
@@ -1264,15 +1033,7 @@ nextSuratSakitNoSurat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1711
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1740
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1690
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1282,15 +1043,7 @@ nextSuratSakitNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextSuratSakitNoSurat
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1544
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1711
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1740
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1690
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextSuratSakitNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1300,15 +1053,7 @@ nextSuratSakitNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'hea
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1722
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1751
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1701
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 export const checkSuratSakitDuplicate = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1323,15 +1068,7 @@ checkSuratSakitDuplicate.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1722
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1751
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1701
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.url = (options?: RouteQueryOptions) => {
@@ -1340,15 +1077,7 @@ checkSuratSakitDuplicate.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1722
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1751
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1701
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1358,15 +1087,7 @@ checkSuratSakitDuplicate.get = (options?: RouteQueryOptions): RouteDefinition<'g
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::checkSuratSakitDuplicate
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1722
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1751
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1701
 * @route '/rawat-jalan/surat-sakit/check-duplicate'
 */
 checkSuratSakitDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1376,15 +1097,7 @@ checkSuratSakitDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1424
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1591
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1613
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1563
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 export const suratSakit = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1399,15 +1112,7 @@ suratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1424
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1591
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1613
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1563
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1434,15 +1139,7 @@ suratSakit.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1424
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1591
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1613
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1563
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1452,15 +1149,7 @@ suratSakit.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1424
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1591
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1613
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1563
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1470,15 +1159,7 @@ suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1777
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1806
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1756
 * @route '/rawat-jalan/surat-sakit'
 */
 export const storeSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1493,15 +1174,7 @@ storeSuratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1777
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1806
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1756
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.url = (options?: RouteQueryOptions) => {
@@ -1510,15 +1183,7 @@ storeSuratSakit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratSakit
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1610
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1777
->>>>>>> 28d88caf (surat sehat - sakit buttom)
-=======
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1806
->>>>>>> c30c174a (qrcode validasi surat)
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1756
 * @route '/rawat-jalan/surat-sakit'
 */
 storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1842,10 +1507,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-<<<<<<< HEAD
-const RawatJalanController = { searchPenyakit, getDiagnosaPasien, storeDiagnosaPasien, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, indexSuratSehat, checkSuratSehatDuplicate, suratSehat, storeSuratSehat, indexSuratSakit, nextSuratSakitNoSurat, checkSuratSakitDuplicate, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
-=======
-const RawatJalanController = { searchPenyakit, getDiagnosaPasien, storeDiagnosaPasien, validasiSurat, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, indexSuratSehat, buatSurat, checkSuratSehatDuplicate, suratSehat, storeSuratSehat, indexSuratSakit, nextSuratSakitNoSurat, checkSuratSakitDuplicate, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
->>>>>>> c30c174a (qrcode validasi surat)
+const RawatJalanController = { searchPenyakit, getDiagnosaPasien, storeDiagnosaPasien, validasiSurat, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, indexSuratSehat, checkSuratSehatDuplicate, suratSehat, storeSuratSehat, indexSuratSakit, nextSuratSakitNoSurat, checkSuratSakitDuplicate, suratSakit, storeSuratSakit, create, store, show, edit, update, destroy }
 
 export default RawatJalanController

@@ -1,22 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1072
-=======
-* @see routes/web.php:1079
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1084
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1089
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1093
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1090
 * @route '/farmasi/farmasi/cetak/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,23 +14,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1072
-=======
-* @see routes/web.php:1079
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1084
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1089
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1093
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1090
 * @route '/farmasi/farmasi/cetak/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -54,23 +22,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1072
-=======
-* @see routes/web.php:1079
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1084
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1089
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1093
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1090
 * @route '/farmasi/farmasi/cetak/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,23 +31,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1072
-=======
-* @see routes/web.php:1079
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1084
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1089
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1093
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1090
 * @route '/farmasi/farmasi/cetak/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

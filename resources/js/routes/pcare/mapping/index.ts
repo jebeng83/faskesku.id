@@ -3,23 +3,7 @@ import poli16996d from './poli'
 import dokter1a4744 from './dokter'
 import obatE6960e from './obat'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1174
-=======
-* @see routes/web.php:1181
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1186
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1191
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1195
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1192
 * @route '/pcare/mapping/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,23 +17,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1174
-=======
-* @see routes/web.php:1181
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1186
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1191
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1195
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1192
 * @route '/pcare/mapping/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -57,23 +25,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1174
-=======
-* @see routes/web.php:1181
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1186
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1191
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1195
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1192
 * @route '/pcare/mapping/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -82,23 +34,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1174
-=======
-* @see routes/web.php:1181
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1186
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1191
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1195
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1192
 * @route '/pcare/mapping/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -107,23 +43,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1179
-=======
-* @see routes/web.php:1186
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1191
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1196
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1200
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1197
 * @route '/pcare/mapping/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -137,23 +57,7 @@ dokter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1179
-=======
-* @see routes/web.php:1186
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1191
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1196
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1200
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1197
 * @route '/pcare/mapping/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -161,23 +65,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1179
-=======
-* @see routes/web.php:1186
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1191
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1196
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1200
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1197
 * @route '/pcare/mapping/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -186,23 +74,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1179
-=======
-* @see routes/web.php:1186
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1191
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1196
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1200
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1197
 * @route '/pcare/mapping/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -211,23 +83,7 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1184
-=======
-* @see routes/web.php:1191
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1196
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1201
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1205
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1202
 * @route '/pcare/mapping/obat'
 */
 export const obat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -241,23 +97,7 @@ obat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1184
-=======
-* @see routes/web.php:1191
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1196
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1201
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1205
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1202
 * @route '/pcare/mapping/obat'
 */
 obat.url = (options?: RouteQueryOptions) => {
@@ -265,23 +105,7 @@ obat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1184
-=======
-* @see routes/web.php:1191
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1196
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1201
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1205
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1202
 * @route '/pcare/mapping/obat'
 */
 obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -290,23 +114,7 @@ obat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1184
-=======
-* @see routes/web.php:1191
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1196
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1201
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1205
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1202
 * @route '/pcare/mapping/obat'
 */
 obat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

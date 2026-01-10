@@ -46,67 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-<<<<<<< HEAD
-* @see routes/web.php:356
-=======
-* @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:432
-* @route '/laporan/stats'
-*/
-export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: stats.url(options),
-    method: 'get',
-})
-
-stats.definition = {
-    methods: ["get","head"],
-    url: '/laporan/stats',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:432
-* @route '/laporan/stats'
-*/
-stats.url = (options?: RouteQueryOptions) => {
-    return stats.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:432
-* @route '/laporan/stats'
-*/
-stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: stats.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\KunjunganController::stats
-* @see app/Http/Controllers/KunjunganController.php:432
-* @route '/laporan/stats'
-*/
-stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: stats.url(options),
-    method: 'head',
-})
-
-/**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:360
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:365
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:370
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
 * @see routes/web.php:374
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
 * @route '/laporan/rl-kemenkes'
 */
 export const rlKemenkes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({

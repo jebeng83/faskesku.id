@@ -1,22 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1505
-=======
-* @see routes/web.php:1512
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1517
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1522
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1526
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1523
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 export const encounter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,23 +14,7 @@ encounter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1505
-=======
-* @see routes/web.php:1512
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1517
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1522
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1526
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1523
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.url = (options?: RouteQueryOptions) => {
@@ -54,23 +22,7 @@ encounter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1505
-=======
-* @see routes/web.php:1512
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1517
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1522
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1526
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1523
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,23 +31,7 @@ encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1505
-=======
-* @see routes/web.php:1512
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1517
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1522
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1526
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1523
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

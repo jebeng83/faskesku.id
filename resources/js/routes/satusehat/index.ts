@@ -2,23 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import prerequisites from './prerequisites'
 import interoperabilitas from './interoperabilitas'
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1481
-=======
-* @see routes/web.php:1488
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1493
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1498
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1502
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1499
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,23 +16,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1481
-=======
-* @see routes/web.php:1488
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1493
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1498
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1502
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1499
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -56,23 +24,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1481
-=======
-* @see routes/web.php:1488
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1493
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1498
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1502
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1499
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -81,23 +33,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-* @see routes/web.php:1481
-=======
-* @see routes/web.php:1488
->>>>>>> c30c174a (qrcode validasi surat)
-=======
-* @see routes/web.php:1493
->>>>>>> 1d92fd36 (Frekuensi Penyakit Ralan-fix)
-=======
-* @see routes/web.php:1498
->>>>>>> 7ff06318 (Frekuensi Penyakit Ranap-fix)
-=======
-* @see routes/web.php:1502
->>>>>>> bdf57514 (surveilans Penyakit Ralan)
+* @see routes/web.php:1499
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
