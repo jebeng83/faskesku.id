@@ -47,8 +47,6 @@ export default function SuratSehatList({ suratSehat, filters }) {
         applyFilters();
     }, [applyFilters, endDate, startDate]);
 
-<<<<<<< HEAD
-=======
     // Handle tab change separately to reset pagination/filters if needed or just switch context
     const handleTabChange = (newTab) => {
         if (newTab === currentTab) return;
@@ -61,7 +59,7 @@ export default function SuratSehatList({ suratSehat, filters }) {
         if (!endDate) setEndDate(defaultDate);
     };
 
->>>>>>> e5c6ba05 (surat sehat perbaikan tombol)
+
     const clearFilters = () => {
         setSearch("");
         setStartDate("");
@@ -69,8 +67,6 @@ export default function SuratSehatList({ suratSehat, filters }) {
         router.get(route("rawat-jalan.surat-sehat.index"), {}, { replace: true });
     };
 
-<<<<<<< HEAD
-=======
     const renderSuratSehatTable = () => (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -292,7 +288,6 @@ export default function SuratSehatList({ suratSehat, filters }) {
         </div>
     );
 
->>>>>>> e5c6ba05 (surat sehat perbaikan tombol)
     return (
         <SidebarRalan>
             <Head title="Surat Sehat" />
