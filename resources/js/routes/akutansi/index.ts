@@ -18,6 +18,10 @@ import cashflow from './cashflow'
 import billing from './billing'
 import notaJalan from './nota-jalan'
 import kasirRalan from './kasir-ralan'
+import closingKasir from './closing-kasir'
+import rekapUangPershift from './rekap-uang-pershift'
+import pemasukanLain from './pemasukan-lain'
+import pengeluaranHarian from './pengeluaran-harian'
 /**
 * @see \App\Http\Controllers\Akutansi\AkutansiController::invoice
 * @see app/Http/Controllers/Akutansi/AkutansiController.php:17
@@ -101,6 +105,10 @@ const akutansi = {
     billing: Object.assign(billing, billing),
     notaJalan: Object.assign(notaJalan, notaJalan),
     kasirRalan: Object.assign(kasirRalan, kasirRalan),
+    closingKasir: Object.assign(closingKasir, closingKasir),
+    rekapUangPershift: Object.assign(rekapUangPershift, rekapUangPershift),
+    pemasukanLain: Object.assign(pemasukanLain, pemasukanLain),
+    pengeluaranHarian: Object.assign(pengeluaranHarian, pengeluaranHarian),
 }
 
 export default akutansi

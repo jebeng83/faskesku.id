@@ -7,9 +7,12 @@ use App\Http\Controllers\Akutansi\BillingController;
 use App\Http\Controllers\Akutansi\BukuBesarController;
 use App\Http\Controllers\Akutansi\CashFlowController;
 use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\ClosingKasirController;
 use App\Http\Controllers\Akutansi\RekeningController;
 use App\Http\Controllers\Akutansi\SetAkunController;
 use App\Http\Controllers\Akutansi\SetoranBankController;
+use App\Http\Controllers\Akutansi\PemasukanLainController;
+use App\Http\Controllers\Akutansi\KategoriPemasukanLainController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\DoctorController;
@@ -930,8 +933,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/kasir-ralan', [BillingController::class, 'kasirRalanPage'])
         ->name('akutansi.kasir-ralan.page');
 
+    // Akutansi: Closing Kasir page (Inertia)
+    Route::get('/akutansi/closing-kasir', function () {
+        return Inertia::render('Akutansi/ClosingKasir');
+    })->name('akutansi.closing-kasir.page');
+
+    // Akutansi: Rekap Uang per Shift page (Inertia)
+    Route::get('/akutansi/rekap-uang-pershift', function () {
+        return Inertia::render('Akutansi/RekapUangPershift');
+    })->name('akutansi.rekap-uang-pershift.page');
+
+    // Akutansi: Pemasukan Lain (Payment Point) page (Inertia)
+    Route::get('/akutansi/pemasukan-lain', function () {
+        return Inertia::render('Akutansi/PemasukanLain');
+    })->name('akutansi.pemasukan-lain.page');
+
+    // Akutansi: Pengeluaran Harian page (Inertia)
+    Route::get('/akutansi/pengeluaran-harian', function () {
+        return Inertia::render('Akutansi/PengeluaranHarian');
+    })->name('akutansi.pengeluaran-harian.page');
+
     // Akutansi API: Rekening CRUD
     Route::prefix('api/akutansi')->group(function () {
+        // Akutansi API: Closing Kasir (Shift Configuration)
+        Route::get('/closing-kasir', [ClosingKasirController::class, 'index'])->name('api.akutansi.closing-kasir.index');
+        Route::post('/closing-kasir', [ClosingKasirController::class, 'store'])->name('api.akutansi.closing-kasir.store');
+        Route::put('/closing-kasir/{shift}', [ClosingKasirController::class, 'update'])->name('api.akutansi.closing-kasir.update');
+        Route::delete('/closing-kasir/{shift}', [ClosingKasirController::class, 'destroy'])->name('api.akutansi.closing-kasir.destroy');
         Route::get('/rekening', [RekeningController::class, 'index'])->name('api.akutansi.rekening.index');
         Route::post('/rekening', [RekeningController::class, 'store'])->name('api.akutansi.rekening.store');
         Route::put('/rekening/{kd_rek}', [RekeningController::class, 'update'])->name('api.akutansi.rekening.update');
@@ -992,6 +1020,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/akun-piutang', [AkunPiutangController::class, 'store'])->name('api.akutansi.akun-piutang.store');
         Route::put('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'update'])->name('api.akutansi.akun-piutang.update');
         Route::delete('/akun-piutang/{nama_bayar}', [AkunPiutangController::class, 'destroy'])->name('api.akutansi.akun-piutang.destroy');
+
+        Route::get('/pemasukan-lain', [PemasukanLainController::class, 'index'])->name('api.akutansi.pemasukan-lain.index');
+        Route::get('/pemasukan-lain/describe', [PemasukanLainController::class, 'describe'])->name('api.akutansi.pemasukan-lain.describe');
+        Route::post('/pemasukan-lain', [PemasukanLainController::class, 'store'])->name('api.akutansi.pemasukan-lain.store');
+        Route::put('/pemasukan-lain/{no_masuk}', [PemasukanLainController::class, 'update'])->name('api.akutansi.pemasukan-lain.update');
+        Route::delete('/pemasukan-lain/{no_masuk}', [PemasukanLainController::class, 'destroy'])->name('api.akutansi.pemasukan-lain.destroy');
+        Route::get('/pemasukan-lain/generate-no', [PemasukanLainController::class, 'generateNoMasuk'])->name('api.akutansi.pemasukan-lain.generate-no');
+
+        Route::get('/kategori-pemasukan-lain', [KategoriPemasukanLainController::class, 'index'])->name('api.akutansi.kategori-pemasukan-lain.index');
+        Route::post('/kategori-pemasukan-lain', [KategoriPemasukanLainController::class, 'store'])->name('api.akutansi.kategori-pemasukan-lain.store');
+        Route::get('/kategori-pemasukan-lain/generate-kode', [KategoriPemasukanLainController::class, 'generateKode'])->name('api.akutansi.kategori-pemasukan-lain.generate-kode');
 
         // Setoran Bank: stage & post via single posting service
         Route::post('/setoran-bank/stage', [JurnalController::class, 'setoranBankStage'])->name('api.akutansi.setoran-bank.stage');

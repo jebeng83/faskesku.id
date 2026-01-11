@@ -11,6 +11,7 @@ use App\Models\Akutansi\SetAkunRanap;
 use App\Models\Akutansi\SetAkunRanap2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Pengaturan Rekening / COA Mapping Controller
@@ -29,11 +30,11 @@ class SetAkunController extends Controller
      */
     public function index(Request $request)
     {
-        $umum = DB::table('set_akun')->first();
-        $umum2 = DB::table('set_akun2')->first();
-        $ralan = DB::table('set_akun_ralan')->first();
-        $ranap = DB::table('set_akun_ranap')->first();
-        $ranap2 = DB::table('set_akun_ranap2')->first();
+        $umum = Schema::hasTable('set_akun') ? DB::table('set_akun')->first() : null;
+        $umum2 = Schema::hasTable('set_akun2') ? DB::table('set_akun2')->first() : null;
+        $ralan = Schema::hasTable('set_akun_ralan') ? DB::table('set_akun_ralan')->first() : null;
+        $ranap = Schema::hasTable('set_akun_ranap') ? DB::table('set_akun_ranap')->first() : null;
+        $ranap2 = Schema::hasTable('set_akun_ranap2') ? DB::table('set_akun_ranap2')->first() : null;
 
         $payload = [
             'umum' => $umum,
@@ -46,18 +47,21 @@ class SetAkunController extends Controller
         // Opsi: sertakan daftar rekening jika diminta
         if ($request->boolean('with_rekening')) {
             $q = trim((string) $request->query('q'));
-            $rekening = Rekening::query()
-                ->when($q !== '', function ($query) use ($q) {
-                    $query->where(function ($sub) use ($q) {
-                        $sub->where('kd_rek', 'like', "%$q%")
-                            ->orWhere('nm_rek', 'like', "%$q%")
-                            ->orWhere('tipe', 'like', "%$q%")
-                            ->orWhere('level', 'like', "%$q%");
-                    });
-                })
-                ->orderBy('kd_rek')
-                ->limit(200)
-                ->get(['kd_rek', 'nm_rek', 'tipe', 'level']);
+            $rekening = [];
+            if (Schema::hasTable('rekening')) {
+                $rekening = Rekening::query()
+                    ->when($q !== '', function ($query) use ($q) {
+                        $query->where(function ($sub) use ($q) {
+                            $sub->where('kd_rek', 'like', "%$q%")
+                                ->orWhere('nm_rek', 'like', "%$q%")
+                                ->orWhere('tipe', 'like', "%$q%")
+                                ->orWhere('level', 'like', "%$q%");
+                        });
+                    })
+                    ->orderBy('kd_rek')
+                    ->limit(200)
+                    ->get(['kd_rek', 'nm_rek', 'tipe', 'level']);
+            }
 
             $payload['rekening'] = $rekening;
         }
@@ -153,7 +157,7 @@ class SetAkunController extends Controller
     public function rekening(Request $request)
     {
         $q = trim((string) $request->query('q'));
-        $limit = min(max((int) $request->query('limit', 50), 1), 200);
+        $limit = min(max((int) $request->query('limit', 50), 1), 300);
 
         $items = Rekening::query()
             ->when($q !== '', function ($query) use ($q) {

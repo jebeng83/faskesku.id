@@ -723,31 +723,34 @@ export default function Dashboard() {
         });
         return sorted.slice(0, 10).map(({ __doc, __shortage, ...rest }) => rest);
     }, [lowStockData, fastMovingFilterSet, fastMovingDailyRate]);
+    const reqIdRef = useRef(0);
     useEffect(() => {
         let active = true;
+        const id = reqIdRef.current + 1;
+        reqIdRef.current = id;
         (async () => {
             try {
                 const url = `/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}`;
                 const res = await axios.get(url, { headers: { Accept: "application/json" }, withCredentials: true });
                 const json = res.data;
                 const arr = Array.isArray(json?.data) ? json.data : [];
-                if (active) setFastMovingData(arr);
+                if (active && id === reqIdRef.current) setFastMovingData(arr);
             } catch (_) {
-                if (active) setFastMovingData([]);
+                if (active && id === reqIdRef.current) setFastMovingData([]);
             }
             try {
                 const urlFM100 = `/farmasi/obat-fast-moving/data?period=${encodeURIComponent(fastMovingPeriod)}&limit=100`;
                 const resFM100 = await axios.get(urlFM100, { headers: { Accept: "application/json" }, withCredentials: true });
                 const jsonFM100 = resFM100.data;
                 const arrFM100 = Array.isArray(jsonFM100?.data) ? jsonFM100.data : [];
-                if (active) setFastMovingFilterData(arrFM100);
+                if (active && id === reqIdRef.current) setFastMovingFilterData(arrFM100);
             } catch (_) {
-                if (active) setFastMovingFilterData([]);
+                if (active && id === reqIdRef.current) setFastMovingFilterData([]);
             }
             try {
-                const url2 = `/farmasi/darurat-stok/data?per_page=100&page=1`;
-                const res2 = await axios.get(url2, { headers: { Accept: "application/json" }, withCredentials: true });
-                const json2 = res2.data;
+                const url2 = `/api/inventori/darurat-stok?per_page=100&page=1`;
+                const res2 = await fetch(url2, { headers: { Accept: "application/json" }, credentials: "include" });
+                const json2 = await res2.json();
                 const items = Array.isArray(json2?.items?.data)
                     ? json2.items.data
                     : Array.isArray(json2?.items)
@@ -764,9 +767,9 @@ export default function Dashboard() {
                         stok_minimal: Number(r?.stok_minimal ?? 0),
                         stok_saat_ini: Number(r?.stok_saat_ini ?? 0),
                     }));
-                if (active) setLowStockData(clean);
+                if (active && id === reqIdRef.current) setLowStockData(clean);
             } catch (_) {
-                if (active) setLowStockData([]);
+                if (active && id === reqIdRef.current) setLowStockData([]);
             }
         })();
         return () => {

@@ -61,13 +61,6 @@ export default function JurnalPage() {
   const [showDetail, setShowDetail] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  // Modal: Preview & Posting dari tampjurnal
-  const [showPostFromTemp, setShowPostFromTemp] = useState(false);
-  const [tempPreview, setTempPreview] = useState({ meta: { jml: 0, tanggal: today, jam: new Date().toTimeString().slice(0,8), debet: 0, kredit: 0, balanced: false }, lines: [] });
-  const [postingFromTemp, setPostingFromTemp] = useState(false);
-  const [postTempForm, setPostTempForm] = useState({ tgl_jurnal: today, no_bukti: '', keterangan: '' });
-  const [postTempError, setPostTempError] = useState('');
-
   const fetchItems = async () => {
     setLoading(true);
     try {
@@ -99,59 +92,6 @@ export default function JurnalPage() {
     e?.preventDefault?.();
     setPage(1);
     await fetchItems();
-  };
-
-  const openTempPreview = async () => {
-    setPostTempError('');
-    try {
-      const res = await axios.post('/api/akutansi/jurnal/preview');
-      const payload = res?.data || {};
-      setTempPreview({ meta: payload.meta || tempPreview.meta, lines: payload.lines || [] });
-      setPostTempForm((f) => ({ ...f, tgl_jurnal: payload?.meta?.tanggal || f.tgl_jurnal }));
-      setShowPostFromTemp(true);
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Gagal memuat preview tampjurnal';
-      alert(msg);
-      console.error('Preview tampjurnal gagal:', e);
-    }
-  };
-
-  const reloadTempPreview = async () => {
-    try {
-      const res = await axios.post('/api/akutansi/jurnal/preview');
-      const payload = res?.data || {};
-      setTempPreview({ meta: payload.meta || tempPreview.meta, lines: payload.lines || [] });
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Gagal memuat ulang preview tampjurnal';
-      setPostTempError(msg);
-      console.error('Reload preview tampjurnal gagal:', e);
-    }
-  };
-
-  const handlePostFromTemp = async () => {
-    setPostTempError('');
-    if (!tempPreview?.meta?.balanced) {
-      setPostTempError('Debet dan Kredit belum seimbang. Sesuaikan komposisi tampjurnal di sumber transaksi.');
-      return;
-    }
-    if ((tempPreview?.meta?.jml || 0) <= 0) {
-      setPostTempError('Staging tampjurnal kosong. Tidak ada baris untuk diposting.');
-      return;
-    }
-    setPostingFromTemp(true);
-    try {
-      const res = await axios.post('/api/akutansi/jurnal/post', { tgl_jurnal: postTempForm.tgl_jurnal, no_bukti: postTempForm.no_bukti || null, keterangan: postTempForm.keterangan || null });
-      const no = res?.data?.no_jurnal;
-      setShowPostFromTemp(false);
-      await fetchItems();
-      alert(`Posting berhasil. No Jurnal: ${no || '(tidak diketahui)'}`);
-    } catch (e) {
-      const msg = e?.response?.data?.message || 'Gagal melakukan posting dari tampjurnal';
-      setPostTempError(msg);
-      console.error('Posting tampjurnal gagal:', e);
-    } finally {
-      setPostingFromTemp(false);
-    }
   };
 
   const resetCreateForm = () => {
@@ -312,9 +252,6 @@ export default function JurnalPage() {
             <div className="flex items-center gap-2">
               <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
                 <Plus className="w-4 h-4" /> Tambah Jurnal Umum
-              </button>
-              <button onClick={openTempPreview} className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700">
-                <BookOpen className="w-4 h-4" /> Preview & Posting dari TampJurnal
               </button>
               <button onClick={fetchItems} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 <RefreshCcw className="w-4 h-4" /> Refresh
@@ -638,91 +575,6 @@ export default function JurnalPage() {
           </div>
         )}
 
-        {/* Modal: Preview & Posting dari tampjurnal */}
-        {showPostFromTemp && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowPostFromTemp(false); }}>
-            <div className="w-full max-w-5xl rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-800">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  <h3 className="text-lg font-semibold">Preview & Posting dari TampJurnal</h3>
-                </div>
-                <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowPostFromTemp(false)}>✕</button>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium">Tanggal Posting</label>
-                    <input type="date" value={postTempForm.tgl_jurnal} onChange={(e) => setPostTempForm((f) => ({ ...f, tgl_jurnal: e.target.value }))} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium">No. Bukti (opsional)</label>
-                    <input type="text" value={postTempForm.no_bukti} onChange={(e) => setPostTempForm((f) => ({ ...f, no_bukti: e.target.value }))} maxLength={30} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium">Keterangan (opsional)</label>
-                    <input type="text" value={postTempForm.keterangan} onChange={(e) => setPostTempForm((f) => ({ ...f, keterangan: e.target.value }))} maxLength={350} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm" />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-700 dark:text-gray-300">
-                    <p>Baris: <span className="font-semibold">{Number(tempPreview?.meta?.jml || 0)}</span></p>
-                    <p>Debet: <span className="font-semibold">{Number(tempPreview?.meta?.debet || 0).toLocaleString('id-ID')}</span> • Kredit: <span className="font-semibold">{Number(tempPreview?.meta?.kredit || 0).toLocaleString('id-ID')}</span></p>
-                  </div>
-                  <div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs ${tempPreview?.meta?.balanced ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {tempPreview?.meta?.balanced ? 'Seimbang' : 'Tidak seimbang'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Rekening</th>
-                        <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-600">Nama Rekening</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-600">Debet</th>
-                        <th className="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-600">Kredit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {(tempPreview?.lines || []).length ? (
-                        tempPreview.lines.map((row, idx) => (
-                          <tr key={idx}>
-                            <td className="px-3 py-2 text-sm font-mono">{row.kd_rek}</td>
-                            <td className="px-3 py-2 text-sm">{row.nm_rek || '-'}</td>
-                            <td className="px-3 py-2 text-sm text-right">{Number(row.debet || 0).toLocaleString('id-ID')}</td>
-                            <td className="px-3 py-2 text-sm text-right">{Number(row.kredit || 0).toLocaleString('id-ID')}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="px-3 py-4 text-center text-sm text-gray-500">Staging tampjurnal kosong.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                    <tfoot>
-                      <tr>
-                        <td className="px-3 py-2 text-right font-semibold" colSpan={2}>Total</td>
-                        <td className="px-3 py-2 text-right font-semibold">{Number(tempPreview?.meta?.debet || 0).toLocaleString('id-ID')}</td>
-                        <td className="px-3 py-2 text-right font-semibold">{Number(tempPreview?.meta?.kredit || 0).toLocaleString('id-ID')}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-
-                {postTempError && <p className="text-sm text-red-600">{postTempError}</p>}
-
-                <div className="flex items-center justify-end gap-2">
-                  <button type="button" onClick={reloadTempPreview} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Reload Preview</button>
-                  <button type="button" onClick={handlePostFromTemp} disabled={postingFromTemp || !tempPreview?.meta?.balanced || (tempPreview?.meta?.jml || 0) <= 0} className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">{postingFromTemp ? 'Memposting...' : 'Posting ke Jurnal'}</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\NotaJalanController;
+use App\Http\Controllers\Akutansi\PaymentPointController;
+use App\Http\Controllers\Akutansi\PengeluaranHarianController as AkutansiPengeluaranHarianController;
+use App\Http\Controllers\Akutansi\KategoriPengeluaranHarianController as AkutansiKategoriPengeluaranHarianController;
 use App\Http\Controllers\Alergi\AlergiController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
@@ -154,7 +157,7 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
 
 // Protected API endpoints (require authentication)
 // Use web session guard to fully support Inertia.js SPA with same-origin cookies
-Route::middleware(['web', 'auth'])->group(function () {
+    Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -678,6 +681,28 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/akutansi/nota-jalan/{no_rawat}', [NotaJalanController::class, 'show'])->name('api.akutansi.nota-jalan.show')->where('no_rawat', '.*');
 
     // Akutansi: Jurnal staging & posting
+
+    // Akutansi: Pengeluaran Harian helpers
+    Route::get('/akutansi/pengeluaran-harian', [AkutansiPengeluaranHarianController::class, 'index'])->name('api.akutansi.pengeluaran-harian.index');
+    Route::get('/akutansi/pengeluaran-harian/generate-no', [AkutansiPengeluaranHarianController::class, 'generateNoKeluar'])->name('api.akutansi.pengeluaran-harian.generate-no');
+    Route::post('/akutansi/pengeluaran-harian', [AkutansiPengeluaranHarianController::class, 'store'])->name('api.akutansi.pengeluaran-harian.store');
+    Route::post('/akutansi/pengeluaran-harian/mandiri', [AkutansiPengeluaranHarianController::class, 'storeMandiri'])->name('api.akutansi.pengeluaran-harian.store-mandiri');
+    Route::delete('/akutansi/pengeluaran-harian/{no_keluar}', [AkutansiPengeluaranHarianController::class, 'destroy'])->name('api.akutansi.pengeluaran-harian.destroy');
+    Route::get('/akutansi/kategori-pengeluaran-harian', [AkutansiKategoriPengeluaranHarianController::class, 'index'])
+        ->withoutMiddleware([
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ])
+        ->name('api.akutansi.kategori-pengeluaran-harian');
+    Route::get('/akutansi/kategori-pengeluaran-harian/next-code', [AkutansiKategoriPengeluaranHarianController::class, 'nextCode'])
+        ->withoutMiddleware([
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        ])
+        ->name('api.akutansi.kategori-pengeluaran-harian.next-code');
+    Route::post('/akutansi/kategori-pengeluaran-harian', [AkutansiKategoriPengeluaranHarianController::class, 'store'])->name('api.akutansi.kategori-pengeluaran-harian.store');
+    Route::put('/akutansi/kategori-pengeluaran-harian/{kode}', [AkutansiKategoriPengeluaranHarianController::class, 'update'])->name('api.akutansi.kategori-pengeluaran-harian.update');
+    Route::delete('/akutansi/kategori-pengeluaran-harian/{kode}', [AkutansiKategoriPengeluaranHarianController::class, 'destroy'])->name('api.akutansi.kategori-pengeluaran-harian.destroy');
     Route::post('/akutansi/jurnal/stage-from-billing', [JurnalController::class, 'stageFromBilling'])->name('api.akutansi.jurnal.stage-from-billing');
     Route::post('/akutansi/jurnal/post-staging', [JurnalController::class, 'postStaging'])->name('api.akutansi.jurnal.post-staging');
     // Single Posting Point: Posting dari tampjurnal + tampjurnal2 (untuk lab, tindakan ralan, dll)
@@ -701,4 +726,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::delete('/', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'destroy'])->name('api.akutansi.bayar-piutang.destroy');
         Route::get('/total', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'getTotalPiutang'])->name('api.akutansi.bayar-piutang.total');
     });
+
+    Route::get('/payment-point', [PaymentPointController::class, 'index'])->name('api.payment-point.index');
+    Route::post('/payment-point/modal-awal', [PaymentPointController::class, 'setModalAwal'])->name('api.payment-point.modal-awal');
+    Route::get('/payment-point/report', [PaymentPointController::class, 'report'])->name('api.payment-point.report');
 }); // End of auth middleware group

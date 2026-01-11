@@ -337,6 +337,122 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    // Rekening khusus Debet (balance = 'D')
+    rekening_debet: {
+        supportsSearch: true,
+        defaultParams: { limit: 50, q: "" },
+        buildUrl: ({ limit = 50, q = "" } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), q });
+            return `/api/akutansi/pengaturan-rekening/rekening?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items
+                .filter((it) => String(it?.balance || "").toUpperCase() === "D")
+                .map((it) => ({
+                    value: it?.kd_rek || "",
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
+                        it?.tipe || it?.balance
+                            ? ` [${it?.tipe ?? "-"}${
+                                  it?.balance ? "/" + it.balance : ""
+                              }]`
+                            : ""
+                    }`.trim(),
+                    kd_rek: it?.kd_rek || "",
+                    nm_rek: it?.nm_rek || "",
+                    tipe: it?.tipe || "",
+                    balance: it?.balance || "",
+                    level: it?.level ?? null,
+                }));
+        },
+    },
+    // Rekening khusus Kredit (balance = 'K')
+    rekening_kredit: {
+        supportsSearch: true,
+        defaultParams: { limit: 50, q: "" },
+        buildUrl: ({ limit = 50, q = "" } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), q });
+            return `/api/akutansi/pengaturan-rekening/rekening?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items
+                .filter((it) => String(it?.balance || "").toUpperCase() === "K")
+                .map((it) => ({
+                    value: it?.kd_rek || "",
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
+                        it?.tipe || it?.balance
+                            ? ` [${it?.tipe ?? "-"}${
+                                  it?.balance ? "/" + it.balance : ""
+                              }]`
+                            : ""
+                    }`.trim(),
+                    kd_rek: it?.kd_rek || "",
+                    nm_rek: it?.nm_rek || "",
+                    tipe: it?.tipe || "",
+                    balance: it?.balance || "",
+                    level: it?.level ?? null,
+                }));
+        },
+    },
+    rekening_pengeluaran: {
+        supportsSearch: true,
+        defaultParams: { limit: 300, q: "" },
+        buildUrl: ({ limit = 50, q = "" } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), q });
+            return `/api/akutansi/pengaturan-rekening/rekening?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items
+                .filter((it) => String(it?.balance || "").toUpperCase() === "D")
+                .filter((it) => String(it?.tipe || "").toUpperCase() === "R")
+                .map((it) => ({
+                    value: it?.kd_rek || "",
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
+                        it?.tipe || it?.balance
+                            ? ` [${it?.tipe ?? "-"}${
+                                  it?.balance ? "/" + it.balance : ""
+                              }]`
+                            : ""
+                    }`.trim(),
+                    kd_rek: it?.kd_rek || "",
+                    nm_rek: it?.nm_rek || "",
+                    tipe: it?.tipe || "",
+                    balance: it?.balance || "",
+                    level: it?.level ?? null,
+                }));
+        },
+    },
+    rekening_kontra_pengeluaran: {
+        supportsSearch: true,
+        defaultParams: { limit: 300, q: "" },
+        buildUrl: ({ limit = 50, q = "" } = {}) => {
+            const params = new URLSearchParams({ limit: String(limit), q });
+            return `/api/akutansi/pengaturan-rekening/rekening?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.items) ? json.items : [];
+            return items
+                .filter((it) => String(it?.balance || "").toUpperCase() === "D")
+                .filter((it) => String(it?.tipe || "").toUpperCase() === "N")
+                .map((it) => ({
+                    value: it?.kd_rek || "",
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
+                        it?.tipe || it?.balance
+                            ? ` [${it?.tipe ?? "-"}${
+                                  it?.balance ? "/" + it.balance : ""
+                              }]`
+                            : ""
+                    }`.trim(),
+                    kd_rek: it?.kd_rek || "",
+                    nm_rek: it?.nm_rek || "",
+                    tipe: it?.tipe || "",
+                    balance: it?.balance || "",
+                    level: it?.level ?? null,
+                }));
+        },
+    },
     // ===== Sumber: Akun Bayar (metode pembayaran) =====
     // Endpoint: GET /api/akutansi/akun-bayar?per_page=50&q=
     akun_bayar: {
@@ -446,6 +562,29 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    akutansi_kategori_pengeluaran_harian: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/api/akutansi/kategori-pengeluaran-harian?${params.toString()}`;
+        },
+        parse: (json) => {
+            const items = Array.isArray(json?.data) ? json.data : [];
+            return items.map((it) => {
+                const kode = it?.kode_kategori || "";
+                const nama = it?.nama_kategori || "";
+                return {
+                    value: kode,
+                    label: `${kode}${nama ? " — " + nama : ""}`.trim(),
+                    kode_kategori: kode,
+                    nama_kategori: nama,
+                    kd_rek: it?.kd_rek || "",
+                    kd_rek2: it?.kd_rek2 || "",
+                };
+            });
+        },
+    },
     farmasi_jenis: {
         supportsSearch: true,
         defaultParams: { q: "" },
@@ -522,6 +661,8 @@ const SearchableSelect = ({
     className = "",
     error = false,
     displayKey = "label",
+    // Kunci tampilan khusus untuk dropdown; jika null, gunakan displayKey
+    optionDisplayKey = null,
     valueKey = "value",
     // Ambil pilihan dari sumber referensi PCare: diagnosa, dokter, poli, dll
     source = null,
@@ -558,8 +699,9 @@ const SearchableSelect = ({
     // Filter options based on search term
     const baseOptions = useRemote ? remoteOptions : options;
     const filteredOptions = baseOptions.filter((option) => {
+        const key = optionDisplayKey || displayKey;
         const displayValueRaw =
-            typeof option === "string" ? option : option[displayKey];
+            typeof option === "string" ? option : option[key];
         const displayValue = (displayValueRaw ?? "").toString();
         return displayValue.toLowerCase().includes(searchTerm.toLowerCase());
     });
@@ -870,10 +1012,11 @@ const SearchableSelect = ({
                                         typeof option === "string"
                                             ? option
                                             : option[valueKey];
+                                    const key = optionDisplayKey || displayKey;
                                     const optionDisplay =
                                         typeof option === "string"
                                             ? option
-                                            : option[displayKey];
+                                            : option[key];
                                     const isSelected = optionValue === value;
 
                                     const unselectedClasses = optionClassName || "text-gray-900 dark:text-white";

@@ -34,11 +34,16 @@ class CashFlowController extends Controller
         $fromYear = (int) substr($fromDate, 0, 4);
         $toYear = (int) substr($toDate, 0, 4);
 
-        // Kas Awal: saldo awal akun Neraca dengan balance = D, dijumlahkan per akun dalam rentang tahun
+        // Kas Awal: saldo awal akun Kas/Bank (Neraca, balance = D), dijumlahkan per akun dalam rentang tahun
         $kasAwalItems = DB::table('rekening')
             ->join('rekeningtahun', 'rekeningtahun.kd_rek', '=', 'rekening.kd_rek')
             ->where('rekening.tipe', 'N')
             ->where('rekening.balance', 'D')
+            ->where(function ($w) {
+                $w->where('rekening.nm_rek', 'like', '%KAS%')
+                  ->orWhere('rekening.nm_rek', 'like', '%BANK%')
+                  ->orWhere('rekening.kd_rek', 'like', '11%');
+            })
             ->whereBetween('rekeningtahun.thn', [$fromYear, $toYear])
             ->select('rekening.kd_rek', 'rekening.nm_rek', DB::raw('SUM(rekeningtahun.saldo_awal) AS amount'))
             ->groupBy('rekening.kd_rek', 'rekening.nm_rek')
@@ -47,60 +52,97 @@ class CashFlowController extends Controller
 
         $totalKasAwal = (float) ($kasAwalItems->sum('amount'));
 
-        // Peta saldo awal untuk akun tipe R (Pendapatan/Beban) agar bisa dijumlahkan ke pergerakan
-        $openingR = DB::table('rekeningtahun')
-            ->join('rekening', 'rekening.kd_rek', '=', 'rekeningtahun.kd_rek')
-            ->where('rekening.tipe', 'R')
+        $pendapatanSaldoAwal = DB::table('rekening')
+            ->join('rekeningtahun', 'rekeningtahun.kd_rek', '=', 'rekening.kd_rek')
+            ->where(function ($w) {
+                $w->where('rekening.nm_rek', 'like', '%PENDAPATAN%')
+                  ->orWhere('rekening.kd_rek', 'like', '41%')
+                  ->orWhere('rekening.kd_rek', 'like', '42%')
+                  ->orWhere('rekening.kd_rek', 'like', '43%');
+            })
             ->whereBetween('rekeningtahun.thn', [$fromYear, $toYear])
-            ->select('rekeningtahun.kd_rek', DB::raw('SUM(rekeningtahun.saldo_awal) as opening'))
-            ->groupBy('rekeningtahun.kd_rek')
-            ->get()
-            ->keyBy('kd_rek');
+            ->select('rekening.kd_rek', 'rekening.nm_rek', DB::raw('SUM(rekeningtahun.saldo_awal) AS amount'))
+            ->groupBy('rekening.kd_rek', 'rekening.nm_rek')
+            ->orderBy('rekening.kd_rek')
+            ->get();
 
-        // Kas Masuk: akun tipe R dengan balance K, pergerakan kredit - debet, ditambah saldo awal
-        $kasMasukMovements = DB::table('jurnal')
+        $pendapatanSaldoMap = [];
+        foreach ($pendapatanSaldoAwal as $r) {
+            $pendapatanSaldoMap[(string) ($r->kd_rek ?? '')] = (float) ($r->amount ?? 0);
+        }
+
+        $pendapatanMovements = DB::table('jurnal')
             ->join('detailjurnal', 'detailjurnal.no_jurnal', '=', 'jurnal.no_jurnal')
             ->join('rekening', 'rekening.kd_rek', '=', 'detailjurnal.kd_rek')
-            ->where('rekening.tipe', 'R')
-            ->where('rekening.balance', 'K')
+            ->where(function ($w) {
+                $w->where('rekening.nm_rek', 'like', '%PENDAPATAN%')
+                  ->orWhere('rekening.kd_rek', 'like', '41%')
+                  ->orWhere('rekening.kd_rek', 'like', '42%')
+                  ->orWhere('rekening.kd_rek', 'like', '43%');
+            })
             ->whereBetween('jurnal.tgl_jurnal', [$fromDate, $toDate])
             ->select('detailjurnal.kd_rek', 'rekening.nm_rek', DB::raw('SUM(detailjurnal.kredit) - SUM(detailjurnal.debet) AS movement'))
             ->groupBy('detailjurnal.kd_rek', 'rekening.nm_rek')
             ->orderBy('detailjurnal.kd_rek')
             ->get();
 
-        $kasMasukItems = $kasMasukMovements->map(function ($row) use ($openingR) {
-            $open = (float) ($openingR[$row->kd_rek]->opening ?? 0);
-            $amount = (float) ($row->movement) + $open;
-            $row->amount = $amount;
-
+        $kasMasukItems = collect($pendapatanMovements)->map(function ($row) use ($pendapatanSaldoMap) {
+            $mov = (float) ($row->movement ?? 0);
+            $saldo = (float) ($pendapatanSaldoMap[(string) ($row->kd_rek ?? '')] ?? 0);
+            $amt = $mov + $saldo;
+            $row->amount = $amt > 0 ? $amt : 0.0;
             return $row;
-        });
+        })->filter(function ($row) {
+            return (float) ($row->amount ?? 0) > 0;
+        })->values();
 
-        $totalPenerimaan = (float) (collect($kasMasukItems)->sum('amount'));
+        $totalPenerimaan = (float) ($kasMasukItems->sum('amount'));
 
-        // Kas Keluar: akun tipe R dengan balance D, pergerakan debet - kredit, ditambah saldo awal
-        $kasKeluarMovements = DB::table('jurnal')
+        $bebanSaldoAwal = DB::table('rekening')
+            ->join('rekeningtahun', 'rekeningtahun.kd_rek', '=', 'rekening.kd_rek')
+            ->where(function ($w) {
+                $w->where('rekening.nm_rek', 'like', '%BEBAN%')
+                  ->orWhere('rekening.nm_rek', 'like', '%BIAYA%')
+                  ->orWhere('rekening.kd_rek', 'like', '5%');
+            })
+            ->whereBetween('rekeningtahun.thn', [$fromYear, $toYear])
+            ->select('rekening.kd_rek', 'rekening.nm_rek', DB::raw('SUM(rekeningtahun.saldo_awal) AS amount'))
+            ->groupBy('rekening.kd_rek', 'rekening.nm_rek')
+            ->orderBy('rekening.kd_rek')
+            ->get();
+
+        $bebanSaldoMap = [];
+        foreach ($bebanSaldoAwal as $r) {
+            $bebanSaldoMap[(string) ($r->kd_rek ?? '')] = (float) ($r->amount ?? 0);
+        }
+
+        $bebanMovements = DB::table('jurnal')
             ->join('detailjurnal', 'detailjurnal.no_jurnal', '=', 'jurnal.no_jurnal')
             ->join('rekening', 'rekening.kd_rek', '=', 'detailjurnal.kd_rek')
-            ->where('rekening.tipe', 'R')
-            ->where('rekening.balance', 'D')
+            ->where(function ($w) {
+                $w->where('rekening.nm_rek', 'like', '%BEBAN%')
+                  ->orWhere('rekening.nm_rek', 'like', '%BIAYA%')
+                  ->orWhere('rekening.kd_rek', 'like', '5%');
+            })
             ->whereBetween('jurnal.tgl_jurnal', [$fromDate, $toDate])
             ->select('detailjurnal.kd_rek', 'rekening.nm_rek', DB::raw('SUM(detailjurnal.debet) - SUM(detailjurnal.kredit) AS movement'))
             ->groupBy('detailjurnal.kd_rek', 'rekening.nm_rek')
             ->orderBy('detailjurnal.kd_rek')
             ->get();
 
-        $kasKeluarItems = $kasKeluarMovements->map(function ($row) use ($openingR) {
-            $open = (float) ($openingR[$row->kd_rek]->opening ?? 0);
-            $amount = (float) ($row->movement) + $open;
-            $row->amount = $amount;
-
+        $kasKeluarItems = collect($bebanMovements)->map(function ($row) use ($bebanSaldoMap) {
+            $mov = (float) ($row->movement ?? 0);
+            $saldo = (float) ($bebanSaldoMap[(string) ($row->kd_rek ?? '')] ?? 0);
+            $amt = $mov + $saldo;
+            $row->amount = $amt > 0 ? $amt : 0.0;
             return $row;
-        });
+        })->filter(function ($row) {
+            return (float) ($row->amount ?? 0) > 0;
+        })->values();
 
-        $totalPengeluaran = (float) (collect($kasKeluarItems)->sum('amount'));
+        $totalPengeluaran = (float) ($kasKeluarItems->sum('amount'));
 
+        // Kas Akhir = Kas Awal + Penerimaan (abs) - Pengeluaran (abs)
         $kasAkhir = $totalKasAwal + $totalPenerimaan - $totalPengeluaran;
 
         return response()->json([

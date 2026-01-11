@@ -8,6 +8,175 @@ Dokumen ini menjelaskan pola dan teknik UI/UX modern berbasis React + Tailwind C
 
 ---
 
+## 21. Input Field — Border & Icon Alignment
+
+### 21.1 Pola Border Halus dan Konsisten
+
+**Pola:**
+
+```jsx
+<div className="relative">
+  <input
+    type="text"
+    placeholder="Nama pasien / No Nota"
+    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-colors placeholder:text-gray-400 text-sm h-10 pl-10 pr-3"
+  />
+  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+}</div>
+```
+
+**Penjelasan:**
+- Border lembut menggunakan `ring-1` dengan opacity agar batas terlihat jelas namun tidak keras.
+- Glassmorphism ringan: `bg-white/90 dark:bg-gray-800/90` dan `backdrop-blur-sm` menjaga kesan modern.
+- Fokus nyaman: `focus:ring-2 focus:ring-blue-500/50` menambah aksen biru saat fokus.
+- Placeholder: gunakan `placeholder:text-gray-400` untuk kontras yang baik tanpa terlalu kuat.
+- Ukuran dan ruang: `text-sm h-10` untuk tinggi konsisten; `pl-10 pr-3` memberi ruang placeholder agar sejajar dengan ikon.
+- Ikon: posisikan dengan `absolute left-3 top-1/2 -translate-y-1/2` dan `pointer-events-none` agar tidak mengganggu interaksi input.
+- Dark mode: gunakan varian `dark:ring-gray-600/60` dan `dark:bg-gray-800/90` untuk konsistensi.
+
+### 21.2 Varian Input Tanpa Ikon
+
+**Pola:**
+
+```jsx
+<input
+  type="text"
+  placeholder="Kode/Nama Petugas"
+  className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-colors placeholder:text-gray-400 text-sm h-10 px-3"
+/>
+```
+
+**Penjelasan:**
+- Tanpa ikon: gunakan `px-3` (bukan `pl-10`) agar teks sejajar simetris di dalam field.
+- Tetap gunakan pola border, focus ring, dan glassmorphism yang sama untuk konsistensi.
+
+### 21.3 Pedoman Alignment Ikon & Placeholder
+
+- Tinggi input: `h-10` agar ikon dan teks berada pada satu garis tengah secara visual.
+- Ikon ukuran: `w-4 h-4` untuk skala yang proporsional terhadap `text-sm`.
+- Jarak kiri ikon: `left-3`; padding kiri input: `pl-10` untuk memberi ruang cukup.
+- Non-interaktif: `pointer-events-none` pada ikon agar tidak mengganggu klik/seleksi teks.
+- Responsif warna: gunakan varian `dark:` dan `transition-colors` agar transisi halus saat focus/hover.
+
+## 22. Cetak Dokumen — Letterhead & Layout
+
+### 22.1 Prinsip Umum
+
+- Gunakan HTML + CSS inline agar output cetak konsisten tanpa ketergantungan aset eksternal.
+- Font keluarga sans-serif dengan skala kecil-menengah untuk keterbacaan: ui-sans-serif, system-ui, Segoe UI, Roboto.
+- Warna netral dan kontras baik pada printer: abu-abu muda untuk header, teks gelap untuk konten.
+- Tabel zebra untuk memudahkan pemindaian baris; border bawah tipis pada setiap baris.
+- Tambahkan meta informasi filter (tanggal, shift, dsb.) di bawah judul.
+- Sediakan bagian ringkasan (kartu kecil) untuk angka agregat: Modal Awal, Uang Masuk, Total.
+
+### 22.2 Sumber Data Letterhead (tabel `setting`)
+
+- Kolom yang dianjurkan: `nama_instansi`, `alamat_instansi`, `kabupaten`, `propinsi`, `kontak`, `email`.
+- Jika ada kolom `aktifkan`, pilih baris dengan nilai `Yes`; jika tidak ada, gunakan baris pertama.
+- Logo diambil via endpoint: `/setting/app/{nama_instansi}/logo`.
+- Susun alamat sebagai gabungan: `alamat_instansi` + `kabupaten propinsi` bila tersedia.
+
+### 22.3 Skeleton HTML Cetak
+
+```html
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Judul Dokumen</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", sans-serif; line-height: 1.5; color: #111827; padding: 24px; }
+      .letterhead { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #1f2937; padding-bottom: 12px; margin-bottom: 20px; }
+      .logo { width: 72px; height: 72px; object-fit: contain; }
+      .org { flex: 1; }
+      .org h1 { font-size: 18px; font-weight: 700; margin: 0; color: #0f172a; }
+      .org p { margin: 2px 0; font-size: 12px; color: #374151; }
+      .title { text-align: center; font-size: 16px; font-weight: 600; margin: 8px 0 16px; color: #0f172a; }
+      .meta { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      thead th { background: #f3f4f6; color: #111827; text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; }
+      tbody td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
+      tbody tr:nth-child(even) { background: #fafafa; }
+      .summary { margin-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+      .card .label { font-size: 11px; color: #6b7280; }
+      .card .value { font-size: 14px; font-weight: 600; color: #111827; }
+      @media print { thead th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style>
+  </head>
+  <body>
+    <div class="letterhead">
+      <img class="logo" src="/setting/app/Nama%20Instansi/logo" alt="Logo" />
+      <div class="org">
+        <h1>Nama Instansi</h1>
+        <p>Alamat • Kabupaten Propinsi</p>
+        <p>Kontak • Email</p>
+      </div>
+    </div>
+
+    <div class="title">Judul Laporan</div>
+    <div class="meta">Tanggal: 2025-01-01 • Shift: Semua</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Tanggal</th>
+          <th>Shift</th>
+          <th>No Nota</th>
+          <th>Nama Pasien</th>
+          <th>Pembayaran</th>
+          <th>Petugas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>2025-01-01 08:00</td>
+          <td>Pagi</td>
+          <td>NT001</td>
+          <td>Nama</td>
+          <td>100.000,00</td>
+          <td>Petugas</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="summary">
+      <div class="card"><div class="label">Modal Awal</div><div class="value">0,00</div></div>
+      <div class="card"><div class="label">Uang Masuk</div><div class="value">0,00</div></div>
+      <div class="card"><div class="label">Total</div><div class="value">0,00</div></div>
+    </div>
+  </body>
+</html>
+```
+
+### 22.4 Struktur Konten
+
+- Letterhead: logo (opsional), nama instansi, alamat, kontak/email.
+- Judul: gunakan kalimat singkat dan deskriptif.
+- Meta: tampilkan nilai filter aktif seperti tanggal dan shift.
+- Tabel: kolom relevan, zebra striping, border bawah tipis.
+- Ringkasan: tiga kartu angka agregat dengan label dan nilai.
+
+### 22.5 Praktik CSS untuk Cetak
+
+- Gunakan `print-color-adjust: exact` pada header tabel agar background abu-abu tercetak.
+- Hindari bayangan tebal; gunakan border tipis untuk pemisahan.
+- Ukuran font 12–14px untuk konten; 16–18px untuk judul.
+- Hindari lebar tetap; gunakan lebar 100% pada tabel.
+
+### 22.6 Endpoint Contoh
+
+- Payment Point: `GET /api/payment-point/report?date=YYYY-MM-DD&shift=Semua&q=&user=`.
+- Buka di tab baru dari UI dengan `window.open(url, "_blank")` saat pengguna menekan tombol Cetak.
+
+### 22.7 Checklist Kualitas Cetak
+
+- Data letterhead terisi dan logo tampil bila tersedia.
+- Judul, meta, tabel, dan ringkasan tersaji rapi tanpa potongan halaman aneh.
+- Angka uang diformat sesuai Indonesia (IDR) dengan pemisah `,` dan `.`.
+- Background header tabel tercetak pada printer umum.
+
 ## 0. Strategi UI/UX Global
 
 ### 0.1 Bahasa Desain
@@ -522,6 +691,39 @@ const cardHoverVariants = {
 - Color transition
 
 ---
+
+### 7.4 Standar Ukuran Tombol Compact (Small)
+
+Gunakan varian compact untuk tombol aksi di header halaman dan card header agar UI tetap ringan serta hemat ruang.
+
+**Primary (Gradient) – Small:**
+```html
+<button
+  class="flex items-center gap-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-medium text-sm px-4 py-2 rounded-md"
+>
+  <svg class="w-3 h-3" aria-hidden="true"></svg>
+  Tambah Jadwal
+</button>
+```
+
+**Secondary (Neutral/Glass) – Small:**
+```html
+<button
+  class="inline-flex items-center gap-1 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium text-sm px-3 py-1.5 rounded-md"
+>
+  <svg class="w-3 h-3" aria-hidden="true"></svg>
+  Muat Ulang
+</button>
+```
+
+**Pedoman Compact:**
+- Font size: `text-sm`
+- Padding: primary `px-4 py-2`, secondary `px-3 py-1.5`
+- Icon size: `w-3 h-3`
+- Spasi ikon-teks: `gap-1`
+- Radius: `rounded-md`
+- Warna dan shadow mengikuti varian (gradient untuk primary, glass + border untuk secondary)
+
 
 ## 8. Loading States
 
