@@ -63,12 +63,24 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Rate limiting untuk login
         $key = 'login.'.$request->ip();
+        $rateLimited = false;
+        $retryAfter = null;
+        try {
+            if (RateLimiter::tooManyAttempts($key, 5)) {
+                $rateLimited = true;
+                $retryAfter = RateLimiter::availableIn($key);
+            }
+        } catch (\Throwable $e) {
+            $rateLimited = false;
+            $retryAfter = null;
+            Log::warning('RateLimiter unavailable', [
+                'error' => $e->getMessage(),
+                'ip' => $request->ip(),
+            ]);
+        }
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            $seconds = RateLimiter::availableIn($key);
-
+        if ($rateLimited) {
             Log::warning('Login rate limit exceeded', [
                 'ip' => $request->ip(),
                 'username' => $request->input('username'),
@@ -76,7 +88,9 @@ class AuthController extends Controller
             ]);
 
             return back()->withErrors([
-                'username' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+                'username' => $retryAfter !== null
+                    ? "Terlalu banyak percobaan login. Silakan coba lagi dalam {$retryAfter} detik."
+                    : 'Terlalu banyak percobaan login. Silakan coba lagi nanti.',
             ])->onlyInput('username');
         }
 
@@ -85,14 +99,28 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Coba cari user berdasarkan username atau email
-        $user = \App\Models\User::where('username', $credentials['username'])
-            ->orWhere('email', $credentials['username'])
-            ->first();
+        try {
+            if (! Schema::hasTable('users')) {
+                Log::error('Users table missing');
+                return back()->withErrors([
+                    'username' => 'Server belum dikonfigurasi untuk login.',
+                ])->onlyInput('username');
+            }
+
+            $user = \App\Models\User::where('username', $credentials['username'])
+                ->orWhere('email', $credentials['username'])
+                ->first();
+        } catch (\Throwable $e) {
+            Log::error('Login query failed', [
+                'error' => $e->getMessage(),
+            ]);
+            return back()->withErrors([
+                'username' => 'Login gagal karena gangguan server. Coba lagi nanti.',
+            ])->onlyInput('username');
+        }
 
         if ($user && \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
-            // Reset rate limiter setelah login berhasil
-            RateLimiter::clear($key);
+            try { RateLimiter::clear($key); } catch (\Throwable $e) {}
 
             Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
@@ -108,8 +136,7 @@ class AuthController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Increment rate limiter untuk failed attempt
-        RateLimiter::hit($key, 60); // 60 seconds decay
+        try { RateLimiter::hit($key, 60); } catch (\Throwable $e) {}
 
         Log::warning('Failed login attempt', [
             'username' => $credentials['username'],
