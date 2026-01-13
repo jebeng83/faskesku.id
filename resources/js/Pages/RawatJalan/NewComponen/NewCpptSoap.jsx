@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
 import { usePage } from '@inertiajs/react';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
-import { Eraser, Pencil, Trash2 } from 'lucide-react';
+import { Eraser, Pencil, Trash2, Copy } from 'lucide-react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import DataAlergi from '../../../Alergi/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
@@ -1373,6 +1373,45 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                           <div className="font-semibold">{row?.tgl_perawatan || '-'} {String(row?.jam_rawat || '').length === 5 ? row?.jam_rawat + ':00' : (row?.jam_rawat || '')}</div>
                           <div className="text-[10px] flex items-center gap-1">
                             <span>{pegawaiMap[String(row?.nik || row?.nip || '')] || row?.nama_pegawai || row?.nama || row?.nip || '-'}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const d = new Date();
+                                const tgl = d.toISOString().slice(0,10);
+                                const jam = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                                setFormData({
+                                  tgl_perawatan: tgl,
+                                  jam_rawat: jam,
+                                  suhu_tubuh: row.suhu_tubuh || '',
+                                  tensi: row.tensi || '',
+                                  nadi: row.nadi || '',
+                                  respirasi: row.respirasi || '',
+                                  tinggi: row.tinggi || '',
+                                  berat: row.berat || '',
+                                  spo2: row.spo2 || '',
+                                  gcs: row.gcs || '',
+                                  kesadaran: row.kesadaran || 'Compos Mentis',
+                                  keluhan: row.keluhan || '',
+                                  pemeriksaan: row.pemeriksaan || '',
+                                  alergi: row.alergi || '',
+                                  lingkar_perut: row.lingkar_perut || '',
+                                  rtl: row.rtl || '',
+                                  penilaian: row.penilaian || '',
+                                  instruksi: row.instruksi || '',
+                                  evaluasi: row.evaluasi || '',
+                                  nip: currentNik || row.nip || '',
+                                });
+                                setKdAlergi('');
+                                setEditKey(null);
+                                setMessage(null);
+                                setError(null);
+                                setTimeout(() => { performSave(); }, 0);
+                              }}
+                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              title="Salin pemeriksaan"
+                            >
+                              <Copy className="w-3 h-3 text-red-500" />
+                            </button>
                             <button
                               type="button"
                               onClick={() => {

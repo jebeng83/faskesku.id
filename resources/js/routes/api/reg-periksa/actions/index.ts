@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::updateKeputusan
-* @see app/Http/Controllers/API/RegPeriksaController.php:382
+* @see app/Http/Controllers/API/RegPeriksaController.php:422
 * @route '/api/reg-periksa-actions/update-keputusan'
 */
 export const updateKeputusan = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ updateKeputusan.definition = {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::updateKeputusan
-* @see app/Http/Controllers/API/RegPeriksaController.php:382
+* @see app/Http/Controllers/API/RegPeriksaController.php:422
 * @route '/api/reg-periksa-actions/update-keputusan'
 */
 updateKeputusan.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ updateKeputusan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::updateKeputusan
-* @see app/Http/Controllers/API/RegPeriksaController.php:382
+* @see app/Http/Controllers/API/RegPeriksaController.php:422
 * @route '/api/reg-periksa-actions/update-keputusan'
 */
 updateKeputusan.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -35,7 +35,7 @@ updateKeputusan.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => (
 
 /**
 * @see \App\Http\Controllers\API\RegPeriksaController::updateKeputusan
-* @see app/Http/Controllers/API/RegPeriksaController.php:382
+* @see app/Http/Controllers/API/RegPeriksaController.php:422
 * @route '/api/reg-periksa-actions/update-keputusan'
 */
 updateKeputusan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

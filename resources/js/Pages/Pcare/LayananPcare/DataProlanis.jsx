@@ -348,7 +348,6 @@ export default function DataProlanis() {
                 {columns.map((c) => {
                   const value = row?.[c];
                   const isNumeric = c === 'usia';
-                  const isCenter = c === 'status_prolanis';
                   
                   // Format khusus untuk status_prolanis
                   if (c === 'status_prolanis') {

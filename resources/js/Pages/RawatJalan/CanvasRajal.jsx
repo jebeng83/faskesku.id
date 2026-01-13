@@ -58,6 +58,8 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   
   const [bpjsNoPeserta, setBpjsNoPeserta] = useState("");
   const [bridgingVisible, setBridgingVisible] = useState(false);
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  const [closeSubmitting, setCloseSubmitting] = useState(false);
   const [mcuData, setMcuData] = useState(null);
   const [loadingMcu, setLoadingMcu] = useState(false);
   const [mcuFormOpen, setMcuFormOpen] = useState(false);
@@ -165,7 +167,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         } else {
           setMcuData(null);
         }
-      } catch (error) {
+      } catch (_error) {
         // Jika error, set null (MCU mungkin tidak tersedia)
         setMcuData(null);
       } finally {
@@ -1675,29 +1677,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setIsOpen(false);
-                          setTimeout(() => {
-                            try {
-                              try { setRawatJalanFilters({ kd_dokter: doctorCode || '', kd_poli: poliCode || '' }); } catch (_) {}
-                              let basePath = '/rawat-jalan';
-                              try { basePath = route('rawat-jalan.index', {}, false) || '/rawat-jalan'; } catch (_) {}
-                              try {
-                                const u = new URL(basePath, window.location.origin);
-                                if (doctorCode) u.searchParams.set('kd_dokter', doctorCode);
-                                if (poliCode) u.searchParams.set('kd_poli', poliCode);
-                                router.visit(u.pathname + u.search + u.hash);
-                              } catch (_) {
-                                const qs = [];
-                                if (doctorCode) qs.push(`kd_dokter=${encodeURIComponent(doctorCode)}`);
-                                if (poliCode) qs.push(`kd_poli=${encodeURIComponent(poliCode)}`);
-                                router.visit(basePath + (qs.length ? `?${qs.join('&')}` : ''));
-                              }
-                            } catch {
-                              router.visit('/rawat-jalan');
-                            }
-                          }, 250);
-                        }}
+                        onClick={() => { setCloseConfirmOpen(true); }}
                         className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(29.1%_0.149_302.717)] text-[oklch(98.5%_0_0)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.45)]"
                         aria-label="Tutup"
                         title="Tutup"
@@ -1715,9 +1695,93 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           <path d="M18 6L6 18M6 6l12 12" />
                         </svg>
                       </button>
+                </motion.div>
+              </motion.div>
+
+              <AnimatePresence>
+                {closeConfirmOpen && (
+                  <motion.div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    <motion.div className="w-full max-w-sm rounded-2xl border border-[oklch(29.1%_0.149_302.717_/_0.35)] bg-[oklch(14.5%_0_0)] text-[oklch(98.5%_0_0)] shadow-[0_0_18px_oklch(84.1%_0.238_128.85_/_0.3)]" initial={{ scale: 0.96, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.96, y: 12 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }}>
+                      <div className="px-4 py-2.5 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] flex items-center justify-between">
+                        <div className="text-sm font-semibold">Konfirmasi Tutup</div>
+                        <button type="button" onClick={() => setCloseConfirmOpen(false)} className="p-1 rounded-md hover:bg-neutral-800 transition-colors border border-[oklch(29.1%_0.149_302.717)] text-[oklch(98.5%_0_0)]">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        <div className="text-sm">Apakah Pelayanan Pasien Sudah Selesai</div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button type="button" disabled={closeSubmitting} onClick={() => {
+                            setCloseConfirmOpen(false);
+                            setIsOpen(false);
+                            setTimeout(() => {
+                              try {
+                                try { setRawatJalanFilters({ kd_dokter: doctorCode || '', kd_poli: poliCode || '' }); } catch (_) {}
+                                let basePath = '/rawat-jalan';
+                                try { basePath = route('rawat-jalan.index', {}, false) || '/rawat-jalan'; } catch (_) {}
+                                try {
+                                  const u = new URL(basePath, window.location.origin);
+                                  if (doctorCode) u.searchParams.set('kd_dokter', doctorCode);
+                                  if (poliCode) u.searchParams.set('kd_poli', poliCode);
+                                  router.visit(u.pathname + u.search + u.hash);
+                                } catch (_) {
+                                  const qs = [];
+                                  if (doctorCode) qs.push(`kd_dokter=${encodeURIComponent(doctorCode)}`);
+                                  if (poliCode) qs.push(`kd_poli=${encodeURIComponent(poliCode)}`);
+                                  router.visit(basePath + (qs.length ? `?${qs.join('&')}` : ''));
+                                }
+                              } catch {
+                                router.visit('/rawat-jalan');
+                              }
+                            }, 250);
+                          }} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:opacity-60 text-white">
+                            Sudah
+                          </button>
+                          <button type="button" disabled={closeSubmitting} onClick={async () => {
+                            try {
+                              setCloseSubmitting(true);
+                              if (noRawat) {
+                                try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 160)); } catch (_) {}
+                                try {
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                } catch (_) {
+                                  try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 140)); } catch (_) {}
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                }
+                              }
+                            } catch (_) {}
+                            setCloseSubmitting(false);
+                            setCloseConfirmOpen(false);
+                            setIsOpen(false);
+                            setTimeout(() => {
+                              try {
+                                try { setRawatJalanFilters({ kd_dokter: doctorCode || '', kd_poli: poliCode || '' }); } catch (_) {}
+                                let basePath = '/rawat-jalan';
+                                try { basePath = route('rawat-jalan.index', {}, false) || '/rawat-jalan'; } catch (_) {}
+                                try {
+                                  const u = new URL(basePath, window.location.origin);
+                                  if (doctorCode) u.searchParams.set('kd_dokter', doctorCode);
+                                  if (poliCode) u.searchParams.set('kd_poli', poliCode);
+                                  router.visit(u.pathname + u.search + u.hash);
+                                } catch (_) {
+                                  const qs = [];
+                                  if (doctorCode) qs.push(`kd_dokter=${encodeURIComponent(doctorCode)}`);
+                                  if (poliCode) qs.push(`kd_poli=${encodeURIComponent(poliCode)}`);
+                                  router.visit(basePath + (qs.length ? `?${qs.join('&')}` : ''));
+                                }
+                              } catch {
+                                router.visit('/rawat-jalan');
+                              }
+                            }, 250);
+                          }} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 disabled:opacity-60 text-white">
+                            Belum
+                          </button>
+                        </div>
+                      </div>
                     </motion.div>
                   </motion.div>
-
+                )}
+              </AnimatePresence>
                   <div className="px-4 py-2 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] text-[oklch(98.5%_0_0)]">
                     <div className="flex items-center justify-end gap-2">
                       <button

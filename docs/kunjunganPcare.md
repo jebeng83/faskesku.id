@@ -70,4 +70,3 @@
 ## Ringkasan
 - Payload Kunjungan PCare dibangun dari data DB (reg_periksa, pasien, poli, dokter, pemeriksaan_ralan, diagnosa, resep) melalui endpoint preview, lalu diperkaya di UI (TACC, rujukLanjut, label nama) sebelum dikirim.
 - Backend melakukan normalisasi, mengirim ke PCare, menyimpan status, dan logging untuk audit/monitoring.
-

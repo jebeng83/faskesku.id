@@ -376,6 +376,46 @@ class RegPeriksaController extends Controller
         }
     }
 
+    public function updateStatus(Request $request, string $regPeriksa): JsonResponse
+    {
+        try {
+            $noRawat = urldecode($regPeriksa);
+            $request->validate([
+                'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
+            ]);
+
+            $model = RegPeriksa::where('no_rawat', $noRawat)->first();
+
+            if (! $model) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            $model->update([
+                'stts' => $request->stts,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $model,
+                'message' => 'Status berhasil diperbarui menjadi: '.$request->stts,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui status: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Update keputusan by explicit no_rawat in payload (safe for values with '/')
      */

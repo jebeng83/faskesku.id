@@ -130,5 +130,3 @@ Jika berhasil, akan menampilkan "Berhasil menghapus entri odontogram".
 ## Referensi Kode Terkait
 - Contoh penggunaan CSRF di frontend: `resources/js/Pages/Odontogram/odontogram.jsx` (panggilan `axios.get('/sanctum/csrf-cookie')` dan `withCredentials`).
 - Endpoint DELETE di server: `routes/api.php` dan `app/Http/Controllers/Odontogram/OdontogramController.php`.
-- Command debug CLI: `app/Console/Commands/OdontogramDeleteCommand.php`.
-

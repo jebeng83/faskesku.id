@@ -51,7 +51,7 @@ Belum/tahap berikutnya:
 ### 4.2 Backend
 - Konfigurasi toggle batch:
   - Tambahkan env `OBAT_AKTIFKAN_BATCH=true` dan config, mis. `config/farmasi.php` dengan `batch_enabled => env('OBAT_AKTIFKAN_BATCH', true)`.
-  - Di `ResepController::penyerahan` dan `updateStokObat`, kondisikan logika: jika `batch_enabled === false`, kurangi stok agregat (mode non‑batch) dan skip `data_batch.sisa`/per‑batch insert (tetap insert satu baris `detail_pemberian_obat` per item dengan kd_bangsal/no_batch/no_faktur kosong).
+  - Di `ResepController::penyerahan` dan `updateStokObat`, kondisikan logika: jika `batch_enabled === false`, kurangi stok agregat (mode non-batch) dan skip `data_batch.sisa`/per‑batch insert (tetap insert satu baris `detail_pemberian_obat` per item dengan kd_bangsal/no_batch/no_faktur kosong).
 - Validasi stok & transaksi:
   - Sudah diterapkan per item dan dibungkus dalam satu `DB::transaction`; pertahankan.
   - Opsional: pertimbangkan locking baris gudang (SELECT … FOR UPDATE) bila terjadi race condition penyerahan paralel.
@@ -123,4 +123,3 @@ Belum/tahap berikutnya:
 ## 10) Catatan Tambahan
 - Dukungan racikan belum diimplementasikan; akan dirancang terpisah (struktur grup, detail racikan, dan pembebanan biaya racik).
 - Pertimbangkan mengambil `user_id` dari sesi untuk audit trail pengguna yang melakukan penyerahan.
-

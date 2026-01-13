@@ -203,6 +203,9 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/{regPeriksa}/status-bayar', [RegPeriksaController::class, 'updateStatusBayar'])
             ->where('regPeriksa', '.*')
             ->name('api.reg-periksa.update-status-bayar');
+        Route::put('/{regPeriksa}/status', [RegPeriksaController::class, 'updateStatus'])
+            ->where('regPeriksa', '.*')
+            ->name('api.reg-periksa.update-status');
         Route::put('/{regPeriksa}/keputusan', [RegPeriksaController::class, 'updateKeputusan'])
             ->where('regPeriksa', '.*')
             ->name('api.reg-periksa.update-keputusan');

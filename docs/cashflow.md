@@ -109,4 +109,3 @@ GROUP BY d.kd_rek, r.nm_rek;
 - UI & event: [DlgCashflow.java:220-275](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCashflow.java#L220-L275)
 - Alur utama perhitungan: [DlgCashflow.java:310-470](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCashflow.java#L310-L470)
 - Threading helper: [DlgCashflow.java:482-498](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCashflow.java#L482-L498)
-
