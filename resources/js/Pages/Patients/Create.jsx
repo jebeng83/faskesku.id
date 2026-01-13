@@ -49,6 +49,7 @@ export default function Create() {
     const [showBahasaPasienModal, setShowBahasaPasienModal] = useState(false);
     const [showSukuBangsaModal, setShowSukuBangsaModal] = useState(false);
     const [showCacatFisikModal, setShowCacatFisikModal] = useState(false);
+    const [usePatientAddress, setUsePatientAddress] = useState(false);
 
     // Address states - now handled by WilayahSearchableSelect components
 
@@ -81,6 +82,32 @@ export default function Create() {
         cacat_fisik: "",
         nip: "",
     });
+
+    useEffect(() => {
+        setData("pekerjaan", "KARYAWAN SWASTA");
+        setData("agama", "ISLAM");
+    }, []);
+
+    useEffect(() => {
+        if (usePatientAddress) {
+            setData("alamatpj", data.alamat || "");
+        }
+    }, [usePatientAddress, data.alamat]);
+
+    useEffect(() => {
+        const findByLabel = (opts, target) => {
+            const t = String(target).toLowerCase();
+            return (Array.isArray(opts) ? opts : []).find(
+                (o) => String(o?.label || "").toLowerCase() === t
+            );
+        };
+        const suku = findByLabel(sukuOptions, "JAWA");
+        if (suku) setData("suku_bangsa", suku.value);
+        const bahasa = findByLabel(bahasaOptions, "JAWA");
+        if (bahasa) setData("bahasa_pasien", bahasa.value);
+        const cacat = findByLabel(cacatOptions, "TIDAK ADA");
+        if (cacat) setData("cacat_fisik", cacat.value);
+    }, [sukuOptions, bahasaOptions, cacatOptions]);
 
     // Load penjab options on component mount
     useEffect(() => {
@@ -1589,9 +1616,19 @@ export default function Create() {
                                         />
 
                                         <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Alamat Keluarga *
-                                            </label>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Alamat Keluarga *
+                                                </label>
+                                                <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={usePatientAddress}
+                                                        onChange={(e) => setUsePatientAddress(e.target.checked)}
+                                                    />
+                                                    Salin dari alamat pasien
+                                                </label>
+                                            </div>
                                             <textarea
                                                 name="alamatpj"
                                                 value={data.alamatpj}

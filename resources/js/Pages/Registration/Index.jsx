@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
@@ -44,6 +44,25 @@ export default function Registration({
     const [queueStatusCode, setQueueStatusCode] = useState(null);
     const [queueTodayList, setQueueTodayList] = useState([]);
     const [selectedLoket, setSelectedLoket] = useState(1);
+    const manualSearchRef = useRef(false);
+    const [usePatientAddress, setUsePatientAddress] = useState(false);
+
+    useEffect(() => {
+        if (usePatientAddress && selectedPatient) {
+            const addr = [
+                selectedPatient?.alamat,
+                selectedPatient?.kelurahan?.nm_kel,
+                selectedPatient?.kecamatan?.nm_kec,
+                selectedPatient?.kabupaten?.nm_kab,
+            ]
+                .filter(Boolean)
+                .join(', ');
+            setFormData((prev) => ({
+                ...prev,
+                almt_pj: addr || prev.almt_pj,
+            }));
+        }
+    }, [usePatientAddress, selectedPatient]);
 
     useEffect(() => {
         try {
@@ -674,6 +693,10 @@ export default function Registration({
     // Handle search input change with debounce (search + alamat)
     useEffect(() => {
         const timeoutId = setTimeout(() => {
+            if (manualSearchRef.current) {
+                manualSearchRef.current = false;
+                return;
+            }
             handleSearch(searchTerm, alamatTerm);
         }, 500);
 
@@ -1946,7 +1969,7 @@ export default function Registration({
                                                 setSearchTerm(e.target.value)
                                             }
                                             placeholder="Cari berdasarkan nama, nomor RM, atau KTP..."
-                                            className="w-full px-4 py-2 lg:py-3 pl-10 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                            className="w-full px-3 py-2 lg:py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
                                         />
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg
@@ -1963,43 +1986,56 @@ export default function Registration({
                                                 />
                                             </svg>
                                         </div>
-                                        {isSearching && (
-                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                                <svg
-                                                    className="animate-spin h-5 w-5 text-blue-500"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <circle
-                                                        className="opacity-25"
-                                                        cx="12"
-                                                        cy="12"
-                                                        r="10"
-                                                        stroke="currentColor"
-                                                        strokeWidth="4"
-                                                    ></circle>
-                                                    <path
-                                                        className="opacity-75"
-                                                        fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                    ></path>
-                                                </svg>
-                                            </div>
-                                        )}
                                     </motion.div>
-                                    <div className="relative col-span-2">
-                                        <input
-                                            type="text"
-                                            value={alamatTerm}
-                                            onChange={(e) => setAlamatTerm(e.target.value)}
-                                            placeholder="Filter alamat"
-                                            aria-label="Filter Alamat"
-                                            className="w-full px-4 py-2 lg:py-3 pl-10 text-sm lg:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
-                                        />
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                    <div className="col-span-2 flex items-center gap-2">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="text"
+                                                value={alamatTerm}
+                                                onChange={(e) => setAlamatTerm(e.target.value)}
+                                                placeholder="Filter alamat"
+                                                aria-label="Filter Alamat"
+                                                className="w-full px-3 py-2 lg:py-2 pl-9 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all duration-200"
+                                            />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <MapPinIcon className="h-5 w-5 text-gray-400" />
+                                            </div>
                                         </div>
+                                        {isSearching ? (
+                                            <svg
+                                                className="animate-spin h-5 w-5 text-blue-500"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                            </svg>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    manualSearchRef.current = true;
+                                                    handleSearch(searchTerm, alamatTerm);
+                                                }}
+                                                className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            aria-label="Cari cepat nama + alamat"
+                                            title="Cari cepat berdasarkan nama + alamat"
+                                            >
+                                                <MagnifyingGlassIcon className="h-5 w-5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>
@@ -2468,7 +2504,19 @@ export default function Registration({
 
                                             {/* Alamat Penanggung Jawab - Full Width */}
                                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: 0.4 }}>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Alamat Penanggung Jawab *</label>
+                                                <div className="flex items-center justify-between">
+                                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">Alamat Penanggung Jawab *</label>
+                                                    {selectedPatient && (
+                                                        <label className="inline-flex items-center gap-1 text-[11px] text-gray-600 dark:text-gray-300">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={usePatientAddress}
+                                                                onChange={(e) => setUsePatientAddress(e.target.checked)}
+                                                            />
+                                                            Salin dari alamat pasien
+                                                        </label>
+                                                    )}
+                                                </div>
                                                 <textarea
                                                     name="almt_pj"
                                                     value={formData.almt_pj}
@@ -3687,9 +3735,21 @@ export default function Registration({
 
                                     {/* Alamat Penanggung Jawab */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Alamat Penanggung Jawab *
-                                        </label>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Alamat Penanggung Jawab *
+                                            </label>
+                                            {selectedPatient && (
+                                                <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={usePatientAddress}
+                                                        onChange={(e) => setUsePatientAddress(e.target.checked)}
+                                                    />
+                                                    Salin dari alamat pasien
+                                                </label>
+                                            )}
+                                        </div>
                                         <textarea
                                             name="almt_pj"
                                             value={formData.almt_pj}

@@ -155,6 +155,15 @@ class PcareKunjunganController extends Controller
                             }
                         }
                     }
+                    if ($noKunjungan === null) {
+                        $loc = (string) ($response->header('Location') ?? $response->header('location') ?? '');
+                        if ($loc !== '') {
+                            $candidate = $this->parseNoKunjunganFromString($loc);
+                            if ($candidate !== null) {
+                                $noKunjungan = $candidate;
+                            }
+                        }
+                    }
                 }
 
                 // Simpan status dan respon mentah ke reg_periksa (penyesuaian kolom bila ada)
@@ -703,6 +712,10 @@ class PcareKunjunganController extends Controller
                 return (string) $d['response']['noKunjungan'];
             }
         }
+        $deep = $this->findNoKunjunganRecursive($processed);
+        if ($deep !== null) {
+            return $deep;
+        }
         return null;
     }
 
@@ -722,6 +735,23 @@ class PcareKunjunganController extends Controller
         }
         if (is_array($j)) {
             return $this->parseNoKunjunganFromResponse($j);
+        }
+        return null;
+    }
+
+    protected function findNoKunjunganRecursive(array $data): ?string
+    {
+        foreach ($data as $k => $v) {
+            $kk = strtolower((string) $k);
+            if ($kk === 'nokunjungan' && is_string($v) && $v !== '') {
+                return (string) $v;
+            }
+            if (is_array($v)) {
+                $candidate = $this->findNoKunjunganRecursive($v);
+                if ($candidate !== null) {
+                    return $candidate;
+                }
+            }
         }
         return null;
     }

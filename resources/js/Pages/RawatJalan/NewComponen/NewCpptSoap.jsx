@@ -21,7 +21,7 @@ const ensureJsBarcode = async () => {
   });
 };
 
-export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = '', _onOpenResep = null, onOpenBridging = null }) {
+export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = '', _onOpenResep = null, onOpenBridging = null, onPcareUpdated = null }) {
   const page = usePage();
   const currentNik = page?.props?.auth?.user?.nik || '';
   const currentName = page?.props?.auth?.user?.name || page?.props?.auth?.user?.nama || '';
@@ -344,15 +344,18 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             const skipMsg = (pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : 'Pendaftaran PCare dilewati (Non-BPJS)';
             setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
             setShowBridging(false);
+            try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
           } else {
             const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut') ? (pcareJson.response.message || '') : '';
             setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
             setShowBridging(true);
+            try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
           }
         } else {
           const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
           setError(errMsg);
           setShowBridging(false);
+          try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
         }
       } catch (e) {
         setError(`Gagal koneksi ke PCare: ${e.message || e}`);
@@ -503,6 +506,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
       setBridgingInfo({ status: 'Dihapus', noUrut: '', meta: msg });
       setShowBridging(false);
       setBridgingOpen(false);
+      try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
     } catch (e) {
       const errorMessage = e?.response?.data?.metaData?.message || e?.message || 'Gagal menghapus pendaftaran PCare';
       setBridgingError(errorMessage);

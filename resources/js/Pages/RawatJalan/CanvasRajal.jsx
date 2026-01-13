@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { overlayTransition, contentSpring, transformOriginForDir, createPageVariants, hoverTapVariants, headerItemVariants } from "@/tools/motion";
 import { Head, router } from "@inertiajs/react";
@@ -14,6 +14,7 @@ import axios from "axios";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { setRawatJalanFilters } from "@/tools/rawatJalanFilters";
 import Icare from "./NewComponen/Icare";
+import RiwayatKunjungan from "./components/RiwayatKunjungan";
 
 export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "", tab = "" }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -26,14 +27,10 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [poliCode, setPoliCode] = useState(kdPoli || "");
   const [identityOpen, setIdentityOpen] = useState(false);
   const [cpptModalOpen, setCpptModalOpen] = useState(false);
-  const [cpptModalLoading, setCpptModalLoading] = useState(false);
-  const [cpptModalError, setCpptModalError] = useState("");
-  const [cpptModalItems, setCpptModalItems] = useState([]);
   const [poliCalling, setPoliCalling] = useState(false);
   const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
   const [doctorCode, setDoctorCode] = useState("");
   const [bridgingOpen, setBridgingOpen] = useState(false);
-  const cpptReqIdRef = useRef(0);
   
   const [pcarePendaftaran, setPcarePendaftaran] = useState(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -60,7 +57,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [bridgingVisible, setBridgingVisible] = useState(false);
 
   useEffect(() => {
-    const checkPendaftaranStatus = async () => {
+    const refreshBridgingVisible = async () => {
       if (!noRawat) { setBridgingVisible(false); return; }
       try {
         const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
@@ -75,7 +72,9 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         setBridgingVisible(false);
       }
     };
-    checkPendaftaranStatus();
+    refreshBridgingVisible();
+    // expose method on window for child callbacks (optional)
+    try { window.__refreshBridgingVisible = refreshBridgingVisible; } catch {}
   }, [noRawat]);
 
   const REF_TACC = useMemo(() => ([
@@ -222,6 +221,13 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
           noRawat={noRawat}
           onOpenResep={openResep}
           onOpenBridging={() => openBridgingModal()}
+          onPcareUpdated={() => {
+            try {
+              if (typeof window !== 'undefined' && typeof window.__refreshBridgingVisible === 'function') {
+                window.__refreshBridgingVisible();
+              }
+            } catch {}
+          }}
         />
       ),
     });
@@ -313,46 +319,8 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
 
   const pageVariants = createPageVariants(prefersReducedMotion);
 
-  const openCpptModal = async () => {
+  const openCpptModal = () => {
     setCpptModalOpen(true);
-    setCpptModalLoading(true);
-    setCpptModalError("");
-    const reqId = (cpptReqIdRef.current += 1);
-    try {
-      const qs = token ? `t=${encodeURIComponent(token)}` : `no_rkm_medis=${encodeURIComponent(noRkmMedis)}`;
-      const res = await fetch(`/rawat-jalan/riwayat?${qs}`, { headers: { Accept: "application/json" } });
-      const json = await res.json();
-      let arr = Array.isArray(json.data) ? json.data : [];
-      arr = arr
-        .slice()
-        .sort((a, b) => new Date(b.tgl_registrasi || 0) - new Date(a.tgl_registrasi || 0))
-        .slice(0, 5);
-      const results = await Promise.all(
-        arr.map(async (v) => {
-          try {
-            const url = route("rawat-jalan.pemeriksaan-ralan", { no_rawat: v.no_rawat });
-            const r = await fetch(url);
-            const j = await r.json();
-            const list = Array.isArray(j.data) ? j.data : [];
-            const filtered = list && list.length && list.some((row) => Object.prototype.hasOwnProperty.call(row, "no_rawat"))
-              ? list.filter((row) => String(row.no_rawat) === String(v.no_rawat))
-              : list;
-            return { ...v, entries: filtered };
-          } catch {
-            return { ...v, entries: [] };
-          }
-        })
-      );
-      if (cpptReqIdRef.current === reqId && cpptModalOpen) {
-        setCpptModalItems(results);
-      }
-    } catch (e) {
-      if (cpptReqIdRef.current === reqId && cpptModalOpen) {
-        setCpptModalError(String(e?.message || e));
-      }
-    } finally {
-      setCpptModalLoading(false);
-    }
   };
 
   const openBridgingModal = async () => {
@@ -914,6 +882,98 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       <motion.div className="text-sm font-semibold text-[oklch(98.5%_0_0)]" variants={headerItemVariants}>
                         {pages[index].title}
                       </motion.div>
+                    <div className="flex items-center gap-2 ml-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "new-cppt");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka SOAP"
+                          title="Buka SOAP"
+                        >
+                          SOAP
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "tarif");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka Tindakan"
+                          title="Buka Tindakan"
+                        >
+                          Tindakan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "diagnosa");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka Diagnosa"
+                          title="Buka Diagnosa"
+                        >
+                          Diagnosa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "odontogram");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka Odontogram"
+                          title="Buka Odontogram"
+                        >
+                          Odontogram
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "resep");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka Resep"
+                          title="Buka Resep"
+                        >
+                          Resep
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const idx = pages.findIndex((p) => p.key === "lab");
+                            if (idx >= 0) {
+                              setDir(idx > index ? 1 : -1);
+                              setIndex(idx);
+                            }
+                          }}
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-white shrink-0 whitespace-nowrap"
+                          aria-label="Buka Laboratorium"
+                          title="Buka Laboratorium"
+                        >
+                          Laboratorium
+                        </button>
+                      </div>
                     </div>
                     <motion.div className="flex items-center gap-2 cursor-grab active:cursor-grabbing" drag="x" dragConstraints={{ left: -60, right: 60 }} dragElastic={0.12} dragMomentum={false} onDragEnd={handleDragEnd}>
                       <div className="text-xs text-[oklch(98.5%_0_0)]">
@@ -992,21 +1052,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       >
                         {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const idx = pages.findIndex((p) => p.key === "resep");
-                          if (idx >= 0) {
-                            setDir(idx > index ? 1 : -1);
-                            setIndex(idx);
-                          }
-                        }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-black text-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]"
-                        aria-label="Buka Resep"
-                        title="Buka Resep"
-                      >
-                        Resep
-                      </button>
+                      
                       <button
                         type="button"
                         onClick={() => {
@@ -1165,123 +1211,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       </button>
                     </div>
                     <div className="p-3 sm:p-4 space-y-2">
-                      {cpptModalLoading ? (
-                        <div className="text-xs text-gray-500">Memuat...</div>
-                      ) : cpptModalError ? (
-                        <div className="text-xs text-red-600 dark:text-red-400">{cpptModalError}</div>
-                      ) : cpptModalItems.length === 0 ? (
-                        <div className="text-xs text-gray-500">Tidak ada data</div>
-                      ) : (
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                          <div className="overflow-x-auto lg:overflow-x-hidden w-full max-w-full">
-                            <table className="w-full text-xs table-auto">
-                              <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                <tr className="text-left text-gray-600 dark:text-gray-300">
-                                  <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
-                                  <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
-                                  <th className="px-3 py-2 font-bold min-w-[9rem] w-28 lg:w-auto">TTV</th>
-                                  <th className="px-3 py-2 font-bold w-56 lg:w-auto">Pemeriksaan Fisik (Objektif)</th>
-                                  <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian (Assessment)</th>
-                                  <th className="px-3 py-2 font-bold w-48 lg:w-auto">Tindak Lanjut (Planning)</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {cpptModalItems.map((h) => {
-                                  let tanggal = "-";
-                                  try {
-                                    if (typeof h.no_rawat === "string") {
-                                      const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
-                                      if (m) {
-                                        const y = m[1];
-                                        const mm = m[2];
-                                        const dd = m[3];
-                                        const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
-                                        tanggal = dt.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-                                      } else if (h.tgl_registrasi) {
-                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-                                      }
-                                    } else if (h.tgl_registrasi) {
-                                      tanggal = new Date(h.tgl_registrasi).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-                                    }
-                                  } catch {}
-                                  return Array.isArray(h.entries) && h.entries.length > 0 ? (
-                                    h.entries
-                                      .slice()
-                                      .sort((a, b) => {
-                                        const aa = String(a.jam_rawat || "").substring(0, 5);
-                                        const bb = String(b.jam_rawat || "").substring(0, 5);
-                                        return aa < bb ? 1 : aa > bb ? -1 : 0;
-                                      })
-                                      .map((e, i) => (
-                                        <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                          <td className="px-3 py-2 text-gray-900 dark:text-white">
-                                            <div className="space-y-0.5">
-                                              <div className="font-mono">
-                                                {tanggal} {(typeof e.jam_rawat === "string" && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : "-"}
-                                              </div>
-                                              <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || "-"}</div>
-                                            </div>
-                                          </td>
-                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                            <div className="break-words whitespace-normal" title={typeof e.keluhan === "string" ? e.keluhan.trim() : ""}>
-                                              {(typeof e.keluhan === "string" && e.keluhan.trim()) ? e.keluhan.trim() : "-"}
-                                            </div>
-                                          </td>
-                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300 min-w-[9rem]">
-                                            <div className="space-y-0.5 text-[11px] leading-tight">
-                                              <div className="flex justify-between gap-2">
-                                                <span className="text-gray-500 whitespace-nowrap">Suhu</span>
-                                                <span className="text-right">{e.suhu_tubuh || "-"}°C</span>
-                                              </div>
-                                              <div className="flex justify-between gap-2">
-                                                <span className="text-gray-500 whitespace-nowrap">Tensi</span>
-                                                <span className="text-right">{e.tensi || "-"}</span>
-                                              </div>
-                                              <div className="flex justify-between gap-2">
-                                                <span className="text-gray-500 whitespace-nowrap">Nadi</span>
-                                                <span className="text-right">{e.nadi || "-"}/min</span>
-                                              </div>
-                                              <div className="flex justify-between gap-2">
-                                                <span className="text-gray-500 whitespace-nowrap">SpO2</span>
-                                                <span className="text-right">{e.spo2 || "-"}%</span>
-                                              </div>
-                                            </div>
-                                          </td>
-                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                            <div className="break-words whitespace-normal" title={typeof e.pemeriksaan === "string" ? e.pemeriksaan.trim() : ""}>
-                                              {(typeof e.pemeriksaan === "string" && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : "-"}
-                                            </div>
-                                          </td>
-                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                            <div className="break-words whitespace-normal" title={typeof e.penilaian === "string" ? e.penilaian.trim() : ""}>
-                                              {(typeof e.penilaian === "string" && e.penilaian.trim()) ? e.penilaian.trim() : "-"}
-                                            </div>
-                                          </td>
-                                          <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                            <div className="break-words whitespace-normal" title={(() => {
-                                              const s = typeof e.rtl === "string" ? e.rtl.trim() : "";
-                                              const i = typeof e.instruksi === "string" ? e.instruksi.trim() : "";
-                                              const v = typeof e.evaluasi === "string" ? e.evaluasi.trim() : "";
-                                              return s || i || v || "";
-                                            })()}>
-                                              {(() => {
-                                                const s = typeof e.rtl === "string" ? e.rtl.trim() : "";
-                                                const i = typeof e.instruksi === "string" ? e.instruksi.trim() : "";
-                                                const v = typeof e.evaluasi === "string" ? e.evaluasi.trim() : "";
-                                                const joined = [s, i, v].filter(Boolean).join("\n");
-                                                return joined || "-";
-                                              })()}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ))
-                                  ) : null;
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
+                      <RiwayatKunjungan token={token} noRkmMedis={noRkmMedis} />
                     </div>
                   </div>
                 </div>

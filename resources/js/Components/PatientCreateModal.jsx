@@ -30,8 +30,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     const bahasaPasienForm = useForm({ nama_bahasa: "" });
     const [showSukuBangsaModal, setShowSukuBangsaModal] = useState(false);
     const sukuBangsaForm = useForm({ nama_suku_bangsa: "" });
-    const [showPerusahaanPasienModal, setShowPerusahaanPasienModal] =
-        useState(false);
+    const [showPerusahaanPasienModal, setShowPerusahaanPasienModal] = useState(false);
     const perusahaanPasienForm = useForm({
         kode_perusahaan: "",
         nama_perusahaan: "",
@@ -50,6 +49,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         message: "",
         autoClose: false,
     });
+    const [usePatientAddress, setUsePatientAddress] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         no_rkm_medis: "",
@@ -81,6 +81,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         nip: "",
     });
 
+    useEffect(() => {
+        if (usePatientAddress) {
+            setData("alamatpj", data.alamat || "");
+        }
+    }, [usePatientAddress, data.alamat]);
+
     // Load next no_rkm_medis on component mount
     useEffect(() => {
         const fetchNextNoRM = async () => {
@@ -106,6 +112,14 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (isOpen) {
+            setPekerjaanOption("KARYAWAN SWASTA");
+            setData("pekerjaan", "KARYAWAN SWASTA");
+            setData("agama", "ISLAM");
+        }
+    }, [isOpen]);
+
     // Load penjab options on component mount
     useEffect(() => {
         const loadPenjabOptions = async () => {
@@ -128,6 +142,22 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             loadPenjabOptions();
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const findByLabel = (opts, target) => {
+            const t = String(target).toLowerCase();
+            return (Array.isArray(opts) ? opts : []).find(
+                (o) => String(o?.label || "").toLowerCase() === t
+            );
+        };
+        const suku = findByLabel(sukuOptions, "JAWA");
+        if (suku) setData("suku_bangsa", suku.value);
+        const bahasa = findByLabel(bahasaOptions, "JAWA");
+        if (bahasa) setData("bahasa_pasien", bahasa.value);
+        const cacat = findByLabel(cacatOptions, "TIDAK ADA");
+        if (cacat) setData("cacat_fisik", cacat.value);
+    }, [isOpen, sukuOptions, bahasaOptions, cacatOptions]);
 
     // Load reference options (perusahaan pasien, suku bangsa, bahasa pasien, cacat fisik) when modal opens
     useEffect(() => {
@@ -1776,9 +1806,19 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
 
 
                                             <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat Keluarga
-                                                </label>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Alamat Keluarga
+                                                    </label>
+                                                    <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={usePatientAddress}
+                                                            onChange={(e) => setUsePatientAddress(e.target.checked)}
+                                                        />
+                                                        Salin dari alamat pasien
+                                                    </label>
+                                                </div>
                                                 <textarea
                                                     name="alamatpj"
                                                     value={data.alamatpj}

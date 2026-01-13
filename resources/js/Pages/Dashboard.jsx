@@ -538,6 +538,31 @@ export default function Dashboard() {
         props?.settings?.nama_instansi ||
         props?.setting?.nama_instansi ||
         props?.nama_instansi;
+    const [appSetting, setAppSetting] = useState(null);
+    useEffect(() => {
+        let active = true;
+        (async () => {
+            try {
+                const url = route("setting.app.index", {}, false);
+                const res = await fetch(url, {
+                    headers: { Accept: "application/json" },
+                });
+                const json = await res.json();
+                const rows = json?.data || [];
+                const sel =
+                    rows.find(
+                        (r) => String(r?.aktifkan || "").toLowerCase() === "yes"
+                    ) || rows[0] || null;
+                if (active) setAppSetting(sel);
+            } catch (_) {
+                if (active) setAppSetting(null);
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, []);
+    const namaInstansiLokasi = appSetting?.nama_instansi || namaInstansi || "Faskesku.id";
     // Gunakan wallpaper dari tabel setting via route streaming; fallback ke file default
 
     const wallpaperUrl = "/img/wallpaper.png";
@@ -1434,7 +1459,7 @@ export default function Dashboard() {
                     <section className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/85 backdrop-blur-xl p-6 shadow-xl shadow-blue-500/5">
                         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                            Lokasi UPT Puskesmas Kerjo
+                            Lokasi {namaInstansiLokasi}
                         </h3>
                         <div className="rounded-xl overflow-hidden">
                             {staticUrl ? (
@@ -1445,7 +1470,7 @@ export default function Dashboard() {
                                 >
                                     <img
                                         src={staticUrl}
-                                        alt="Lokasi UPT Puskesmas Kerjo"
+                                        alt={`Lokasi ${namaInstansiLokasi}`}
                                         style={{
                                             width: "100%",
                                             height: 480,
@@ -1456,7 +1481,7 @@ export default function Dashboard() {
                                 </a>
                             ) : (
                                 <iframe
-                                    title="Lokasi UPT Puskesmas Kerjo"
+                                    title={`Lokasi ${namaInstansiLokasi}`}
                                     src={mapUrl}
                                     width="100%"
                                     height="480"

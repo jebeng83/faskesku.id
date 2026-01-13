@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { route } from 'ziggy-js';
 import { BeakerIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function RiwayatKunjungan({ token, noRkmMedis }) {
@@ -15,6 +14,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     const [loadingRad, setLoadingRad] = useState({});
     const [soapData, setSoapData] = useState({});
     const [loadingSoap, setLoadingSoap] = useState({});
+    const [odontogramData, setOdontogramData] = useState({});
+    const [loadingOdontogram, setLoadingOdontogram] = useState({});
     const [openSections, setOpenSections] = useState({}); // { [noRawat]: { obat:boolean, lab:boolean, rad:boolean } }
 
     const fetchMedicationData = useCallback(async (noRawat) => {
@@ -81,11 +82,30 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         }
     }, [radData]);
 
+    const fetchOdontogramData = useCallback(async (noRawat) => {
+        if (odontogramData[noRawat]) return;
+        setLoadingOdontogram(prev => ({ ...prev, [noRawat]: true }));
+        try {
+            const res = await fetch(`/api/odontogram/rawat/${encodeURIComponent(noRawat)}`, { headers: { 'Accept': 'application/json' } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            const data = Array.isArray(json.data) ? json.data : [];
+            setOdontogramData(prev => ({ ...prev, [noRawat]: data }));
+        } catch (_) {
+            setOdontogramData(prev => ({ ...prev, [noRawat]: [] }));
+        } finally {
+            setLoadingOdontogram(prev => ({ ...prev, [noRawat]: false }));
+        }
+    }, [odontogramData]);
+
     const fetchSoapData = useCallback(async (noRawat) => {
         if (soapData[noRawat]) return;
         setLoadingSoap(prev => ({ ...prev, [noRawat]: true }));
         try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
+            const qs = token
+                ? `t=${encodeURIComponent(token)}`
+                : `no_rawat=${encodeURIComponent(noRawat)}`;
+            const url = `/rawat-jalan/pemeriksaan-ralan?${qs}`;
             const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const json = await res.json();
@@ -97,7 +117,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         } finally {
             setLoadingSoap(prev => ({ ...prev, [noRawat]: false }));
         }
-    }, [soapData]);
+    }, [soapData, token]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -140,10 +160,11 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
             // Auto-open Obat section for this visit and fetch immediately
             setOpenSections(prev => ({
                 ...prev,
-                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false }
+                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false, odontogram: false }
             }));
             fetchMedicationData(visit.no_rawat);
             fetchSoapData(visit.no_rawat);
+            fetchOdontogramData(visit.no_rawat);
         }
     };
 
@@ -471,13 +492,13 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                         <div className="truncate">{e.nip || e.kd_dokter || e.nm_dokter || e.nama_dokter || e.nm_pegawai || '-'}</div>
                                     </td>
                                     <td className="px-3 py-2 w-64 text-gray-700 dark:text-gray-300">
-                                        <div className="truncate whitespace-nowrap" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                        <div className="break-words whitespace-pre-line" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
                                             {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-64 text-gray-700 dark:text-gray-300">
                                         <div className="space-y-1">
-                                            <div className="truncate whitespace-nowrap" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
+                                            <div className="break-words whitespace-pre-line" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
                                                 {(typeof e.pemeriksaan === 'string' && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : '-'}
                                             </div>
                                             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
@@ -495,22 +516,22 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
-                                        <div className="truncate whitespace-nowrap" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
+                                        <div className="break-words whitespace-pre-line" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
                                             {(typeof e.penilaian === 'string' && e.penilaian.trim()) ? e.penilaian.trim() : '-'}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
-                                        <div className="truncate whitespace-nowrap" title={typeof e.rtl === 'string' ? e.rtl.trim() : ''}>
+                                        <div className="break-words whitespace-pre-line" title={typeof e.rtl === 'string' ? e.rtl.trim() : ''}>
                                             {(typeof e.rtl === 'string' && e.rtl.trim()) ? e.rtl.trim() : '-'}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
-                                        <div className="truncate whitespace-nowrap" title={typeof e.instruksi === 'string' ? e.instruksi.trim() : ''}>
+                                        <div className="break-words whitespace-pre-line" title={typeof e.instruksi === 'string' ? e.instruksi.trim() : ''}>
                                             {(typeof e.instruksi === 'string' && e.instruksi.trim()) ? e.instruksi.trim() : '-'}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 w-48 text-gray-700 dark:text-gray-300">
-                                        <div className="truncate whitespace-nowrap" title={typeof e.evaluasi === 'string' ? e.evaluasi.trim() : ''}>
+                                        <div className="break-words whitespace-pre-line" title={typeof e.evaluasi === 'string' ? e.evaluasi.trim() : ''}>
                                             {(typeof e.evaluasi === 'string' && e.evaluasi.trim()) ? e.evaluasi.trim() : '-'}
                                         </div>
                                     </td>
@@ -523,9 +544,101 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         );
     };
 
+    const renderOdontogram = (noRawat) => {
+        const rows = odontogramData[noRawat] || [];
+        const isLoading = loadingOdontogram[noRawat];
+        if (isLoading) return (<div className="py-6 text-center text-xs text-gray-500">Memuat data odontogram...</div>);
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return (
+                <div className="text-center py-6 text-gray-500">
+                    <p className="text-xs">Belum ada data odontogram</p>
+                </div>
+            );
+        }
+        const grouped = rows.reduce((acc, r) => {
+            const key = r.tanggal || '-';
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(r);
+            return acc;
+        }, {});
+        const sortedDates = Object.keys(grouped).sort((a, b) => {
+            if (a === '-') return 1;
+            if (b === '-') return -1;
+            return new Date(b) - new Date(a);
+        });
+        const formatDateId = (date) => {
+            if (!date || date === '-') return '-';
+            try {
+                return new Date(date).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch {
+                return date;
+            }
+        };
+        return (
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                <div className="bg-gray-50 dark:bg-gray-700/50 px-3 py-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">Riwayat Odontogram</span>
+                    <span className="text-[11px] text-gray-600 dark:text-gray-300">{rows.length} item</span>
+                </div>
+                <div>
+                    {sortedDates.map((dateKey) => {
+                        const items = grouped[dateKey].slice().sort((a, b) => String(a.elemen_gigi || '').localeCompare(String(b.elemen_gigi || '')));
+                        return (
+                            <div key={dateKey} className="border-t border-gray-100 dark:border-gray-700">
+                                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/30 flex items-center justify-between">
+                                    <div className="text-xs font-medium text-gray-700 dark:text-gray-300">{formatDateId(dateKey)}</div>
+                                    <div className="text-[11px] text-gray-500 dark:text-gray-400">{items.length} item</div>
+                                </div>
+                                <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+                                    {items.map((r, idx) => (
+                                        <div key={idx} className="px-4 py-3 flex items-start justify-between gap-4">
+                                            <div className="min-w-0">
+                                                <div className="text-sm text-gray-900 dark:text-white">Elemen {r.elemen_gigi || '-'}</div>
+                                                <div className="mt-1 text-xs text-gray-500 dark:text-gray-300">{r.kondisi?.nama || r.kondisi?.kode || '-'}</div>
+                                                <div className="mt-0.5 text-[11px] text-gray-400 dark:text-gray-400">{r.diagnosa?.kode || '-'} · {r.diagnosa?.nama || '-'}</div>
+                                            </div>
+                                            <div className="text-right text-xs text-gray-600 dark:text-gray-300">{r.jenis_perawatan?.nama || r.jenis_perawatan?.kode || '-'}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                            <tr>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Elemen</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnosa</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tindakan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                                            {items.map((r, idx) => (
+                                                <tr key={idx}>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{r.elemen_gigi || '-'}</td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{r.kondisi?.nama || r.kondisi?.kode || '-'}</td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{(r.diagnosa?.kode || '-') + ' ' + (r.diagnosa?.nama || '')}</td>
+                                                    <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{r.jenis_perawatan?.nama || r.jenis_perawatan?.kode || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
     const toggleSection = async (noRawat, key) => {
         setOpenSections(prev => {
-            const prevForVisit = prev[noRawat] || { obat: false, soap: false, lab: false, rad: false };
+            const prevForVisit = prev[noRawat] || { obat: false, soap: false, lab: false, rad: false, odontogram: false };
             const nextVal = !prevForVisit[key];
             return { ...prev, [noRawat]: { ...prevForVisit, [key]: nextVal } };
         });
@@ -540,6 +653,8 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 await fetchLabData(noRawat);
             } else if (key === 'rad' && !radData[noRawat]) {
                 await fetchRadData(noRawat);
+            } else if (key === 'odontogram' && !odontogramData[noRawat]) {
+                await fetchOdontogramData(noRawat);
             }
         } catch {
             // ignore
@@ -668,6 +783,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                             >
                                 {/* Info poli sudah tampil di header */}
                                 {renderMedicationTable(row.no_rawat)}
+                                {renderOdontogram(row.no_rawat)}
                                 {renderLab(row.no_rawat)}
                                 {renderRadiologi(row.no_rawat)}
                             </div>
@@ -769,6 +885,32 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                                         </button>
                                         <div className={`${openSections[row.no_rawat]?.soap ? 'block' : 'hidden'} p-2`}>
                                             {renderSoap(row.no_rawat)}
+                                        </div>
+                                    </div>
+
+                                    {/* Section Odontogram */}
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSection(row.no_rawat, 'odontogram')}
+                                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-gray-800"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">Riwayat Odontogram</span>
+                                                <span className="text-[11px] text-gray-500">{(odontogramData[row.no_rawat] || []).length} item</span>
+                                            </div>
+                                            {openSections[row.no_rawat]?.odontogram ? (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12M6 12h12" />
+                                                </svg>
+                                            )}
+                                        </button>
+                                        <div className={`${openSections[row.no_rawat]?.odontogram ? 'block' : 'hidden'} p-2`}>
+                                            {renderOdontogram(row.no_rawat)}
                                         </div>
                                     </div>
 

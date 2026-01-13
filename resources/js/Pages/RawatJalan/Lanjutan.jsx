@@ -435,10 +435,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             const results = await Promise.all(
                 arr.map(async (v) => {
                     try {
-                        const url = route("rawat-jalan.pemeriksaan-ralan", {
-                            no_rawat: v.no_rawat,
-                        });
-                        const r = await fetch(url);
+                        const qsSoap = token
+                            ? `t=${encodeURIComponent(token)}`
+                            : `no_rawat=${encodeURIComponent(v.no_rawat)}`;
+                        const url = `/rawat-jalan/pemeriksaan-ralan?${qsSoap}`;
+                        const r = await fetch(url, { headers: { Accept: 'application/json' } });
                         const j = await r.json();
                         const list = Array.isArray(j.data) ? j.data : [];
                         const filtered =

@@ -45,6 +45,7 @@ export default function PatientEditModal({
     // Local state untuk kontrol dropdown pekerjaan dengan opsi "LAINNYA"
     const [pekerjaanOption, setPekerjaanOption] = useState("");
     const [pekerjaanOther, setPekerjaanOther] = useState("");
+    const [usePatientAddress, setUsePatientAddress] = useState(false);
 
     // Helper: normalize various date formats (e.g. ISO "1988-02-22T00:00:00.000000Z") to "YYYY-MM-DD"
     const formatDateForInput = (value) => {
@@ -100,6 +101,46 @@ export default function PatientEditModal({
         bahasa_pasien: "",
         cacat_fisik: "",
     });
+
+    useEffect(() => {
+        if (isOpen) {
+            if (!String(data.pekerjaan || "").trim()) {
+                setPekerjaanOption("KARYAWAN SWASTA");
+                setData("pekerjaan", "KARYAWAN SWASTA");
+            }
+            if (!String(data.agama || "").trim()) {
+                setData("agama", "ISLAM");
+            }
+        }
+    }, [isOpen, data.pekerjaan, data.agama]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const findByLabel = (opts, target) => {
+            const t = String(target).toLowerCase();
+            return (Array.isArray(opts) ? opts : []).find(
+                (o) => String(o?.label || "").toLowerCase() === t
+            );
+        };
+        if (!String(data.suku_bangsa || "").trim()) {
+            const suku = findByLabel(sukuOptions, "JAWA");
+            if (suku) setData("suku_bangsa", suku.value);
+        }
+        if (!String(data.bahasa_pasien || "").trim()) {
+            const bahasa = findByLabel(bahasaOptions, "JAWA");
+            if (bahasa) setData("bahasa_pasien", bahasa.value);
+        }
+        if (!String(data.cacat_fisik || "").trim()) {
+            const cacat = findByLabel(cacatOptions, "TIDAK ADA");
+            if (cacat) setData("cacat_fisik", cacat.value);
+        }
+    }, [isOpen, sukuOptions, bahasaOptions, cacatOptions, data.suku_bangsa, data.bahasa_pasien, data.cacat_fisik]);
+
+    useEffect(() => {
+        if (usePatientAddress) {
+            setData("alamatpj", data.alamat || "");
+        }
+    }, [usePatientAddress, data.alamat]);
 
     // Custom submitting state because we use router.post with method spoofing
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1927,9 +1968,19 @@ export default function PatientEditModal({
                                             </div>
 
                                             <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat Keluarga
-                                                </label>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        Alamat Keluarga
+                                                    </label>
+                                                    <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={usePatientAddress}
+                                                            onChange={(e) => setUsePatientAddress(e.target.checked)}
+                                                        />
+                                                        Salin dari alamat pasien
+                                                    </label>
+                                                </div>
                                                 <textarea
                                                     name="alamatpj"
                                                     value={data.alamatpj}
