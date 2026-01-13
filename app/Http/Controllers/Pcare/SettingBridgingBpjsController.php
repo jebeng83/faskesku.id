@@ -68,4 +68,15 @@ class SettingBridgingBpjsController extends Controller
         return redirect()->route('pcare.setting.index')
             ->with('success', 'Pengaturan berhasil direset');
     }
+
+    public function getKdProvider(Request $request)
+    {
+        $row = DB::table('setting_bridging_bpjs')->first();
+        $kdProvider = (string) ($row->user_pcare ?? '');
+        return response()->json([
+            'success' => true,
+            'kdProvider' => $kdProvider,
+            'source' => 'setting_bridging_bpjs.user_pcare',
+        ]);
+    }
 }

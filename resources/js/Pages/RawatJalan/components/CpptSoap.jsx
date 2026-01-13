@@ -556,6 +556,108 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const editKunjungan = async () => {
+        if (!kunjunganPreview) return;
+        setSendingKunjungan(true);
+        setKunjunganResult(null);
+        setTaccError('');
+        const payload = { ...kunjunganPreview };
+        if (noRawat) {
+            payload.no_rawat = noRawat;
+        }
+        if (isDiagnosaNonSpesialis) {
+            const v = payload.kdTacc;
+            const isEmpty = v === undefined || v === null || v === '' || String(v).trim() === '';
+            const isMinusOne = v === -1 || v === '-1' || v === 0 || v === '0';
+            const isValidTacc = v === 1 || v === 2 || v === 3 || v === 4 || v === '1' || v === '2' || v === '3' || v === '4';
+            if (isEmpty || isMinusOne || !isValidTacc) {
+                setTaccError('KD TACC wajib diisi untuk diagnosa NonSpesialis. Pilih salah satu: 1 (Time), 2 (Age), 3 (Complication), atau 4 (Comorbidity).');
+                setSendingKunjungan(false);
+                return;
+            }
+            const alasan = payload.alasanTacc;
+            const alasanEmpty = alasan === undefined || alasan === null || String(alasan).trim() === '';
+            if (alasanEmpty) {
+                setTaccError('Alasan TACC wajib diisi saat KD TACC dipilih untuk diagnosa NonSpesialis.');
+                setSendingKunjungan(false);
+                return;
+            }
+        }
+        const fmtDate = (d) => {
+            if (!d) return null;
+            try {
+                const dt = new Date(d);
+                const dd = String(dt.getDate()).padStart(2, '0');
+                const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                const yyyy = dt.getFullYear();
+                return `${dd}-${mm}-${yyyy}`;
+            } catch (_) {
+                return d;
+            }
+        };
+        if (rujukanActive && rujukForm.kdppk) {
+            const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(rujukForm.kdSubSpesialis1));
+            const nmSubSpesialis = selectedSubSp ? (selectedSubSp.label.split(' — ')[1] || selectedSubSp.label || '').trim() : '';
+            let nmPPK = '';
+            const selectedProvider = providerOptions.find(opt => String(opt.value) === String(rujukForm.kdppk));
+            if (selectedProvider) {
+                const labelParts = selectedProvider.label.split(' — ');
+                nmPPK = (labelParts.length > 1 ? labelParts[1] : labelParts[0] || '').trim();
+                if (!nmPPK && selectedProvider.meta?.nmppk) {
+                    nmPPK = String(selectedProvider.meta.nmppk).trim();
+                }
+                if (!nmPPK && selectedProvider.meta?.nmProvider) {
+                    nmPPK = String(selectedProvider.meta.nmProvider).trim();
+                }
+            }
+            payload.rujukLanjut = {
+                kdppk: rujukForm.kdppk,
+                tglEstRujuk: fmtDate(rujukForm.tglEstRujuk) || null,
+                subSpesialis: {
+                    kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null,
+                    kdSarana: rujukForm.kdSarana || null,
+                },
+                khusus: null,
+            };
+            payload.nmSubSpesialis = nmSubSpesialis;
+            payload.nmPPK = nmPPK;
+        }
+        const noKunjunganCandidate = (lastNoKunjungan && String(lastNoKunjungan)) || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan && String(pcareRujukanSubspesialis.noKunjungan)) || (payload.noKunjungan && String(payload.noKunjungan)) || '';
+        if (!noKunjunganCandidate) {
+            setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk edit.' });
+            setSendingKunjungan(false);
+            return;
+        }
+        payload.noKunjungan = noKunjunganCandidate;
+        try {
+            const res = await fetch('/api/pcare/kunjungan', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                credentials: 'include',
+                body: JSON.stringify(payload),
+            });
+            const text = await res.text();
+            let json;
+            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
+            if (res.ok) {
+                const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+                setKunjunganResult({ success: true, message: msg });
+            } else {
+                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal edit Kunjungan (${res.status})`;
+                setKunjunganResult({ success: false, message: errMsg });
+            }
+        } catch (e) {
+            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+        } finally {
+            setSendingKunjungan(false);
+        }
+    };
+
     const [selectedTemplate, setSelectedTemplate] = useState('');
     const stripTTV = (text) => {
         if (!text) return '';
@@ -1584,6 +1686,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 title="Bersihkan"
                                             >
                                                 <Eraser className="w-4 h-4" />
+                                            </button>
+                                            <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="ml-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
+                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5h2M12 7v10m7-5H5" />
+                                                </svg>
+                                                Edit Kunjungan
                                             </button>
                                         </div>
                                     </div>
@@ -2645,6 +2753,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 <div>
                                                     <label className="block text-xs font-medium mb-1">Terapi Obat</label>
                                                 <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                <div className="mt-2 flex justify-end">
+                                                    <button
+                                                        type="button"
+                                                        onClick={editKunjungan}
+                                                        disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))}
+                                                        className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium"
+                                                    >
+                                                        Edit Kunjungan
+                                                    </button>
+                                                </div>
                                             </div>
                                             {/* Bagian preview payload dihapus sesuai permintaan untuk membuat popup lebih ringkas */}
                                         </div>
@@ -2892,6 +3010,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             <div className="flex items-center gap-2">
                                 <button type="button" onClick={closeBridgingModal} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
                                 <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
+                                <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2157
+* @see app/Http/Controllers/Pcare/PcareController.php:2159
 * @route '/api/pcare/pendaftaran'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2157
+* @see app/Http/Controllers/Pcare/PcareController.php:2159
 * @route '/api/pcare/pendaftaran'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2157
+* @see app/Http/Controllers/Pcare/PcareController.php:2159
 * @route '/api/pcare/pendaftaran'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @see app/Http/Controllers/Pcare/PcareController.php:2384
 * @route '/api/pcare/pendaftaran'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @see app/Http/Controllers/Pcare/PcareController.php:2384
 * @route '/api/pcare/pendaftaran'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2382
+* @see app/Http/Controllers/Pcare/PcareController.php:2384
 * @route '/api/pcare/pendaftaran'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -69,7 +69,7 @@ deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2114
+* @see app/Http/Controllers/Pcare/PcareController.php:2116
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 export const byRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -84,7 +84,7 @@ byRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2114
+* @see app/Http/Controllers/Pcare/PcareController.php:2116
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ byRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2114
+* @see app/Http/Controllers/Pcare/PcareController.php:2116
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -121,7 +121,7 @@ byRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::byRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2114
+* @see app/Http/Controllers/Pcare/PcareController.php:2116
 * @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
 */
 byRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

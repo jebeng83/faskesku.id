@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { HeartPulse } from "lucide-react";
 import { overlayTransition, contentSpring, transformOriginForDir, createPageVariants, hoverTapVariants, headerItemVariants } from "@/tools/motion";
+import { todayDateString } from "@/tools/datetime";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
@@ -40,6 +42,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   const [sendingKunjungan, setSendingKunjungan] = useState(false);
   const [kunjunganResult, setKunjunganResult] = useState(null);
   const [noKunjungan, setNoKunjungan] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
   const [rujukForm, setRujukForm] = useState({ kdppk: "", tglEstRujuk: "", kdSubSpesialis1: "", kdSarana: "" });
   const [poliOptions, setPoliOptions] = useState([]);
   const [dokterOptions, setDokterOptions] = useState([]);
@@ -55,6 +58,50 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
   
   const [bpjsNoPeserta, setBpjsNoPeserta] = useState("");
   const [bridgingVisible, setBridgingVisible] = useState(false);
+  const [mcuData, setMcuData] = useState(null);
+  const [loadingMcu, setLoadingMcu] = useState(false);
+  const [mcuFormOpen, setMcuFormOpen] = useState(false);
+  const [savingMcu, setSavingMcu] = useState(false);
+  const [skriningData, setSkriningData] = useState(null);
+  const [loadingSkrining, setLoadingSkrining] = useState(false);
+  const [skriningError, setSkriningError] = useState('');
+  const [mcuForm, setMcuForm] = useState({
+    kdMCU: 0,
+    noKunjungan: '',
+    kdProvider: '',
+    tglPelayanan: '',
+    tekananDarahSistole: 0,
+    tekananDarahDiastole: 0,
+    radiologiFoto: null,
+    darahRutinHemo: 0,
+    darahRutinLeu: 0,
+    darahRutinErit: 0,
+    darahRutinLaju: 0,
+    darahRutinHema: 0,
+    darahRutinTrom: 0,
+    lemakDarahHDL: 0,
+    lemakDarahLDL: 0,
+    lemakDarahChol: 0,
+    lemakDarahTrigli: 0,
+    gulaDarahSewaktu: 0,
+    gulaDarahPuasa: 0,
+    gulaDarahPostPrandial: 0,
+    gulaDarahHbA1c: 0,
+    fungsiHatiSGOT: 0,
+    fungsiHatiSGPT: 0,
+    fungsiHatiGamma: 0,
+    fungsiHatiProtKual: 0,
+    fungsiHatiAlbumin: 0,
+    fungsiGinjalCrea: 0,
+    fungsiGinjalUreum: 0,
+    fungsiGinjalAsam: 0,
+    fungsiJantungABI: 0,
+    fungsiJantungEKG: null,
+    fungsiJantungEcho: null,
+    funduskopi: null,
+    pemeriksaanLain: null,
+    keterangan: null,
+  });
 
   useEffect(() => {
     const refreshBridgingVisible = async () => {
@@ -76,6 +123,160 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     // expose method on window for child callbacks (optional)
     try { window.__refreshBridgingVisible = refreshBridgingVisible; } catch {}
   }, [noRawat]);
+
+  useEffect(() => {
+    const loadNoKunjungan = async () => {
+      if (!noRawat || !bridgingVisible) return;
+      try {
+        const res = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          credentials: "include",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.noKunjungan) {
+            setNoKunjungan(json.noKunjungan);
+            setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: json.noKunjungan } : prev);
+          }
+        }
+      } catch (_) {}
+    };
+    loadNoKunjungan();
+  }, [noRawat, bridgingVisible]);
+
+  // Load MCU data when bridging modal opens and noKunjungan is available
+  useEffect(() => {
+    const loadMcuData = async () => {
+      const currentNoKunjungan = noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan);
+      if (!bridgingOpen || !currentNoKunjungan) {
+        setMcuData(null);
+        return;
+      }
+      
+      setLoadingMcu(true);
+      try {
+        const res = await axios.get(`/api/pcare/mcu/kunjungan/${encodeURIComponent(currentNoKunjungan)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          withCredentials: true,
+        });
+        
+        if (res.status === 200 && res.data && res.data.response) {
+          setMcuData(res.data.response);
+        } else {
+          setMcuData(null);
+        }
+      } catch (error) {
+        // Jika error, set null (MCU mungkin tidak tersedia)
+        setMcuData(null);
+      } finally {
+        setLoadingMcu(false);
+      }
+    };
+    
+    loadMcuData();
+  }, [bridgingOpen, noKunjungan, kunjunganPreview]);
+
+  // Load Skrining Riwayat Kesehatan data when bridging modal opens and bpjsNoPeserta is available
+  useEffect(() => {
+    const loadSkriningData = async () => {
+      const currentNoPeserta = bpjsNoPeserta 
+        || (pcarePendaftaran && (pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu))
+        || (kunjunganPreview && kunjunganPreview.noKartu);
+      if (!bridgingOpen || !currentNoPeserta) {
+        setSkriningData(null);
+        setSkriningError('');
+        return;
+      }
+      
+      setLoadingSkrining(true);
+      setSkriningError('');
+      try {
+        // BPJS API tidak menerima start=0, minimal harus 1
+        const res = await axios.get(`/api/pcare/skrining/peserta/${encodeURIComponent(currentNoPeserta)}/1/10`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          withCredentials: true,
+        });
+        
+        // Cek apakah response berhasil dan memiliki data
+        if (res.status === 200 && res.data) {
+          // Cek metaData code untuk memastikan sukses
+          const metaCode = res.data?.metaData?.code;
+          if (metaCode === 200 && res.data.response && res.data.response.list) {
+            setSkriningData(res.data.response);
+            setSkriningError('');
+          } else {
+            // Jika metaData code bukan 200, ada error dari BPJS
+            const errorMsg = res.data?.metaData?.message || 'Data tidak tersedia';
+            if (errorMsg.includes('not registered') || errorMsg.includes('Unauthorized')) {
+              setSkriningError('Layanan Skrining Riwayat Kesehatan tidak terdaftar untuk PPK ini.');
+            } else {
+              setSkriningError(errorMsg);
+            }
+            setSkriningData(null);
+          }
+        } else {
+          const errorMsg = res.data?.metaData?.message || 'Gagal memuat data';
+          setSkriningError(errorMsg);
+          setSkriningData(null);
+        }
+      } catch (error) {
+        // Cek apakah error dari BPJS API
+        const errorResponse = error?.response?.data;
+        const errorMsg = errorResponse?.metaData?.message || error?.message || '';
+        
+        if (errorMsg.includes('not registered') || errorMsg.includes('Unauthorized')) {
+          setSkriningError('Layanan Skrining Riwayat Kesehatan tidak terdaftar untuk PPK ini.');
+        } else if (errorResponse?.metaData?.message) {
+          setSkriningError(errorResponse.metaData.message);
+        } else if (errorMsg) {
+          setSkriningError(errorMsg);
+        } else {
+          setSkriningError('Terjadi kesalahan saat memuat data Skrining Riwayat Kesehatan');
+        }
+        setSkriningData(null);
+      } finally {
+        setLoadingSkrining(false);
+      }
+    };
+    
+    loadSkriningData();
+  }, [bridgingOpen, bpjsNoPeserta, pcarePendaftaran, kunjunganPreview]);
+
+  useEffect(() => {
+    const preloadKdProvider = async () => {
+      try {
+        const res = await axios.get('/api/pcare/config/kd-provider', {
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          withCredentials: true,
+        });
+        if (res.status === 200 && res.data && typeof res.data.kdProvider === 'string') {
+          setMcuForm((p) => ({ ...p, kdProvider: res.data.kdProvider || '' }));
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+    preloadKdProvider();
+  }, []);
+
+  useEffect(() => {
+    const loadKdProvider = async () => {
+      if (!mcuFormOpen) return;
+      setMcuForm((p) => ({ ...p, tglPelayanan: p.tglPelayanan || todayDateString() }));
+      try {
+        const res = await axios.get('/api/pcare/config/kd-provider', {
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          withCredentials: true,
+        });
+        if (res.status === 200 && res.data && typeof res.data.kdProvider === 'string') {
+          setMcuForm((p) => ({ ...p, kdProvider: res.data.kdProvider || '' }));
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+    loadKdProvider();
+  }, [mcuFormOpen]);
 
   const REF_TACC = useMemo(() => ([
     { kdTacc: -1, nmTacc: "Tanpa TACC", alasanTacc: [] },
@@ -325,9 +526,26 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
 
   const openBridgingModal = async () => {
     setBridgingOpen(true);
+    setIsEditMode(false); // Reset mode edit saat modal dibuka
     try {
       setKunjunganResult(null);
       try { await toggleKunjungan(true); } catch {}
+      
+      // Ambil noKunjungan dari endpoint baru
+      try {
+        const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          credentials: "include",
+        });
+        if (nkRes.ok) {
+          const nkJson = await nkRes.json();
+          if (nkJson.success && nkJson.noKunjungan) {
+            setNoKunjungan(nkJson.noKunjungan);
+            setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: nkJson.noKunjungan } : prev);
+          }
+        }
+      } catch (_) {}
+      
       const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
         headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
         credentials: "include",
@@ -408,6 +626,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     setRujukanManual(false);
     setKunjunganPreview(null);
     setKunjunganResult(null);
+    setIsEditMode(false); // Reset mode edit saat modal ditutup
     setSelectedSpesialis("");
     setSubSpesialisOptions([]);
   };
@@ -597,8 +816,20 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     setSendingKunjungan(true);
     setKunjunganResult(null);
     setTaccError("");
+    
+    // Gunakan data dari kunjunganPreview yang sudah diubah oleh user
     const payload = { ...kunjunganPreview };
     if (noRawat) payload.no_rawat = noRawat;
+    
+    // Jika mode edit, pastikan noKunjungan ada
+    if (isEditMode) {
+      if (!noKunjungan && !payload.noKunjungan) {
+        setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk edit.' });
+        setSendingKunjungan(false);
+        return;
+      }
+      payload.noKunjungan = noKunjungan || payload.noKunjungan;
+    }
     if (isDiagnosaNonSpesialis) {
       const v = payload.kdTacc;
       const isEmpty = v === undefined || v === null || v === "" || String(v).trim() === "";
@@ -613,6 +844,8 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     const isEmptyTacc = payload.kdTacc === undefined || payload.kdTacc === null || payload.kdTacc === "";
     if (isEmptyTacc || isMinusOne) { payload.kdTacc = -1; payload.alasanTacc = null; } else { if (payload.alasanTacc === undefined || payload.alasanTacc === null) { payload.alasanTacc = ""; } if (payload.kdTacc === -1 || payload.kdTacc === "-1") { payload.alasanTacc = null; } }
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); const dd = String(dt.getDate()).padStart(2, "0"); const mm = String(dt.getMonth() + 1).padStart(2, "0"); const yyyy = dt.getFullYear(); return `${dd}-${mm}-${yyyy}`; } catch { return d; } };
+    
+    // Handle rujukLanjut: jika rujukan aktif dan ada kdppk, set rujukLanjut; jika tidak, hapus/null
     if (rujukanActive && rujukForm.kdppk) {
       const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(rujukForm.kdSubSpesialis1));
       const nmSubSpesialis = selectedSubSp ? (selectedSubSp.label.split(" — ")[1] || selectedSubSp.label || "").trim() : "";
@@ -624,49 +857,195 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
         if (!nmPPK && selectedProvider.meta?.nmppk) nmPPK = String(selectedProvider.meta.nmppk).trim();
         if (!nmPPK && selectedProvider.meta?.nmProvider) nmPPK = String(selectedProvider.meta.nmProvider).trim();
       }
-      payload.rujukLanjut = { kdppk: rujukForm.kdppk, tglEstRujuk: fmtDate(rujukForm.tglEstRujuk) || null, subSpesialis: { kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null, kdSarana: rujukForm.kdSarana || null }, khusus: null };
+      
+      // Bangun struktur rujukLanjut sesuai katalog BPJS Edit Kunjungan
+      const rujukLanjutPayload = {
+        kdppk: rujukForm.kdppk,
+        tglEstRujuk: fmtDate(rujukForm.tglEstRujuk) || null,
+        subSpesialis: null,
+        khusus: null,
+      };
+      
+      // Jika ada subSpesialis data, tambahkan ke payload
+      if (rujukForm.kdSubSpesialis1 || rujukForm.kdSarana) {
+        rujukLanjutPayload.subSpesialis = {
+          kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null,
+          kdSarana: rujukForm.kdSarana || null,
+        };
+      }
+      
+      // Jika subSpesialis kosong, set null (sesuai katalog BPJS)
+      if (!rujukLanjutPayload.subSpesialis || (!rujukLanjutPayload.subSpesialis.kdSubSpesialis1 && !rujukLanjutPayload.subSpesialis.kdSarana)) {
+        rujukLanjutPayload.subSpesialis = null;
+      }
+      
+      payload.rujukLanjut = rujukLanjutPayload;
       payload.nmSubSpesialis = nmSubSpesialis;
       payload.nmPPK = nmPPK;
+    } else {
+      // Jika tidak ada rujukan aktif atau kdppk kosong, hapus rujukLanjut dari payload
+      // Ini penting untuk edit: jika sebelumnya rujukan, sekarang tidak, harus hapus rujukLanjut
+      delete payload.rujukLanjut;
+      delete payload.nmSubSpesialis;
+      delete payload.nmPPK;
     }
+    // Tentukan method berdasarkan mode edit
+    const method = isEditMode ? "PUT" : "POST";
+    
     try {
-      const res = await fetch("/api/pcare/kunjungan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
-        credentials: "include",
-        body: JSON.stringify(payload),
+      // Refresh CSRF cookie sebelum request
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise((r) => setTimeout(r, 200));
+      } catch (_) {}
+      
+      const res = await axios({
+        method: method,
+        url: "/api/pcare/kunjungan",
+        data: payload,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        withCredentials: true,
       });
-      const text = await res.text();
-      let json; try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
-      if (res.ok) {
-        const r = json && typeof json === "object" ? (json.response || json) : null;
+      const json = res.data || {};
+      const resStatus = res.status;
+      
+      if (resStatus >= 200 && resStatus < 300) {
         let nk = "";
-        if (r && Array.isArray(r) && r[0]) {
-          if (typeof r[0].noKunjungan === "string") nk = String(r[0].noKunjungan);
-          else if (r[0].field === "noKunjungan" && r[0].message) nk = String(r[0].message);
-        } else if (r && typeof r === "object") {
-          if (typeof r.noKunjungan === "string") nk = String(r.noKunjungan);
-          else if (r.field === "noKunjungan" && r.message) nk = String(r.message);
-        }
-        if (nk) {
-          setNoKunjungan(nk);
-          setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: nk } : prev);
-        }
-        const msg = nk || ((json && json.response && json.response.message) ? json.response.message : "CREATED");
-        if (payload.rujukLanjut && noRawat) {
+        if (!isEditMode) {
+          // Untuk POST, ambil noKunjungan dari response
+          const r = json && typeof json === "object" ? (json.response || json) : null;
+          if (r && Array.isArray(r) && r[0]) {
+            if (typeof r[0].noKunjungan === "string") nk = String(r[0].noKunjungan);
+            else if (r[0].field === "noKunjungan" && r[0].message) nk = String(r[0].message);
+          } else if (r && typeof r === "object") {
+            if (typeof r.noKunjungan === "string") nk = String(r.noKunjungan);
+            else if (r.field === "noKunjungan" && r.message) nk = String(r.message);
+          }
+          
+          if (!nk) {
+            // Jika tidak ditemukan di response langsung, coba ambil dari endpoint
+            try {
+              const nkRes = await axios.get(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                withCredentials: true,
+              });
+              if (nkRes.status === 200 && nkRes.data && nkRes.data.success && nkRes.data.noKunjungan) {
+                nk = nkRes.data.noKunjungan;
+              }
+            } catch (_) {}
+          }
+          
+          if (nk) {
+            setNoKunjungan(nk);
+            setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: nk } : prev);
+          }
+        } else {
+          // Untuk PUT (edit), refresh noKunjungan dari endpoint
           try {
-            const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, credentials: "include" });
-            const rujukJson = await rujukRes.json();
-            const rujukData = rujukJson.data || null;
-            if (rujukRes.ok && rujukData) { }
+            const nkRes = await axios.get(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+              headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+              withCredentials: true,
+            });
+            if (nkRes.status === 200 && nkRes.data && nkRes.data.success && nkRes.data.noKunjungan) {
+              setNoKunjungan(nkRes.data.noKunjungan);
+              setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: nkRes.data.noKunjungan } : prev);
+            }
+          } catch (_) {}
+        }
+        
+        const msg = isEditMode 
+          ? ((json && json.metaData && json.metaData.message) ? json.metaData.message : "OK")
+          : (nk || ((json && json.response && json.response.message) ? json.response.message : "CREATED"));
+        
+        if (!isEditMode && payload.rujukLanjut && noRawat) {
+          try {
+            const rujukRes = await axios.get(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+              headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+              withCredentials: true,
+            });
+            if (rujukRes.status === 200 && rujukRes.data) { }
           } catch { }
         }
+        
         setKunjunganResult({ success: true, message: msg });
+        
+        // Keluar dari mode edit setelah berhasil update
+        if (isEditMode) {
+          setIsEditMode(false);
+        }
       } else {
-        const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal kirim Kunjungan (${res.status})`;
+        const errMsg = (json && json.metaData && json.metaData.message) 
+          ? json.metaData.message 
+          : (isEditMode ? `Gagal update Kunjungan (${resStatus})` : `Gagal kirim Kunjungan (${resStatus})`);
         setKunjunganResult({ success: false, message: errMsg });
       }
-    } catch (e) {
-      setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+    } catch (axiosError) {
+      const resStatus = axiosError?.response?.status || 500;
+      const json = axiosError?.response?.data || {};
+      
+      // Jika error 419, coba refresh CSRF dan retry sekali
+      if (resStatus === 419) {
+        try {
+          await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+          await new Promise((r) => setTimeout(r, 300));
+          
+          const retryResponse = await axios({
+            method: method,
+            url: "/api/pcare/kunjungan",
+            data: payload,
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "X-Requested-With": "XMLHttpRequest",
+            },
+            withCredentials: true,
+          });
+          
+          const retryJson = retryResponse.data || {};
+          const retryStatus = retryResponse.status;
+          
+          if (retryStatus >= 200 && retryStatus < 300) {
+            const msg = isEditMode 
+              ? ((retryJson && retryJson.metaData && retryJson.metaData.message) ? retryJson.metaData.message : "OK")
+              : "CREATED";
+            setKunjunganResult({ success: true, message: msg });
+            
+            if (isEditMode) {
+              setIsEditMode(false);
+            }
+            return;
+          }
+        } catch (retryError) {
+          const retryStatus = retryError?.response?.status || 500;
+          const retryJson = retryError?.response?.data || {};
+          const retryErrMsg = (retryJson && retryJson.metaData && retryJson.metaData.message) 
+            ? retryJson.metaData.message 
+            : (isEditMode ? `Gagal update Kunjungan setelah retry (${retryStatus})` : `Gagal kirim Kunjungan setelah retry (${retryStatus})`);
+          setKunjunganResult({ success: false, message: retryErrMsg });
+          return;
+        }
+      }
+      
+      // Ambil pesan error dari BPJS API jika ada
+      let errMsg = isEditMode ? `Gagal update Kunjungan (${resStatus})` : `Gagal kirim Kunjungan (${resStatus})`;
+      if (json && json.metaData && json.metaData.message) {
+        errMsg = json.metaData.message;
+      } else if (json && json.response && Array.isArray(json.response) && json.response.length > 0) {
+        const firstError = json.response[0];
+        if (firstError.message) {
+          errMsg = firstError.message;
+        } else if (firstError.field) {
+          errMsg = `Error pada field ${firstError.field}`;
+        }
+      } else if (json && typeof json === 'object') {
+        errMsg = json.message || json.error || errMsg;
+      }
+      
+      setKunjunganResult({ success: false, message: errMsg });
     } finally {
       setSendingKunjungan(false);
     }
@@ -686,6 +1065,200 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
       }
       await sendKunjungan();
     } catch (_) {}
+  };
+
+  const editKunjungan = async () => {
+    if (!noRawat) return;
+    
+    // Cek apakah noKunjungan sudah ada
+    let candidateNoKunjungan = noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan) || '';
+    
+    if (!candidateNoKunjungan) {
+      try {
+        const nkRes = await axios.get(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          withCredentials: true,
+        });
+        if (nkRes.status === 200 && nkRes.data && nkRes.data.success && nkRes.data.noKunjungan) {
+          candidateNoKunjungan = nkRes.data.noKunjungan;
+        }
+      } catch (_) {}
+    }
+    
+    if (!candidateNoKunjungan) {
+      setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk edit.' });
+      return;
+    }
+    
+    // Load preview data jika belum ada atau refresh jika sudah ada
+    if (!kunjunganPreview) {
+      try {
+        const resPrev = await axios.get(`/api/pcare/kunjungan/preview/${encodeURIComponent(noRawat)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          withCredentials: true,
+        });
+        if (resPrev.status === 200 && resPrev.data && resPrev.data.success) {
+          const payload = resPrev.data.payload || {};
+          setKunjunganPreview({ ...payload, noKunjungan: candidateNoKunjungan });
+        }
+      } catch (error) {
+        setKunjunganResult({ success: false, message: `Gagal memuat preview: ${error.message || error}` });
+        return;
+      }
+    } else {
+      // Update noKunjungan di preview jika belum ada
+      setKunjunganPreview((prev) => prev ? { ...prev, noKunjungan: candidateNoKunjungan } : prev);
+      setNoKunjungan(candidateNoKunjungan);
+    }
+    
+    // Aktifkan mode edit
+    setIsEditMode(true);
+    setKunjunganResult(null);
+  };
+
+  const deleteKunjungan = async () => {
+    if (!noRawat) return;
+    
+    // Konfirmasi sebelum hapus
+    const confirmed = typeof window !== 'undefined' 
+      ? window.confirm('Yakin ingin menghapus kunjungan PCare? Tindakan ini tidak dapat dibatalkan.')
+      : false;
+    
+    if (!confirmed) return;
+    
+    // Cek apakah noKunjungan sudah ada
+    let candidateNoKunjungan = noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan) || '';
+    
+    if (!candidateNoKunjungan) {
+      try {
+        const nkRes = await axios.get(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          withCredentials: true,
+        });
+        if (nkRes.status === 200 && nkRes.data && nkRes.data.success && nkRes.data.noKunjungan) {
+          candidateNoKunjungan = nkRes.data.noKunjungan;
+        }
+      } catch (_) {}
+    }
+    
+    if (!candidateNoKunjungan) {
+      setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk dihapus.' });
+      return;
+    }
+    
+    setSendingKunjungan(true);
+    setKunjunganResult(null);
+    
+    try {
+      // Refresh CSRF cookie sebelum request
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise((r) => setTimeout(r, 200));
+      } catch (_) {}
+      
+      // Kirim DELETE request sesuai katalog BPJS: DELETE /kunjungan/{noKunjungan}
+      const res = await axios.delete(`/api/pcare/kunjungan/${encodeURIComponent(candidateNoKunjungan)}`, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        withCredentials: true,
+      });
+      
+      const json = res.data || {};
+      const resStatus = res.status;
+      
+      if (resStatus >= 200 && resStatus < 300) {
+        const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : "OK";
+        setKunjunganResult({ success: true, message: msg });
+        
+        // Reset state setelah berhasil hapus
+        setNoKunjungan("");
+        setKunjunganPreview(null);
+        setIsEditMode(false);
+        
+        // Refresh bridging visible status
+        try {
+          if (typeof window !== 'undefined' && typeof window.__refreshBridgingVisible === 'function') {
+            window.__refreshBridgingVisible();
+          }
+        } catch (_) {}
+      } else {
+        const errMsg = (json && json.metaData && json.metaData.message) 
+          ? json.metaData.message 
+          : `Gagal hapus Kunjungan (${resStatus})`;
+        setKunjunganResult({ success: false, message: errMsg });
+      }
+    } catch (axiosError) {
+      const resStatus = axiosError?.response?.status || 500;
+      const json = axiosError?.response?.data || {};
+      
+      // Jika error 419, coba refresh CSRF dan retry sekali
+      if (resStatus === 419) {
+        try {
+          await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+          await new Promise((r) => setTimeout(r, 300));
+          
+          const retryResponse = await axios.delete(`/api/pcare/kunjungan/${encodeURIComponent(candidateNoKunjungan)}`, {
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              Accept: "application/json",
+              "X-Requested-With": "XMLHttpRequest",
+            },
+            withCredentials: true,
+          });
+          
+          const retryJson = retryResponse.data || {};
+          const retryStatus = retryResponse.status;
+          
+          if (retryStatus >= 200 && retryStatus < 300) {
+            const msg = (retryJson && retryJson.metaData && retryJson.metaData.message) ? retryJson.metaData.message : "OK";
+            setKunjunganResult({ success: true, message: msg });
+            
+            // Reset state setelah berhasil hapus
+            setNoKunjungan("");
+            setKunjunganPreview(null);
+            setIsEditMode(false);
+            
+            // Refresh bridging visible status
+            try {
+              if (typeof window !== 'undefined' && typeof window.__refreshBridgingVisible === 'function') {
+                window.__refreshBridgingVisible();
+              }
+            } catch (_) {}
+            return;
+          }
+        } catch (retryError) {
+          const retryStatus = retryError?.response?.status || 500;
+          const retryJson = retryError?.response?.data || {};
+          const retryErrMsg = (retryJson && retryJson.metaData && retryJson.metaData.message) 
+            ? retryJson.metaData.message 
+            : `Gagal hapus Kunjungan setelah retry (${retryStatus})`;
+          setKunjunganResult({ success: false, message: retryErrMsg });
+          return;
+        }
+      }
+      
+      // Ambil pesan error dari BPJS API jika ada
+      let errMsg = `Gagal hapus Kunjungan (${resStatus})`;
+      if (json && json.metaData && json.metaData.message) {
+        errMsg = json.metaData.message;
+      } else if (json && json.response && Array.isArray(json.response) && json.response.length > 0) {
+        const firstError = json.response[0];
+        if (firstError.message) {
+          errMsg = firstError.message;
+        } else if (firstError.field) {
+          errMsg = `Error pada field ${firstError.field}`;
+        }
+      } else if (json && typeof json === 'object') {
+        errMsg = json.message || json.error || errMsg;
+      }
+      
+      setKunjunganResult({ success: false, message: errMsg });
+    } finally {
+      setSendingKunjungan(false);
+    }
   };
 
   const handlePanggilPasien = async () => {
@@ -740,6 +1313,127 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
     } catch (_) {
     } finally {
       setPoliCalling(false);
+    }
+  };
+
+  const addMcu = async () => {
+    const currentNoKunjungan = noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan);
+    if (!currentNoKunjungan) {
+      alert('No Kunjungan belum tersedia. Silakan kirim kunjungan terlebih dahulu.');
+      return;
+    }
+
+    setSavingMcu(true);
+    try {
+      // Refresh CSRF cookie sebelum request
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise((r) => setTimeout(r, 200));
+      } catch (_) {}
+
+      // Format tanggal pelayanan dari input date ke format dd-mm-yyyy
+      const formatDateForBPJS = (dateStr) => {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+      };
+
+      const payload = {
+        ...mcuForm,
+        noKunjungan: currentNoKunjungan,
+        tglPelayanan: formatDateForBPJS(mcuForm.tglPelayanan),
+        // Convert empty strings to null for nullable fields
+        radiologiFoto: mcuForm.radiologiFoto || null,
+        fungsiJantungEKG: mcuForm.fungsiJantungEKG || null,
+        fungsiJantungEcho: mcuForm.fungsiJantungEcho || null,
+        funduskopi: mcuForm.funduskopi || null,
+        pemeriksaanLain: mcuForm.pemeriksaanLain || null,
+        keterangan: mcuForm.keterangan || null,
+      };
+
+      const res = await axios.post('/api/pcare/mcu', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        withCredentials: true,
+      });
+
+      if (res.status >= 200 && res.status < 300) {
+        // Reload data MCU setelah berhasil add
+        const loadMcuData = async () => {
+          setLoadingMcu(true);
+          try {
+            const mcuRes = await axios.get(`/api/pcare/mcu/kunjungan/${encodeURIComponent(currentNoKunjungan)}`, {
+              headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+              withCredentials: true,
+            });
+            
+            if (mcuRes.status === 200 && mcuRes.data && mcuRes.data.response) {
+              setMcuData(mcuRes.data.response);
+            }
+          } catch (_) {}
+          finally {
+            setLoadingMcu(false);
+          }
+        };
+        
+        await loadMcuData();
+        
+        // Reset form dan tutup popup
+        setMcuForm({
+          kdMCU: 0,
+          noKunjungan: '',
+          kdProvider: '',
+          tglPelayanan: '',
+          tekananDarahSistole: 0,
+          tekananDarahDiastole: 0,
+          radiologiFoto: null,
+          darahRutinHemo: 0,
+          darahRutinLeu: 0,
+          darahRutinErit: 0,
+          darahRutinLaju: 0,
+          darahRutinHema: 0,
+          darahRutinTrom: 0,
+          lemakDarahHDL: 0,
+          lemakDarahLDL: 0,
+          lemakDarahChol: 0,
+          lemakDarahTrigli: 0,
+          gulaDarahSewaktu: 0,
+          gulaDarahPuasa: 0,
+          gulaDarahPostPrandial: 0,
+          gulaDarahHbA1c: 0,
+          fungsiHatiSGOT: 0,
+          fungsiHatiSGPT: 0,
+          fungsiHatiGamma: 0,
+          fungsiHatiProtKual: 0,
+          fungsiHatiAlbumin: 0,
+          fungsiGinjalCrea: 0,
+          fungsiGinjalUreum: 0,
+          fungsiGinjalAsam: 0,
+          fungsiJantungABI: 0,
+          fungsiJantungEKG: null,
+          fungsiJantungEcho: null,
+          funduskopi: null,
+          pemeriksaanLain: null,
+          keterangan: null,
+        });
+        setMcuFormOpen(false);
+        alert('Data MCU berhasil ditambahkan.');
+      }
+    } catch (error) {
+      const resStatus = error?.response?.status || 500;
+      const json = error?.response?.data || {};
+      const errMsg = (json && json.metaData && json.metaData.message) 
+        ? json.metaData.message 
+        : `Gagal menambahkan data MCU (${resStatus})`;
+      alert(`Gagal: ${errMsg}`);
+    } finally {
+      setSavingMcu(false);
     }
   };
 
@@ -1530,20 +2224,719 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           </div>
                         )}
                       </div>
+                      
+                      {/* Card MCU */}
+                      <div className="border rounded-lg p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300">Data MCU</h4>
+                          {!mcuFormOpen && (noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan)) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentNoKunjungan = noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan);
+                                setMcuForm((prev) => ({ ...prev, noKunjungan: currentNoKunjungan }));
+                                setMcuFormOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              Add MCU
+                            </button>
+                          )}
+                        </div>
+                        {loadingMcu ? (
+                          <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Memuat data MCU...
+                          </div>
+                        ) : mcuData && mcuData.list && mcuData.list.length > 0 ? (
+                          <div className="space-y-3 text-sm">
+                            {mcuData.list.map((mcu, idx) => (
+                              <div key={idx} className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">Tanggal Pelayanan:</span>
+                                    <span className="ml-1 text-gray-600 dark:text-gray-400">{mcu.tglPelayanan || '-'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">KD Provider:</span>
+                                    <span className="ml-1 text-gray-600 dark:text-gray-400">{mcu.kdProvider || '-'}</span>
+                                  </div>
+                                </div>
+                                
+                                {/* Tekanan Darah */}
+                                {(mcu.tekananDarahSistole > 0 || mcu.tekananDarahDiastole > 0) && (
+                                  <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                      <span className="font-medium text-gray-700 dark:text-gray-300">Tekanan Darah:</span>
+                                      <span className="ml-1 text-gray-600 dark:text-gray-400">{mcu.tekananDarahSistole}/{mcu.tekananDarahDiastole} mmHg</span>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Darah Rutin */}
+                                {(mcu.darahRutinHemo > 0 || mcu.darahRutinLeu > 0 || mcu.darahRutinErit > 0 || mcu.darahRutinLaju > 0 || mcu.darahRutinHema > 0 || mcu.darahRutinTrom > 0) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Darah Rutin:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                      {mcu.darahRutinHemo > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Hemoglobin:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinHemo}</span>
+                                        </div>
+                                      )}
+                                      {mcu.darahRutinLeu > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Leukosit:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinLeu}</span>
+                                        </div>
+                                      )}
+                                      {mcu.darahRutinErit > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Eritrosit:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinErit}</span>
+                                        </div>
+                                      )}
+                                      {mcu.darahRutinLaju > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Laju Endap:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinLaju}</span>
+                                        </div>
+                                      )}
+                                      {mcu.darahRutinHema > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Hematokrit:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinHema}</span>
+                                        </div>
+                                      )}
+                                      {mcu.darahRutinTrom > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Trombosit:</span>
+                                          <span className="ml-1 font-medium">{mcu.darahRutinTrom}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Lemak Darah */}
+                                {(mcu.lemakDarahHDL > 0 || mcu.lemakDarahLDL > 0 || mcu.lemakDarahChol > 0 || mcu.lemakDarahTrigli > 0) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Lemak Darah:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                      {mcu.lemakDarahHDL > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">HDL:</span>
+                                          <span className="ml-1 font-medium">{mcu.lemakDarahHDL}</span>
+                                        </div>
+                                      )}
+                                      {mcu.lemakDarahLDL > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">LDL:</span>
+                                          <span className="ml-1 font-medium">{mcu.lemakDarahLDL}</span>
+                                        </div>
+                                      )}
+                                      {mcu.lemakDarahChol > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Kolesterol:</span>
+                                          <span className="ml-1 font-medium">{mcu.lemakDarahChol}</span>
+                                        </div>
+                                      )}
+                                      {mcu.lemakDarahTrigli > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Triglyceride:</span>
+                                          <span className="ml-1 font-medium">{mcu.lemakDarahTrigli}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Gula Darah */}
+                                {(mcu.gulaDarahSewaktu > 0 || mcu.gulaDarahPuasa > 0 || mcu.gulaDarahPostPrandial > 0 || mcu.gulaDarahHbA1c > 0) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Gula Darah:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                      {mcu.gulaDarahSewaktu > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Sewaktu:</span>
+                                          <span className="ml-1 font-medium">{mcu.gulaDarahSewaktu}</span>
+                                        </div>
+                                      )}
+                                      {mcu.gulaDarahPuasa > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Puasa:</span>
+                                          <span className="ml-1 font-medium">{mcu.gulaDarahPuasa}</span>
+                                        </div>
+                                      )}
+                                      {mcu.gulaDarahPostPrandial > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Post Prandial:</span>
+                                          <span className="ml-1 font-medium">{mcu.gulaDarahPostPrandial}</span>
+                                        </div>
+                                      )}
+                                      {mcu.gulaDarahHbA1c > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">HbA1c:</span>
+                                          <span className="ml-1 font-medium">{mcu.gulaDarahHbA1c}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Fungsi Hati */}
+                                {(mcu.fungsiHatiSGOT > 0 || mcu.fungsiHatiSGPT > 0 || mcu.fungsiHatiGamma > 0 || mcu.fungsiHatiProtKual > 0 || mcu.fungsiHatiAlbumin > 0) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Fungsi Hati:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                                      {mcu.fungsiHatiSGOT > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">SGOT:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiHatiSGOT}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiHatiSGPT > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">SGPT:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiHatiSGPT}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiHatiGamma > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Gamma GT:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiHatiGamma}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiHatiProtKual > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Prot. Kual:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiHatiProtKual}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiHatiAlbumin > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Albumin:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiHatiAlbumin}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Fungsi Ginjal */}
+                                {(mcu.fungsiGinjalCrea > 0 || mcu.fungsiGinjalUreum > 0 || mcu.fungsiGinjalAsam > 0) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Fungsi Ginjal:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                      {mcu.fungsiGinjalCrea > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Kreatinin:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiGinjalCrea}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiGinjalUreum > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Ureum:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiGinjalUreum}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiGinjalAsam > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Asam Urat:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiGinjalAsam}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Fungsi Jantung */}
+                                {(mcu.fungsiJantungABI > 0 || mcu.fungsiJantungEKG || mcu.fungsiJantungEcho) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Fungsi Jantung:</div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                      {mcu.fungsiJantungABI > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">ABI:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiJantungABI}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiJantungEKG && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">EKG:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiJantungEKG}</span>
+                                        </div>
+                                      )}
+                                      {mcu.fungsiJantungEcho && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Echo:</span>
+                                          <span className="ml-1 font-medium">{mcu.fungsiJantungEcho}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Pemeriksaan Lainnya */}
+                                {(mcu.radiologiFoto || mcu.funduskopi || mcu.pemeriksaanLain || mcu.keterangan) && (
+                                  <div className="border-t border-blue-200 dark:border-blue-700 pt-2">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Lainnya:</div>
+                                    <div className="space-y-1 text-xs">
+                                      {mcu.radiologiFoto && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Radiologi Foto:</span>
+                                          <span className="ml-1 font-medium">{mcu.radiologiFoto}</span>
+                                        </div>
+                                      )}
+                                      {mcu.funduskopi && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Funduskopi:</span>
+                                          <span className="ml-1 font-medium">{mcu.funduskopi}</span>
+                                        </div>
+                                      )}
+                                      {mcu.pemeriksaanLain && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Pemeriksaan Lain:</span>
+                                          <span className="ml-1 font-medium">{mcu.pemeriksaanLain}</span>
+                                        </div>
+                                      )}
+                                      {mcu.keterangan && (
+                                        <div>
+                                          <span className="text-gray-600 dark:text-gray-400">Keterangan:</span>
+                                          <span className="ml-1 font-medium">{mcu.keterangan}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-600 dark:text-gray-400">Data MCU belum tersedia untuk kunjungan ini.</div>
+                        )}
+                      </div>
+                      
+                      {/* Card Skrining Riwayat Kesehatan */}
+                      <div className="border rounded-lg p-3 md:p-4 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-300">Skrining Riwayat Kesehatan</h4>
+                          {skriningData && skriningData.count !== undefined && (
+                            <span className="text-xs text-purple-600 dark:text-purple-400">
+                              Total: {skriningData.count}
+                            </span>
+                          )}
+                        </div>
+                        {loadingSkrining ? (
+                          <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2 py-2">
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Memuat data Skrining Riwayat Kesehatan...
+                          </div>
+                        ) : skriningError ? (
+                          <div className="text-xs px-3 py-2 rounded-md border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                            <div className="flex items-start gap-2">
+                              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              <div>
+                                <strong className="font-semibold">Informasi:</strong>
+                                <span className="ml-1">{skriningError}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : skriningData && skriningData.list && Array.isArray(skriningData.list) && skriningData.list.length > 0 ? (
+                          <div className="space-y-4">
+                            {skriningData.list.map((peserta, idx) => (
+                              <div key={`peserta-${idx}-${peserta.nomor_peserta || idx}`} className="space-y-3">
+                                {/* Informasi Peserta */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                  <div className="flex items-start">
+                                    <span className="font-medium text-gray-700 dark:text-gray-300 min-w-[100px]">Nomor Peserta:</span>
+                                    <span className="ml-2 text-gray-600 dark:text-gray-400 break-all">{peserta.nomor_peserta || '-'}</span>
+                                  </div>
+                                  <div className="flex items-start">
+                                    <span className="font-medium text-gray-700 dark:text-gray-300 min-w-[60px]">Nama:</span>
+                                    <span className="ml-2 text-gray-600 dark:text-gray-400 break-words">{peserta.nama || '-'}</span>
+                                  </div>
+                                  <div className="flex items-start">
+                                    <span className="font-medium text-gray-700 dark:text-gray-300 min-w-[60px]">Usia:</span>
+                                    <span className="ml-2 text-gray-600 dark:text-gray-400">{peserta.usia !== undefined && peserta.usia !== null ? `${peserta.usia} tahun` : '-'}</span>
+                                  </div>
+                                  {peserta.no_hp && (
+                                    <div className="flex items-start">
+                                      <span className="font-medium text-gray-700 dark:text-gray-300 min-w-[80px]">No. HP:</span>
+                                      <span className="ml-2 text-gray-600 dark:text-gray-400">{peserta.no_hp}</span>
+                                    </div>
+                                  )}
+                                  {peserta.email && (
+                                    <div className="flex items-start md:col-span-2">
+                                      <span className="font-medium text-gray-700 dark:text-gray-300 min-w-[60px]">Email:</span>
+                                      <span className="ml-2 text-gray-600 dark:text-gray-400 break-all">{peserta.email}</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Status Penyakit */}
+                                {peserta.status_penyakit && typeof peserta.status_penyakit === 'object' && Object.keys(peserta.status_penyakit).length > 0 ? (
+                                  <div className="border-t border-purple-200 dark:border-purple-700 pt-3">
+                                    <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-3">Status Penyakit:</div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                                      {Object.entries(peserta.status_penyakit).map(([penyakit, status]) => {
+                                        const formatPenyakit = (key) => {
+                                          return key
+                                            .replace(/_/g, ' ')
+                                            .replace(/\b\w/g, (char) => char.toUpperCase());
+                                        };
+                                        
+                                        const getStatusColor = (status) => {
+                                          if (status === 'Berisiko') return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800';
+                                          if (status === 'Tidak Berisiko') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800';
+                                          if (status === 'Tidak Mengisi') return 'bg-gray-100 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400 border-gray-200 dark:border-gray-700';
+                                          return 'bg-gray-100 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400 border-gray-200 dark:border-gray-700';
+                                        };
+                                        
+                                        return (
+                                          <div key={penyakit} className="flex flex-col p-2 rounded-md bg-white/50 dark:bg-gray-800/50 border border-purple-100 dark:border-purple-800/50">
+                                            <span className="font-medium text-gray-700 dark:text-gray-300 text-xs mb-1">{formatPenyakit(penyakit)}</span>
+                                            <span className={`inline-flex items-center justify-center rounded-full px-2 py-1 text-xs font-medium border ${getStatusColor(status)}`}>
+                                              {status}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 italic">Status penyakit tidak tersedia</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-600 dark:text-gray-400 py-2">
+                            Data Skrining Riwayat Kesehatan belum tersedia untuk peserta ini.
+                          </div>
+                        )}
+                      </div>
                     </div>
                       <div className="sticky bottom-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white/95 dark:bg-gray-900/80 backdrop-blur shadow-sm">
                         <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
                         <div className="flex items-center gap-2">
+                          {!isEditMode && (noKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan)) && (
+                            <>
+                              <button type="button" onClick={deleteKunjungan} disabled={sendingKunjungan || !noRawat} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:opacity-60 text-white shadow-lg">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                Hapus Kunjungan
+                              </button>
+                              <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !noRawat} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 disabled:opacity-60 text-white shadow-lg">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                Edit Kunjungan
+                              </button>
+                            </>
+                          )}
+                          {isEditMode && (
+                            <button type="button" onClick={() => setIsEditMode(false)} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">
+                              Batal Edit
+                            </button>
+                          )}
                           <button type="button" onClick={closeBridgingModal} className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Tutup</button>
                           <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview || (rujukanActive && !rujukForm.kdppk)} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 text-white shadow-lg">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                            Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}
+                            {isEditMode ? 'Update Data' : `Kirim Kunjungan${rujukanActive ? ' + Rujuk' : ''}`}
                           </button>
                         </div>
                       </div>
                   </div>
                 </div>
               )}
+              
+              <AnimatePresence>
+                {mcuFormOpen && (
+                  <motion.div
+                    className="fixed inset-0 z-[10002] flex items-start justify-center overflow-y-auto"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={overlayTransition}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="mcu-modal-title"
+                  >
+                    <div
+                      className="absolute inset-0 bg-[oklch(14.5%_0_0_/_0.5)] backdrop-blur-md"
+                      onClick={() => setMcuFormOpen(false)}
+                    ></div>
+                    <motion.div
+                      className="relative bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full xl:max-w-5xl 2xl:max-w-6xl mx-1 sm:mx-2 my-4 sm:my-8 flex flex-col max-h-[90vh] overflow-hidden border border-gray-200/80 dark:border-gray-800/70 ring-1 ring-gray-200 dark:ring-gray-800"
+                      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -12, scale: 0.98 }}
+                      transition={contentSpring}
+                    >
+                      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                        <div className="flex items-center gap-2 text-white">
+                          <HeartPulse className="w-5 h-5 opacity-90" />
+                          <h3 id="mcu-modal-title" className="text-lg md:text-xl font-semibold">Tambah Data MCU</h3>
+                        </div>
+                        <button onClick={() => setMcuFormOpen(false)} className="text-white/90 hover:text-white rounded-md p-2 hover:bg-white/10">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <motion.div
+                        className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                      >
+                        <div className="space-y-3 text-sm">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-xs font-medium mb-1">KD Provider</label>
+                              <input
+                                type="text"
+                                value={mcuForm.kdProvider}
+                                readOnly
+                                className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium mb-1">Tanggal Pelayanan</label>
+                              <input
+                                type="date"
+                                value={mcuForm.tglPelayanan}
+                                onChange={(e) => setMcuForm((p) => ({ ...p, tglPelayanan: e.target.value }))}
+                                className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-xs font-medium mb-1">Tekanan Darah Sistole</label>
+                              <input
+                                type="number"
+                                value={mcuForm.tekananDarahSistole || ''}
+                                onChange={(e) => setMcuForm((p) => ({ ...p, tekananDarahSistole: parseInt(e.target.value) || 0 }))}
+                                className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium mb-1">Tekanan Darah Diastole</label>
+                              <input
+                                type="number"
+                                value={mcuForm.tekananDarahDiastole || ''}
+                                onChange={(e) => setMcuForm((p) => ({ ...p, tekananDarahDiastole: parseInt(e.target.value) || 0 }))}
+                                className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Darah Rutin</div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Hemoglobin</label>
+                                <input type="number" value={mcuForm.darahRutinHemo || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinHemo: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Leukosit</label>
+                                <input type="number" value={mcuForm.darahRutinLeu || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinLeu: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Eritrosit</label>
+                                <input type="number" value={mcuForm.darahRutinErit || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinErit: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Laju Endap</label>
+                                <input type="number" value={mcuForm.darahRutinLaju || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinLaju: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Hematokrit</label>
+                                <input type="number" value={mcuForm.darahRutinHema || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinHema: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Trombosit</label>
+                                <input type="number" value={mcuForm.darahRutinTrom || ''} onChange={(e) => setMcuForm((p) => ({ ...p, darahRutinTrom: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Lemak Darah</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">HDL</label>
+                                <input type="number" value={mcuForm.lemakDarahHDL || ''} onChange={(e) => setMcuForm((p) => ({ ...p, lemakDarahHDL: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">LDL</label>
+                                <input type="number" value={mcuForm.lemakDarahLDL || ''} onChange={(e) => setMcuForm((p) => ({ ...p, lemakDarahLDL: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Kolesterol</label>
+                                <input type="number" value={mcuForm.lemakDarahChol || ''} onChange={(e) => setMcuForm((p) => ({ ...p, lemakDarahChol: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Triglyceride</label>
+                                <input type="number" value={mcuForm.lemakDarahTrigli || ''} onChange={(e) => setMcuForm((p) => ({ ...p, lemakDarahTrigli: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Gula Darah</div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Sewaktu</label>
+                                <input type="number" value={mcuForm.gulaDarahSewaktu || ''} onChange={(e) => setMcuForm((p) => ({ ...p, gulaDarahSewaktu: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Puasa</label>
+                                <input type="number" value={mcuForm.gulaDarahPuasa || ''} onChange={(e) => setMcuForm((p) => ({ ...p, gulaDarahPuasa: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Post Prandial</label>
+                                <input type="number" value={mcuForm.gulaDarahPostPrandial || ''} onChange={(e) => setMcuForm((p) => ({ ...p, gulaDarahPostPrandial: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">HbA1c</label>
+                                <input type="number" value={mcuForm.gulaDarahHbA1c || ''} onChange={(e) => setMcuForm((p) => ({ ...p, gulaDarahHbA1c: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Fungsi Hati</div>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">SGOT</label>
+                                <input type="number" value={mcuForm.fungsiHatiSGOT || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiHatiSGOT: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">SGPT</label>
+                                <input type="number" value={mcuForm.fungsiHatiSGPT || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiHatiSGPT: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Gamma GT</label>
+                                <input type="number" value={mcuForm.fungsiHatiGamma || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiHatiGamma: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Prot. Kual</label>
+                                <input type="number" value={mcuForm.fungsiHatiProtKual || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiHatiProtKual: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Albumin</label>
+                                <input type="number" value={mcuForm.fungsiHatiAlbumin || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiHatiAlbumin: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Fungsi Ginjal</div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Kreatinin</label>
+                                <input type="number" value={mcuForm.fungsiGinjalCrea || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiGinjalCrea: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Ureum</label>
+                                <input type="number" value={mcuForm.fungsiGinjalUreum || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiGinjalUreum: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Asam Urat</label>
+                                <input type="number" value={mcuForm.fungsiGinjalAsam || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiGinjalAsam: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Fungsi Jantung</div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">ABI</label>
+                                <input type="number" value={mcuForm.fungsiJantungABI || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiJantungABI: parseInt(e.target.value) || 0 }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">EKG</label>
+                                <input type="text" value={mcuForm.fungsiJantungEKG || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiJantungEKG: e.target.value || null }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Echo</label>
+                                <input type="text" value={mcuForm.fungsiJantungEcho || ''} onChange={(e) => setMcuForm((p) => ({ ...p, fungsiJantungEcho: e.target.value || null }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <div className="font-medium text-xs text-gray-700 dark:text-gray-300 mb-2">Pemeriksaan Lainnya</div>
+                            <div className="space-y-2">
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Radiologi Foto</label>
+                                <input type="text" value={mcuForm.radiologiFoto || ''} onChange={(e) => setMcuForm((p) => ({ ...p, radiologiFoto: e.target.value || null }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Funduskopi</label>
+                                <input type="text" value={mcuForm.funduskopi || ''} onChange={(e) => setMcuForm((p) => ({ ...p, funduskopi: e.target.value || null }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Pemeriksaan Lain</label>
+                                <input type="text" value={mcuForm.pemeriksaanLain || ''} onChange={(e) => setMcuForm((p) => ({ ...p, pemeriksaanLain: e.target.value || null }))} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium mb-1">Keterangan</label>
+                                <textarea value={mcuForm.keterangan || ''} onChange={(e) => setMcuForm((p) => ({ ...p, keterangan: e.target.value || null }))} rows={2} className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-sm"></textarea>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                      <div className="sticky bottom-0 px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2 bg-white/95 dark:bg-gray-900/80 backdrop-blur shadow-sm">
+                        <button
+                          type="button"
+                          onClick={() => setMcuFormOpen(false)}
+                          className="px-4 py-2 rounded-md text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={addMcu}
+                          disabled={savingMcu || !mcuForm.noKunjungan}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 disabled:opacity-70 text-white shadow-lg"
+                        >
+                          {savingMcu ? (
+                            <>
+                              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Menyimpan...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              </svg>
+                              Simpan MCU
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               
             </motion.div>
         )}

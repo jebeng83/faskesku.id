@@ -1,5 +1,49 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::getKdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+export const getKdProvider = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getKdProvider.url(options),
+    method: 'get',
+})
+
+getKdProvider.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/config/kd-provider',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::getKdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+getKdProvider.url = (options?: RouteQueryOptions) => {
+    return getKdProvider.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::getKdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+getKdProvider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getKdProvider.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::getKdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+getKdProvider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getKdProvider.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::index
 * @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:15
 * @route '/pcare/setting'
@@ -111,6 +155,6 @@ destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     method: 'delete',
 })
 
-const SettingBridgingBpjsController = { index, store, destroy }
+const SettingBridgingBpjsController = { getKdProvider, index, store, destroy }
 
 export default SettingBridgingBpjsController

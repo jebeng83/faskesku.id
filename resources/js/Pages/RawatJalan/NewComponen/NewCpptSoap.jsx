@@ -57,6 +57,9 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   const [bridgingError, setBridgingError] = useState('');
   const [bridgingInfo, setBridgingInfo] = useState(null);
   const [kunjunganInfo] = useState(null);
+  const [sendingKunjungan, setSendingKunjungan] = useState(false);
+  const [kunjunganResult, setKunjunganResult] = useState(null);
+  const [noKunjunganFromLog, setNoKunjunganFromLog] = useState('');
 
   useEffect(() => {
     if (currentNik && !formData.nip) {
@@ -103,6 +106,34 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
     };
     loadHistory();
     return () => { active = false; };
+  }, [noRawat]);
+
+  useEffect(() => {
+    const loadNoKunjungan = async () => {
+      if (!noRawat) {
+        setNoKunjunganFromLog('');
+        return;
+      }
+      try {
+        const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (nkRes.ok) {
+          const nkJson = await nkRes.json();
+          if (nkJson.success && nkJson.noKunjungan) {
+            setNoKunjunganFromLog(nkJson.noKunjungan);
+          } else {
+            setNoKunjunganFromLog('');
+          }
+        } else {
+          setNoKunjunganFromLog('');
+        }
+      } catch (_) {
+        setNoKunjunganFromLog('');
+      }
+    };
+    loadNoKunjungan();
   }, [noRawat]);
 
   const reloadHistory = async () => {
@@ -350,6 +381,22 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
             setShowBridging(true);
             try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
+            
+            // Refresh noKunjungan setelah pendaftaran PCare berhasil
+            if (noRawat) {
+              try {
+                const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+                  headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                  credentials: 'include',
+                });
+                if (nkRes.ok) {
+                  const nkJson = await nkRes.json();
+                  if (nkJson.success && nkJson.noKunjungan) {
+                    setNoKunjunganFromLog(nkJson.noKunjungan);
+                  }
+                }
+              } catch (_) {}
+            }
           }
         } else {
           const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
@@ -472,6 +519,24 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
       const noUrut = data && data.response && data.response.field === 'noUrut' ? (data.response.message || '') : '';
       const meta = (json && json.metaData && json.metaData.message) ? json.metaData.message : (data && data.metaData && data.metaData.message ? data.metaData.message : '');
       setBridgingInfo({ status, noUrut, meta });
+      
+      // Ambil noKunjungan dari pcare_bpjs_log
+      try {
+        const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (nkRes.ok) {
+          const nkJson = await nkRes.json();
+          if (nkJson.success && nkJson.noKunjungan) {
+            setNoKunjunganFromLog(nkJson.noKunjungan);
+          } else {
+            setNoKunjunganFromLog('');
+          }
+        }
+      } catch (_) {
+        setNoKunjunganFromLog('');
+      }
     } catch (e) {
       setBridgingError(e?.message || String(e));
     } finally {
@@ -510,6 +575,71 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
     } catch (e) {
       const errorMessage = e?.response?.data?.metaData?.message || e?.message || 'Gagal menghapus pendaftaran PCare';
       setBridgingError(errorMessage);
+    }
+  };
+
+  const editKunjungan = async () => {
+    try {
+      setSendingKunjungan(true);
+      setKunjunganResult(null);
+      const resPrev = await fetch(`/api/pcare/kunjungan/preview/${encodeURIComponent(noRawat)}`, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'include',
+      });
+      if (!resPrev.ok) {
+        setKunjunganResult({ success: false, message: `Gagal memuat preview (${resPrev.status})` });
+        setSendingKunjungan(false);
+        return;
+      }
+      const prevJson = await resPrev.json();
+      const payload = { ...(prevJson && prevJson.payload ? prevJson.payload : {}) };
+      if (noRawat) payload.no_rawat = noRawat;
+      const candidate = (lastNoKunjungan && String(lastNoKunjungan)) || (payload.noKunjungan && String(payload.noKunjungan)) || '';
+      if (!candidate) {
+        setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk edit.' });
+        setSendingKunjungan(false);
+        return;
+      }
+      payload.noKunjungan = candidate;
+      const res = await fetch('/api/pcare/kunjungan', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const text = await res.text();
+      let json;
+      try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
+      if (res.ok) {
+        const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+        setKunjunganResult({ success: true, message: msg });
+        
+        // Refresh noKunjungan setelah berhasil edit
+        try {
+          const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'include',
+          });
+          if (nkRes.ok) {
+            const nkJson = await nkRes.json();
+            if (nkJson.success && nkJson.noKunjungan) {
+              setNoKunjunganFromLog(nkJson.noKunjungan);
+            }
+          }
+        } catch (_) {}
+      } else {
+        const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal edit Kunjungan (${res.status})`;
+        setKunjunganResult({ success: false, message: errMsg });
+      }
+    } catch (e) {
+      setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+    } finally {
+      setSendingKunjungan(false);
     }
   };
 
@@ -1468,41 +1598,65 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-2 sm:mx-4 my-6 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Bridging PCare</h3>
-              <button onClick={() => setBridgingOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+              <div className="flex items-center gap-2">
+                {noKunjunganFromLog && (
+                  <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                    No Kunjungan: {noKunjunganFromLog}
+                  </div>
+                )}
+                <button type="button" onClick={editKunjungan} disabled={sendingKunjungan} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium">
+                  Edit Kunjungan
+                </button>
+                <button onClick={() => setBridgingOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+                </button>
+              </div>
             </div>
-            <div className="p-4 space-y-2 text-sm">
-              {bridgingLoading ? (
-                <div className="text-gray-500">Memuat…</div>
-              ) : bridgingError ? (
-                <div className="text-red-600 dark:text-red-400">{bridgingError}</div>
-              ) : bridgingInfo ? (
-                <div className="space-y-1">
-                  <div className="font-medium">Status Pendaftaran PCare: {bridgingInfo.status || '-'}</div>
-                  {bridgingInfo.noUrut ? (
-                    <div>No Urut: {bridgingInfo.noUrut}</div>
+          <div className="p-4 space-y-2 text-sm">
+            {bridgingLoading ? (
+              <div className="text-gray-500">Memuat…</div>
+            ) : bridgingError ? (
+              <div className="text-red-600 dark:text-red-400">{bridgingError}</div>
+            ) : bridgingInfo ? (
+              <div className="space-y-1">
+                <div className="font-medium">Status Pendaftaran PCare: {bridgingInfo.status || '-'}</div>
+                {bridgingInfo.noUrut ? (
+                  <div>No Urut: {bridgingInfo.noUrut}</div>
+                ) : null}
+                {bridgingInfo.meta ? (
+                  <div>Keterangan: {bridgingInfo.meta}</div>
+                ) : null}
+                <div className="pt-2">
+                  <button type="button" onClick={hapusPendaftaranPcare} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white border border-red-700">Hapus Pendaftaran PCare</button>
+                </div>
+                <div className="mt-3 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-2">
+                  <div className="font-medium text-emerald-800 dark:text-emerald-300">Kunjungan PCare</div>
+                  <div className="mt-1">No Kunjungan: {noKunjunganFromLog || kunjunganInfo?.noKunjungan || lastNoKunjungan || '-'}</div>
+                  {kunjunganResult ? (
+                    <div className={`mt-2 text-xs px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>{kunjunganResult.message}</div>
                   ) : null}
-                  {bridgingInfo.meta ? (
-                    <div>Keterangan: {bridgingInfo.meta}</div>
-                  ) : null}
-                  <div className="pt-2">
-                    <button type="button" onClick={hapusPendaftaranPcare} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white border border-red-700">Hapus Pendaftaran PCare</button>
-                  </div>
-                  <div className="mt-3 rounded-md border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-2">
-                    <div className="font-medium text-emerald-800 dark:text-emerald-300">Kunjungan PCare</div>
-                    <div className="mt-1">No Kunjungan: {kunjunganInfo?.noKunjungan || lastNoKunjungan || '-'}</div>
+                  <div className="mt-2 flex justify-end">
+                    <button type="button" onClick={editKunjungan} disabled={sendingKunjungan} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium">
+                      Edit Kunjungan
+                    </button>
                   </div>
                 </div>
-              ) : (
-                <div className="text-gray-500">Tidak ada data</div>
-              )}
+              </div>
+            ) : (
+              <div className="text-gray-500">Tidak ada data</div>
+            )}
+          </div>
+          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-white dark:bg-gray-800">
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setBridgingOpen(false)} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
+              <button type="button" onClick={editKunjungan} disabled={sendingKunjungan} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </form>
   );
 }

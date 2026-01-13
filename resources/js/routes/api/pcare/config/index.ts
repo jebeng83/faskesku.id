@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kabupaten
-* @see app/Http/Controllers/Pcare/PcareController.php:2091
+* @see app/Http/Controllers/Pcare/PcareController.php:2093
 * @route '/api/pcare/config/kabupaten'
 */
 export const kabupaten = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ kabupaten.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kabupaten
-* @see app/Http/Controllers/Pcare/PcareController.php:2091
+* @see app/Http/Controllers/Pcare/PcareController.php:2093
 * @route '/api/pcare/config/kabupaten'
 */
 kabupaten.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ kabupaten.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kabupaten
-* @see app/Http/Controllers/Pcare/PcareController.php:2091
+* @see app/Http/Controllers/Pcare/PcareController.php:2093
 * @route '/api/pcare/config/kabupaten'
 */
 kabupaten.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ kabupaten.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kabupaten
-* @see app/Http/Controllers/Pcare/PcareController.php:2091
+* @see app/Http/Controllers/Pcare/PcareController.php:2093
 * @route '/api/pcare/config/kabupaten'
 */
 kabupaten.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,8 +43,53 @@ kabupaten.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::kdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+export const kdProvider = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kdProvider.url(options),
+    method: 'get',
+})
+
+kdProvider.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/config/kd-provider',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::kdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+kdProvider.url = (options?: RouteQueryOptions) => {
+    return kdProvider.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::kdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+kdProvider.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: kdProvider.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::kdProvider
+* @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:72
+* @route '/api/pcare/config/kd-provider'
+*/
+kdProvider.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: kdProvider.url(options),
+    method: 'head',
+})
+
 const config = {
     kabupaten: Object.assign(kabupaten, kabupaten),
+    kdProvider: Object.assign(kdProvider, kdProvider),
 }
 
 export default config

@@ -309,6 +309,11 @@ trait BpjsTraits
 
         $durationMs = (int) round((microtime(true) - $start) * 1000);
         $rawBody = $response->body();
+        $respHeaders = [
+            'Location' => (string) ($response->header('Location') ?? ''),
+            'location' => (string) ($response->header('location') ?? ''),
+            'Content-Type' => (string) ($response->header('Content-Type') ?? ''),
+        ];
         Log::channel('bpjs')->debug('PCare response', [
             'id' => $logId,
             'status' => $response->status(),
@@ -317,6 +322,7 @@ trait BpjsTraits
             'url' => $url,
             'timestamp_used' => $headers['X-timestamp'] ?? null,
             'body_excerpt' => substr($rawBody ?? '', 0, 1000),
+            'headers_excerpt' => $respHeaders,
         ]);
 
         return [

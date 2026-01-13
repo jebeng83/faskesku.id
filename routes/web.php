@@ -1789,6 +1789,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/LayananPcare');
         })->name('layanan.pcare');
 
+        // Layanan PCare: Data Prolanis (DM & Hipertensi)
+        Route::get('/layanan/data-prolanis', function () {
+            return Inertia::render('Pcare/LayananPcare/DataProlanis');
+        })->name('layanan.data-prolanis');
+
         // Kegiatan Kelompok - Club Prolanis (Inertia page)
         Route::get('/kelompok/club-prolanis', function () {
             return Inertia::render('Pcare/KegiatanKelompok/ClubProlanis');

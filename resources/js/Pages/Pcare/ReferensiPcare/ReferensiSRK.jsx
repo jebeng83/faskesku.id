@@ -36,14 +36,34 @@ export default function ReferensiSRK() {
     try {
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.metaData?.message || 'Gagal memuat data Referensi SRK');
-      const list = json?.response?.list || (Array.isArray(json?.response) ? json.response : []);
+      
+      // Parse response sesuai struktur BPJS: response.list berisi array
+      const list = json?.response?.list || (Array.isArray(json?.response) ? json?.response : []);
       const finalList = Array.isArray(list) ? list : [];
-      setData(finalList);
-      const total = json?.response?.count ?? (Array.isArray(finalList) ? finalList.length : 0);
+      
+      // Count dari response atau panjang array
+      const total = json?.response?.count ?? finalList.length;
       setCount(typeof total === 'number' ? total : 0);
-    } catch (_e) {
-      setError('Terjadi kesalahan');
+      setData(finalList);
+      
+      // Jika tidak ada data dan ada pesan dari metaData, tampilkan sebagai info (bukan error)
+      if (finalList.length === 0 && json?.metaData?.message) {
+        const message = json.metaData.message;
+        // Jika status 200 dan ada pesan khusus, tampilkan sebagai info
+        if (res.ok && (message.includes('tidak tersedia') || message.includes('tidak ditemukan'))) {
+          setError(message); // Tampilkan sebagai pesan info
+        } else if (!res.ok) {
+          setError(message || 'Gagal memuat data Referensi SRK');
+        }
+      } else if (!res.ok) {
+        const errorMsg = json?.metaData?.message || 'Gagal memuat data Referensi SRK';
+        setError(errorMsg);
+      }
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : 'Terjadi kesalahan saat memuat data';
+      setError(errorMsg);
+      setData([]);
+      setCount(0);
     } finally {
       setLoading(false);
     }
@@ -78,15 +98,25 @@ export default function ReferensiSRK() {
     setStart(ns);
   };
 
-  // Derive available columns dynamically with sensible defaults
+  // Derive available columns dynamically sesuai struktur BPJS
   const columns = useMemo(() => {
-    const defaults = ['kdPenyakit', 'nmPenyakit', 'jumlah'];
+    // Default kolom sesuai katalog BPJS: nama_penyakit, beresiko, tidak_beresiko
+    const defaults = ['nama_penyakit', 'beresiko', 'tidak_beresiko'];
     const first = data && data.length > 0 ? data[0] : null;
     if (!first || typeof first !== 'object') return defaults;
     const keys = Object.keys(first);
-    if (keys.length <= 3) return keys;
-    return defaults.filter((k) => keys.includes(k)).length > 0 ? defaults.filter((k) => keys.includes(k)) : keys.slice(0, 6);
+    // Jika kolom default ada di data, gunakan default,否则 gunakan semua kolom yang ada
+    const hasDefaults = defaults.some((k) => keys.includes(k));
+    return hasDefaults ? defaults.filter((k) => keys.includes(k)) : keys.slice(0, 6);
   }, [data]);
+
+  // Format nama penyakit untuk display (replace underscore dengan spasi dan capitalize)
+  const formatNamaPenyakit = (nama) => {
+    if (!nama || typeof nama !== 'string') return nama;
+    return nama
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
@@ -172,29 +202,91 @@ export default function ReferensiSRK() {
         <motion.div variants={itemVariants} className="mt-3 rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-4 text-xs text-slate-500">Memuat data Referensi SRK...</motion.div>
       )}
       {error && (
-        <motion.div variants={itemVariants} className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700">{error}</motion.div>
+        <motion.div 
+          variants={itemVariants} 
+          className={`mt-3 rounded-2xl border p-4 text-xs ${
+            error.includes('tidak tersedia') || error.includes('tidak ditemukan')
+              ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+              : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300'
+          }`}
+        >
+          <div className="flex items-start gap-2">
+            {error.includes('tidak tersedia') || error.includes('tidak ditemukan') ? (
+              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <div>
+              <strong className="font-semibold">
+                {error.includes('tidak tersedia') || error.includes('tidak ditemukan') ? 'Informasi:' : 'Error:'}
+              </strong>
+              <span className="ml-1">{error}</span>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       <motion.div variants={itemVariants} className="mt-3 overflow-x-auto rounded-2xl border border-white/20 dark:border-gray-700/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-50/60">
             <tr>
-              {columns.map((c) => (
-                <th key={c} className="text-left px-3 py-2 font-semibold text-slate-700">{c}</th>
-              ))}
+              {columns.map((c) => {
+                // Format header label
+                let label = c;
+                if (c === 'nama_penyakit') label = 'Nama Penyakit';
+                else if (c === 'beresiko') label = 'Beresiko';
+                else if (c === 'tidak_beresiko') label = 'Tidak Beresiko';
+                else label = c.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+                
+                const isNumeric = c === 'beresiko' || c === 'tidak_beresiko';
+                return (
+                  <th key={c} className={`px-3 py-2 font-semibold text-slate-700 ${isNumeric ? 'text-right' : 'text-left'}`}>
+                    {label}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
             {data.map((row, idx) => (
-              <tr key={`row-${idx}`} className="border-t border-slate-100">
-                {columns.map((c) => (
-                  <td key={`${c}-${idx}`} className="px-3 py-2 text-slate-800">{(row?.[c] ?? '-').toString()}</td>
-                ))}
+              <tr key={`row-${idx}`} className="border-t border-slate-100 hover:bg-slate-50/50 dark:hover:bg-gray-700/30">
+                {columns.map((c) => {
+                  const value = row?.[c];
+                  // Format khusus untuk nama_penyakit
+                  if (c === 'nama_penyakit') {
+                    return (
+                      <td key={`${c}-${idx}`} className="px-3 py-2 text-slate-800 font-medium">
+                        {formatNamaPenyakit(value)}
+                      </td>
+                    );
+                  }
+                  // Format angka dengan separator untuk beresiko dan tidak_beresiko
+                  if (c === 'beresiko' || c === 'tidak_beresiko') {
+                    const numValue = typeof value === 'number' ? value : (typeof value === 'string' ? parseInt(value, 10) : 0);
+                    return (
+                      <td key={`${c}-${idx}`} className="px-3 py-2 text-slate-800 text-right">
+                        {isNaN(numValue) ? '-' : numValue.toLocaleString('id-ID')}
+                      </td>
+                    );
+                  }
+                  // Default formatting
+                  return (
+                    <td key={`${c}-${idx}`} className="px-3 py-2 text-slate-800">
+                      {value != null ? value.toString() : '-'}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
             {!loading && !error && data.length === 0 && (
               <tr>
-                <td colSpan={columns.length || 1} className="px-3 py-6 text-center text-slate-500 text-sm">Tidak ada data untuk filter saat ini.</td>
+                <td colSpan={columns.length || 1} className="px-3 py-6 text-center text-slate-500 text-sm">
+                  {q ? 'Tidak ada data yang sesuai dengan kata kunci.' : 'Tidak ada data untuk ditampilkan.'}
+                </td>
               </tr>
             )}
           </tbody>

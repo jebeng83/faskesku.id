@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\KategoriPengeluaranHarianController as AkutansiKategoriPengeluaranHarianController;
 use App\Http\Controllers\Akutansi\NotaJalanController;
 use App\Http\Controllers\Akutansi\PaymentPointController;
 use App\Http\Controllers\Akutansi\PengeluaranHarianController as AkutansiPengeluaranHarianController;
-use App\Http\Controllers\Akutansi\KategoriPengeluaranHarianController as AkutansiKategoriPengeluaranHarianController;
 use App\Http\Controllers\Alergi\AlergiController;
 use App\Http\Controllers\API\DokterController;
 use App\Http\Controllers\API\EmployeeController;
@@ -26,11 +26,13 @@ use App\Http\Controllers\GudangBarangController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\Kepegawaian\DepartemenController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\Odontogram\OdontogramController;
 use App\Http\Controllers\OpnameController;
+use App\Http\Controllers\Pcare\IcareController;
 use App\Http\Controllers\Pcare\MobileJknController;
 use App\Http\Controllers\Pcare\PcareController;
 use App\Http\Controllers\Pcare\PcareKunjunganController;
-use App\Http\Controllers\Pcare\IcareController;
+use App\Http\Controllers\Pcare\SettingBridgingBpjsController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
@@ -40,11 +42,9 @@ use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
-use App\Http\Controllers\Odontogram\OdontogramController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
 
 // Public endpoints (tidak memerlukan authentication)
 // Hanya endpoint referensi yang benar-benar tidak sensitif
@@ -138,6 +138,7 @@ Route::get('/public/sip-pegawai/expiring', function () {
 // Public verification endpoint for Surat Sakit TTD
 Route::get('/rawat-jalan/surat-sakit/verify', function (Request $request) {
     $noRawat = (string) $request->query('no_rawat', '');
+
     return app(RawatJalanController::class)->verifySuratSakit($request, $noRawat);
 })->name('api.rawat-jalan.surat-sakit.verify');
 
@@ -157,7 +158,7 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
 
 // Protected API endpoints (require authentication)
 // Use web session guard to fully support Inertia.js SPA with same-origin cookies
-    Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
 
@@ -293,7 +294,7 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         $text = (string) $request->input('text', '');
         $key = (string) $request->input('idempotency_key', '');
         if ($key !== '') {
-            $cacheKey = 'wa:idempotency:' . $key;
+            $cacheKey = 'wa:idempotency:'.$key;
             if (! Cache::add($cacheKey, 1, now()->addDay())) {
                 return response()->json(['ok' => false, 'status' => 'duplicate'], 409);
             }
@@ -301,6 +302,7 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         $credentialId = $request->input('credential_id');
         $phoneNumberId = $request->input('phone_number_id');
         dispatch(new \App\Jobs\WhatsAppSendJob($to, $text, $key, $credentialId ? (int) $credentialId : null, $phoneNumberId ? (string) $phoneNumberId : null));
+
         return response()->json(['ok' => true, 'status' => 'queued'], 202);
     })->middleware('throttle:30,1')->name('api.whatsapp.send');
 
@@ -315,8 +317,6 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         Route::put('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'update'])->name('api.whatsapp.credentials.update');
         Route::delete('/credentials/{credential}', [\App\Http\Controllers\API\WhatsAppCredentialController::class, 'destroy'])->name('api.whatsapp.credentials.destroy');
     });
-
-    
 
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
@@ -500,6 +500,11 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         Route::get('/spesialis/rujuk/subspesialis/{kdSubSpesialis}/sarana/{kdSarana}/tglEstRujuk/{tglEstRujuk}', [PcareController::class, 'getFaskesRujukanSubSpesialis'])->name('api.pcare.faskes-rujukan.subspesialis');
         Route::get('/peserta/{noka}/{tglPelayanan}', [PcareController::class, 'pesertaByNoKartu'])->name('api.pcare.peserta-nokartu');
         Route::post('/kunjungan', [PcareKunjunganController::class, 'store'])->name('api.pcare.kunjungan.store');
+        Route::put('/kunjungan', [PcareKunjunganController::class, 'update'])->name('api.pcare.kunjungan.update');
+        // Delete kunjungan harus ditempatkan sebelum route GET yang lebih spesifik
+        Route::delete('/kunjungan/{noKunjungan}', [PcareKunjunganController::class, 'destroy'])
+            ->where('noKunjungan', '.*')
+            ->name('api.pcare.kunjungan.destroy');
         // Add Data Pendaftaran (PCare)
         Route::post('/pendaftaran', [PcareController::class, 'addPendaftaran'])->name('api.pcare.pendaftaran.store');
         // Delete Data Pendaftaran (PCare)
@@ -512,6 +517,46 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         Route::get('/kunjungan/preview/{no_rawat}', [PcareKunjunganController::class, 'preview'])
             ->where('no_rawat', '.*')
             ->name('api.pcare.kunjungan.preview');
+        // Get noKunjungan from pcare_bpjs_log by nomor rawat
+        Route::get('/kunjungan/nokunjungan/{no_rawat}', [PcareKunjunganController::class, 'getNoKunjungan'])
+            ->where('no_rawat', '.*')
+            ->name('api.pcare.kunjungan.nokunjungan');
+        // Get MCU data by nomor kunjungan
+        Route::get('/mcu/kunjungan/{noKunjungan}', [PcareController::class, 'getMcu'])
+            ->where('noKunjungan', '.*')
+            ->name('api.pcare.mcu.kunjungan');
+        // Add MCU data
+        Route::post('/mcu', [PcareController::class, 'addMcu'])
+            ->name('api.pcare.mcu.store');
+        // Get Skrining Riwayat Kesehatan Peserta
+        // Note: nomorPeserta bisa berupa nomor atau nama, jadi perlu where untuk match semua karakter kecuali slash
+        Route::get('/skrining/peserta/{nomorPeserta}/{start}/{limit}', [PcareController::class, 'getSkriningPeserta'])
+            ->where(['nomorPeserta' => '[^/]+', 'start' => '[0-9]+', 'limit' => '[0-9]+'])
+            ->name('api.pcare.skrining.peserta');
+        // Route alternatif tanpa start dan limit (default)
+        Route::get('/skrining/peserta/{nomorPeserta}', function (string $nomorPeserta) {
+            $controller = app(PcareController::class);
+            return $controller->getSkriningPeserta($nomorPeserta, 0, 10);
+        })->where('nomorPeserta', '[^/]+')
+            ->name('api.pcare.skrining.peserta.default');
+        // Get Prolanis Diabetes Mellitus
+        Route::get('/prolanis/dm/{nomorPeserta}/{start}/{limit}', [PcareController::class, 'getProlanisDm'])
+            ->where(['nomorPeserta' => '[^/]+', 'start' => '[0-9]+', 'limit' => '[0-9]+'])
+            ->name('api.pcare.prolanis.dm');
+        Route::get('/prolanis/dm/{nomorPeserta}', function (string $nomorPeserta) {
+            $controller = app(PcareController::class);
+            return $controller->getProlanisDm($nomorPeserta, 1, 10);
+        })->where('nomorPeserta', '[^/]+')
+            ->name('api.pcare.prolanis.dm.default');
+        // Get Prolanis Hipertensi
+        Route::get('/prolanis/ht/{nomorPeserta}/{start}/{limit}', [PcareController::class, 'getProlanisHt'])
+            ->where(['nomorPeserta' => '[^/]+', 'start' => '[0-9]+', 'limit' => '[0-9]+'])
+            ->name('api.pcare.prolanis.ht');
+        Route::get('/prolanis/ht/{nomorPeserta}', function (string $nomorPeserta) {
+            $controller = app(PcareController::class);
+            return $controller->getProlanisHt($nomorPeserta, 1, 10);
+        })->where('nomorPeserta', '[^/]+')
+            ->name('api.pcare.prolanis.ht.default');
         // Get rujukan subspesialis by nomor rawat
         Route::get('/rujuk-subspesialis/rawat/{no_rawat}', [PcareController::class, 'getRujukanSubspesialisByRawat'])
             ->where('no_rawat', '.*')
@@ -519,6 +564,9 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
         // Get kabupaten config
         Route::get('/config/kabupaten', [PcareController::class, 'getKabupatenConfig'])
             ->name('api.pcare.config.kabupaten');
+        // Get KD Provider from setting_bridging_bpjs.user_pcare
+        Route::get('/config/kd-provider', [SettingBridgingBpjsController::class, 'getKdProvider'])
+            ->name('api.pcare.config.kd-provider');
     });
 
     Route::prefix('icare')->group(function () {

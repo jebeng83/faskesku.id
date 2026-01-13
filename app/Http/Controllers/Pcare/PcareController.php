@@ -742,6 +742,7 @@ class PcareController extends Controller
                 return (string) $d['response']['noKunjungan'];
             }
         }
+
         return null;
     }
 
@@ -762,6 +763,7 @@ class PcareController extends Controller
         if (is_array($j)) {
             return $this->parseNoKunjunganFromResponse($j);
         }
+
         return null;
     }
 
@@ -2718,6 +2720,474 @@ class PcareController extends Controller
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
         return response()->json($processed, $response->status());
+    }
+
+    /**
+     * Add Data MCU (Medical Check Up).
+     * Endpoint BPJS: POST /MCU
+     * Content-Type: text/plain
+     */
+    public function addMcu(Request $request)
+    {
+        $payload = $request->all();
+
+        // Validasi required fields
+        if (empty($payload['noKunjungan'])) {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter noKunjungan wajib diisi',
+                    'code' => 422,
+                ],
+                'response' => null,
+            ], 422);
+        }
+
+        // Normalisasi data sesuai katalog BPJS
+        $mcuPayload = [
+            'kdMCU' => isset($payload['kdMCU']) ? (int) $payload['kdMCU'] : 0,
+            'noKunjungan' => trim((string) $payload['noKunjungan']),
+            'kdProvider' => isset($payload['kdProvider']) ? trim((string) $payload['kdProvider']) : '',
+            'tglPelayanan' => isset($payload['tglPelayanan']) ? trim((string) $payload['tglPelayanan']) : '',
+            'tekananDarahSistole' => isset($payload['tekananDarahSistole']) ? (int) $payload['tekananDarahSistole'] : 0,
+            'tekananDarahDiastole' => isset($payload['tekananDarahDiastole']) ? (int) $payload['tekananDarahDiastole'] : 0,
+            'radiologiFoto' => isset($payload['radiologiFoto']) && $payload['radiologiFoto'] !== '' ? trim((string) $payload['radiologiFoto']) : null,
+            'darahRutinHemo' => isset($payload['darahRutinHemo']) ? (int) $payload['darahRutinHemo'] : 0,
+            'darahRutinLeu' => isset($payload['darahRutinLeu']) ? (int) $payload['darahRutinLeu'] : 0,
+            'darahRutinErit' => isset($payload['darahRutinErit']) ? (int) $payload['darahRutinErit'] : 0,
+            'darahRutinLaju' => isset($payload['darahRutinLaju']) ? (int) $payload['darahRutinLaju'] : 0,
+            'darahRutinHema' => isset($payload['darahRutinHema']) ? (int) $payload['darahRutinHema'] : 0,
+            'darahRutinTrom' => isset($payload['darahRutinTrom']) ? (int) $payload['darahRutinTrom'] : 0,
+            'lemakDarahHDL' => isset($payload['lemakDarahHDL']) ? (int) $payload['lemakDarahHDL'] : 0,
+            'lemakDarahLDL' => isset($payload['lemakDarahLDL']) ? (int) $payload['lemakDarahLDL'] : 0,
+            'lemakDarahChol' => isset($payload['lemakDarahChol']) ? (int) $payload['lemakDarahChol'] : 0,
+            'lemakDarahTrigli' => isset($payload['lemakDarahTrigli']) ? (int) $payload['lemakDarahTrigli'] : 0,
+            'gulaDarahSewaktu' => isset($payload['gulaDarahSewaktu']) ? (int) $payload['gulaDarahSewaktu'] : 0,
+            'gulaDarahPuasa' => isset($payload['gulaDarahPuasa']) ? (int) $payload['gulaDarahPuasa'] : 0,
+            'gulaDarahPostPrandial' => isset($payload['gulaDarahPostPrandial']) ? (int) $payload['gulaDarahPostPrandial'] : 0,
+            'gulaDarahHbA1c' => isset($payload['gulaDarahHbA1c']) ? (int) $payload['gulaDarahHbA1c'] : 0,
+            'fungsiHatiSGOT' => isset($payload['fungsiHatiSGOT']) ? (int) $payload['fungsiHatiSGOT'] : 0,
+            'fungsiHatiSGPT' => isset($payload['fungsiHatiSGPT']) ? (int) $payload['fungsiHatiSGPT'] : 0,
+            'fungsiHatiGamma' => isset($payload['fungsiHatiGamma']) ? (int) $payload['fungsiHatiGamma'] : 0,
+            'fungsiHatiProtKual' => isset($payload['fungsiHatiProtKual']) ? (int) $payload['fungsiHatiProtKual'] : 0,
+            'fungsiHatiAlbumin' => isset($payload['fungsiHatiAlbumin']) ? (int) $payload['fungsiHatiAlbumin'] : 0,
+            'fungsiGinjalCrea' => isset($payload['fungsiGinjalCrea']) ? (int) $payload['fungsiGinjalCrea'] : 0,
+            'fungsiGinjalUreum' => isset($payload['fungsiGinjalUreum']) ? (int) $payload['fungsiGinjalUreum'] : 0,
+            'fungsiGinjalAsam' => isset($payload['fungsiGinjalAsam']) ? (int) $payload['fungsiGinjalAsam'] : 0,
+            'fungsiJantungABI' => isset($payload['fungsiJantungABI']) ? (int) $payload['fungsiJantungABI'] : 0,
+            'fungsiJantungEKG' => isset($payload['fungsiJantungEKG']) && $payload['fungsiJantungEKG'] !== '' ? trim((string) $payload['fungsiJantungEKG']) : null,
+            'fungsiJantungEcho' => isset($payload['fungsiJantungEcho']) && $payload['fungsiJantungEcho'] !== '' ? trim((string) $payload['fungsiJantungEcho']) : null,
+            'funduskopi' => isset($payload['funduskopi']) && $payload['funduskopi'] !== '' ? trim((string) $payload['funduskopi']) : null,
+            'pemeriksaanLain' => isset($payload['pemeriksaanLain']) && $payload['pemeriksaanLain'] !== '' ? trim((string) $payload['pemeriksaanLain']) : null,
+            'keterangan' => isset($payload['keterangan']) && $payload['keterangan'] !== '' ? trim((string) $payload['keterangan']) : null,
+        ];
+
+        try {
+            $endpoint = 'MCU';
+            $result = $this->pcareRequest('POST', $endpoint, [], $mcuPayload, [
+                'Content-Type' => 'text/plain',
+            ]);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            return response()->json($processed, $response->status());
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Tangani error dari BPJS API
+            $response = $e->response;
+            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+
+            // Kembalikan response error dari BPJS dengan status code yang sesuai
+            if (is_array($processed)) {
+                return response()->json($processed, $response->status());
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => $response->status(),
+                ],
+                'response' => null,
+            ], $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error add MCU PCare', [
+                'noKunjungan' => $payload['noKunjungan'] ?? null,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Internal server error: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+                'response' => null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Data MCU (Medical Check Up) berdasarkan Nomor Kunjungan.
+     * Endpoint BPJS: GET /MCU/kunjungan/{noKunjungan}
+     * Content-Type: application/json; charset=utf-8
+     */
+    public function getMcu(string $noKunjungan)
+    {
+        $noKunjungan = trim($noKunjungan);
+
+        if ($noKunjungan === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter noKunjungan wajib diisi',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 422);
+        }
+
+        try {
+            $endpoint = 'MCU/kunjungan/'.$noKunjungan;
+            $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            return response()->json($processed, $response->status());
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Tangani error dari BPJS API
+            $response = $e->response;
+            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+
+            // Kembalikan response error dari BPJS dengan status code yang sesuai
+            if (is_array($processed)) {
+                return response()->json($processed, $response->status());
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => $response->status(),
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error get MCU PCare', [
+                'noKunjungan' => $noKunjungan,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Internal server error: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Skrining Riwayat Kesehatan Peserta (PCare REST).
+     * Endpoint PCare: GET /skrinning/peserta/{nomor_peserta}/{start}/{limit}
+     * Parameter 1: Nomor atau Nama Peserta
+     * Parameter 2: Row data awal (start)
+     * Parameter 3: Limit jumlah data
+     */
+    public function getSkriningPeserta(string $nomorPeserta, ?int $start = null, ?int $limit = null)
+    {
+        $nomorPeserta = trim($nomorPeserta);
+        $start = $start ?? 0;
+        $limit = $limit ?? 10;
+
+        if ($nomorPeserta === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter nomor peserta wajib diisi',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 422);
+        }
+
+        try {
+            // Pastikan nomor peserta di-encode dengan benar untuk URL path
+            // Gunakan rawurlencode untuk encode karakter khusus tapi tetap bisa digunakan di path
+            $nomorPesertaEncoded = rawurlencode($nomorPeserta);
+            $endpoint = 'skrinning/peserta/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            
+            Log::channel('bpjs')->info('PCare getSkriningPeserta requesting endpoint', [
+                'endpoint' => $endpoint,
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'start' => $start,
+                'limit' => $limit,
+            ]);
+
+            $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            Log::channel('bpjs')->info('PCare getSkriningPeserta response received', [
+                'status' => $response->status(),
+                'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
+            ]);
+
+            return response()->json($processed, $response->status());
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Tangani error dari BPJS API
+            $response = $e->response;
+            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+
+            Log::channel('bpjs')->error('PCare getSkriningPeserta RequestException', [
+                'status' => $response->status(),
+                'error' => $e->getMessage(),
+                'response' => $processed,
+            ]);
+
+            // Kembalikan response error dari BPJS dengan status code yang sesuai
+            if (is_array($processed)) {
+                return response()->json($processed, $response->status());
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => $response->status(),
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error get Skrining Peserta PCare', [
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Internal server error: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Data Prolanis Diabetes Mellitus (PCare REST).
+     * Endpoint PCare: GET /skrinning/prolanis/dm/{nomor_peserta}/{start}/{limit}
+     * Parameter 1: Nomor atau Nama Peserta
+     * Parameter 2: Row data awal (start)
+     * Parameter 3: Limit jumlah data
+     */
+    public function getProlanisDm(string $nomorPeserta, ?int $start = null, ?int $limit = null)
+    {
+        $nomorPeserta = trim($nomorPeserta);
+        // BPJS API tidak menerima start=0, minimal harus 1
+        $start = max(1, $start ?? 1);
+        $limit = max(1, $limit ?? 10);
+
+        if ($nomorPeserta === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter nomor peserta wajib diisi',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 422);
+        }
+
+        try {
+            $nomorPesertaEncoded = rawurlencode($nomorPeserta);
+            $endpoint = 'skrinning/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            
+            Log::channel('bpjs')->info('PCare getProlanisDm requesting endpoint', [
+                'endpoint' => $endpoint,
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'start' => $start,
+                'limit' => $limit,
+            ]);
+
+            $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            Log::channel('bpjs')->info('PCare getProlanisDm response received', [
+                'status' => $response->status(),
+                'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
+            ]);
+
+            return response()->json($processed, $response->status());
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $response = $e->response;
+            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+
+            Log::channel('bpjs')->error('PCare getProlanisDm RequestException', [
+                'status' => $response->status(),
+                'error' => $e->getMessage(),
+                'response' => $processed,
+            ]);
+
+            if (is_array($processed)) {
+                return response()->json($processed, $response->status());
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => $response->status(),
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error get Prolanis DM PCare', [
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Internal server error: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 500);
+        }
+    }
+
+    /**
+     * Get Data Prolanis Hipertensi (PCare REST).
+     * Endpoint PCare: GET /skrinning/prolanis/ht/{nomor_peserta}/{start}/{limit}
+     * Parameter 1: Nomor atau Nama Peserta
+     * Parameter 2: Row data awal (start)
+     * Parameter 3: Limit jumlah data
+     */
+    public function getProlanisHt(string $nomorPeserta, ?int $start = null, ?int $limit = null)
+    {
+        $nomorPeserta = trim($nomorPeserta);
+        // BPJS API tidak menerima start=0, minimal harus 1
+        $start = max(1, $start ?? 1);
+        $limit = max(1, $limit ?? 10);
+
+        if ($nomorPeserta === '') {
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Parameter nomor peserta wajib diisi',
+                    'code' => 422,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 422);
+        }
+
+        try {
+            $nomorPesertaEncoded = rawurlencode($nomorPeserta);
+            $endpoint = 'skrinning/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            
+            Log::channel('bpjs')->info('PCare getProlanisHt requesting endpoint', [
+                'endpoint' => $endpoint,
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'start' => $start,
+                'limit' => $limit,
+            ]);
+
+            $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ]);
+
+            $response = $result['response'];
+            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+            Log::channel('bpjs')->info('PCare getProlanisHt response received', [
+                'status' => $response->status(),
+                'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
+            ]);
+
+            return response()->json($processed, $response->status());
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $response = $e->response;
+            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+
+            Log::channel('bpjs')->error('PCare getProlanisHt RequestException', [
+                'status' => $response->status(),
+                'error' => $e->getMessage(),
+                'response' => $processed,
+            ]);
+
+            if (is_array($processed)) {
+                return response()->json($processed, $response->status());
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => $e->getMessage(),
+                    'code' => $response->status(),
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], $response->status());
+        } catch (\Throwable $e) {
+            Log::error('Error get Prolanis HT PCare', [
+                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Internal server error: '.$e->getMessage(),
+                    'code' => 500,
+                ],
+                'response' => [
+                    'count' => 0,
+                    'list' => [],
+                ],
+            ], 500);
+        }
     }
 
     /**

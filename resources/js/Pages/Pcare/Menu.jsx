@@ -427,6 +427,19 @@ const cardsByTab = {
         </svg>
       )
     },
+    {
+      key: 'dataProlanis',
+      title: 'Data Prolanis',
+      desc: 'Data Prolanis DM & Hipertensi',
+      href: '/pcare/layanan/data-prolanis',
+      gradient: 'from-purple-500 to-pink-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+          <path d="M8 12h8M12 8v8" />
+        </svg>
+      )
+    },
   ],
   setting: [
     {
