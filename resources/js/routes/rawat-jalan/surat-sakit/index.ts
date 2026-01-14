@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::verify
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1364
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1750
 * @route '/rawat-jalan/surat-sakit/{no_rawat}/verify'
 */
 export const verify = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ verify.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::verify
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1364
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1750
 * @route '/rawat-jalan/surat-sakit/{no_rawat}/verify'
 */
 verify.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ verify.url = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::verify
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1364
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1750
 * @route '/rawat-jalan/surat-sakit/{no_rawat}/verify'
 */
 verify.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ verify.get = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::verify
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1364
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1750
 * @route '/rawat-jalan/surat-sakit/{no_rawat}/verify'
 */
 verify.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ verify.head = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1517
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1903
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 export const nextNoSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,7 +78,7 @@ nextNoSurat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1517
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1903
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextNoSurat.url = (options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ nextNoSurat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1517
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1903
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ nextNoSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::nextNoSurat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1517
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1903
 * @route '/rawat-jalan/surat-sakit/next-no-surat'
 */
 nextNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -107,7 +107,7 @@ nextNoSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1567
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1953
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}'
 */
 export const byNomor = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -122,7 +122,7 @@ byNomor.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1567
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1953
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}'
 */
 byNomor.url = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -149,7 +149,7 @@ byNomor.url = (args: { no_surat: string | number } | [no_surat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1567
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1953
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}'
 */
 byNomor.get = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -159,7 +159,7 @@ byNomor.get = (args: { no_surat: string | number } | [no_surat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1567
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1953
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}'
 */
 byNomor.head = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -168,8 +168,48 @@ byNomor.head = (args: { no_surat: string | number } | [no_surat: string | number
 })
 
 /**
+* @see routes/web.php:1472
+* @route '/rawat-jalan/surat-sakit'
+*/
+export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+index.definition = {
+    methods: ["get","head"],
+    url: '/rawat-jalan/surat-sakit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1472
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.url = (options?: RouteQueryOptions) => {
+    return index.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1472
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: index.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1472
+* @route '/rawat-jalan/surat-sakit'
+*/
+index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: index.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +224,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -193,7 +233,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1555
 * @route '/rawat-jalan/surat-sakit'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

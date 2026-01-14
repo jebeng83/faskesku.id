@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see routes/web.php:87
+* @see routes/web.php:88
 * @route '/antrian/loket'
 */
 export const loket = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ loket.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:87
+* @see routes/web.php:88
 * @route '/antrian/loket'
 */
 loket.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ loket.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:87
+* @see routes/web.php:88
 * @route '/antrian/loket'
 */
 loket.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ loket.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:87
+* @see routes/web.php:88
 * @route '/antrian/loket'
 */
 loket.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ loket.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:243
+* @see routes/web.php:252
 * @route '/antrian/display'
 */
 export const display = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ display.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:243
+* @see routes/web.php:252
 * @route '/antrian/display'
 */
 display.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ display.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:243
+* @see routes/web.php:252
 * @route '/antrian/display'
 */
 display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ display.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:243
+* @see routes/web.php:252
 * @route '/antrian/display'
 */
 display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -80,7 +80,7 @@ display.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:276
+* @see routes/web.php:285
 * @route '/antrian/poli'
 */
 export const poli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ poli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:276
+* @see routes/web.php:285
 * @route '/antrian/poli'
 */
 poli.url = (options?: RouteQueryOptions) => {
@@ -102,7 +102,7 @@ poli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:276
+* @see routes/web.php:285
 * @route '/antrian/poli'
 */
 poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,7 +111,7 @@ poli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:276
+* @see routes/web.php:285
 * @route '/antrian/poli'
 */
 poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -120,7 +120,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:400
+* @see routes/web.php:409
 * @route '/antrian/suara'
 */
 export const suara = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ suara.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:400
+* @see routes/web.php:409
 * @route '/antrian/suara'
 */
 suara.url = (options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ suara.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:400
+* @see routes/web.php:409
 * @route '/antrian/suara'
 */
 suara.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ suara.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:400
+* @see routes/web.php:409
 * @route '/antrian/suara'
 */
 suara.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

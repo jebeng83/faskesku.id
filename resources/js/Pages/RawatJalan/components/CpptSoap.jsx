@@ -1687,12 +1687,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             >
                                                 <Eraser className="w-4 h-4" />
                                             </button>
-                                            <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="ml-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
-                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5h2M12 7v10m7-5H5" />
-                                                </svg>
-                                                Edit Kunjungan
-                                            </button>
                                         </div>
                                     </div>
                                 </div>

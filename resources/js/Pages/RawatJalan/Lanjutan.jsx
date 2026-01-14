@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
@@ -38,6 +38,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [loadingSkriningVisual, setLoadingSkriningVisual] = useState(false);
     const [poliCalling, setPoliCalling] = useState(false);
     const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
+
+    const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
 
     const toggle = (section) => {
         setOpenAcc((prev) => ({
@@ -400,6 +402,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         } finally {
             setPoliRepeatCalling(false);
         }
+    };
+
+    const handleOpenSurat = () => {
+        if (!currentNoRawat) return;
+        router.visit(route("rawat-jalan.surat-sehat", currentNoRawat));
     };
 
     const openSoapHistoryModal = async (showAll = false) => {
@@ -819,7 +826,17 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
                                         <span className="text-gray-400 text-center">:</span>
-                                        <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
+                                        <span
+                                            className={
+                                                (rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS')
+                                                    .toUpperCase()
+                                                    .includes('BPJS')
+                                                    ? 'text-blue-600 dark:text-blue-300'
+                                                    : 'text-yellow-600 dark:text-yellow-300'
+                                            }
+                                        >
+                                            {rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="block mb-1 text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
@@ -852,6 +869,14 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                 title="Ulang panggil pasien"
                                             >
                                                 {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
+                                            </button>
+                                            <button
+                                                onClick={handleOpenSurat}
+                                                disabled={!currentNoRawat}
+                                                className="text-xs px-3 py-1.5 rounded border bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 disabled:opacity-60"
+                                                title="Buat surat (pilih Surat Sehat / Surat Sakit)"
+                                            >
+                                                Surat
                                             </button>
                                         </div>
                                     </div>

@@ -49,7 +49,7 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1297
+* @see routes/web.php:1306
 * @route '/rawat-jalan/canvas'
 */
 export const canvas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -63,7 +63,7 @@ canvas.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1297
+* @see routes/web.php:1306
 * @route '/rawat-jalan/canvas'
 */
 canvas.url = (options?: RouteQueryOptions) => {
@@ -71,7 +71,7 @@ canvas.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1297
+* @see routes/web.php:1306
 * @route '/rawat-jalan/canvas'
 */
 canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -80,7 +80,7 @@ canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1297
+* @see routes/web.php:1306
 * @route '/rawat-jalan/canvas'
 */
 canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1315
 * @route '/rawat-jalan/canvas-surat'
 */
 export const canvasSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,7 +103,7 @@ canvasSurat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1315
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.url = (options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ canvasSurat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1315
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1315
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -598,7 +598,7 @@ suratSehat.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1210
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1494
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 export const suratSakit = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -613,7 +613,7 @@ suratSakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1210
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1494
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -640,7 +640,7 @@ suratSakit.url = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1210
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1494
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -650,7 +650,7 @@ suratSakit.get = (args: { no_rawat: string | number } | [no_rawat: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::suratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1210
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1494
 * @route '/rawat-jalan/surat-sakit/{no_rawat}'
 */
 suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
