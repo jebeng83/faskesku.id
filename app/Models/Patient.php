@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -235,15 +237,25 @@ class Patient extends Model
     // Generate nomor RM otomatis
     public static function generateNoRM()
     {
-        $lastPatient = self::orderBy('no_rkm_medis', 'desc')->first();
-        if ($lastPatient) {
-            $lastNumber = (int) substr($lastPatient->no_rkm_medis, -6);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
+        try {
+            $seqLast = 0;
+            if (Schema::hasTable('rm_sequence')) {
+                $seqLast = (int) (DB::table('rm_sequence')->where('key', 'pasien')->value('last_number') ?? 0);
+            }
+            $tableMax = (int) (DB::table('pasien')->select(DB::raw('MAX(CAST(SUBSTRING(no_rkm_medis, -6) AS UNSIGNED)) as max'))->value('max') ?? 0);
+            $base = max($seqLast, $tableMax);
+            $newNumber = $base + 1;
+            return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        } catch (\Throwable $e) {
+            $lastPatient = self::orderBy('no_rkm_medis', 'desc')->first();
+            if ($lastPatient) {
+                $lastNumber = (int) substr($lastPatient->no_rkm_medis, -6);
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+            return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
         }
-
-        return str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 
     // Static method untuk menghitung umur dari tanggal lahir

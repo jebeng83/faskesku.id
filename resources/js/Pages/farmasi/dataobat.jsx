@@ -1047,7 +1047,7 @@ export default function DataObatPage() {
         if (hargaConfig?.setharga === "Per Jenis") {
             fetchPersentaseJenis(data.kdjns);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [data.kdjns, hargaConfig?.setharga, modalOpen]);
 
     // Ambil persentase barang jika kode_brng berubah dan mode Per Barang
@@ -1056,7 +1056,7 @@ export default function DataObatPage() {
         if (hargaConfig?.setharga === "Per Barang") {
             fetchPersentaseBarang(data.kode_brng);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [data.kode_brng, hargaConfig?.setharga, modalOpen]);
 
     // Recompute ketika base price atau config/persentase berubah

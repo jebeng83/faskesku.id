@@ -43,7 +43,7 @@ class RegPeriksaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'no_rkm_medis' => 'required|exists:patients,no_rkm_medis',
+            'no_rkm_medis' => 'required|exists:pasien,no_rkm_medis',
             'kd_dokter' => 'required|exists:dokter,kd_dokter',
             'kd_poli' => 'required|exists:poliklinik,kd_poli',
             'kd_pj' => 'required|exists:penjab,kd_pj',
@@ -120,7 +120,7 @@ class RegPeriksaController extends Controller
     public function update(Request $request, RegPeriksa $regPeriksa)
     {
         $request->validate([
-            'no_rkm_medis' => 'required|exists:patients,no_rkm_medis',
+            'no_rkm_medis' => 'required|exists:pasien,no_rkm_medis',
             'kd_dokter' => 'required|exists:dokter,kd_dokter',
             'kd_poli' => 'required|exists:poliklinik,kd_poli',
             'kd_pj' => 'required|exists:penjab,kd_pj',

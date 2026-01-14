@@ -622,7 +622,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const missing = [];
         if (!String(data.nm_pasien || "").trim()) missing.push("Nama Lengkap");
@@ -648,39 +648,80 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setShowAlert(true);
             return;
         }
-        post(route("patients.store"), {
-            onSuccess: (page) => {
-                console.log("Success response:", page);
-                const newPatient = page.props.flash?.new_patient;
-                if (onSuccess) {
-                    onSuccess(newPatient);
-                }
-                onClose();
-            },
-            onError: (errors) => {
-                console.error("Form submission errors:", errors);
-                // Format error messages for display
-                let errorMessage = "Terjadi kesalahan:\n";
-                if (typeof errors === 'object' && errors !== null) {
-                    Object.keys(errors).forEach((key) => {
-                        const message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
-                        errorMessage += `- ${message}\n`;
-                    });
-                } else {
-                    errorMessage += String(errors);
-                }
-                setAlertConfig({
-                    type: "error",
-                    title: "Kesalahan",
-                    message: errorMessage,
-                    autoClose: false,
+        try {
+            let desiredNo = String(data.no_rkm_medis || "").trim();
+            const latestResp = await axios.get("/api/pasien/next-no-rm");
+            const latestNo = latestResp?.data?.data || "";
+
+            if (!desiredNo) {
+                desiredNo = latestNo;
+                setData("no_rkm_medis", desiredNo);
+            } else {
+                try {
+                    const headUrl = route("patients.show", desiredNo);
+                    const headResp = await axios.head(headUrl);
+                    if (headResp && headResp.status === 200) {
+                        desiredNo = latestNo;
+                        setData("no_rkm_medis", desiredNo);
+                    }
+                } catch (err) {}
+            }
+
+            let retriesLeft = 3;
+
+            const submitOnce = () => {
+                post(route("patients.store"), {
+                    onSuccess: (page) => {
+                        const newPatient = page.props.flash?.new_patient;
+                        if (onSuccess) {
+                            onSuccess(newPatient);
+                        }
+                        onClose();
+                    },
+                    onError: async (errors) => {
+                        const dup = (errors && errors.no_rkm_medis && String(errors.no_rkm_medis).toLowerCase().includes("sudah ada"));
+                        if (dup && retriesLeft > 0) {
+                            try {
+                                const resp = await axios.get("/api/pasien/next-no-rm");
+                                const nextNo = resp?.data?.data || "";
+                                if (nextNo) {
+                                    setData("no_rkm_medis", nextNo);
+                                    retriesLeft -= 1;
+                                    submitOnce();
+                                    return;
+                                }
+                            } catch (e) {}
+                        }
+                        let errorMessage = "Terjadi kesalahan:\n";
+                        if (typeof errors === 'object' && errors !== null) {
+                            Object.keys(errors).forEach((key) => {
+                                const message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
+                                errorMessage += `- ${message}\n`;
+                            });
+                        } else {
+                            errorMessage += String(errors);
+                        }
+                        setAlertConfig({
+                            type: "error",
+                            title: "Kesalahan",
+                            message: errorMessage,
+                            autoClose: false,
+                        });
+                        setShowAlert(true);
+                    },
                 });
-                setShowAlert(true);
-            },
-            onFinish: () => {
-                console.log("Form submission finished");
-            },
-        });
+            };
+
+            submitOnce();
+        } catch (e1) {
+            setAlertConfig({
+                type: "error",
+                title: "Kesalahan",
+                message: "Gagal memproses penyimpanan pasien.",
+                autoClose: false,
+            });
+            setShowAlert(true);
+        }
     };
 
     return (
@@ -792,12 +833,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     type="text"
                                                     name="no_rkm_medis"
                                                     value={data.no_rkm_medis}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "no_rkm_medis",
-                                                            e.target.value
-                                                        )
-                                                    }
+                                                    readOnly
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                                     placeholder="Otomatis"
                                                 />

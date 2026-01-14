@@ -56,7 +56,7 @@ export default function PembelianObat() {
             "BATCH_OBAT_ENABLED",
             "batch_obat_enabled",
         ];
-        for (let k of keys) {
+        for (const k of keys) {
             const v = s?.[k];
             if (typeof v === "string") {
                 const t = v.toLowerCase();

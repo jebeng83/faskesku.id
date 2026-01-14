@@ -1495,7 +1495,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         };
         checkPendaftaranStatus();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [noRawat]);
 
     useEffect(() => {
@@ -1903,7 +1903,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     }
                                     
                                     // Ambil jadwal praktek - hanya jika diperlukan (opsional, bisa di-skip)
-                                    let jadwalPraktek = '';
+                                    const jadwalPraktek = '';
                                     // Skip fetch jadwal untuk mempercepat - bisa ditambahkan nanti jika diperlukan
                                     
                                     // Ambil kabupaten/kota dari config - fetch cepat

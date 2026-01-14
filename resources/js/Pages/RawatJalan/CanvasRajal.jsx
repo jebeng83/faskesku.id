@@ -1711,7 +1711,20 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       <div className="p-4 space-y-4">
                         <div className="text-sm">Apakah Pelayanan Pasien Sudah Selesai</div>
                         <div className="flex items-center justify-end gap-2">
-                          <button type="button" disabled={closeSubmitting} onClick={() => {
+                          <button type="button" disabled={closeSubmitting} onClick={async () => {
+                            try {
+                              setCloseSubmitting(true);
+                              if (noRawat) {
+                                try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 160)); } catch (_) {}
+                                try {
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                } catch (_) {
+                                  try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 140)); } catch (_) {}
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                }
+                              }
+                            } catch (_) {}
+                            setCloseSubmitting(false);
                             setCloseConfirmOpen(false);
                             setIsOpen(false);
                             setTimeout(() => {

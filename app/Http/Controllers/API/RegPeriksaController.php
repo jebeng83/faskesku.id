@@ -156,7 +156,7 @@ class RegPeriksaController extends Controller
                 'tgl_registrasi' => 'required|date',
                 'jam_reg' => 'required|date_format:H:i',
                 'kd_dokter' => 'required|string|exists:dokter,kd_dokter',
-                'no_rkm_medis' => 'required|string|exists:patients,no_rkm_medis',
+                'no_rkm_medis' => 'required|string|exists:pasien,no_rkm_medis',
                 'kd_poli' => 'required|string|exists:poliklinik,kd_poli',
                 'p_jawab' => 'required|string|max:100',
                 'almt_pj' => 'required|string|max:200',
@@ -174,8 +174,8 @@ class RegPeriksaController extends Controller
             $patient = Patient::find($request->no_rkm_medis);
             $regPeriksa = new RegPeriksa($request->all());
 
-            if ($patient && $patient->tanggal_lahir) {
-                $umurData = $regPeriksa->hitungUmur($patient->tanggal_lahir, $request->tgl_registrasi);
+            if ($patient && $patient->tgl_lahir) {
+                $umurData = $regPeriksa->hitungUmur($patient->tgl_lahir, $request->tgl_registrasi);
                 if ($umurData) {
                     $regPeriksa->umurdaftar = $umurData['umur'];
                     $regPeriksa->sttsumur = $umurData['satuan'];
@@ -237,7 +237,7 @@ class RegPeriksaController extends Controller
                 'tgl_registrasi' => 'required|date',
                 'jam_reg' => 'required|date_format:H:i',
                 'kd_dokter' => 'required|string|exists:dokter,kd_dokter',
-                'no_rkm_medis' => 'required|string|exists:patients,no_rkm_medis',
+                'no_rkm_medis' => 'required|string|exists:pasien,no_rkm_medis',
                 'kd_poli' => 'required|string|exists:poliklinik,kd_poli',
                 'p_jawab' => 'required|string|max:100',
                 'almt_pj' => 'required|string|max:200',
@@ -258,8 +258,8 @@ class RegPeriksaController extends Controller
             ) {
 
                 $patient = Patient::find($request->no_rkm_medis);
-                if ($patient && $patient->tanggal_lahir) {
-                    $umurData = $regPeriksa->hitungUmur($patient->tanggal_lahir, $request->tgl_registrasi);
+                if ($patient && $patient->tgl_lahir) {
+                    $umurData = $regPeriksa->hitungUmur($patient->tgl_lahir, $request->tgl_registrasi);
                     if ($umurData) {
                         $request->merge([
                             'umurdaftar' => $umurData['umur'],
@@ -270,12 +270,88 @@ class RegPeriksaController extends Controller
             }
 
             $regPeriksa->update($request->all());
-            $regPeriksa->load(['patient', 'doctor', 'poli']);
+            $regPeriksa->load(['patient', 'dokter', 'poliklinik']);
 
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksa,
                 'message' => 'Registrasi periksa berhasil diperbarui',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui registrasi periksa: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update registrasi periksa menggunakan payload no_rawat (aman untuk nilai yang mengandung '/')
+     */
+    public function updateByRawat(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'no_rawat' => 'required|string',
+            ]);
+
+            $model = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
+            if (! $model) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data registrasi periksa tidak ditemukan untuk nomor rawat yang diberikan',
+                ], 404);
+            }
+
+            $rules = [
+                'no_reg' => 'required|string|max:8|unique:reg_periksa,no_reg,'.$model->no_reg.',no_reg',
+                'no_rawat' => 'required|string|max:17|unique:reg_periksa,no_rawat,'.$model->no_rawat.',no_rawat',
+                'tgl_registrasi' => 'required|date',
+                'jam_reg' => 'required|date_format:H:i',
+                'kd_dokter' => 'required|string|exists:dokter,kd_dokter',
+                'no_rkm_medis' => 'required|string|exists:pasien,no_rkm_medis',
+                'kd_poli' => 'required|string|exists:poliklinik,kd_poli',
+                'p_jawab' => 'required|string|max:100',
+                'almt_pj' => 'required|string|max:200',
+                'hubunganpj' => 'required|string|max:20',
+                'biaya_reg' => 'required|numeric|min:0',
+                'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
+                'stts_daftar' => 'required|in:-,Lama,Baru',
+                'status_lanjut' => 'required|in:Ralan,Ranap',
+                'kd_pj' => 'required|string|max:3',
+                'status_bayar' => 'required|in:Sudah Bayar,Belum Bayar',
+                'status_poli' => 'required|in:Lama,Baru',
+            ];
+
+            $validated = $request->validate($rules);
+
+            // Hitung umur otomatis jika data pasien berubah
+            if (
+                isset($validated['no_rkm_medis']) &&
+                ($validated['no_rkm_medis'] !== $model->no_rkm_medis)
+            ) {
+                $patient = \App\Models\Patient::where('no_rkm_medis', $validated['no_rkm_medis'])->first();
+                if ($patient) {
+                    $birthDate = new \DateTime($patient->tgl_lahir ?? date('Y-m-d'));
+                    $today = new \DateTime($validated['tgl_registrasi'] ?? date('Y-m-d'));
+                    $diff = $today->diff($birthDate);
+                    $validated['umurdaftar'] = $diff->y;
+                    $validated['sttsumur'] = 'Th';
+                }
+            }
+
+            $model->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'data' => $model,
+                'message' => 'Registrasi periksa berhasil diperbarui.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

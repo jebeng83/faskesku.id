@@ -153,7 +153,7 @@ export default function DisplayLoket() {
     for (const u of urls) {
       const url = Array.isArray(u) ? u[0] : u;
       if (!url) continue;
-      // eslint-disable-next-line no-await-in-loop
+       
       await playOne(url);
     }
   };

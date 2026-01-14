@@ -6,6 +6,7 @@ import { route } from "ziggy-js";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import Alert from "@/Components/Alert";
 import { Toaster } from "@/Components/ui";
+import PatientEditModal from "@/Components/PatientEditModal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowPathIcon,
@@ -53,6 +54,14 @@ export default function Index({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toasts, setToasts] = useState([]);
     const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+    const addToast = (type = "info", title = "", message = "", duration = 4000) => {
+        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+    };
+
+    // Edit Patient modal states
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editPatient, setEditPatient] = useState(null);
 
     // Kunjungan Sehat (PCare) modal states
     const [showKunjunganSehatModal, setShowKunjunganSehatModal] = useState(false);
@@ -105,9 +114,32 @@ export default function Index({
         );
     };
 
-	const handleDelete = (patient) => {
-		if (confirm("Apakah Anda yakin ingin menghapus data pasien ini?")) {
-			router.post(route("patients.destroy", patient.no_rkm_medis), { _method: "DELETE" }, { forceFormData: true, preserveScroll: true });
+	const handleDelete = async (patient) => {
+		const name = patient?.nm_pasien || "Pasien";
+		const noRm = patient?.no_rkm_medis || "";
+		const ok = confirm(`Hapus data pasien ${name}${noRm ? ` (No. RM: ${noRm})` : ""}?`);
+		if (!ok) return;
+		try {
+			const url = route("patients.destroy", noRm);
+			await axios.delete(url, {
+				withCredentials: true,
+				headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+			});
+			addToast("success", "Berhasil", `Data pasien${name ? ` ${name}` : ""} berhasil dihapus`);
+			setTimeout(() => { try { router.reload({ only: ["patients"] }); } catch (_) { router.reload(); } }, 300);
+		} catch (e) {
+			const status = e?.response?.status;
+			let msg = "Tidak dapat menghapus. Data pasien kemungkinan masih digunakan di menu lain.";
+			if (status === 409) {
+				msg = "Data pasien masih digunakan di menu lain. Selesaikan data terkait terlebih dahulu.";
+			} else if (status === 422) {
+				msg = "Data tidak valid. Periksa kembali informasi pasien.";
+			} else if (status === 403) {
+				msg = "Anda tidak memiliki izin untuk menghapus data pasien.";
+			} else if (status === 404) {
+				msg = "Data pasien tidak ditemukan.";
+			}
+			addToast("warning", "Tidak Dapat Dihapus", msg, 5000);
 		}
 	};
 
@@ -135,6 +167,34 @@ export default function Index({
 			method: 'get'
 		});
 		closeDropdown();
+	};
+
+	const handleEditPatient = (patient) => {
+		setEditPatient(patient);
+		setShowEditModal(true);
+		closeDropdown();
+	};
+
+	const handleEditSuccess = () => {
+		setShowEditModal(false);
+		setEditPatient(null);
+		// Refresh data pasien setelah update berhasil
+		// Redirect akan dilakukan oleh controller, jadi kita hanya perlu menutup modal
+		// Data akan ter-refresh otomatis karena controller redirect ke index
+		addToast("success", "Berhasil", "Data pasien berhasil diperbarui");
+		// Reload untuk memastikan data terbaru
+		setTimeout(() => {
+			router.reload({ 
+				only: ["patients"],
+				preserveState: false,
+				preserveScroll: false,
+			});
+		}, 500);
+	};
+
+	const closeEditModal = () => {
+		setShowEditModal(false);
+		setEditPatient(null);
 	};
 
     // Helpers for Kunjungan Sehat
@@ -610,13 +670,9 @@ export default function Index({
                                                                     </svg>
                                                                     Lihat Detail
                                                                 </Link>
-                                                                <Link
-                                                                    href={route(
-                                                                        "patients.edit",
-                                                                        patient.no_rkm_medis
-                                                                    )}
-                                                                    onClick={closeDropdown}
-                                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-blue-50/70 hover:to-indigo-50/70 dark:hover:from-gray-800/60 dark:hover:to-gray-800/40 transition-all"
+                                                                <button
+                                                                    onClick={() => handleEditPatient(patient)}
+                                                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-blue-50/70 hover:to-indigo-50/70 dark:hover:from-gray-800/60 dark:hover:to-gray-800/40 transition-all"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -628,7 +684,7 @@ export default function Index({
                                                                         <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
                                                                     </svg>
                                                                     Edit Data
-                                                                </Link>
+                                                                </button>
                                                                 <button
                                                                     onClick={() => handleRegisterPeriksa(patient)}
                                                                     className="flex items-center w-full px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-indigo-50/60 dark:hover:from-purple-900/20 dark:hover:to-indigo-900/20 transition-all"
@@ -1193,6 +1249,16 @@ export default function Index({
 				autoCloseDelay={alertConfig.autoCloseDelay}
 				onClose={() => setShowAlert(false)}
 			/>
+
+			{/* Patient Edit Modal */}
+			{showEditModal && editPatient && (
+				<PatientEditModal
+					isOpen={showEditModal}
+					onClose={closeEditModal}
+					patient={editPatient}
+					onSuccess={handleEditSuccess}
+				/>
+			)}
         </LanjutanRegistrasiLayout>
     );
 }

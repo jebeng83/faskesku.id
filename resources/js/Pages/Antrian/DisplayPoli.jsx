@@ -204,7 +204,7 @@ export default function DisplayPoli() {
     for (const u of urls) {
       const url = Array.isArray(u) ? u[0] : u;
       if (!url) continue;
-      // eslint-disable-next-line no-await-in-loop
+       
       await playOne(url);
     }
   };
@@ -216,7 +216,7 @@ export default function DisplayPoli() {
         const job = audioQueueRef.current.shift();
         const urls = Array.isArray(job?.urls) ? job.urls : [];
         if (!urls.length) continue;
-        // eslint-disable-next-line no-await-in-loop
+         
         await playSequence(urls);
       }
     } finally {

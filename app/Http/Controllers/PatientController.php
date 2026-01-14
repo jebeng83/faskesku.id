@@ -15,8 +15,11 @@ use App\Models\Wilayah;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
 use Inertia\Inertia;
 
 class PatientController extends Controller
@@ -96,7 +99,7 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'no_rkm_medis' => 'nullable|string|max:15|unique:pasien,no_rkm_medis',
+            'no_rkm_medis' => 'nullable|string|max:15',
             'nm_pasien' => 'required|string|max:40',
             'no_ktp' => 'required|string|max:20|unique:pasien,no_ktp',
             'jk' => 'required|in:L,P',
@@ -232,10 +235,6 @@ class PatientController extends Controller
             }
         }
 
-        // Generate nomor RM otomatis jika tidak diisi
-        if (empty($data['no_rkm_medis'])) {
-            $data['no_rkm_medis'] = Patient::generateNoRM();
-        }
         $data['tgl_daftar'] = now()->toDateString();
         $data['umur'] = Patient::calculateAgeFromDate($data['tgl_lahir']);
 
@@ -256,11 +255,29 @@ class PatientController extends Controller
         $data['email'] = $data['email'] ?? '-';
         $data['nip'] = $data['nip'] ?? '-';
 
-        // Ensure kd_pj references an existing penjab (validated above)
+        $patient = null;
+        DB::transaction(function () use (&$patient, $data) {
+            $seqKey = 'pasien';
+            $seq = DB::table('rm_sequence')->where('key', $seqKey)->lockForUpdate()->first();
+            $maxNo = (int) (DB::table('pasien')->select(DB::raw('MAX(CAST(SUBSTRING(no_rkm_medis, -6) AS UNSIGNED)) as max'))->value('max') ?? 0);
+            if (! $seq) {
+                DB::table('rm_sequence')->insert([
+                    'key' => $seqKey,
+                    'last_number' => $maxNo,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $seq = DB::table('rm_sequence')->where('key', $seqKey)->lockForUpdate()->first();
+            }
+            $base = max((int) $seq->last_number, $maxNo);
+            $next = $base + 1;
+            DB::table('rm_sequence')->where('key', $seqKey)->update(['last_number' => $next, 'updated_at' => now()]);
+            $noRM = str_pad($next, 6, '0', STR_PAD_LEFT);
+            $payload = $data;
+            $payload['no_rkm_medis'] = $noRM;
+            $patient = Patient::create($payload);
+        });
 
-        $patient = Patient::create($data);
-
-        // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
         return redirect()->back()->with([
             'success' => 'Data pasien berhasil ditambahkan.',
             'new_patient' => $patient,
@@ -309,7 +326,21 @@ class PatientController extends Controller
      */
     public function update(Request $request, Patient $patient)
     {
+        // Log request data untuk debugging
+        Log::info('Patient update request', [
+            'patient_no_rkm_medis' => $patient->no_rkm_medis,
+            'request_method' => $request->method(),
+            'request_data_keys' => array_keys($request->all()),
+            'request_data' => $request->all(),
+        ]);
+
         $validator = Validator::make($request->all(), [
+            'no_rkm_medis' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('pasien', 'no_rkm_medis')->ignore($patient->no_rkm_medis, 'no_rkm_medis'),
+            ],
             'nm_pasien' => 'required|string|max:40',
             'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp,'.$patient->no_rkm_medis.',no_rkm_medis',
             'jk' => 'required|in:L,P',
@@ -339,10 +370,17 @@ class PatientController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Patient update validation failed', [
+                'patient_no_rkm_medis' => $patient->no_rkm_medis,
+                'errors' => $validator->errors()->toArray(),
+            ]);
             return back()->withErrors($validator->errors())->withInput();
         }
 
         $data = $validator->validated();
+
+        $oldNoRM = (string) $patient->no_rkm_medis;
+        $newNoRM = (string) $data['no_rkm_medis'];
 
         // Get wilayah details and set address fields
         $wilayah = Wilayah::find($data['kode_wilayah']);
@@ -421,21 +459,95 @@ class PatientController extends Controller
         $data['email'] = $data['email'] ?? '-';
         $data['nip'] = $data['nip'] ?? '-';
 
-        $patient->update($data);
+        DB::transaction(function () use ($oldNoRM, $newNoRM, $patient, $data) {
+            $updated = $patient->update($data);
 
-        // Always respond with a redirect for Inertia requests to avoid plain JSON overlay
-        return redirect()->back()->with('success', 'Data pasien berhasil diperbarui.');
+            if ($oldNoRM !== $newNoRM) {
+                $candidates = [
+                    'riwayat_lab',
+                    'piutang_pasien',
+                    'bayar_piutang',
+                    'penjualan',
+                    'odontogram',
+                    'alergi_pasien',
+                    'temppanggilrm',
+                ];
+                foreach ($candidates as $table) {
+                    if (Schema::hasTable($table) && Schema::hasColumn($table, 'no_rkm_medis')) {
+                        DB::table($table)->where('no_rkm_medis', $oldNoRM)->update(['no_rkm_medis' => $newNoRM]);
+                    }
+                }
+            }
+            
+            // Log untuk debugging
+            Log::info('Patient update executed', [
+                'patient_no_rkm_medis' => $patient->no_rkm_medis,
+                'updated' => $updated,
+                'old_no_rkm_medis' => $oldNoRM,
+                'new_no_rkm_medis' => $newNoRM,
+                'data_keys_count' => count($data),
+            ]);
+            
+            if (! $updated) {
+                Log::warning('Patient update returned false', [
+                    'patient_id' => $patient->no_rkm_medis,
+                    'data_keys' => array_keys($data),
+                ]);
+            }
+        });
+
+        // Refresh patient untuk memastikan data terbaru
+        $patient->refresh();
+        
+        Log::info('Patient after refresh', [
+            'patient_no_rkm_medis' => $patient->no_rkm_medis,
+            'patient_nm_pasien' => $patient->nm_pasien,
+            'patient_alamat' => $patient->alamat,
+        ]);
+
+        // Untuk Inertia request, redirect ke index dengan flash message
+        // Ini akan memicu reload data di frontend
+        if ($request->header('X-Inertia')) {
+            return redirect()->route('patients.index')->with('success', 'Data pasien berhasil diperbarui.');
+        }
+
+        // Fallback untuk non-Inertia requests
+        return back()->with('success', 'Data pasien berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Patient $patient)
+    public function destroy(Request $request, Patient $patient)
     {
-        $patient->delete();
+        try {
+            $patient->delete();
 
-        return redirect()->route('patients.index')
-            ->with('success', 'Data pasien berhasil dihapus.');
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
+
+            return redirect()->route('patients.index')
+                ->with('success', 'Data pasien berhasil dihapus.');
+        } catch (QueryException $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data pasien masih digunakan di menu lain',
+                ], 409);
+            }
+            return redirect()->route('patients.index')
+                ->with('error', 'Tidak dapat menghapus: data pasien masih digunakan.');
+        } catch (\Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menghapus data pasien',
+                ], 500);
+            }
+            return redirect()->route('patients.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus data pasien.');
+        }
     }
 
     /**

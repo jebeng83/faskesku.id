@@ -241,7 +241,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
       const submitData = { no_rawat: noRawat, ...formData, dokter_perujuk: dokterPerujuk.kd_dokter || "-", detail_tests: detailTests }
       const resp = await axios.post("/api/permintaan-lab", submitData, { headers: { Accept: "application/json" } })
       if (resp?.data?.success) {
-        let noorder = resp?.data?.data?.noorder || null
+        const noorder = resp?.data?.data?.noorder || null
         setSelectedTests([])
         setFormData({ tgl_permintaan: todayDateString(), jam_permintaan: nowDateTimeString().split(" ")[1].substring(0, 5), status: "ralan", informasi_tambahan: "-", diagnosa_klinis: "-" })
         setDokterPerujuk({ kd_dokter: "", nm_dokter: "" })

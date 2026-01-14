@@ -131,7 +131,7 @@ export default function MappingPoliPcare() {
     fetchRs('');
     fetchBpjs();
     fetchMappings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // Filter BPJS list by qBpjs in-memory

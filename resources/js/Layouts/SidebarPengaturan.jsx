@@ -7,7 +7,6 @@ import {
     Cog,
     NotebookTabs,
     Stethoscope,
-    Building2,
     User,
     LogIn,
     Users,
@@ -154,22 +153,7 @@ export default function SidebarPengaturan({
                 "/pcare/mapping/obat"
             ),
             jadwalDokter: safeRoute("jadwal.index", "/jadwal"),
-            ssOrg: safeRoute(
-                "satusehat.prerequisites.organization",
-                "/satusehat/prerequisites/organization"
-            ),
-            ssLoc: safeRoute(
-                "satusehat.prerequisites.location",
-                "/satusehat/prerequisites/location"
-            ),
-            ssLocFarmasi: safeRoute(
-                "satusehat.prerequisites.location_farmasi",
-                "/satusehat/prerequisites/location-farmasi"
-            ),
-            ssLocRanap: safeRoute(
-                "satusehat.prerequisites.location_ranap",
-                "/satusehat/prerequisites/location-ranap"
-            ),
+            
             // Setting User
             userIndex: safeRoute("users.index", "/users"),
             userLogin: safeRoute("login", "/login"),
@@ -331,39 +315,7 @@ export default function SidebarPengaturan({
 
                     
 
-                    <Section
-                        title="Bridging Satu Sehat"
-                        collapsed={isSidebarCollapsed}
-                    >
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.ssOrg}
-                            icon={Building2}
-                            label="Mapping Organisasi"
-                            active={isActive(paths.ssOrg)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.ssLoc}
-                            icon={NotebookTabs}
-                            label="Mapping Location"
-                            active={isActive(paths.ssLoc)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.ssLocFarmasi}
-                            icon={NotebookTabs}
-                            label="Mapping Location Farmasi"
-                            active={isActive(paths.ssLocFarmasi)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.ssLocRanap}
-                            icon={NotebookTabs}
-                            label="Mapping Location Ranap"
-                            active={isActive(paths.ssLocRanap)}
-                        />
-                    </Section>
+                    
                 </nav>
             </aside>
 

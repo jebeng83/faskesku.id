@@ -27,7 +27,7 @@ export default function Login() {
             img.src = propWallpaper;
         }
         if (propInstansi) setInstansi(propInstansi);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [propWallpaper, propInstansi]);
 
     const isValid = username.trim().length > 0 && password.trim().length > 0;

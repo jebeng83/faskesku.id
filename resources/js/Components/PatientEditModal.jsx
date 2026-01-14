@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useForm } from "@inertiajs/react";
+import { useForm, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import SelectWithAdd from "@/Components/SelectWithAdd";
@@ -67,7 +67,8 @@ export default function PatientEditModal({
         return "";
     };
 
-    const { data, setData, errors, post, transform } = useForm({
+    const { data, setData, errors } = useForm({
+        no_rkm_medis: "",
         nm_pasien: "",
         no_ktp: "",
         no_kk: "",
@@ -224,6 +225,7 @@ export default function PatientEditModal({
     useEffect(() => {
         if (isOpen && patient) {
             setData({
+                no_rkm_medis: patient.no_rkm_medis || "",
                 nm_pasien: patient.nm_pasien || "",
                 no_ktp: patient.no_ktp || "",
                 no_kk: patient.no_kk || "",
@@ -293,6 +295,28 @@ export default function PatientEditModal({
 
             // If kode_wilayah exists (or can be built from kd_*), fetch its full address for display
             const loadWilayahDetails = async () => {
+                // Helper function untuk fallback wilayah (bukan React Hook, jadi tidak pakai "use" prefix)
+                const applyFallbackWilayah = () => {
+                    const kel = patient.kelurahanpj || "";
+                    const kec = patient.kecamatanpj || "";
+                    const kab = patient.kabupatenpj || "";
+                    const prov = patient.propinsipj || "";
+
+                    if (kel || kec || kab || prov) {
+                        setSelectedWilayah({
+                            village: kel,
+                            district: kec,
+                            regency: kab,
+                            province: prov,
+                        });
+                        // Pastikan data juga ter-set di form
+                        setData("kelurahanpj", kel);
+                        setData("kecamatanpj", kec);
+                        setData("kabupatenpj", kab);
+                        setData("propinsipj", prov);
+                    }
+                };
+
                 // Prefer existing kode_wilayah, otherwise build from kd_prop/kd_kab/kd_kec/kd_kel
                 let code = patient.kode_wilayah;
                 if (
@@ -319,7 +343,11 @@ export default function PatientEditModal({
                     }
                 }
 
-                if (code && isValidWilayahCode(code)) {
+                // Cek apakah sudah ada data wilayah dari pasien, jika ada gunakan langsung tanpa fetch
+                const hasWilayahData = patient.kelurahanpj || patient.kecamatanpj || patient.kabupatenpj || patient.propinsipj;
+                
+                if (code && isValidWilayahCode(code) && !hasWilayahData) {
+                    // Hanya fetch jika tidak ada data fallback
                     setLoadingWilayah(true);
                     try {
                         const response = await fetch(
@@ -327,7 +355,7 @@ export default function PatientEditModal({
                         );
                         if (response.ok) {
                             const result = await response.json();
-                            if (result.success) {
+                            if (result.success && result.data) {
                                 const fullAddress =
                                     result.data.full_address || "";
                                 const parts = fullAddress
@@ -344,79 +372,72 @@ export default function PatientEditModal({
                                 setData("kecamatanpj", parts[2] || "");
                                 setData("kabupatenpj", parts[1] || "");
                                 setData("propinsipj", parts[0] || "");
+                            } else {
+                                // Wilayah tidak ditemukan atau data tidak valid, gunakan fallback
+                                applyFallbackWilayah();
                             }
+                        } else {
+                            // Status bukan OK (termasuk 404), gunakan fallback
+                            // Tidak perlu log karena ini normal jika wilayah tidak ada di database
+                            applyFallbackWilayah();
                         }
-                    } catch (error) {
-                        console.error("Error fetching wilayah details:", error);
+                    } catch (_error) {
+                        // Error network atau lainnya, gunakan fallback
+                        // Tidak log error karena fetch 404 tidak throw error, hanya return response dengan status 404
+                        applyFallbackWilayah();
                     } finally {
                         setLoadingWilayah(false);
                     }
                 } else {
-                    // Fallback tampilan berdasarkan field nama wilayah pada record lama
+                    // Langsung gunakan fallback jika sudah ada data atau tidak ada kode wilayah
+                    applyFallbackWilayah();
+                    
+                    // Opsional: coba auto-lookup kode wilayah berdasarkan nama kelurahan jika belum ada kode
                     const kel = patient.kelurahanpj || "";
-                    const kec = patient.kecamatanpj || "";
-                    const kab = patient.kabupatenpj || "";
-                    const prov = patient.propinsipj || "";
-
-                    if (kel || kec || kab || prov) {
-                        setSelectedWilayah({
-                            village: kel,
-                            district: kec,
-                            regency: kab,
-                            province: prov,
-                        });
-                        // Pastikan field data terisi untuk ditampilkan
-                        setData("kelurahanpj", kel);
-                        setData("kecamatanpj", kec);
-                        setData("kabupatenpj", kab);
-                        setData("propinsipj", prov);
-
-                        // Opsional: coba auto-lookup kode wilayah berdasarkan nama kelurahan
+                    if (kel && !code) {
                         try {
-                            if (!data.kode_wilayah && kel) {
-                                const resp = await fetch(
-                                    `/api/wilayah/search?q=${encodeURIComponent(
-                                        kel
-                                    )}&level=village`
-                                );
-                                if (resp.ok) {
-                                    const resJson = await resp.json();
-                                    const items = Array.isArray(resJson?.data)
-                                        ? resJson.data
-                                        : [];
-                                    if (
-                                        items.length === 1 &&
-                                        items[0]?.code &&
-                                        isValidWilayahCode(
-                                            String(items[0].code)
-                                        )
-                                    ) {
-                                        setData(
-                                            "kode_wilayah",
-                                            String(items[0].code)
-                                        );
-                                        const fullAddr =
-                                            items[0]?.full_address || "";
-                                        const parts = fullAddr
-                                            .split(", ")
-                                            .map((p) => p.trim());
-                                        setSelectedWilayah({
-                                            village: parts[0] || kel,
-                                            district: parts[1] || kec,
-                                            regency: parts[2] || kab,
-                                            province: parts[3] || prov,
-                                        });
-                                        setData("kelurahanpj", parts[0] || kel);
-                                        setData("kecamatanpj", parts[1] || kec);
-                                        setData("kabupatenpj", parts[2] || kab);
-                                        setData("propinsipj", parts[3] || prov);
-                                    } else if (items.length > 1) {
-                                        console.warn(
-                                            "Ditemukan beberapa hasil untuk kelurahan:",
-                                            kel,
-                                            "- silakan pilih manual di komponen pencarian wilayah."
-                                        );
-                                    }
+                            const resp = await fetch(
+                                `/api/wilayah/search?q=${encodeURIComponent(
+                                    kel
+                                )}&level=village`
+                            );
+                            if (resp.ok) {
+                                const resJson = await resp.json();
+                                const items = Array.isArray(resJson?.data)
+                                    ? resJson.data
+                                    : [];
+                                if (
+                                    items.length === 1 &&
+                                    items[0]?.code &&
+                                    isValidWilayahCode(
+                                        String(items[0].code)
+                                    )
+                                ) {
+                                    setData(
+                                        "kode_wilayah",
+                                        String(items[0].code)
+                                    );
+                                    const fullAddr =
+                                        items[0]?.full_address || "";
+                                    const parts = fullAddr
+                                        .split(", ")
+                                        .map((p) => p.trim());
+                                    setSelectedWilayah({
+                                        village: parts[3] || kel,
+                                        district: parts[2] || patient.kecamatanpj || "",
+                                        regency: parts[1] || patient.kabupatenpj || "",
+                                        province: parts[0] || patient.propinsipj || "",
+                                    });
+                                    setData("kelurahanpj", parts[3] || kel);
+                                    setData("kecamatanpj", parts[2] || patient.kecamatanpj || "");
+                                    setData("kabupatenpj", parts[1] || patient.kabupatenpj || "");
+                                    setData("propinsipj", parts[0] || patient.propinsipj || "");
+                                } else if (items.length > 1) {
+                                    console.warn(
+                                        "Ditemukan beberapa hasil untuk kelurahan:",
+                                        kel,
+                                        "- silakan pilih manual di komponen pencarian wilayah."
+                                    );
                                 }
                             }
                         } catch (err) {
@@ -425,8 +446,6 @@ export default function PatientEditModal({
                                 err
                             );
                         }
-                    } else {
-                        setSelectedWilayah(null);
                     }
                 }
             };
@@ -826,35 +845,98 @@ export default function PatientEditModal({
             setData("pekerjaan", pekerjaanOther.trim());
         }
 
-        // Method spoofing PUT seperti implementasi halaman Edit Pasien
-        transform((payload) => ({ ...payload, _method: "PUT" }));
-        post(route("patients.update", patient.no_rkm_medis), {
-            forceFormData: true,
-            preserveScroll: true,
-            onStart: () => setIsSubmitting(true),
-            onSuccess: () => {
-                alert("Data pasien berhasil diperbarui!");
-                if (onSuccess) onSuccess({ ...data });
-                onClose();
-            },
-            onError: (errs) => {
-                console.error("Update errors:", errs);
-                // Format error messages for display
-                let errorMessage = "Terjadi kesalahan saat memperbarui data pasien:\n";
-                if (typeof errs === 'object' && errs !== null) {
-                    Object.keys(errs).forEach((key) => {
-                        const message = Array.isArray(errs[key]) ? errs[key][0] : errs[key];
-                        errorMessage += `- ${message}\n`;
-                    });
-                }
-                alert(errorMessage);
-            },
-            onFinish: () => {
-                setIsSubmitting(false);
-                // Kembalikan transform ke default agar tidak mempengaruhi submit lain
-                transform((payload) => payload);
-            },
-        });
+        // Validasi lokal wajib: kode_wilayah harus ada dan valid
+        const kodeWilayahCandidate = (data.kode_wilayah || patient.kode_wilayah || "").trim();
+        if (!kodeWilayahCandidate) {
+            alert("Kode Wilayah harus diisi. Silakan pilih kelurahan/desa.");
+            return;
+        }
+        if (!isValidWilayahCode(kodeWilayahCandidate)) {
+            alert("Format Kode Wilayah tidak valid. Gunakan format PP.RR.DD.VVVV (contoh: 74.01.01.1001)");
+            return;
+        }
+
+        // Pastikan semua field yang diperlukan ada
+        const submitData = {
+            ...data,
+            // Pastikan field yang diperlukan tidak kosong
+            no_rkm_medis: data.no_rkm_medis || patient.no_rkm_medis,
+            nm_pasien: data.nm_pasien || patient.nm_pasien,
+            no_ktp: data.no_ktp || patient.no_ktp || "",
+            no_kk: data.no_kk || patient.no_kk || "",
+            jk: data.jk || patient.jk || "L",
+            tmp_lahir: data.tmp_lahir || patient.tmp_lahir || "",
+            tgl_lahir: data.tgl_lahir || patient.tgl_lahir || "",
+            nm_ibu: data.nm_ibu || patient.nm_ibu || "",
+            alamat: data.alamat || patient.alamat || "",
+            gol_darah: data.gol_darah || patient.gol_darah || "",
+            pekerjaan: data.pekerjaan || patient.pekerjaan || "",
+            stts_nikah: data.stts_nikah || patient.stts_nikah || "",
+            agama: data.agama || patient.agama || "",
+            no_tlp: data.no_tlp || patient.no_tlp || "",
+            pnd: data.pnd || patient.pnd || "SMA",
+            keluarga: data.keluarga || patient.keluarga || "",
+            namakeluarga: data.namakeluarga || patient.namakeluarga || "",
+            kd_pj: data.kd_pj || patient.kd_pj || "",
+            no_peserta: data.no_peserta || patient.no_peserta || "",
+            pekerjaanpj: data.pekerjaanpj || patient.pekerjaanpj || "",
+            alamatpj: data.alamatpj || patient.alamatpj || "",
+            kode_wilayah: kodeWilayahCandidate,
+            kelurahanpj: data.kelurahanpj || patient.kelurahanpj || "",
+            kecamatanpj: data.kecamatanpj || patient.kecamatanpj || "",
+            kabupatenpj: data.kabupatenpj || patient.kabupatenpj || "",
+            propinsipj: data.propinsipj || patient.propinsipj || "",
+            email: data.email || patient.email || "",
+            perusahaan_pasien: data.perusahaan_pasien || patient.perusahaan_pasien || "",
+            suku_bangsa: data.suku_bangsa || patient.suku_bangsa || "",
+            bahasa_pasien: data.bahasa_pasien || patient.bahasa_pasien || "",
+            cacat_fisik: data.cacat_fisik || patient.cacat_fisik || "",
+            nip: data.nip || patient.nip || "",
+        };
+
+        setIsSubmitting(true);
+
+        // Gunakan router.post dengan method spoofing seperti implementasi yang berhasil di setting.jsx
+        const updateUrl = route("patients.update", patient.no_rkm_medis);
+        router.post(
+            updateUrl,
+            { ...submitData, _method: "PUT" },
+            {
+                forceFormData: true,
+                preserveScroll: false,
+                preserveState: false,
+                onStart: () => {
+                    // Update started
+                },
+                onSuccess: () => {
+                    setIsSubmitting(false);
+                    // Call onSuccess callback if provided (will handle toast/notification)
+                    if (onSuccess) {
+                        onSuccess({ ...submitData });
+                    } else {
+                        // Fallback alert jika onSuccess tidak tersedia
+                        alert("Data pasien berhasil diperbarui!");
+                    }
+                    onClose();
+                },
+                onError: (errs) => {
+                    console.error("Update errors:", errs);
+                    setIsSubmitting(false);
+                    // Format error messages for display
+                    let errorMessage = "Terjadi kesalahan saat memperbarui data pasien:\n";
+                    if (typeof errs === 'object' && errs !== null) {
+                        Object.keys(errs).forEach((key) => {
+                            const message = Array.isArray(errs[key]) ? errs[key][0] : errs[key];
+                            errorMessage += `- ${key}: ${message}\n`;
+                        });
+                    }
+                    alert(errorMessage);
+                },
+                onFinish: () => {
+                    setIsSubmitting(false);
+                },
+            }
+        );
     };
 
     return (
@@ -948,6 +1030,27 @@ export default function PatientEditModal({
                                             Informasi Dasar
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    No. RM *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="no_rkm_medis"
+                                                    value={data.no_rkm_medis}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 20);
+                                                        setData("no_rkm_medis", val);
+                                                    }}
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan No. RM"
+                                                />
+                                                {getErrorMessage("no_rkm_medis") && (
+                                                    <p className="mt-1 text-xs text-red-600">
+                                                        {getErrorMessage("no_rkm_medis")}
+                                                    </p>
+                                                )}
+                                            </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     Nama Lengkap *

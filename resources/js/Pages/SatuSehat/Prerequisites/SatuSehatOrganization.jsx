@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
+import SidebarBriding from "@/Layouts/SidebarBriding";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -169,7 +169,7 @@ export default function SatuSehatOrganization() {
     }
   }
 
-  const useSubunitId = (id) => {
+  const setSubunitId = (id) => {
     if (!id) return;
     setOrgId(id);
     addToast("info", "ID subunit dipilih", `Organization/${id} siap disimpan ke mapping.`);
@@ -263,7 +263,7 @@ export default function SatuSehatOrganization() {
   };
 
   return (
-    <SidebarPengaturan title="Pengaturan" wide>
+    <SidebarBriding title="Pengaturan" wide>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <motion.div
           className="px-4 sm:px-6 lg:px-8 py-8 space-y-8"
@@ -530,7 +530,7 @@ export default function SatuSehatOrganization() {
                                     <motion.button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        useSubunitId(s.id);
+                                        setSubunitId(s.id);
                                       }}
                                       className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                                       whileHover={{ scale: 1.1 }}
@@ -797,6 +797,6 @@ export default function SatuSehatOrganization() {
           <Toaster toasts={toasts} onRemove={removeToast} />
         </motion.div>
       </div>
-    </SidebarPengaturan>
+    </SidebarBriding>
   );
 }

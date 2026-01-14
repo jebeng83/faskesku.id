@@ -215,6 +215,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/{regPeriksa}', [RegPeriksaController::class, 'update'])
             ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.update');
+        // Endpoint aman untuk update penuh berdasarkan path dengan nilai yang mengandung '/'
+        Route::put('/{regPeriksa}/safe-update', [RegPeriksaController::class, 'update'])
+            ->where('regPeriksa', '.*')
+            ->name('api.reg-periksa.safe-update');
         Route::delete('/{regPeriksa}', [RegPeriksaController::class, 'destroy'])
             ->where('regPeriksa', '^(?!by-rawat$)(?!keputusan$)(?!status-bayar$)[^/]+$')
             ->name('api.reg-periksa.destroy');
@@ -226,6 +230,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     // Endpoint aman (query-style) untuk update keputusan dengan payload no_rawat
     Route::match(['put', 'post'], '/reg-periksa-actions/update-keputusan', [RegPeriksaController::class, 'updateKeputusanByRawat'])
         ->name('api.reg-periksa.actions.update-keputusan');
+
+    // Endpoint aman (query-style) untuk update registrasi periksa dengan payload no_rawat
+    Route::match(['put', 'post'], '/reg-periksa-actions/update', [RegPeriksaController::class, 'updateByRawat'])
+        ->name('api.reg-periksa.actions.update');
 
     // User Management Routes
     Route::prefix('users')->group(function () {

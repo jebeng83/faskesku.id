@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import SidebarRalan from "@/Layouts/SidebarRalan";
+import SidebarBriding from "@/Layouts/SidebarBriding";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import axios from "axios";
 import Toaster from "@/Components/ui/Toaster";
@@ -99,7 +99,7 @@ export default function Encounter() {
     const s = startDate ? new Date(startDate) : new Date();
     const e = endDate ? new Date(endDate) : s;
     const arr = [];
-    let cur = new Date(s.getTime());
+    const cur = new Date(s.getTime());
     while (cur <= e) {
       arr.push(dateToYmd(cur));
       cur.setDate(cur.getDate() + 1);
@@ -314,7 +314,7 @@ export default function Encounter() {
   ];
 
   return (
-    <SidebarRalan>
+    <SidebarBriding title="Interoperabilitas">
       <div className="space-y-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -361,6 +361,6 @@ export default function Encounter() {
         </div>
       </div>
       <Toaster toasts={toasts} onRemove={removeToast} />
-    </SidebarRalan>
+    </SidebarBriding>
   );
 }

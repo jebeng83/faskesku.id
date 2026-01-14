@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 import tsParser from "@typescript-eslint/parser";
 
 export default [
@@ -11,8 +12,10 @@ export default [
       "storage/**",
       "resources/js/actions/**",
       "resources/js/routes/farmasi/**",
+      "**/*.d.ts",
     ],
   },
+  js.configs.recommended,
   {
     files: ["resources/js/**/*.{js,jsx,ts,tsx}"],
     languageOptions: {
@@ -21,8 +24,10 @@ export default [
       parser: tsParser,
       parserOptions: {
         ecmaFeatures: { jsx: true },
+        project: false, // Disable project-based type checking for performance
       },
       globals: {
+        // Browser globals
         window: "readonly",
         document: "readonly",
         navigator: "readonly",
@@ -42,7 +47,6 @@ export default [
         confirm: "readonly",
         fetch: "readonly",
         FormData: "readonly",
-        route: "readonly",
         AbortController: "readonly",
         btoa: "readonly",
         atob: "readonly",
@@ -54,13 +58,17 @@ export default [
         File: "readonly",
         Image: "readonly",
         history: "readonly",
-        process: "readonly",
         Blob: "readonly",
         Audio: "readonly",
+        // Node globals
+        process: "readonly",
+        // Custom globals
+        route: "readonly",
       },
     },
     plugins: {
       react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
     },
     settings: {
       react: { version: "detect" },
@@ -80,14 +88,14 @@ export default [
           argsIgnorePattern: "^_",
           caughtErrors: "all",
           caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
         },
       ],
-    },
-  },
-  {
-    files: ["**/*.d.ts"],
-    rules: {
-      "no-unused-vars": "off",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      "prefer-const": "warn",
+      "no-var": "warn",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
 ];

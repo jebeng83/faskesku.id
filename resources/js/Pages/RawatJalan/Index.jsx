@@ -132,7 +132,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             kd_dokter: filters.kd_dokter || '',
             kd_poli: filters.kd_poli || '',
         }));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [
         filters?.start_date,
         filters?.end_date,

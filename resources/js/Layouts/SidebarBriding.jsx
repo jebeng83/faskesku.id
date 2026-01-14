@@ -8,6 +8,10 @@ import {
   Stethoscope,
   Pill,
   CalendarDays,
+  Building2,
+  HeartPulse,
+  User,
+  BadgeInfo,
 } from "lucide-react";
 
 export default function SidebarBriding({ title = "Briding", children, wide = false }) {
@@ -38,6 +42,16 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       pcareMapPoli: safeRoute("pcare.mapping.poli", "/pcare/mapping/poli"),
       pcareMapObat: safeRoute("pcare.mapping.obat", "/pcare/mapping/obat"),
       jadwalDokter: safeRoute("jadwal.index", "/jadwal"),
+      ssOrg: safeRoute("satusehat.prerequisites.organization", "/satusehat/prerequisites/organization"),
+      ssLoc: safeRoute("satusehat.prerequisites.location", "/satusehat/prerequisites/location"),
+      ssLocFarmasi: safeRoute("satusehat.prerequisites.location_farmasi", "/satusehat/prerequisites/location-farmasi"),
+      ssLocRanap: safeRoute("satusehat.prerequisites.location_ranap", "/satusehat/prerequisites/location-ranap"),
+      ssPrPractitioner: safeRoute("satusehat.prerequisites.practitioner", "/satusehat/prerequisites/practitioner"),
+      ssPrPatient: safeRoute("satusehat.prerequisites.patient", "/satusehat/prerequisites/patient"),
+      ssInteropRajalEncounter: safeRoute(
+        "satusehat.interoperabilitas.rajal.encounter",
+        "/satusehat/interoperabilitas/rajal/encounter"
+      ),
     }),
     []
   );
@@ -134,7 +148,86 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
               <CalendarDays className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
               {!isSidebarCollapsed && <span className="text-sm">Jadwal Dokter</span>}
             </Link>
-          </div>
+
+            {!isSidebarCollapsed && (
+              <div className="mt-4 px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Bridging Satu Sehat</div>
+            )}
+            <Link
+              href={paths.ssOrg}
+              aria-label="Mapping Organisasi"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssOrg) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <Building2 className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Mapping Organisasi</span>}
+            </Link>
+            <Link
+              href={paths.ssLoc}
+              aria-label="Mapping Location"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssLoc) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Mapping Location</span>}
+            </Link>
+            <Link
+              href={paths.ssLocFarmasi}
+              aria-label="Mapping Location Farmasi"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssLocFarmasi) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Mapping Location Farmasi</span>}
+            </Link>
+          <Link
+            href={paths.ssLocRanap}
+            aria-label="Mapping Location Ranap"
+            className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              isActive(paths.ssLocRanap) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+            }`}
+          >
+            <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+            {!isSidebarCollapsed && <span className="text-sm">Mapping Location Ranap</span>}
+          </Link>
+
+            <Link
+              href={paths.ssPrPractitioner}
+              aria-label="Referensi Practitioner"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssPrPractitioner) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <BadgeInfo className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Referensi Practitioner</span>}
+            </Link>
+            <Link
+              href={paths.ssPrPatient}
+              aria-label="Referensi Pasien"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssPrPatient) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <User className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Referensi Pasien</span>}
+            </Link>
+
+            {!isSidebarCollapsed && (
+              <div className="mt-4 px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Interoperabilitas Satu Sehat</div>
+            )}
+            <Link
+              href={paths.ssInteropRajalEncounter}
+              aria-label="Encounter Rajal"
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.ssInteropRajalEncounter) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <HeartPulse className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Encounter Rajal</span>}
+            </Link>
+        </div>
         </nav>
       </aside>
 

@@ -274,6 +274,9 @@ export default function Registration({
     const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
     const [selectedRegForPrint, setSelectedRegForPrint] = useState(null);
 
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editReg, setEditReg] = useState(null);
+
     const [poliOptions, setPoliOptions] = useState(Array.isArray(polikliniks) ? polikliniks : []);
     useEffect(() => {
         setPoliOptions(Array.isArray(polikliniks) ? polikliniks : []);
@@ -323,6 +326,28 @@ export default function Registration({
         setIsBpjsPopupOpen(true);
     };
 
+    const handleEditRegistration = (reg) => {
+        setEditReg(reg);
+        setIsEditMode(true);
+        const p = reg?.pasien || { no_rkm_medis: reg?.no_rkm_medis, nm_pasien: reg?.pasien?.nm_pasien };
+        setSelectedPatient(p);
+        setFormData({
+            kd_dokter: String(reg?.kd_dokter || reg?.dokter?.kd_dokter || ''),
+            kd_poli: String(reg?.kd_poli || reg?.poliklinik?.kd_poli || ''),
+            kd_pj: String(reg?.kd_pj || reg?.penjab?.kd_pj || ''),
+            p_jawab: String(reg?.p_jawab || ''),
+            almt_pj: String(reg?.almt_pj || ''),
+            hubunganpj: String(reg?.hubunganpj || 'DIRI SENDIRI'),
+            tgl_registrasi: String(reg?.tgl_registrasi || todayDateString()),
+            jam_reg: (String(reg?.jam_reg || '').substring(0, 5)) || nowDateTimeString().split(' ')[1].substring(0, 5),
+        });
+        try {
+            const kdPoli = String(reg?.kd_poli || reg?.poliklinik?.kd_poli || '');
+            if (kdPoli) {
+                checkPoliStatus(kdPoli, String(p?.no_rkm_medis || reg?.no_rkm_medis || ''));
+            }
+        } catch (_) {}
+    };
     const closeBpjsPopup = () => {
         setIsBpjsPopupOpen(false);
         setBpjsPopup({ status: null, message: "", data: null, raw: "" });
@@ -557,7 +582,7 @@ export default function Registration({
             try {
                 goToLanjutan(reg.no_rawat, reg.no_rkm_medis);
             } catch {
-                let url = "/rawat-jalan/lanjutan";
+                const url = "/rawat-jalan/lanjutan";
                 router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })) }, { preserveScroll: true });
             }
         } catch (e) {
@@ -766,14 +791,11 @@ export default function Registration({
     };
 
     // Check patient status in polyclinic
-    const checkPoliStatus = async (kd_poli) => {
+    const checkPoliStatus = async (kd_poli, patientNo = null) => {
         try {
-            const response = await axios.get(
-                `/registration/${selectedPatient.no_rkm_medis}/check-poli-status`,
-                {
-                    params: { kd_poli },
-                }
-            );
+            const noRM = patientNo ?? (selectedPatient && selectedPatient.no_rkm_medis);
+            if (!noRM || !kd_poli) return;
+            const response = await axios.get(`/registration/${noRM}/check-poli-status`, { params: { kd_poli } });
             setPoliStatus(response.data.data);
         } catch (error) {
             console.error("Error checking poli status:", error);
@@ -1032,7 +1054,36 @@ export default function Registration({
                 return res;
             };
 
-            response = await doPost();
+            if (!isEditMode) {
+                response = await doPost();
+            } else {
+                const edit = editReg;
+                if (!edit || !edit.no_rawat) {
+                    throw new Error('Data yang diedit tidak valid');
+                }
+                const finalUrl = `/api/reg-periksa/${encodeURIComponent(edit.no_rawat)}/safe-update`;
+                const putPayload = {
+                    ...payload,
+                    no_reg: edit.no_reg,
+                    no_rawat: edit.no_rawat,
+                    tgl_registrasi: payload.tgl_registrasi,
+                    jam_reg: typeof payload.jam_reg === 'string' && /^\d{2}:\d{2}$/.test(payload.jam_reg) ? payload.jam_reg : String(payload.jam_reg || '').substring(0, 5),
+                    kd_dokter: payload.kd_dokter,
+                    no_rkm_medis: String(selectedPatient?.no_rkm_medis || ''),
+                    kd_poli: payload.kd_poli,
+                    p_jawab: payload.p_jawab,
+                    almt_pj: payload.almt_pj,
+                    hubunganpj: payload.hubunganpj,
+                    biaya_reg: typeof poliStatus?.biaya_reg === 'number' ? poliStatus.biaya_reg : (edit.biaya_reg ?? 0),
+                    stts: edit.stts || 'Belum',
+                    stts_daftar: edit.stts_daftar || '-',
+                    status_lanjut: edit.status_lanjut || 'Ralan',
+                    kd_pj: payload.kd_pj,
+                    status_bayar: edit.status_bayar || 'Belum Bayar',
+                    status_poli: edit.status_poli || (poliStatus?.status_poli || 'Baru'),
+                };
+                response = await axios.put(finalUrl, putPayload, config);
+            }
 
             // Cek apakah response adalah HTML (bukan JSON) - ini biasanya berarti error atau redirect
             const contentType = response?.headers?.['content-type'] || '';
@@ -1098,7 +1149,7 @@ export default function Registration({
             }
 
             if (response.data.success === true || response.data.success === 'true' || response.data.success === 1) {
-                alert(response.data.message || 'Registrasi berhasil!');
+                alert(response.data.message || (isEditMode ? 'Registrasi berhasil diperbarui!' : 'Registrasi berhasil!'));
                 // Simpan tanggal registrasi yang baru dibuat untuk filter
                 const newRegDate = response.data.data?.tgl_registrasi || formData.tgl_registrasi || todayDateString();
                 
@@ -1294,6 +1345,8 @@ export default function Registration({
             biaya_reg: 0,
             has_registered: false,
         });
+        setIsEditMode(false);
+        setEditReg(null);
     };
 
     // Close modal
@@ -3198,6 +3251,29 @@ export default function Registration({
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
+                                                                            handleEditRegistration(reg);
+                                                                            setOpenDropdown(null);
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                                                                    >
+                                                                        <svg
+                                                                            className="w-4 h-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
+                                                                            />
+                                                                        </svg>
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
                                                                             handleCheckIn(reg);
                                                                             setOpenDropdown(null);
                                                                         }}
@@ -3841,8 +3917,8 @@ export default function Registration({
                                                 </svg>
                                             )}
                                             {isSubmitting
-                                                ? "Menyimpan..."
-                                                : "Simpan Registrasi"}
+                                                ? (isEditMode ? "Mengupdate..." : "Menyimpan...")
+                                                : (isEditMode ? "Update Registrasi" : "Simpan Registrasi")}
                                         </motion.button>
                                     </motion.div>
                                 </motion.form>
