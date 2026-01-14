@@ -1338,7 +1338,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
         try {
             // Tampilkan payload di console untuk debug
-            try { console.debug('[PCare] Payload akan dikirim', payload); } catch (_) {}
+            try { console.warn('[PCare] Payload akan dikirim', payload); } catch (_) {}
             const res = await fetch('/api/pcare/kunjungan', {
                 method: 'POST',
                 headers: {
@@ -1531,7 +1531,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     // Monitor perubahan state rujukanBerhasil untuk debugging
     useEffect(() => {
-        console.log('[CpptSoap] State changed: rujukanBerhasil =', rujukanBerhasil, ', pcareRujukanSubspesialis =', pcareRujukanSubspesialis ? 'exists' : 'null');
+        console.warn('[CpptSoap] State changed: rujukanBerhasil =', rujukanBerhasil, ', pcareRujukanSubspesialis =', pcareRujukanSubspesialis ? 'exists' : 'null');
     }, [rujukanBerhasil, pcareRujukanSubspesialis]);
 
     const searchPegawai = async (q) => {
@@ -1857,8 +1857,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             type="button"
                             onClick={async () => {
                                 try {
-                                    console.log('[CpptSoap] Cetak Rujukan clicked');
-                                    console.log('[CpptSoap] State check:', {
+                                    console.warn('[CpptSoap] Cetak Rujukan clicked');
+                                    console.warn('[CpptSoap] State check:', {
                                         hasRujukanData: !!pcareRujukanSubspesialis,
                                         hasPayload: !!lastKunjunganPayload,
                                         hasPendaftaran: !!pcarePendaftaran
@@ -1874,7 +1874,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     return it ? it.label : '';
                                 };
                                     
-                                    console.log('[CpptSoap] Starting data fetch...');
+                                    console.warn('[CpptSoap] Starting data fetch...');
                                     
                                     const kdPPK = rujukanData.kdPPK || p?.rujukLanjut?.kdppk || '';
                                     const kdSubSpesialis = rujukanData.kdSubSpesialis || p?.rujukLanjut?.subSpesialis?.kdSubSpesialis1 || '';
@@ -2138,7 +2138,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         }
                                     }
 
-                                    console.log('[CpptSoap] Data prepared:', { 
+                                    console.warn('[CpptSoap] Data prepared:', { 
                                         noKunjungan, 
                                         namaPasien, 
                                         noKartu,
@@ -2147,7 +2147,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         kdSarana,
                                         kdPPK
                                     });
-                                    console.log('[CpptSoap] Preparing print data...', { noKunjungan, namaPasien, noKartu });
+                                    console.warn('[CpptSoap] Preparing print data...', { noKunjungan, namaPasien, noKartu });
                                     
                                     // Generate barcode menggunakan library JsBarcode (CDN)
                                     const barcodeSvg = noKunjungan ? `<svg id="barcode"></svg>` : '';
@@ -2208,7 +2208,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         // Gunakan default logo jika gagal
                                     }
 
-                                    console.log('[CpptSoap] Opening print window...');
+                                    console.warn('[CpptSoap] Opening print window...');
                                     // Pastikan window terbuka meskipun ada error sebelumnya
                                     let win = null;
                                     try {
@@ -2217,7 +2217,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
                                             return;
                                         }
-                                        console.log('[CpptSoap] Window opened successfully');
+                                        console.warn('[CpptSoap] Window opened successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error opening window:', e);
                                         alert('Gagal membuka window cetak. Error: ' + (e.message || e));
@@ -2393,14 +2393,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     };
   </script>
 </body></html>`;
-                                    console.log('[CpptSoap] Writing HTML to window...');
+                                    console.warn('[CpptSoap] Writing HTML to window...');
                                     try {
                                         if (!win || win.closed) {
                                             throw new Error('Window sudah ditutup');
                                         }
                                 win.document.write(html);
                                 win.document.close();
-                                        console.log('[CpptSoap] HTML written successfully');
+                                        console.warn('[CpptSoap] HTML written successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error writing to window:', e);
                                         alert('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));

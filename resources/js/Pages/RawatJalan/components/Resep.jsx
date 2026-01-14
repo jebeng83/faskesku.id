@@ -400,11 +400,11 @@ export default function Resep({
     // Fungsi untuk mengambil riwayat resep berdasarkan no_rkm_medis dengan pagination
     const fetchRiwayatResep = async (reset = true) => {
         if (!noRkmMedis) {
-            console.log("fetchRiwayatResep: noRkmMedis kosong");
+            console.warn("fetchRiwayatResep: noRkmMedis kosong");
             return;
         }
 
-        console.log(
+        console.warn(
             "fetchRiwayatResep: mulai fetch dengan noRkmMedis:",
             noRkmMedis
         );
@@ -412,7 +412,7 @@ export default function Resep({
         try {
             // Encode no_rkm_medis untuk menangani karakter khusus
             const encodedNoRkmMedis = encodeURIComponent(noRkmMedis);
-            console.log(
+            console.warn(
                 "fetchRiwayatResep: encodedNoRkmMedis:",
                 encodedNoRkmMedis
             );
@@ -424,7 +424,7 @@ export default function Resep({
                 headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
             });
 
-            console.log("fetchRiwayatResep: response:", response.data);
+            console.warn("fetchRiwayatResep: response:", response.data);
             if (response.data.success) {
                 const resepData = response.data.data;
 
@@ -438,11 +438,11 @@ export default function Resep({
                 setHasMoreResep(response.data.has_more);
                 setNextOffset(response.data.next_offset);
 
-                console.log(
+                console.warn(
                     "fetchRiwayatResep: data berhasil diset:",
                     resepData
                 );
-                console.log(
+                console.warn(
                     "fetchRiwayatResep: has_more:",
                     response.data.has_more
                 );
@@ -450,7 +450,7 @@ export default function Resep({
                 setRiwayatResep([]);
                 setHasMoreResep(false);
                 setNextOffset(null);
-                console.log("fetchRiwayatResep: response tidak success");
+                console.error("fetchRiwayatResep: response tidak success");
             }
         } catch (error) {
             console.warn("Error fetching riwayat resep:", error?.message || error);
@@ -468,7 +468,7 @@ export default function Resep({
             return;
         }
 
-        console.log(
+        console.warn(
             "loadMoreResep: mulai load more dengan offset:",
             nextOffset
         );
@@ -485,7 +485,7 @@ export default function Resep({
                 }
             );
 
-            console.log("loadMoreResep: response:", response.data);
+            console.warn("loadMoreResep: response:", response.data);
             if (response.data.success) {
                 const newResepData = response.data.data;
 
@@ -496,7 +496,7 @@ export default function Resep({
                 setHasMoreResep(response.data.has_more);
                 setNextOffset(response.data.next_offset);
 
-                console.log(
+                console.warn(
                     "loadMoreResep: data baru berhasil ditambahkan:",
                     newResepData
                 );

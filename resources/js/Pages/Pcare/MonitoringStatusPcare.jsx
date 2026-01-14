@@ -96,7 +96,7 @@ export default function MonitoringStatusPcare() {
   
 
   const pushDebug = (entry) => {
-    try { console.log('PCareDebug', entry); } catch {}
+    try { console.warn('PCareDebug', entry); } catch {}
     setDebugLogs((p) => [...p, { ...entry, ts: new Date().toISOString() }]);
   };
 

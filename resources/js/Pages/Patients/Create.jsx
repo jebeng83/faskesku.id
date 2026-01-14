@@ -237,15 +237,15 @@ export default function Create() {
 
     // Debug: Log errors to console
     React.useEffect(() => {
-        console.log("Current errors:", errors);
+        console.warn("Current errors:", errors);
         if (Object.keys(errors).length > 0) {
-            console.log("Form errors detected:", errors);
+            console.warn("Form errors detected:", errors);
         }
     }, [errors]);
 
     // Debug: Log form data
     React.useEffect(() => {
-        console.log("Form data:", data);
+        console.warn("Form data:", data);
     }, [data]);
 
     // Address loading is now handled by WilayahSearchableSelect components

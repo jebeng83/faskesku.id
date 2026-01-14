@@ -507,23 +507,23 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
     const loadData = async () => {
         if (!noRawat || noRawat.trim() === "") {
-            console.log("loadData: noRawat kosong, skip loading");
+            console.warn("loadData: noRawat kosong, skip loading");
             return;
         }
 
-        console.log("loadData: Memuat data untuk no_rawat:", noRawat);
+        console.warn("loadData: Memuat data untuk no_rawat:", noRawat);
         setLoading(true);
         setError(null);
         try {
             // Header info invoice (visit + nota)
             // Gunakan encodeURI agar karakter '/' pada no_rawat tidak di-encode menjadi %2F
             const invUrl = buildUrl(`/akutansi/invoice/${encodeURI(noRawat)}`);
-            console.log("loadData: Fetching invoice dari:", invUrl);
+            console.warn("loadData: Fetching invoice dari:", invUrl);
             const invRes = await axios.get(invUrl, {
                 headers: { Accept: "application/json" },
             });
             setInvoice(invRes.data);
-            console.log("loadData: Invoice data diterima:", invRes.data);
+            console.warn("loadData: Invoice data diterima:", invRes.data);
 
             // Items untuk CRUD (butuh noindex)
             // Tambahkan filter tanggal hari ini untuk memastikan hanya data hari ini yang ditampilkan
@@ -535,9 +535,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 start_date: today, // Filter mulai dari tanggal hari ini
                 end_date: today, // Filter sampai tanggal hari ini
             });
-            console.log("loadData: Fetching billing dari:", apiUrl);
+            console.warn("loadData: Fetching billing dari:", apiUrl);
             const apiRes = await axios.get(apiUrl);
-            console.log("loadData: Billing response:", {
+            console.warn("loadData: Billing response:", {
                 itemsCount: apiRes.data.items?.length || 0,
                 items: apiRes.data.items,
                 summary: apiRes.data.summary,
@@ -613,7 +613,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             baseItems = deduplicatedItems;
             const duplicatesRemoved =
                 (apiRes.data.items?.length || 0) - baseItems.length;
-            console.log(
+            console.warn(
                 `✅ Deduplication: ${apiRes.data.items?.length || 0} items -> ${
                     baseItems.length
                 } items (${duplicatesRemoved} duplikat dihapus)`
@@ -643,12 +643,12 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 { by_status: {}, grand_total: 0 }
             );
 
-            console.log(
+            console.warn(
                 "loadData: Setelah filter, baseItems count:",
                 baseItems.length
             );
-            console.log("loadData: Recalculated summary:", recalculatedSummary);
-            console.log(
+            console.warn("loadData: Recalculated summary:", recalculatedSummary);
+            console.warn(
                 "loadData: Sample items totalbiaya:",
                 baseItems.slice(0, 3).map((i) => ({
                     nm: i.nm_perawatan,
@@ -661,7 +661,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const obatItemsFromBackend = baseItems.filter(
                 (item) => item.status === "Obat"
             );
-            console.log("🔍 DEBUG: Item obat dari backend", {
+            console.warn("🔍 DEBUG: Item obat dari backend", {
                 total_obat_items: obatItemsFromBackend.length,
                 items: obatItemsFromBackend.map((item) => ({
                     no: item.no,
@@ -679,7 +679,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             // Set items - useEffect akan menghitung ulang summary secara otomatis
             setItems(baseItems);
 
-            console.log("loadData: Data berhasil dimuat:", {
+            console.warn("loadData: Data berhasil dimuat:", {
                 itemsCount: baseItems.length,
                 expectedGrandTotal: round(recalculatedSummary.grand_total, 2),
             });
@@ -1332,7 +1332,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             { by_status: {}, grand_total: 0 }
         );
 
-        console.log("useEffect summary: Recalculated dari items:", {
+        console.warn("useEffect summary: Recalculated dari items:", {
             itemsCount: items.length,
             grandTotal: recalculated.grand_total,
             byStatus: recalculated.by_status,
@@ -1357,13 +1357,13 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     // karena loadData menggunakan q dan statusFilter yang bisa berubah
     React.useEffect(() => {
         if (noRawat && noRawat.trim() !== "") {
-            console.log(
+            console.warn(
                 "useEffect: noRawat berubah, memanggil loadData untuk:",
                 noRawat
             );
             loadData();
         } else {
-            console.log("useEffect: noRawat kosong atau tidak valid");
+            console.warn("useEffect: noRawat kosong atau tidak valid");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat]);

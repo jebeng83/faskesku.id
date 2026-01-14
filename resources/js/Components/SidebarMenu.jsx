@@ -58,14 +58,7 @@ export default function SidebarMenu({
     const [drawerOpen, setDrawerOpen] = useState(false);
 
 	// Debug logging (remove in production)
-	useEffect(() => {
-		if (process.env.NODE_ENV === "development") {
-			console.log("SidebarMenu Debug Info:");
-			console.log("Current Menu:", current_menu);
-			console.log("Menu Hierarchy:", menu_hierarchy);
-			console.log("Current Path:", window.location.pathname);
-		}
-    }, [current_menu, menu_hierarchy]);
+    useEffect(() => {}, [current_menu, menu_hierarchy]);
 
     // Tutup drawer ketika route/menu aktif berubah (navigasi)
     useEffect(() => {
@@ -146,41 +139,25 @@ export default function SidebarMenu({
 
 		// Check if this menu is the current menu (from middleware)
 		if (current_menu && current_menu.id === menu.id) {
-			if (process.env.NODE_ENV === "development") {
-				console.log(`Menu ${menu.name} is active (current_menu match)`);
-			}
-			return true;
+            return true;
 		}
 
 		// Check if menu URL matches current path exactly
 		if (menu.url && currentPath === menu.url) {
-			if (process.env.NODE_ENV === "development") {
-				console.log(`Menu ${menu.name} is active (URL match: ${menu.url})`);
-			}
-			return true;
+            return true;
 		}
 
 		// Check if menu route matches current route name
 		if (menu.route) {
 			const menuUrl = resolveRouteUrl(menu.route);
 			if (menuUrl && currentPath === menuUrl) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						`Menu ${menu.name} is active (route match: ${menu.route} -> ${menuUrl})`
-					);
-				}
-				return true;
+                return true;
 			}
 		}
 
 		// Check if current path starts with menu URL (for nested routes)
 		if (menu.url && currentPath.startsWith(menu.url) && menu.url !== "/") {
-			if (process.env.NODE_ENV === "development") {
-				console.log(
-					`Menu ${menu.name} is active (URL prefix match: ${menu.url})`
-				);
-			}
-			return true;
+            return true;
 		}
 
 		// Check if current path matches menu route pattern
@@ -192,12 +169,7 @@ export default function SidebarMenu({
 				currentPath.startsWith(menuUrl) &&
 				menuUrl !== "/"
 			) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						`Menu ${menu.name} is active (route prefix match: ${menu.route} -> ${menuUrl})`
-					);
-				}
-				return true;
+                return true;
 			}
 		}
 
@@ -205,10 +177,7 @@ export default function SidebarMenu({
 		const children = menu.active_children_recursive || menu.children || [];
 		if (children && children.length > 0) {
 			const hasActiveChild = children.some((child) => isMenuActive(child));
-			if (hasActiveChild && process.env.NODE_ENV === "development") {
-				console.log(`Menu ${menu.name} is active (has active child)`);
-			}
-			return hasActiveChild;
+            return hasActiveChild;
 		}
 
 		return false;

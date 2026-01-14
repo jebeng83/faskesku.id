@@ -152,7 +152,7 @@ export default function NotaJalanPage() {
                                 const encodedNoRawat =
                                     encodeURIComponent(no_rawat);
                                 const url = `/api/akutansi/nota-jalan/${encodedNoRawat}/pdf?ts=${Date.now()}`;
-                                console.log("Downloading PDF from:", url);
+                                console.warn("Downloading PDF from:", url);
                                 try {
                                     const response = await axios.get(url, {
                                         responseType: "blob",

@@ -166,7 +166,7 @@ export default function KasirRalanPage() {
 
             // Debug: Log sample data untuk memastikan field stts ada
             if (items.length > 0) {
-                console.log("KasirRalan: Sample data dari API:", {
+                console.warn("KasirRalan: Sample data dari API:", {
                     sample: items[0],
                     total_items: items.length,
                     sample_stts: items[0]?.stts,
@@ -181,7 +181,7 @@ export default function KasirRalanPage() {
 
             // Debug: Log setelah filter Ralan
             if (ralanOnly.length > 0) {
-                console.log("KasirRalan: Setelah filter Ralan:", {
+                console.warn("KasirRalan: Setelah filter Ralan:", {
                     total_ralan: ralanOnly.length,
                     sample_ralan: ralanOnly[0],
                     sample_ralan_stts: ralanOnly[0]?.stts,
@@ -249,7 +249,7 @@ export default function KasirRalanPage() {
                 const matches = rStts === status;
                 // Debug: Log jika ada data dengan stts yang tidak sesuai filter
                 if (!matches && rStts) {
-                    console.log("KasirRalan: Item tidak sesuai filter status", {
+                    console.warn("KasirRalan: Item tidak sesuai filter status", {
                         no_rawat: r?.no_rawat,
                         stts: rStts,
                         filter_status: status,
@@ -257,7 +257,7 @@ export default function KasirRalanPage() {
                 }
                 return matches;
             });
-            console.log(
+            console.warn(
                 `KasirRalan: Filter status "${status}": ${beforeFilter} -> ${data.length} items`
             );
         }

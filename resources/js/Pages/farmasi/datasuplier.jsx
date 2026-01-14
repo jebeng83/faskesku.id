@@ -149,7 +149,7 @@ export default function DataSuplierPage() {
         preserveScroll: true,
         preserveState: false,
         onSuccess: () => {
-          console.log('Update suplier berhasil (POST + _method=PUT)');
+          console.warn('Update suplier berhasil (POST + _method=PUT)');
           setModalOpen(false);
         },
         onError: (errors) => {

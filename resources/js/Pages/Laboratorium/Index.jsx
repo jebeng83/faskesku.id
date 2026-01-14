@@ -313,10 +313,10 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
     };
 
     const submitSample = () => {
-        console.log("=== submitSample START ===");
-        console.log("selectedPermintaan:", selectedPermintaan);
-        console.log("sampleDate:", sampleDate);
-        console.log("sampleTime:", sampleTime);
+        console.warn("=== submitSample START ===");
+        console.warn("selectedPermintaan:", selectedPermintaan);
+        console.warn("sampleDate:", sampleDate);
+        console.warn("sampleTime:", sampleTime);
         
         if (!selectedPermintaan?.noorder) {
             console.error("❌ No noorder found in selectedPermintaan:", selectedPermintaan);
@@ -345,10 +345,10 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
             jam_sampel: sampleTime,
         };
         
-        console.log("📤 Sending request:");
-        console.log("  URL:", routeUrl);
-        console.log("  Payload:", payload);
-        console.log("  Method: POST (with _method=PUT spoofing)");
+        console.warn("📤 Sending request:");
+        console.warn("  URL:", routeUrl);
+        console.warn("  Payload:", payload);
+        console.warn("  Method: POST (with _method=PUT spoofing)");
         
         // Gunakan method spoofing dengan POST + _method=PUT seperti yang digunakan di aplikasi lain
         router.post(
@@ -359,21 +359,21 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                 preserveScroll: true,
                 preserveState: true, // Keep state untuk mempertahankan filter dan tab
                 onStart: () => {
-                    console.log("🔄 Request started");
+                    console.warn("🔄 Request started");
                 },
                 onProgress: (progress) => {
-                    console.log("⏳ Request progress:", progress);
+                    console.warn("⏳ Request progress:", progress);
                 },
                 onSuccess: (responsePage) => {
-                    console.log("✅ Update sampel SUCCESS");
-                    console.log("  Response page:", responsePage);
-                    console.log("  Response page.props:", responsePage?.props);
-                    console.log("  Response page.flash:", responsePage?.flash);
-                    console.log("  Current page.props:", page.props);
-                    console.log("  Current page.props.flash:", page?.props?.flash);
+                    console.warn("✅ Update sampel SUCCESS");
+                    console.warn("  Response page:", responsePage);
+                    console.warn("  Response page.props:", responsePage?.props);
+                    console.warn("  Response page.flash:", responsePage?.flash);
+                    console.warn("  Current page.props:", page.props);
+                    console.warn("  Current page.props.flash:", page?.props?.flash);
                     
                     // Tutup modal terlebih dahulu
-                    console.log("  Closing modal...");
+                    console.warn("  Closing modal...");
                     setShowSampleModal(false);
                     setSelectedPermintaan(null);
                     
@@ -384,8 +384,8 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                                          page?.props?.flash?.success ||
                                          "Tanggal dan jam sampel berhasil diperbarui.";
                     
-                    console.log("  Success message:", successMessage);
-                    console.log("  Showing alert...");
+                    console.warn("  Success message:", successMessage);
+                    console.warn("  Showing alert...");
                     
                     setAlertConfig({
                         type: "success",
@@ -397,13 +397,13 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                     
                     // Refresh data untuk mendapatkan data terbaru setelah delay kecil
                     // Delay diperlukan agar alert sempat ditampilkan sebelum refresh
-                    console.log("  Scheduling data refresh in 500ms...");
+                    console.warn("  Scheduling data refresh in 500ms...");
                     setTimeout(() => {
-                        console.log("  Refreshing data...");
+                        console.warn("  Refreshing data...");
                         handleSearch();
                     }, 500);
                     
-                    console.log("=== submitSample SUCCESS END ===");
+                    console.warn("=== submitSample SUCCESS END ===");
                 },
                 onError: (errors) => {
                     console.error("❌ Update sampel ERROR");
@@ -461,15 +461,15 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                     });
                     setShowAlert(true);
                     
-                    console.log("=== submitSample ERROR END ===");
+                    console.error("=== submitSample ERROR END ===");
                 },
                 onFinish: () => {
-                    console.log("🏁 Request finished");
+                    console.warn("🏁 Request finished");
                 },
             }
         );
         
-        console.log("📤 Request sent, waiting for response...");
+        console.warn("📤 Request sent, waiting for response...");
     };
 
     const handleInputHasil = (item) => {

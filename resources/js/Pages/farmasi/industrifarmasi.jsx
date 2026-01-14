@@ -116,8 +116,8 @@ export default function IndustriFarmasiPage() {
   };
 
   const openEdit = (item) => {
-    console.log('openEdit called with item:', item);
-    console.log('item.kode_industri:', item.kode_industri);
+    console.warn('openEdit called with item:', item);
+    console.warn('item.kode_industri:', item.kode_industri);
     setIsEdit(true);
     setSelected(item);
     setData({
@@ -150,11 +150,11 @@ export default function IndustriFarmasiPage() {
       // Named route Ziggy untuk memastikan URL yang tepat dengan parameter
       const namedUpdateUrl = route('farmasi.industri-farmasi.update', { kode_industri: kodeIndustri });
 
-      console.log('PUT Request Details:');
-      console.log('- Kode Industri:', kodeIndustri);
-      console.log('- Update URL (manual):', updateUrl);
-      console.log('- Update URL (named route):', namedUpdateUrl);
-      console.log('- Data:', data);
+      console.warn('PUT Request Details:');
+      console.warn('- Kode Industri:', kodeIndustri);
+      console.warn('- Update URL (manual):', updateUrl);
+      console.warn('- Update URL (named route):', namedUpdateUrl);
+      console.warn('- Data:', data);
 
       // Gunakan method spoofing via POST dengan forceFormData agar Laravel mengenali _method=PUT
       router.post(namedUpdateUrl, { ...data, _method: 'PUT' }, {
@@ -162,7 +162,7 @@ export default function IndustriFarmasiPage() {
         preserveScroll: true,
         preserveState: false,
         onSuccess: () => {
-          console.log('Update berhasil dengan method spoofing (POST + _method=PUT)');
+          console.warn('Update berhasil dengan method spoofing (POST + _method=PUT)');
           setModalOpen(false);
         },
         onError: (errors) => {

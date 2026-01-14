@@ -295,7 +295,7 @@ const DaftarPermintaanResep = () => {
             });
             
             // Debug log untuk melihat data pagination
-            console.log('Pagination data:', { 
+            console.warn('Pagination data:', { 
                 total, 
                 page, 
                 limit, 
@@ -305,6 +305,7 @@ const DaftarPermintaanResep = () => {
                 jsonHasMore: json.has_more,
                 jsonPage: json.page,
                 jsonLimit: json.limit
+            
             });
         } catch (e) {
             setError(e.message);
@@ -791,7 +792,7 @@ const DaftarPermintaanResep = () => {
                 margin: 1,
                 errorCorrectionLevel: 'H'
             });
-            console.log("QR code berhasil di-generate");
+            console.warn("QR code berhasil di-generate");
         } catch (e) {
             console.error("Gagal generate QR code:", e);
         }

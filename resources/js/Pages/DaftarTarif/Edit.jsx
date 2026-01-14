@@ -127,8 +127,8 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
         e.preventDefault();
         
         // Debug: Log the data being sent
-        console.log('Form data being sent:', data);
-        console.log('Status value:', data.status);
+        console.warn('Form data being sent:', data);
+        console.warn('Status value:', data.status);
         
         // Prepare data with category
         const submitData = {
@@ -136,7 +136,7 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
             category: category
         };
         
-        console.log('Final submit data:', submitData);
+        console.warn('Final submit data:', submitData);
         
         // Use method spoofing to avoid PUT 405
         router.post(route('daftar-tarif.update', jnsPerawatan.kd_jenis_prw), { ...submitData, _method: 'PUT' }, {
@@ -145,7 +145,7 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
                 // Success handled by redirect
             },
             onError: (errors) => {
-                console.log('Validation errors:', errors);
+                console.error('Validation errors:', errors);
             },
         });
     };

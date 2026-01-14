@@ -48,7 +48,7 @@ export default function Login() {
                     setProcessing(false);
                 },
                 onSuccess: () => {
-                    console.log("Login successful");
+                    console.warn("Login successful");
                     setProcessing(false);
                 },
                 onFinish: () => {

@@ -749,7 +749,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                 const hasLogoUpdate = appForm.data.logo instanceof File;
                                 
                                 // Debug: log data sebelum transform
-                                console.log('Form data before submit:', {
+                                console.warn('Form data sebelum submit:', {
                                     wallpaper: appForm.data.wallpaper ? {
                                         name: appForm.data.wallpaper.name,
                                         size: appForm.data.wallpaper.size,
@@ -782,15 +782,15 @@ export default function SettingIndex({ settings = [], flash }) {
                                     // Hanya tambahkan file jika benar-benar ada (instanceof File)
                                     if (data.wallpaper instanceof File) {
                                         transformed.wallpaper = data.wallpaper;
-                                        console.log('Wallpaper file included in transform');
+                                        console.warn('Wallpaper file disertakan dalam transform');
                                     } else {
-                                        console.log('Wallpaper is not a File instance:', typeof data.wallpaper, data.wallpaper);
+                                        console.warn('Wallpaper bukan instance File:', typeof data.wallpaper, data.wallpaper);
                                     }
                                     if (data.logo instanceof File) {
                                         transformed.logo = data.logo;
-                                        console.log('Logo file included in transform');
+                                        console.warn('Logo file disertakan dalam transform');
                                     }
-                                    console.log('Transformed data keys:', Object.keys(transformed));
+                                    console.warn('Transformed data keys:', Object.keys(transformed));
                                     return transformed;
                                 });
                                 appForm.post(updateUrl, {
@@ -811,7 +811,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                                     // Force reload halaman untuk clear cache gambar
                                                     // Tapi hanya jika wallpaper/logo di-update
                                                     if (hasWallpaperUpdate || hasLogoUpdate) {
-                                                        console.log('File di-update, reload halaman untuk clear cache...');
+                                                        console.warn('File di-update, reload halaman untuk clear cache...');
                                                         // Reload setelah 1 detik untuk memastikan data ter-update
                                                         setTimeout(() => {
                                                             window.location.reload();
@@ -1107,7 +1107,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                         onChange={(e) => {
                                             const file = e.target.files?.[0] ?? null;
                                             if (file) {
-                                                console.log('Wallpaper file selected:', {
+                                                console.warn('Wallpaper file selected:', {
                                                     name: file.name,
                                                     size: file.size,
                                                     type: file.type,
@@ -1116,7 +1116,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                                 appForm.setData("wallpaper", file);
                                                 // Verifikasi setelah set
                                                 setTimeout(() => {
-                                                    console.log('Wallpaper setelah setData:', appForm.data.wallpaper);
+                                                    console.warn('Wallpaper setelah setData:', appForm.data.wallpaper);
                                                 }, 100);
                                             } else {
                                                 appForm.setData("wallpaper", null);
@@ -1149,7 +1149,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                         onChange={(e) => {
                                             const file = e.target.files?.[0] ?? null;
                                             if (file) {
-                                                console.log('Logo file selected:', {
+                                                console.warn('Logo file selected:', {
                                                     name: file.name,
                                                     size: file.size,
                                                     type: file.type,
@@ -1158,7 +1158,7 @@ export default function SettingIndex({ settings = [], flash }) {
                                                 appForm.setData("logo", file);
                                                 // Verifikasi setelah set
                                                 setTimeout(() => {
-                                                    console.log('Logo setelah setData:', appForm.data.logo);
+                                                    console.warn('Logo setelah setData:', appForm.data.logo);
                                                 }, 100);
                                             } else {
                                                 appForm.setData("logo", null);

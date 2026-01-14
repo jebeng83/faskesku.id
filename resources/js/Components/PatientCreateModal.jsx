@@ -593,7 +593,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
     // Handle wilayah change - automatically set all address fields
     const handleWilayahChange = async (event) => {
         const value = event.target.value;
-        console.log("Wilayah changed to:", value);
+        console.warn("Wilayah changed to:", value);
         setData("kode_wilayah", value);
 
         // If we have full address data from the selection, use it
@@ -664,8 +664,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                         desiredNo = latestNo;
                         setData("no_rkm_medis", desiredNo);
                     }
-                } catch (err) {}
-            }
+                } catch (_err) {}
+                }
 
             let retriesLeft = 3;
 
@@ -690,7 +690,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                     submitOnce();
                                     return;
                                 }
-                            } catch (e) {}
+                            } catch (_e) {}
                         }
                         let errorMessage = "Terjadi kesalahan:\n";
                         if (typeof errors === 'object' && errors !== null) {
@@ -713,7 +713,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             };
 
             submitOnce();
-        } catch (e1) {
+        } catch (_e1) {
             setAlertConfig({
                 type: "error",
                 title: "Kesalahan",

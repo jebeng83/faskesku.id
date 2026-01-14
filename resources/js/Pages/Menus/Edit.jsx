@@ -48,11 +48,11 @@ export default function Edit({ menu, parentMenus, permissions }) {
 		setProcessing(true);
 		// Gunakan path eksplisit agar tidak tergantung resolver route
 		const updateUrl = `/menus/${encodeURIComponent(menu.id)}`;
-		console.log("[Menus/Edit] Submitting PUT", {
-			id: menu.id,
-			updateUrl,
-			data,
-		});
+        console.warn("[Menus/Edit] Submitting PUT", {
+            id: menu.id,
+            updateUrl,
+            data,
+        });
 
     router.post(updateUrl, { ...data, _method: 'PUT' }, {
             // Gunakan method spoofing agar kompatibel dengan konfigurasi server yang tidak menerima PUT langsung

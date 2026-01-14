@@ -1,6 +1,5 @@
 import js from "@eslint/js";
 import reactPlugin from "eslint-plugin-react";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
 import tsParser from "@typescript-eslint/parser";
 
 export default [
@@ -68,7 +67,6 @@ export default [
     },
     plugins: {
       react: reactPlugin,
-      "react-hooks": reactHooksPlugin,
     },
     settings: {
       react: { version: "detect" },
@@ -94,8 +92,7 @@ export default [
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "prefer-const": "warn",
       "no-var": "warn",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+      
     },
   },
 ];

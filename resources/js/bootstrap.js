@@ -148,7 +148,7 @@ window.axios.interceptors.response.use(
 
         if ((is419 || isCsrfMismatchString || isCsrfMismatchJson) && !alreadyRetried) {
             try {
-                console.log('[Axios Interceptor] 🔄 CSRF token expired, refreshing and retrying...');
+                console.warn('[Axios Interceptor] 🔄 CSRF token expired, refreshing and retrying...');
                 const newToken = await refreshCsrfToken();
                 
                 // Update meta tag jika ada
@@ -174,7 +174,7 @@ window.axios.interceptors.response.use(
                     },
                 };
                 
-                console.log('[Axios Interceptor] ✅ Retrying request with new CSRF token');
+                console.warn('[Axios Interceptor] ✅ Retrying request with new CSRF token');
                 return window.axios.request(retryConfig);
             } catch (e) {
                 console.error('[Axios Interceptor] ❌ Failed to refresh CSRF token and retry:', e);
@@ -204,7 +204,7 @@ window.axios.interceptors.response.use(
                 config.headers = config.headers || {};
                 config.headers["X-BPJS-LOG-ID"] = id;
                 config.bpjsLogId = id;
-                console.debug(`[BPJS-REQ ${id}]`, {
+                console.warn(`[BPJS-REQ ${id}]`, {
                     method: (config.method || "GET").toUpperCase(),
                     url: config.url,
                     params: config.params,
@@ -216,7 +216,7 @@ window.axios.interceptors.response.use(
         }
         return config;
     }, (error) => {
-        console.debug("[BPJS-REQ ERROR]", error);
+        console.error("[BPJS-REQ ERROR]", error);
         return Promise.reject(error);
     });
 
@@ -233,7 +233,7 @@ window.axios.interceptors.response.use(
                 } else {
                     preview = JSON.stringify(data).slice(0, 1000);
                 }
-                console.debug(`[BPJS-RES ${id}]`, {
+                console.warn(`[BPJS-RES ${id}]`, {
                     status: response.status,
                     url: cfg.url,
                     preview,
@@ -248,7 +248,7 @@ window.axios.interceptors.response.use(
             const cfg = error.config || {};
             if (matchBpjs(cfg.url)) {
                 const id = cfg.bpjsLogId || (cfg.headers ? cfg.headers["X-BPJS-LOG-ID"] : undefined);
-                console.debug(`[BPJS-ERR ${id}]`, {
+                console.error(`[BPJS-ERR ${id}]`, {
                     url: cfg.url,
                     message: error.message,
                     status: error.response?.status,
@@ -277,7 +277,7 @@ window.axios.interceptors.response.use(
                         try { bodyPreview = JSON.stringify(init.body).slice(0, 1000); } catch {}
                     }
                 }
-                console.debug(`[BPJS-REQ ${id}]`, {
+                console.warn(`[BPJS-REQ ${id}]`, {
                     method: (init?.method || "GET").toUpperCase(),
                     url,
                     body_preview: bodyPreview,
@@ -290,7 +290,7 @@ window.axios.interceptors.response.use(
                 try {
                     const cloned = res.clone();
                     cloned.text().then((text) => {
-                        console.debug(`[BPJS-RES ${id}]`, {
+                        console.warn(`[BPJS-RES ${id}]`, {
                             status: res.status,
                             url,
                             preview: text.slice(0, 1000),
@@ -301,7 +301,7 @@ window.axios.interceptors.response.use(
             return res;
         } catch (error) {
             if (isBpjs) {
-                console.debug(`[BPJS-ERR ${id}]`, {
+                console.error(`[BPJS-ERR ${id}]`, {
                     url,
                     message: error?.message,
                 });
