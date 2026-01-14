@@ -4,6 +4,7 @@ import PcareKunjunganController from './PcareKunjunganController'
 import SettingBridgingBpjsController from './SettingBridgingBpjsController'
 import MobileJknController from './MobileJknController'
 import SettingBridgingMobileJknController from './SettingBridgingMobileJknController'
+import PasswordBridgingBpjsController from './PasswordBridgingBpjsController'
 
 const Pcare = {
     PcareController: Object.assign(PcareController, PcareController),
@@ -12,6 +13,7 @@ const Pcare = {
     SettingBridgingBpjsController: Object.assign(SettingBridgingBpjsController, SettingBridgingBpjsController),
     MobileJknController: Object.assign(MobileJknController, MobileJknController),
     SettingBridgingMobileJknController: Object.assign(SettingBridgingMobileJknController, SettingBridgingMobileJknController),
+    PasswordBridgingBpjsController: Object.assign(PasswordBridgingBpjsController, PasswordBridgingBpjsController),
 }
 
 export default Pcare

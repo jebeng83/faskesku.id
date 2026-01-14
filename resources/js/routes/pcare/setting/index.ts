@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import mobilejkn from './mobilejkn'
+import passwordbpjs from './passwordbpjs'
 /**
 * @see \App\Http\Controllers\Pcare\SettingBridgingBpjsController::index
 * @see app/Http/Controllers/Pcare/SettingBridgingBpjsController.php:15
@@ -117,6 +118,7 @@ const setting = {
     store: Object.assign(store, store),
     destroy: Object.assign(destroy, destroy),
     mobilejkn: Object.assign(mobilejkn, mobilejkn),
+    passwordbpjs: Object.assign(passwordbpjs, passwordbpjs),
 }
 
 export default setting
