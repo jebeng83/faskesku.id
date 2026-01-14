@@ -2160,6 +2160,13 @@ Route::middleware('auth')->group(function () {
             ->name('setting.mobilejkn.store');
         Route::delete('/setting-mobilejkn', [\App\Http\Controllers\Pcare\SettingBridgingMobileJknController::class, 'destroy'])
             ->name('setting.mobilejkn.destroy');
+
+        Route::get('/setting-passwordbpjs', [\App\Http\Controllers\Pcare\PasswordBridgingBpjsController::class, 'index'])
+            ->name('setting.passwordbpjs.index');
+        Route::post('/setting-passwordbpjs', [\App\Http\Controllers\Pcare\PasswordBridgingBpjsController::class, 'store'])
+            ->name('setting.passwordbpjs.store');
+        Route::delete('/setting-passwordbpjs', [\App\Http\Controllers\Pcare\PasswordBridgingBpjsController::class, 'destroy'])
+            ->name('setting.passwordbpjs.destroy');
     });
 
     // Penjab & Poliklinik routes

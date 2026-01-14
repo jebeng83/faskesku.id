@@ -38,6 +38,10 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
         "pcare.setting.mobilejkn.index",
         "/pcare/setting-mobilejkn"
       ),
+      pcarePasswordAntrol: safeRoute(
+        "pcare.setting.passwordbpjs.index",
+        "/pcare/setting-passwordbpjs"
+      ),
       pcareMapDokter: safeRoute("pcare.mapping.dokter", "/pcare/mapping/dokter"),
       pcareMapPoli: safeRoute("pcare.mapping.poli", "/pcare/mapping/poli"),
       pcareMapObat: safeRoute("pcare.mapping.obat", "/pcare/mapping/obat"),
@@ -111,6 +115,15 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
             >
               <LucideLink className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
               {!isSidebarCollapsed && <span className="text-sm">Setting Mobile JKN</span>}
+            </Link>
+            <Link
+              href={paths.pcarePasswordAntrol}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(paths.pcarePasswordAntrol) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+              }`}
+            >
+              <LucideLink className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+              {!isSidebarCollapsed && <span className="text-sm">Password Briding Antrol</span>}
             </Link>
             <Link
               href={paths.pcareMapDokter}
