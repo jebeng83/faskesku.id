@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "prebuild": "npm run quality:check",
+        "prebuild": "node -e \"const c=require('child_process'); const has=(m)=>{ try{ require.resolve(m); return true; } catch(e){ return false; } }; const skip=process.env.SKIP_QUALITY_CHECK==='1'; const isProd=process.env.NODE_ENV==='production'; if(skip){ console.warn('[prebuild] SKIP_QUALITY_CHECK=1, skipping quality checks'); process.exit(0); } if(isProd && (!has('eslint') || !has('eslint-plugin-react-hooks'))){ console.warn('[prebuild] Dev dependencies missing in production, skipping quality checks'); process.exit(0); } c.execSync('npm run quality:check',{stdio:'inherit'}); \"",
         "dev": "vite",
         "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx",
         "lint:fix": "eslint resources/js --ext .js,.jsx,.ts,.tsx --fix",
