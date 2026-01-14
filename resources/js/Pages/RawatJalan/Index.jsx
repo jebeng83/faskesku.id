@@ -246,10 +246,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
 
-    const handleSuratSakit = (noRawAt) => {
-        router.get(route('rawat-jalan.surat-sakit', noRawAt));
-    };
-
     const toBase64Url = (obj) => {
         try {
             const b = btoa(JSON.stringify(obj));
@@ -541,13 +537,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         onClick={() => handleSuratSehat(item.no_rawat)}
                                                         icon={<DocumentCheckIcon className="w-4 h-4" />}
                                                     >
-                                                        Surat Sehat
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        onClick={() => handleSuratSakit(item.no_rawat)}
-                                                        icon={<DocumentTextIcon className="w-4 h-4" />}
-                                                    >
-                                                        Surat Sakit
+                                                        Buat Surat
                                                     </DropdownItem>
                                                 </SimpleDropdown>
                                                 {item.patient?.nm_pasien ? (

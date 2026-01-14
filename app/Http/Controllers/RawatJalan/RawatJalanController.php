@@ -1697,8 +1697,9 @@ class RawatJalanController extends Controller
             ]);
         }
 
-        return redirect()->route('rawat-jalan.index')
-            ->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
+        return redirect()->route('rawat-jalan.surat-sakit', [
+            'no_rawat' => (string) $request->input('no_rawat'),
+        ])->with('success', 'Surat sakit berhasil dibuat dan disimpan.');
     }
 
     protected function getSuratSetting(): ?array

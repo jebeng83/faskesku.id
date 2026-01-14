@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2038
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2039
 * @route '/rawat-jalan/validasi-ttd'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2038
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2039
 * @route '/rawat-jalan/validasi-ttd'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2038
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2039
 * @route '/rawat-jalan/validasi-ttd'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::describe
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2154
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2155
 * @route '/rawat-jalan/validasi-ttd/describe'
 */
 export const describe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -50,7 +50,7 @@ describe.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::describe
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2154
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2155
 * @route '/rawat-jalan/validasi-ttd/describe'
 */
 describe.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ describe.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::describe
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2154
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2155
 * @route '/rawat-jalan/validasi-ttd/describe'
 */
 describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -69,7 +69,7 @@ describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::describe
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2154
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2155
 * @route '/rawat-jalan/validasi-ttd/describe'
 */
 describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -79,7 +79,7 @@ describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::find
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2169
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2170
 * @route '/rawat-jalan/validasi-ttd/find'
 */
 export const find = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ find.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::find
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2169
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2170
 * @route '/rawat-jalan/validasi-ttd/find'
 */
 find.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ find.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::find
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2169
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2170
 * @route '/rawat-jalan/validasi-ttd/find'
 */
 find.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ find.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::find
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2169
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2170
 * @route '/rawat-jalan/validasi-ttd/find'
 */
 find.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
