@@ -239,7 +239,7 @@ updateKeputusan.put = (args: { regPeriksa: string | number } | [regPeriksa: stri
 * @see app/Http/Controllers/API/RegPeriksaController.php:210
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-export const show = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -254,7 +254,7 @@ show.definition = {
 * @see app/Http/Controllers/API/RegPeriksaController.php:210
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-show.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions) => {
+show.url = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { regPeriksa: args }
     }
@@ -287,7 +287,7 @@ show.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: s
 * @see app/Http/Controllers/API/RegPeriksaController.php:210
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-show.get = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -297,7 +297,7 @@ show.get = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: s
 * @see app/Http/Controllers/API/RegPeriksaController.php:210
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-show.head = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -307,7 +307,7 @@ show.head = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: 
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-export const update = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -322,7 +322,7 @@ update.definition = {
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-update.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions) => {
+update.url = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { regPeriksa: args }
     }
@@ -355,7 +355,7 @@ update.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa:
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-update.put = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -365,7 +365,7 @@ update.put = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa:
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}/safe-update'
 */
-export const safeUpdate = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const safeUpdate = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: safeUpdate.url(args, options),
     method: 'put',
 })
@@ -380,7 +380,7 @@ safeUpdate.definition = {
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}/safe-update'
 */
-safeUpdate.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions) => {
+safeUpdate.url = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { regPeriksa: args }
     }
@@ -413,7 +413,7 @@ safeUpdate.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeri
 * @see app/Http/Controllers/API/RegPeriksaController.php:231
 * @route '/api/reg-periksa/{regPeriksa}/safe-update'
 */
-safeUpdate.put = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+safeUpdate.put = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: safeUpdate.url(args, options),
     method: 'put',
 })
@@ -423,7 +423,7 @@ safeUpdate.put = (args: { regPeriksa: string | { no_rawat: string } } | [regPeri
 * @see app/Http/Controllers/API/RegPeriksaController.php:541
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-export const destroy = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -438,7 +438,7 @@ destroy.definition = {
 * @see app/Http/Controllers/API/RegPeriksaController.php:541
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-destroy.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions) => {
+destroy.url = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { regPeriksa: args }
     }
@@ -471,7 +471,7 @@ destroy.url = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa
 * @see app/Http/Controllers/API/RegPeriksaController.php:541
 * @route '/api/reg-periksa/{regPeriksa}'
 */
-destroy.delete = (args: { regPeriksa: string | { no_rawat: string } } | [regPeriksa: string | { no_rawat: string } ] | string | { no_rawat: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { regPeriksa: string | number | { no_rawat: string | number } } | [regPeriksa: string | number | { no_rawat: string | number } ] | string | number | { no_rawat: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
