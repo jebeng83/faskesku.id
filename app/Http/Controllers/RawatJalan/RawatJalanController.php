@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -1193,7 +1194,12 @@ class RawatJalanController extends Controller
             }
 
             if ($noSurat !== '') {
-                $validationUrl = $baseAppUrl.'/surat-sehat?no_surat='.urlencode($noSurat);
+                $payload = json_encode([
+                    'type' => 'surat_sehat',
+                    'no_surat' => $noSurat,
+                ]);
+                $token = Crypt::encryptString($payload);
+                $validationUrl = $baseAppUrl.'/surat-sehat?token='.urlencode($token);
             }
         } catch (\Throwable $e) {
         }
@@ -1210,7 +1216,23 @@ class RawatJalanController extends Controller
 
     public function publicSuratSehat(Request $request)
     {
-        $noSurat = (string) $request->query('no_surat', '');
+        $noSurat = '';
+
+        $token = (string) $request->query('token', '');
+        if ($token !== '') {
+            try {
+                $decoded = Crypt::decryptString($token);
+                $data = json_decode($decoded, true);
+                if (is_array($data) && isset($data['no_surat'])) {
+                    $noSurat = (string) $data['no_surat'];
+                }
+            } catch (\Throwable $e) {
+                return response('<h1>Surat tidak valid</h1>', 404)
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+        } else {
+            $noSurat = (string) $request->query('no_surat', '');
+        }
 
         if ($noSurat === '' || ! Schema::hasTable('surat_keterangan_sehat')) {
             return response('<h1>Surat tidak valid</h1>', 404)
@@ -1318,7 +1340,23 @@ class RawatJalanController extends Controller
 
     public function publicSuratSakit(Request $request)
     {
-        $noSurat = (string) $request->query('no_surat', '');
+        $noSurat = '';
+
+        $token = (string) $request->query('token', '');
+        if ($token !== '') {
+            try {
+                $decoded = Crypt::decryptString($token);
+                $data = json_decode($decoded, true);
+                if (is_array($data) && isset($data['no_surat'])) {
+                    $noSurat = (string) $data['no_surat'];
+                }
+            } catch (\Throwable $e) {
+                return response('<h1>Surat tidak valid</h1>', 404)
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+        } else {
+            $noSurat = (string) $request->query('no_surat', '');
+        }
 
         if ($noSurat === '') {
             return response('<h1>Surat tidak valid</h1>', 404)
@@ -1534,7 +1572,12 @@ class RawatJalanController extends Controller
             }
 
             if ($noSurat !== '') {
-                $validationUrl = $baseAppUrl.'/surat-sakit?no_surat='.urlencode($noSurat);
+                $payload = json_encode([
+                    'type' => 'surat_sakit',
+                    'no_surat' => $noSurat,
+                ]);
+                $token = Crypt::encryptString($payload);
+                $validationUrl = $baseAppUrl.'/surat-sakit?token='.urlencode($token);
             }
         } catch (\Throwable $e) {
         }
