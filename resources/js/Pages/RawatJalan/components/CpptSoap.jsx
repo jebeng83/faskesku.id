@@ -6,7 +6,7 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, appendToPlanning = null, onPlanningAppended = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, appendToPlanning = null, onPlanningAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -1695,9 +1695,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     key={p.nik}
                                                     type="button"
                                                     onClick={() => {
-                                                        setFormData((prev) => ({ ...prev, nip: p.nik }));
-                                                        setPegawaiQuery(p.nama + ' (' + p.nik + ')');
+                                                        const nik = String(p.nik || '');
+                                                        const nama = p.nama || '';
+                                                        setFormData((prev) => ({ ...prev, nip: nik }));
+                                                        setPegawaiQuery((nama || '') + ' (' + nik + ')');
                                                         setPegawaiOptions([]);
+                                                        if (typeof onPemeriksaChange === 'function' && nik) {
+                                                            onPemeriksaChange({ id: nik, nama });
+                                                        }
                                                     }}
                                                     className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
                                                 >

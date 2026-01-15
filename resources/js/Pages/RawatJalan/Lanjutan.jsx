@@ -25,6 +25,14 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     
     const [resepAppendItems, setResepAppendItems] = useState(null);
+    const [selectedDokterForResep, setSelectedDokterForResep] = useState(() => {
+        const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
+        return kd ? String(kd) : "";
+    });
+    const [selectedDokterNamaForResep, setSelectedDokterNamaForResep] = useState(() => {
+        const nama = rawatJalan?.dokter?.nm_dokter || "";
+        return nama ? String(nama) : "";
+    });
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
     const [soapModalOpen, setSoapModalOpen] = useState(false);
     const [soapModalLoading, setSoapModalLoading] = useState(false);
@@ -269,31 +277,53 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             noRawat: selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat,
         };
 
-        switch (activeTab) {
-            case "cppt":
-                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} />;
-            case "tarifTindakan":
-                return <TarifTindakan {...commonProps} />;
-            case "resep":
-                return (
+        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi"].includes(activeTab));
+        const isResep = activeTab === "resep";
+
+        return (
+            <>
+                <div className={`${isCppt ? "block" : "hidden"} h-full`}>
+                    <CpptSoap 
+                        {...commonProps} 
+                        onOpenResep={() => setActiveTab("resep")} 
+                        appendToPlanning={resepAppendItems} 
+                        onPlanningAppended={() => setResepAppendItems(null)} 
+                        onPemeriksaChange={(dok) => {
+                            if (!dok) return;
+                            if (typeof dok === "string") {
+                                setSelectedDokterForResep(String(dok));
+                                setSelectedDokterNamaForResep("");
+                            } else if (typeof dok === "object") {
+                                if (dok.id) {
+                                    setSelectedDokterForResep(String(dok.id));
+                                }
+                                if (dok.nama) {
+                                    setSelectedDokterNamaForResep(String(dok.nama));
+                                }
+                            }
+                        }}
+                    />
+                </div>
+                
+                <div className={`${isResep ? "block" : "hidden"} h-full`}>
                     <Resep
                         {...commonProps}
                         kdPoli={rawatJalan?.kd_poli || params?.kd_poli || ""}
+                        initialDokter={selectedDokterForResep}
+                        initialDokterNama={selectedDokterNamaForResep}
                         onResepSaved={(items) => {
                             setResepAppendItems(items);
                             setActiveTab("cppt");
                         }}
                     />
-                );
-            case "diagnosa":
-                return <Diagnosa {...commonProps} />;
-            case "lab":
-                return <PermintaanLab {...commonProps} />;
-            case "radiologi":
-                return <PermintaanRadiologi {...commonProps} />;
-            default:
-                return <CpptSoap {...commonProps} />;
-        }
+                </div>
+
+                {activeTab === "tarifTindakan" && <TarifTindakan {...commonProps} />}
+                {activeTab === "diagnosa" && <Diagnosa {...commonProps} />}
+                {activeTab === "lab" && <PermintaanLab {...commonProps} />}
+                {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
+            </>
+        );
     };
 
     const handlePanggilPasien = async () => {
