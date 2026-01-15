@@ -41,26 +41,48 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     }, []);
 
     useEffect(() => {
-        if (formData.no_surat) return;
+        let active = true;
+
+        if (!formData.tanggalsurat) return;
         
         // Skip auto-generate if editing existing data (should have no_surat)
-        if (suratSehatData?.no_surat) {
+        // Unless date changed, then we might want to regenerate if it follows a pattern (optional)
+        // But for now, if suratSehatData exists and date matches, we keep the original number
+        if (suratSehatData?.no_surat && suratSehatData.tanggalsurat === formData.tanggalsurat) {
              setFormData(prev => ({ ...prev, no_surat: suratSehatData.no_surat }));
              return;
         }
 
-        // Generate nomor surat otomatis
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const ac = new AbortController();
+        const t = setTimeout(async () => {
+            try {
+                const url = route('rawat-jalan.surat-sehat.next-no-surat', {
+                    tanggal: formData.tanggalsurat,
+                });
+                const res = await fetch(url, {
+                    method: 'GET',
+                    headers: { Accept: 'application/json' },
+                    credentials: 'include',
+                    signal: ac.signal,
+                });
+                const json = await res.json().catch(() => null);
+                if (!active) return;
 
-        setFormData(prev => ({
-            ...prev,
-            no_surat: `SS/${year}${month}${day}/${randomNum}`
-        }));
-    }, []);
+                const nextNoSurat = (json?.nomor ?? json?.no_surat ?? '').toString().trim();
+                if (!nextNoSurat) return;
+
+                setFormData(prev => ({ ...prev, no_surat: nextNoSurat }));
+            } catch {
+                return;
+            }
+        }, 150);
+
+        return () => {
+            active = false;
+            ac.abort();
+            clearTimeout(t);
+        };
+    }, [formData.tanggalsurat, suratSehatData]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -355,8 +377,8 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                     </div>
                                 )}
                                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                                    <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <div className="mb-3 p-2 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-lg">
+                                        <label className="block text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1">
                                             Jenis Surat
                                         </label>
                                         <select
@@ -384,8 +406,8 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 type="text"
                                                 name="no_surat"
                                                 value={formData.no_surat}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                                readOnly
+                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 dark:text-white text-sm font-mono"
                                                 required
                                             />
                                         </div>

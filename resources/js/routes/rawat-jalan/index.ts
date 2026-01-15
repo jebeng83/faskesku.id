@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import suratSakit4a9f0c from './surat-sakit'
+import suratSehat47d9f7 from './surat-sehat'
 import validasiTtd from './validasi-ttd'
 import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
 import dokter from './dokter'
-import suratSehat47d9f7 from './surat-sehat'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::lanjutan
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:219
@@ -49,7 +49,7 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1313
 * @route '/rawat-jalan/canvas'
 */
 export const canvas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -63,7 +63,7 @@ canvas.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1313
 * @route '/rawat-jalan/canvas'
 */
 canvas.url = (options?: RouteQueryOptions) => {
@@ -71,7 +71,7 @@ canvas.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1313
 * @route '/rawat-jalan/canvas'
 */
 canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -80,7 +80,7 @@ canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1306
+* @see routes/web.php:1313
 * @route '/rawat-jalan/canvas'
 */
 canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -89,7 +89,7 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1315
+* @see routes/web.php:1322
 * @route '/rawat-jalan/canvas-surat'
 */
 export const canvasSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,7 +103,7 @@ canvasSurat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1315
+* @see routes/web.php:1322
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.url = (options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ canvasSurat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1315
+* @see routes/web.php:1322
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -120,7 +120,7 @@ canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1315
+* @see routes/web.php:1322
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -976,6 +976,7 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
 
 const rawatJalan = {
     suratSakit: Object.assign(suratSakit, suratSakit4a9f0c),
+    suratSehat: Object.assign(suratSehat, suratSehat47d9f7),
     validasiTtd: Object.assign(validasiTtd, validasiTtd),
     lanjutan: Object.assign(lanjutan, lanjutan),
     canvas: Object.assign(canvas, canvas),
@@ -989,7 +990,6 @@ const rawatJalan = {
     radiologi: Object.assign(radiologi, radiologi),
     dokter: Object.assign(dokter, dokter),
     statistics: Object.assign(statistics, statistics),
-    suratSehat: Object.assign(suratSehat, suratSehat47d9f7),
     create: Object.assign(create, create),
     store: Object.assign(store, store),
     show: Object.assign(show, show),

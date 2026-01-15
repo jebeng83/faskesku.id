@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:819
+* @see routes/web.php:826
 * @route '/farmasi/resep_dokter/describe'
 */
 export const describe = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ describe.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:819
+* @see routes/web.php:826
 * @route '/farmasi/resep_dokter/describe'
 */
 describe.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ describe.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:819
+* @see routes/web.php:826
 * @route '/farmasi/resep_dokter/describe'
 */
 describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ describe.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:819
+* @see routes/web.php:826
 * @route '/farmasi/resep_dokter/describe'
 */
 describe.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

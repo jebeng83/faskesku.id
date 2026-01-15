@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:702
+* @see routes/web.php:709
 * @route '/laporan/ranap/kunjungan'
 */
 export const kunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ kunjungan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:702
+* @see routes/web.php:709
 * @route '/laporan/ranap/kunjungan'
 */
 kunjungan.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ kunjungan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:702
+* @see routes/web.php:709
 * @route '/laporan/ranap/kunjungan'
 */
 kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:702
+* @see routes/web.php:709
 * @route '/laporan/ranap/kunjungan'
 */
 kunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ kunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:705
+* @see routes/web.php:712
 * @route '/laporan/ranap/frekuensi-penyakit'
 */
 export const frekuensiPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ frekuensiPenyakit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:705
+* @see routes/web.php:712
 * @route '/laporan/ranap/frekuensi-penyakit'
 */
 frekuensiPenyakit.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ frekuensiPenyakit.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:705
+* @see routes/web.php:712
 * @route '/laporan/ranap/frekuensi-penyakit'
 */
 frekuensiPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ frekuensiPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:705
+* @see routes/web.php:712
 * @route '/laporan/ranap/frekuensi-penyakit'
 */
 frekuensiPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

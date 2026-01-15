@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/web.php:686
+* @see routes/web.php:693
 * @route '/laporan/ralan/kunjungan/data'
 */
 export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ data.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:693
 * @route '/laporan/ralan/kunjungan/data'
 */
 data.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ data.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:693
 * @route '/laporan/ralan/kunjungan/data'
 */
 data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:686
+* @see routes/web.php:693
 * @route '/laporan/ralan/kunjungan/data'
 */
 data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:697
+* @see routes/web.php:704
 * @route '/laporan/ralan/kunjungan/print'
 */
 export const print = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ print.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:697
+* @see routes/web.php:704
 * @route '/laporan/ralan/kunjungan/print'
 */
 print.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ print.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:697
+* @see routes/web.php:704
 * @route '/laporan/ralan/kunjungan/print'
 */
 print.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ print.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:697
+* @see routes/web.php:704
 * @route '/laporan/ralan/kunjungan/print'
 */
 print.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

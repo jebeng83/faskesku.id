@@ -1951,6 +1951,103 @@ class RawatJalanController extends Controller
         return response()->json(['nomor' => $next]);
     }
 
+    public function nextNoSuratSehat(Request $request)
+    {
+        $tanggal = (string) ($request->query('tanggal') ?: Carbon::today()->toDateString());
+        try { $tanggal = Carbon::parse($tanggal)->toDateString(); } catch (\Throwable $e) {}
+        
+        // Format: SS/YYYYMMDD/XXXX
+        $dateCode = Carbon::parse($tanggal)->format('Ymd');
+        $prefix = 'SS/' . $dateCode . '/';
+        $next = $prefix . '0001';
+
+        try {
+            if (Schema::hasTable('surat_keterangan_sehat')) {
+                $row = DB::table('surat_keterangan_sehat')
+                    ->where('no_surat', 'like', $prefix . '%')
+                    ->orderByDesc('no_surat')
+                    ->first();
+                
+                if ($row && isset($row->no_surat)) {
+                    $last = (string) $row->no_surat;
+                    // Ambil 4 digit terakhir
+                    $parts = explode('/', $last);
+                    $lastNumStr = end($parts);
+                    
+                    if (is_numeric($lastNumStr)) {
+                        $num = (int) $lastNumStr;
+                        $num = $num + 1;
+                        $next = $prefix . str_pad((string) $num, 4, '0', STR_PAD_LEFT);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+        
+        return response()->json(['nomor' => $next]);
+    }
+
+    public function checkDuplicateSuratSakit(Request $request)
+    {
+        $no_rawat = (string) $request->query('no_rawat');
+        $tanggal = (string) $request->query('tanggalawal');
+        $excludeNoSurat = (string) $request->query('no_surat');
+        
+        if (!$no_rawat || !$tanggal) {
+            return response()->json(['exists' => false]);
+        }
+
+        try {
+            $date = Carbon::parse($tanggal)->format('Y-m-d');
+            $query = DB::table('suratsakitpihak2')
+                ->where('no_rawat', $no_rawat)
+                ->where('tanggalawal', $date);
+
+            if ($excludeNoSurat) {
+                $query->where('no_surat', '!=', $excludeNoSurat);
+            }
+
+            $exists = $query->exists();
+            
+            return response()->json([
+                'exists' => $exists,
+                'message' => $exists ? 'Pasien ini sudah memiliki surat sakit pada tanggal tersebut.' : ''
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['exists' => false]);
+        }
+    }
+
+    public function checkDuplicateSuratSehat(Request $request)
+    {
+        $no_rawat = (string) $request->query('no_rawat');
+        $tanggal = (string) $request->query('tanggalsurat');
+        $excludeNoSurat = (string) $request->query('no_surat');
+
+        if (!$no_rawat || !$tanggal) {
+            return response()->json(['exists' => false]);
+        }
+
+        try {
+            $date = Carbon::parse($tanggal)->format('Y-m-d');
+            $query = DB::table('surat_keterangan_sehat')
+                ->where('no_rawat', $no_rawat)
+                ->where('tanggalsurat', $date);
+
+            if ($excludeNoSurat) {
+                $query->where('no_surat', '!=', $excludeNoSurat);
+            }
+
+            $exists = $query->exists();
+
+            return response()->json([
+                'exists' => $exists,
+                'message' => $exists ? 'Pasien ini sudah memiliki surat sehat pada tanggal tersebut.' : ''
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['exists' => false]);
+        }
+    }
+
     public function suratSakitByNomor(Request $request, $no_surat)
     {
         $no_surat = urldecode((string) $no_surat);

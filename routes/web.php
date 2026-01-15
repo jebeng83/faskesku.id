@@ -607,7 +607,14 @@ Route::get('rawat-jalan/surat-sakit/{no_rawat}/verify', [RawatJalanController::c
     ->where('no_rawat', '.*');
 
 Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextNoSuratSakit'])
-    ->name('rawat-jalan.surat-sakit.next-no-surat');
+        ->name('rawat-jalan.surat-sakit.next-no-surat');
+    Route::get('rawat-jalan/surat-sakit/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSakit'])
+        ->name('rawat-jalan.surat-sakit.check-duplicate');
+
+    Route::get('rawat-jalan/surat-sehat/next-no-surat', [RawatJalanController::class, 'nextNoSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.next-no-surat');
+    Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.check-duplicate');
 
 Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}', [RawatJalanController::class, 'suratSakitByNomor'])
     ->name('rawat-jalan.surat-sakit.by-nomor')
