@@ -766,9 +766,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try {
             const creating = !editKey;
             const url = creating ? route('rawat-jalan.pemeriksaan-ralan.store') : route('rawat-jalan.pemeriksaan-ralan.update');
+            const vitalKeys = ['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'spo2', 'tinggi', 'berat', 'gcs', 'lingkar_perut'];
+            const textAreaKeys = ['keluhan', 'pemeriksaan', 'penilaian', 'rtl', 'instruksi', 'evaluasi'];
+            const normalizedFormData = { ...formData };
+            vitalKeys.forEach((key) => {
+                const raw = normalizedFormData[key];
+                const trimmed = (raw ?? '').toString().trim();
+                if (trimmed === '') {
+                    normalizedFormData[key] = 'N/A';
+                }
+            });
+            textAreaKeys.forEach((key) => {
+                const raw = normalizedFormData[key];
+                const trimmed = (raw ?? '').toString().trim();
+                if (trimmed === '') {
+                    normalizedFormData[key] = '-';
+                }
+            });
             const payload = creating
-                ? { ...formData, no_rawat: noRawat, t: token }
-                : { ...formData, key: editKey };
+                ? { ...normalizedFormData, no_rawat: noRawat, t: token }
+                : { ...normalizedFormData, key: editKey };
             const res = await fetch(url, {
                 method: creating ? 'POST' : 'PUT',
                 headers: {
@@ -1712,39 +1729,39 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
-                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} placeholder="36.8" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
-                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} placeholder="120/80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
-                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
-                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} placeholder="20" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
-                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} placeholder="98" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
-                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} placeholder="165" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
-                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} placeholder="60" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
-                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} placeholder="E4V5M6" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                                 <div>
                                     <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
-                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} placeholder="80" className="w-full text-sm h-7 px-2 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -1754,7 +1771,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
-                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Diagnosis dan analisis kondisi pasien..." />
+                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
                                 <div className="flex flex-col h-full">
                                     <div className="flex items-center justify-between">
@@ -1770,19 +1787,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
                                             aria-label="Buka tab Resep"
                                             title="Buka Resep Obat"
-                                        >
+                                            >
                                             Resep
                                         </Link>
                                     </div>
-                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" placeholder="Rencana pengobatan dan tindakan..." />
+                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Instruksi untuk pasien dan perawat..." />
+                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                                 </div>
                                 <div className="flex flex-col h-full">
                                     <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" placeholder="Evaluasi hasil pengobatan..." />
+                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
                                 </div>
                             </div>
                         </div>
@@ -3130,19 +3147,27 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     <div className="space-y-1 text-xs">
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">Suhu:</span>
-                                                            <span className="font-medium">{row.suhu_tubuh || '-'}°C</span>
+                                                            <span className="font-medium">
+                                                                {(!row.suhu_tubuh || row.suhu_tubuh === 'N/A') ? '-' : row.suhu_tubuh}°C
+                                                            </span>
                                                         </div>
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">Tensi:</span>
-                                                            <span className="font-medium">{row.tensi || '-'}</span>
+                                                            <span className="font-medium">
+                                                                {(!row.tensi || row.tensi === 'N/A') ? '-' : row.tensi}
+                                                            </span>
                                                         </div>
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">Nadi:</span>
-                                                            <span className="font-medium">{row.nadi || '-'}/min</span>
+                                                            <span className="font-medium">
+                                                                {(!row.nadi || row.nadi === 'N/A') ? '-' : row.nadi}/min
+                                                            </span>
                                                         </div>
                                                         <div className="flex justify-between">
                                                             <span className="text-gray-500">SpO2:</span>
-                                                            <span className="font-medium">{row.spo2 || '-'}%</span>
+                                                            <span className="font-medium">
+                                                                {(!row.spo2 || row.spo2 === 'N/A') ? '-' : row.spo2}%
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </td>
