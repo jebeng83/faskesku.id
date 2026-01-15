@@ -509,6 +509,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
     const [pegawaiOptions, setPegawaiOptions] = useState([]);
+    const [pegawaiMap, setPegawaiMap] = useState({});
     const [pegawaiQuery, setPegawaiQuery] = useState('');
     const [editKey, setEditKey] = useState(null); // { no_rawat, tgl_perawatan, jam_rawat }
     // Bridging PCare states
@@ -1425,7 +1426,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
             const res = await fetch(url);
             const json = await res.json();
-            setList(json.data || []);
+            const rows = json.data || [];
+            setList(rows);
+            const ids = Array.from(new Set(rows.map((r) => String(r?.nik || r?.nip || '')).filter((s) => !!s)));
+            const missing = ids.filter((id) => !(id in pegawaiMap));
+            if (missing.length) {
+                missing.forEach(async (id) => {
+                    try {
+                        const resPeg = await fetch(`/pegawai/search?q=${encodeURIComponent(id)}`, { headers: { Accept: 'application/json' }, credentials: 'include' });
+                        const jsPeg = await resPeg.json();
+                        const listPeg = Array.isArray(jsPeg?.data) ? jsPeg.data : (Array.isArray(jsPeg?.list) ? jsPeg.list : []);
+                        const found = listPeg.find((it) => String(it?.nik || '') === String(id));
+                        const nama = found?.nama || '';
+                        if (nama) {
+                            setPegawaiMap((prev) => (id in prev ? prev : { ...prev, [id]: nama }));
+                        }
+                    } catch {
+                    }
+                });
+            }
         } catch (e) {
             console.error('Gagal memuat pemeriksaan_ralan', e);
         } finally {
@@ -1466,6 +1485,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 return db - da;
             });
             setList(allRows);
+            const ids = Array.from(new Set(allRows.map((r) => String(r?.nik || r?.nip || '')).filter((s) => !!s)));
+            const missing = ids.filter((id) => !(id in pegawaiMap));
+            if (missing.length) {
+                missing.forEach(async (id) => {
+                    try {
+                        const resPeg = await fetch(`/pegawai/search?q=${encodeURIComponent(id)}`, { headers: { Accept: 'application/json' }, credentials: 'include' });
+                        const jsPeg = await resPeg.json();
+                        const listPeg = Array.isArray(jsPeg?.data) ? jsPeg.data : (Array.isArray(jsPeg?.list) ? jsPeg.list : []);
+                        const found = listPeg.find((it) => String(it?.nik || '') === String(id));
+                        const nama = found?.nama || '';
+                        if (nama) {
+                            setPegawaiMap((prev) => (id in prev ? prev : { ...prev, [id]: nama }));
+                        }
+                    } catch {
+                    }
+                });
+            }
         } catch (e) {
             console.error('Gagal memuat riwayat pemeriksaan pasien', e);
         } finally {
@@ -1555,7 +1591,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         const url = route('pegawai.search', { q });
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
         const json = await res.json();
-        setPegawaiOptions(json.data || []);
+        const list = json.data || [];
+        setPegawaiOptions(list);
+        list.forEach((it) => {
+            const id = String(it?.nik || '');
+            const nama = it?.nama || '';
+            if (id && nama) {
+                setPegawaiMap((prev) => (id in prev ? prev : { ...prev, [id]: nama }));
+            }
+        });
     };
 
     useEffect(() => {
@@ -3101,179 +3145,246 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <table className="w-full text-sm table-fixed">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr className="text-left text-gray-600 dark:text-gray-300">
-                                            <th className="px-4 py-3 font-medium w-28">Tanggal</th>
-                                            <th className="px-4 py-3 font-medium w-20">Jam</th>
-                                            {viewMode === 'all' && (
-                                                <th className="px-4 py-3 font-medium w-36">No. Rawat</th>
-                                            )}
-                                            <th className="px-4 py-3 font-medium w-36">TTV</th>
-                                            <th className="px-4 py-3 font-medium w-64">Keluhan</th>
-                                            <th className="px-4 py-3 font-medium w-64">Pemeriksaan</th>
-                                            <th className="px-4 py-3 font-medium w-48">Penilaian</th>
-                                            <th className="px-4 py-3 font-medium text-center w-28">Aksi</th>
+                                            <th className="px-4 py-3 font-medium w-40">Tanggal / Jam</th>
+                                            <th className="px-4 py-3 font-medium w-40">S</th>
+                                            <th className="px-4 py-3 font-medium w-52">O</th>
+                                            <th className="px-4 py-3 font-medium w-40">A</th>
+                                            <th className="px-4 py-3 font-medium w-52">P</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {list.map((row, idx) => (
                                             <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-medium w-28 whitespace-nowrap">
-                                                    {(() => {
-                                                        const v = row.tgl_perawatan;
-                                                        if (!v) return '-';
-                                                        try {
-                                                            const tz = getAppTimeZone();
-                                                            const d = new Date(v);
-                                                            if (isNaN(d.getTime())) return '-';
-                                                            return d.toLocaleDateString('id-ID', {
-                                                                timeZone: tz,
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            });
-                                                        } catch (_) {
-                                                            return '-';
-                                                        }
-                                                    })()}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white font-mono w-20 whitespace-nowrap">{row.jam_rawat ? String(row.jam_rawat).substring(0,5) : '-'}</td>
-                                                {viewMode === 'all' && (
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
-                                                        <div className="truncate whitespace-nowrap" title={row.no_rawat || ''}>
-                                                            {row.no_rawat || '-'}
-                                                        </div>
-                                                    </td>
-                                                )}
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 w-36">
-                                                    <div className="space-y-1 text-xs">
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Suhu:</span>
+                                                <td className="px-4 py-3 text-gray-900 dark:text-white w-40 align-top">
+                                                    <div className="flex items-start justify-between gap-2 text-xs">
+                                                        <div className="flex flex-col">
                                                             <span className="font-medium">
-                                                                {(!row.suhu_tubuh || row.suhu_tubuh === 'N/A') ? '-' : row.suhu_tubuh}°C
+                                                                {(() => {
+                                                                    const v = row.tgl_perawatan;
+                                                                    if (!v) return '-';
+                                                                    try {
+                                                                        const tz = getAppTimeZone();
+                                                                        const d = new Date(v);
+                                                                        if (isNaN(d.getTime())) return '-';
+                                                                        return d.toLocaleDateString('id-ID', {
+                                                                            timeZone: tz,
+                                                                            day: '2-digit',
+                                                                            month: 'short',
+                                                                            year: 'numeric'
+                                                                        });
+                                                                    } catch (_) {
+                                                                        return '-';
+                                                                    }
+                                                                })()}
+                                                            </span>
+                                                            {viewMode === 'all' && (
+                                                                <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                                                                    {row.no_rawat || '-'}
+                                                                </span>
+                                                            )}
+                                                            <span className="font-mono text-[11px] text-gray-600 dark:text-gray-300">
+                                                                {row.jam_rawat ? String(row.jam_rawat).substring(0,5) : '-'}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-600 dark:text-gray-300 mt-0.5">
+                                                                {pegawaiMap[String(row.nik || row.nip || '')] || row.nama_pegawai || row.nama || row.nip || row.nik || '-'}
                                                             </span>
                                                         </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Tensi:</span>
-                                                            <span className="font-medium">
-                                                                {(!row.tensi || row.tensi === 'N/A') ? '-' : row.tensi}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">Nadi:</span>
-                                                            <span className="font-medium">
-                                                                {(!row.nadi || row.nadi === 'N/A') ? '-' : row.nadi}/min
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-500">SpO2:</span>
-                                                            <span className="font-medium">
-                                                                {(!row.spo2 || row.spo2 === 'N/A') ? '-' : row.spo2}%
-                                                            </span>
+                                                        <div className="flex flex-col items-end space-y-1">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const normalize = (v) => (v === 'N/A' ? '' : (v || ''));
+                                                                    const d = new Date();
+                                                                    const tgl = d.toISOString().slice(0, 10);
+                                                                    const jam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                                                                    setFormData({
+                                                                        tgl_perawatan: tgl,
+                                                                        jam_rawat: jam,
+                                                                        suhu_tubuh: normalize(row.suhu_tubuh),
+                                                                        tensi: normalize(row.tensi),
+                                                                        nadi: normalize(row.nadi),
+                                                                        respirasi: normalize(row.respirasi),
+                                                                        tinggi: normalize(row.tinggi),
+                                                                        berat: normalize(row.berat),
+                                                                        spo2: normalize(row.spo2),
+                                                                        gcs: normalize(row.gcs),
+                                                                        kesadaran: row.kesadaran || 'Compos Mentis',
+                                                                        keluhan: row.keluhan || '',
+                                                                        pemeriksaan: row.pemeriksaan || '',
+                                                                        alergi: row.alergi || '',
+                                                                        lingkar_perut: normalize(row.lingkar_perut),
+                                                                        rtl: row.rtl || '',
+                                                                        penilaian: row.penilaian || '',
+                                                                        instruksi: row.instruksi || '',
+                                                                        evaluasi: row.evaluasi || '',
+                                                                        nip: row.nip || '',
+                                                                    });
+                                                                    setPegawaiQuery('');
+                                                                    setEditKey(null);
+                                                                    setMessage(null);
+                                                                    setError(null);
+                                                                }}
+                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
+                                                                title="Salin ke pemeriksaan baru"
+                                                            >
+                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData({
+                                                                        tgl_perawatan: row.tgl_perawatan,
+                                                                        jam_rawat: String(row.jam_rawat).substring(0,5),
+                                                                        suhu_tubuh: row.suhu_tubuh || '',
+                                                                        tensi: row.tensi || '',
+                                                                        nadi: row.nadi || '',
+                                                                        respirasi: row.respirasi || '',
+                                                                        tinggi: row.tinggi || '',
+                                                                        berat: row.berat || '',
+                                                                        spo2: row.spo2 || '',
+                                                                        gcs: row.gcs || '',
+                                                                        kesadaran: row.kesadaran || 'Compos Mentis',
+                                                                        keluhan: row.keluhan || '',
+                                                                        pemeriksaan: row.pemeriksaan || '',
+                                                                        alergi: row.alergi || '',
+                                                                        lingkar_perut: row.lingkar_perut || '',
+                                                                        rtl: row.rtl || '',
+                                                                        penilaian: row.penilaian || '',
+                                                                        instruksi: row.instruksi || '',
+                                                                        evaluasi: row.evaluasi || '',
+                                                                        nip: row.nip || '',
+                                                                    });
+                                                                    setPegawaiQuery('');
+                                                                    setEditKey({
+                                                                        no_rawat: row.no_rawat,
+                                                                        tgl_perawatan: row.tgl_perawatan,
+                                                                        jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                    });
+                                                                    setMessage(null);
+                                                                    setError(null);
+                                                                }}
+                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
+                                                                title="Edit pemeriksaan"
+                                                            >
+                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
+                                                                    try {
+                                                                        const url = route('rawat-jalan.pemeriksaan-ralan.delete');
+                                                                        const res = await fetch(url, {
+                                                                            method: 'DELETE',
+                                                                            headers: {
+                                                                                'Content-Type': 'application/json',
+                                                                                'Accept': 'application/json',
+                                                                                'X-Requested-With': 'XMLHttpRequest',
+                                                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                                                            },
+                                                                            credentials: 'same-origin',
+                                                                            body: JSON.stringify({
+                                                                                no_rawat: row.no_rawat,
+                                                                                tgl_perawatan: row.tgl_perawatan,
+                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                            }),
+                                                                        });
+                                                                        const text = await res.text();
+                                                                        let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
+                                                                        if (!res.ok) {
+                                                                            setError(json.message || 'Gagal menghapus pemeriksaan');
+                                                                            setMessage(null);
+                                                                            return;
+                                                                        }
+                                                                        setError(null);
+                                                                        setMessage(json.message || 'Pemeriksaan berhasil dihapus');
+                                                                        await fetchList();
+                                                                    } catch (e) {
+                                                                        setError(e.message || 'Terjadi kesalahan saat menghapus');
+                                                                        setMessage(null);
+                                                                    }
+                                                                }}
+                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                                                title="Hapus pemeriksaan"
+                                                            >
+                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
                                                     <div className="whitespace-normal break-words">
-                                                        {row.keluhan || <span className="text-gray-400 italic">Tidak ada keluhan</span>}
+                                                        {(() => {
+                                                            const sText = row.keluhan || row.pemeriksaan || row.penilaian || '';
+                                                            if (!sText) {
+                                                                return <span className="text-gray-400 italic">Tidak ada keluhan</span>;
+                                                            }
+                                                            return sText;
+                                                        })()}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-64">
-                                                    <div className="whitespace-normal break-words">
-                                                        {row.pemeriksaan || <span className="text-gray-400 italic">Belum diperiksa</span>}
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
+                                                    <div className="space-y-1">
+                                                        <div className="space-y-1">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-500">Suhu:</span>
+                                                                <span className="font-medium">
+                                                                    {(!row.suhu_tubuh || row.suhu_tubuh === 'N/A') ? '-' : row.suhu_tubuh}°C
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-500">Tensi:</span>
+                                                                <span className="font-medium">
+                                                                    {(!row.tensi || row.tensi === 'N/A') ? '-' : row.tensi}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-500">Nadi:</span>
+                                                                <span className="font-medium">
+                                                                    {(!row.nadi || row.nadi === 'N/A') ? '-' : row.nadi}/min
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-500">SpO2:</span>
+                                                                <span className="font-medium">
+                                                                    {(!row.spo2 || row.spo2 === 'N/A') ? '-' : row.spo2}%
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="whitespace-normal break-words">
+                                                            {(() => {
+                                                                const usedPemeriksaanInS = !row.keluhan && !!row.pemeriksaan;
+                                                                const text = usedPemeriksaanInS ? '' : (row.pemeriksaan || '');
+                                                                if (!text) {
+                                                                    return <span className="text-gray-400 italic">Belum diperiksa</span>;
+                                                                }
+                                                                return text;
+                                                            })()}
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top w-48">
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
                                                     <div className="whitespace-normal break-words">
                                                         {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 w-28">
-                                                    <div className="flex items-center justify-center space-x-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setFormData({
-                                                                    tgl_perawatan: row.tgl_perawatan,
-                                                                    jam_rawat: String(row.jam_rawat).substring(0,5),
-                                                                    suhu_tubuh: row.suhu_tubuh || '',
-                                                                    tensi: row.tensi || '',
-                                                                    nadi: row.nadi || '',
-                                                                    respirasi: row.respirasi || '',
-                                                                    tinggi: row.tinggi || '',
-                                                                    berat: row.berat || '',
-                                                                    spo2: row.spo2 || '',
-                                                                    gcs: row.gcs || '',
-                                                                    kesadaran: row.kesadaran || 'Compos Mentis',
-                                                                    keluhan: row.keluhan || '',
-                                                                    pemeriksaan: row.pemeriksaan || '',
-                                                                    alergi: row.alergi || '',
-                                                                    lingkar_perut: row.lingkar_perut || '',
-                                                                    rtl: row.rtl || '',
-                                                                    penilaian: row.penilaian || '',
-                                                                    instruksi: row.instruksi || '',
-                                                                    evaluasi: row.evaluasi || '',
-                                                                    nip: row.nip || '',
-                                                                });
-                                                                setPegawaiQuery('');
-                                                                setEditKey({
-                                                                    no_rawat: row.no_rawat,
-                                                                    tgl_perawatan: row.tgl_perawatan,
-                                                                    jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                });
-                                                                setMessage(null);
-                                                                setError(null);
-                                                            }}
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
-                                                            title="Edit pemeriksaan"
-                                                        >
-                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={async () => {
-                                                                if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
-                                                                try {
-                                                                    const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                                                    const res = await fetch(url, {
-                                                                        method: 'DELETE',
-                                                                        headers: {
-                                                                            'Content-Type': 'application/json',
-                                                                            'Accept': 'application/json',
-                                                                            'X-Requested-With': 'XMLHttpRequest',
-                                                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                                                        },
-                                                                        credentials: 'same-origin',
-                                                                        body: JSON.stringify({
-                                                                            no_rawat: row.no_rawat,
-                                                                            tgl_perawatan: row.tgl_perawatan,
-                                                                            jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                        }),
-                                                                    });
-                                                                    const text = await res.text();
-                                                                    let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                                                    if (!res.ok) {
-                                                                        setError(json.message || 'Gagal menghapus pemeriksaan');
-                                                                        setMessage(null);
-                                                                        return;
-                                                                    }
-                                                                    setError(null);
-                                                                    setMessage(json.message || 'Pemeriksaan berhasil dihapus');
-                                                                    await fetchList();
-                                                                } catch (e) {
-                                                                    setError(e.message || 'Terjadi kesalahan saat menghapus');
-                                                                    setMessage(null);
-                                                                }
-                                                            }}
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
-                                                            title="Hapus pemeriksaan"
-                                                        >
-                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                            Hapus
-                                                        </button>
+                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
+                                                    <div className="space-y-1 whitespace-normal break-words">
+                                                        {row.rtl || row.instruksi || row.evaluasi ? (
+                                                            <>
+                                                                {row.rtl && <div>{row.rtl}</div>}
+                                                                {row.instruksi && <div>{row.instruksi}</div>}
+                                                                {row.evaluasi && <div>{row.evaluasi}</div>}
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-gray-400 italic">Belum ada rencana</span>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
