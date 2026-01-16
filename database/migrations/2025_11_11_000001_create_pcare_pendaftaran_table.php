@@ -17,10 +17,7 @@ return new class extends Migration
         }
 
         Schema::create('pcare_pendaftaran', function (Blueprint $table) {
-            // Match requested schema (no default id)
             $table->engine = 'InnoDB';
-            $table->charset = 'latin1';
-            $table->collation = 'latin1_swedish_ci';
 
             $table->string('no_rawat', 17);
             $table->date('tglDaftar');
@@ -43,13 +40,6 @@ return new class extends Migration
             $table->enum('kdTkp', ['10 Rawat Jalan', '20 Rawat Inap', '50 Promotif Preventif']);
             $table->string('noUrut', 5);
             $table->enum('status', ['Terkirim', 'Gagal']);
-
-            // Foreign key
-            $table->foreign('no_rawat')
-                ->references('no_rawat')
-                ->on('reg_periksa')
-                ->cascadeOnDelete()
-                ->cascadeOnUpdate();
         });
     }
 

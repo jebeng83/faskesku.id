@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,8 +17,19 @@ return new class extends Migration
 
                 $table->primary('kd_alergi');
                 $table->index('kode_jenis');
-                $table->foreign('kode_jenis')->references('kode_jenis')->on('jenis_alergi');
             });
+            try {
+                $fkOk = collect(DB::select(
+                    "SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'jenis_alergi' AND COLUMN_NAME = 'kode_jenis'"
+                ))->isNotEmpty();
+                if ($fkOk) {
+                    DB::statement(
+                        'ALTER TABLE data_alergi ADD CONSTRAINT data_alergi_kode_jenis_foreign FOREIGN KEY (kode_jenis) REFERENCES jenis_alergi (kode_jenis)'
+                    );
+                }
+            } catch (\Throwable $e) {
+                // fallback: biarkan hanya index
+            }
         }
     }
 

@@ -63,7 +63,7 @@ class PoliklinikSeeder extends Seeder
         ];
 
         foreach ($polikliniks as $poliklinik) {
-            Poliklinik::create($poliklinik);
+            Poliklinik::updateOrCreate(['kd_poli' => $poliklinik['kd_poli']], $poliklinik);
         }
     }
 }

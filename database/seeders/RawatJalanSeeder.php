@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Patient;
+use App\Models\Dokter;
 use App\Models\RawatJalan\RawatJalan;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -31,7 +32,14 @@ class RawatJalanSeeder extends Seeder
         $sttsumurOptions = ['Th', 'Bl', 'Hr'];
         $keputusanOptions = ['-', 'RUJUKAN', 'PRIORITAS', 'HIJAU', 'KUNING', 'MERAH', 'HITAM', 'MJKN', 'CHECK-IN'];
 
-        $dokterOptions = ['DR001', 'DR002', 'DR003', 'DR004', 'DR005'];
+        $dokterOptions = Dokter::whereNotNull('kd_dokter')
+            ->where('kd_dokter', '!=', '')
+            ->where('kd_dokter', '!=', '-')
+            ->pluck('kd_dokter')
+            ->all();
+        if (empty($dokterOptions)) {
+            $dokterOptions = ['D0000002', 'D0000003', 'D0000004', 'D0000005', 'D001'];
+        }
         $poliOptions = ['P001', 'P002', 'P003', 'P004', 'P005'];
         $penjaminOptions = ['PJ1', 'PJ2', 'PJ3'];
 
