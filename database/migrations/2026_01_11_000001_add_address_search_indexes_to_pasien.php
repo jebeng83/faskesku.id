@@ -17,9 +17,13 @@ return new class extends Migration {
             DB::statement('CREATE INDEX IF NOT EXISTS pasien_kecamatanpj_trgm_idx ON pasien USING GIN (kecamatanpj gin_trgm_ops)');
             DB::statement('CREATE INDEX IF NOT EXISTS pasien_kabupatenpj_trgm_idx ON pasien USING GIN (kabupatenpj gin_trgm_ops)');
         } else {
-            Schema::table('pasien', function (Blueprint $table) {
-                $table->fullText(['alamat', 'alamatpj', 'kelurahanpj', 'kecamatanpj', 'kabupatenpj'], 'pasien_ft_alamat_all');
-            });
+            $cols = ['alamat', 'alamatpj', 'kelurahanpj', 'kecamatanpj', 'kabupatenpj'];
+            $present = array_values(array_filter($cols, fn ($c) => Schema::hasColumn('pasien', $c)));
+            if (! empty($present)) {
+                Schema::table('pasien', function (Blueprint $table) use ($present) {
+                    $table->fullText($present, 'pasien_ft_alamat_all');
+                });
+            }
         }
     }
 
@@ -39,4 +43,3 @@ return new class extends Migration {
         }
     }
 };
-

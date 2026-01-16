@@ -46,7 +46,8 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
-            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword],
+            'email' => 'nullable|email|max:255|unique:users,email',
+            'password' => ['required', 'string', 'min:6', 'confirmed', new StrongPassword],
             // Ensure nik refers to an existing pegawai, and remains unique per users
             'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik',
             'roles' => 'array',
@@ -64,6 +65,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
             'nik' => $request->nik,
         ]);
@@ -97,7 +99,8 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,'.$user->id,
-            'password' => ['nullable', 'string', 'min:12', 'confirmed', new StrongPassword],
+            'email' => 'nullable|email|max:255|unique:users,email,'.$user->id,
+            'password' => ['nullable', 'string', 'min:6', 'confirmed', new StrongPassword],
             // Ensure nik refers to an existing pegawai, and remains unique per users
             'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik,'.$user->id,
             'roles' => 'array',
@@ -115,6 +118,7 @@ class UserController extends Controller
         $updateData = [
             'name' => $request->name,
             'username' => $request->username,
+            'email' => $request->email,
             'nik' => $request->nik,
         ];
 
@@ -208,7 +212,7 @@ class UserController extends Controller
     public function updatePassword(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'password' => ['required', 'string', 'min:8', 'confirmed', new StrongPassword],
+            'password' => ['required', 'string', 'min:6', 'confirmed', new StrongPassword],
             'current_password' => 'required|string',
         ]);
 

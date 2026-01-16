@@ -149,6 +149,89 @@ class PermissionSeeder extends Seeder
             'sip-pegawai.create',
             'sip-pegawai.edit',
             'sip-pegawai.delete',
+
+            // Module landings and pages
+            'dashboard.index',
+            'akutansi.index',
+            'akutansi.akun-bayar',
+            'akutansi.akun-piutang',
+            'akutansi.billing',
+            'akutansi.buku-besar',
+            'akutansi.cash-flow',
+            'akutansi.closing-kasir',
+            'akutansi.detail-jurnal',
+            'akutansi.jurnal',
+            'akutansi.jurnal-penutup',
+            'akutansi.jurnal-penyesuaian',
+            'akutansi.kasir-ralan',
+            'akutansi.mutasi-kas',
+            'akutansi.mutasi-rekening',
+            'akutansi.neraca',
+            'akutansi.nota-jalan',
+            'akutansi.pemasukan-lain',
+            'akutansi.pengaturan-rekening',
+            'akutansi.pengeluaran-harian',
+            'akutansi.rekap-uang-pershift',
+            'akutansi.rekening',
+            'akutansi.rekening-tahun',
+            'akutansi.setoran-bank',
+
+            'anjungan.cetak-label',
+            'anjungan.pasien-mandiri',
+
+            'antrian.antrial-loket',
+            'antrian.display-loket',
+            'antrian.display-poli',
+            'antrian.suara-display',
+
+            'daftar-tarif.index',
+            'daftar-tarif.create',
+            'daftar-tarif.edit',
+            'daftar-tarif.show',
+
+            'doctor.index',
+
+            'kepegawaian.jenjang-jabatan.index',
+
+            'laboratorium.index',
+            'laboratorium.create',
+            'laboratorium.edit',
+            'laboratorium.show',
+            'laboratorium.cetak',
+
+            'laporan.home',
+            'laporan.frekuensi-penyakit',
+            'laporan.kunjungan',
+
+            'master-data.menu-utama',
+
+            'odontogram.index',
+
+            'patients.create',
+            'patients.edit',
+            'patients.show',
+
+            'pcare.menu',
+            'pcare.layanan',
+            'pcare.referensi',
+            'pcare.monitoring',
+            'pcare.monitoring-status',
+            'pcare.password-briding-bpjs',
+            'pcare.setting-briding-mobile-jkn',
+            'pcare.setting-briding-pcare',
+            'pcare.mapping-dokter',
+            'pcare.mapping-obat',
+            'pcare.mapping-poli',
+
+            'pembayaran.index',
+            'pembayaran.ralan',
+            'pembayaran.ralan-detail',
+            'pembayaran.ranap',
+
+            'profile.home',
+
+            'rawat-inap.index',
+            'rawat-inap.lanjutan',
         ];
 
         foreach ($permissions as $permission) {

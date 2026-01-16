@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Head } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import axios from "axios";
+import Switch from "@/Components/Switch";
 
 export default function Index() {
     const [users, setUsers] = useState([]);
@@ -17,6 +18,17 @@ export default function Index() {
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const groupedPermissions = useMemo(() => {
+        const groups = {};
+        (permissions || []).forEach((perm) => {
+            const raw = String(perm?.name || "");
+            const key = raw.includes(".") ? raw.split(".")[0] : "umum";
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(perm);
+        });
+        return groups;
+    }, [permissions]);
+    
     const [formData, setFormData] = useState({
         name: "",
         username: "",
@@ -27,6 +39,19 @@ export default function Index() {
         roles: [],
         permissions: [],
     });
+    const roleSelected = formData.roles.length > 0;
+    const selectedRoleObjects = useMemo(() => {
+        return (roles || []).filter((r) => formData.roles.includes(r.name));
+    }, [roles, formData.roles]);
+    const inheritedPermissions = useMemo(() => {
+        const set = new Set();
+        selectedRoleObjects.forEach((r) => {
+            (r.permissions || []).forEach((p) => {
+                if (p?.name) set.add(p.name);
+            });
+        });
+        return Array.from(set);
+    }, [selectedRoleObjects]);
     const [copySourceUserId, setCopySourceUserId] = useState("");
     const [passwordData, setPasswordData] = useState({
         current_password: "",
@@ -96,6 +121,16 @@ export default function Index() {
     }, []);
 
     useEffect(() => {
+        if (!Array.isArray(inheritedPermissions)) return;
+        if (roleSelected) {
+            setFormData((prev) => ({
+                ...prev,
+                permissions: inheritedPermissions,
+            }));
+        }
+    }, [inheritedPermissions, roleSelected]);
+
+    useEffect(() => {
         const timeoutId = setTimeout(() => {
             fetchUsers();
         }, 500);
@@ -124,14 +159,18 @@ export default function Index() {
         setModalMode("edit");
         setSelectedUser(user);
         setFormData({
-            name: user.name,
-            username: user.username,
-            email: user.email,
+            name: typeof user?.name === "string" ? user.name : "",
+            username: typeof user?.username === "string" ? user.username : "",
+            email: typeof user?.email === "string" ? user.email : "",
             password: "",
             password_confirmation: "",
-            nik: user.nik || "",
-            roles: user.roles.map((role) => role.name),
-            permissions: user.permissions.map((permission) => permission.name),
+            nik: typeof user?.nik === "string" ? user.nik : "",
+            roles: Array.isArray(user?.roles)
+                ? user.roles.map((role) => role?.name).filter(Boolean)
+                : [],
+            permissions: Array.isArray(user?.permissions)
+                ? user.permissions.map((permission) => permission?.name).filter(Boolean)
+                : [],
         });
         setErrors({});
         setShowModal(true);
@@ -176,12 +215,19 @@ export default function Index() {
     const handleFormChange = (e) => {
         const { name, value, type, checked } = e.target;
         if (type === "checkbox") {
-            setFormData((prev) => ({
-                ...prev,
-                [name]: checked
-                    ? [...prev[name], value]
-                    : prev[name].filter((item) => item !== value),
-            }));
+            if (name === "roles") {
+                setFormData((prev) => ({
+                    ...prev,
+                    roles: checked ? [value] : prev.roles.filter((item) => item !== value),
+                }));
+            } else {
+                setFormData((prev) => ({
+                    ...prev,
+                    [name]: checked
+                        ? [...prev[name], value]
+                        : prev[name].filter((item) => item !== value),
+                }));
+            }
         } else {
             setFormData((prev) => ({
                 ...prev,
@@ -222,12 +268,41 @@ export default function Index() {
             return;
         }
 
+        const normalizeNik = (v) => {
+            const s = String(v || "").trim();
+            if (!s || s === "-" || s === "—") return null;
+            return s;
+        };
+
+        const normalizeEmail = (v) => {
+            const s = String(v || "").trim();
+            if (!s) return null;
+            return s;
+        };
+
+        const baseHeaders = {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+        };
+
         try {
+            try {
+                await axios.get("/sanctum/csrf-cookie", {
+                    withCredentials: true,
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                });
+                await new Promise((r) => setTimeout(r, 250));
+            } catch (_) {}
+
             if (modalMode === "create") {
-                await axios.post("/api/users", formData);
+                const payload = { ...formData, nik: normalizeNik(formData.nik), email: normalizeEmail(formData.email) };
+                await axios.post("/api/users", payload, { withCredentials: true, headers: baseHeaders });
             } else {
-                // Gunakan PUT dengan JSON agar array roles/permissions terkirim dengan benar
-                await axios.put(`/api/users/${selectedUser.id}`, formData);
+                const payload = { ...formData, nik: normalizeNik(formData.nik), email: normalizeEmail(formData.email) };
+                if (!payload.password) delete payload.password;
+                if (!payload.password_confirmation) delete payload.password_confirmation;
+                await axios.put(`/api/users/${selectedUser.id}`, payload, { withCredentials: true, headers: baseHeaders });
             }
             closeModal();
             fetchUsers();
@@ -288,7 +363,7 @@ export default function Index() {
     };
 
     return (
-        <AppLayout>
+        <SidebarPengaturan title="Setting User" wide>
             <Head title="Manajemen User" />
 
             <div className="space-y-6 -mt-6 -mx-6 p-6">
@@ -639,7 +714,7 @@ export default function Index() {
                 {/* User Modal */}
                 {showModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl mx-4 h-screen overflow-y-auto">
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -759,6 +834,7 @@ export default function Index() {
                                                 required={
                                                     modalMode === "create"
                                                 }
+                                                minLength={6}
                                                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                                     errors.password
                                                         ? "border-red-500"
@@ -790,6 +866,7 @@ export default function Index() {
                                                 required={
                                                     modalMode === "create"
                                                 }
+                                                minLength={6}
                                                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                                     errors.password_confirmation
                                                         ? "border-red-500"
@@ -840,14 +917,14 @@ export default function Index() {
 
                                     {/* Roles */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Roles
+                                        <label id="roles-label" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Peran (Roles)
                                         </label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        <div role="group" aria-labelledby="roles-label" className="flex items-center gap-2 whitespace-nowrap overflow-x-auto">
                                             {roles.map((role) => (
                                                 <label
                                                     key={role.id}
-                                                    className="flex items-center space-x-2 cursor-pointer"
+                                                    className="flex items-center space-x-2 cursor-pointer flex-shrink-0"
                                                 >
                                                     <input
                                                         type="checkbox"
@@ -876,32 +953,48 @@ export default function Index() {
 
                                     {/* Permissions */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Permissions
+                                        <label id="permissions-label" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            {roleSelected
+                                                ? `Izin (Permissions) — mengikuti Role: ${formData.roles.join(', ')}`
+                                                : "Izin (Permissions)"}
                                         </label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto">
-                                            {permissions.map((permission) => (
-                                                <label
-                                                    key={permission.id}
-                                                    className="flex items-center space-x-2 cursor-pointer"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        name="permissions"
-                                                        value={permission.name}
-                                                        checked={formData.permissions.includes(
-                                                            permission.name
-                                                        )}
-                                                        onChange={
-                                                            handleFormChange
-                                                        }
-                                                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                                                    />
-                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                        {permission.name}
-                                                    </span>
-                                                </label>
-                                            ))}
+                                        <div role="group" aria-labelledby="permissions-label" className="space-y-2 h-[70vh] overflow-y-auto">
+                                            {Object.entries(groupedPermissions)
+                                                .sort((a, b) => a[0].localeCompare(b[0]))
+                                                .map(([group, items]) => (
+                                                    <div key={group}>
+                                                        <div className="text-xs font-bold uppercase tracking-wide text-red-600 dark:text-red-400 mb-1 py-1">
+                                                            {group.charAt(0).toUpperCase() + group.slice(1)}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap py-2 w-full">
+                                                            {items.map((permission) => (
+                                                                <div key={permission.id} className="flex items-center justify-between gap-1 flex-shrink-0">
+                                                                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                                                        {permission.name}
+                                                                    </span>
+                                                                    <Switch
+                                                                        checked={roleSelected ? inheritedPermissions.includes(permission.name) : formData.permissions.includes(permission.name)}
+                                                                        onChange={(checked) => {
+                                                                            if (roleSelected) return;
+                                                                            setFormData((prev) => {
+                                                                                const exists = prev.permissions.includes(permission.name);
+                                                                                const next = checked
+                                                                                    ? (exists ? prev.permissions : [...prev.permissions, permission.name])
+                                                                                    : prev.permissions.filter((p) => p !== permission.name);
+                                                                                return { ...prev, permissions: next };
+                                                                            });
+                                                                            setErrors((prev) => ({ ...prev, permissions: null }));
+                                                                        }}
+                                                                        size="xs"
+                                                                        disabled={roleSelected}
+                                                                        onLabel="On"
+                                                                        offLabel="Off"
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                         </div>
                                         {errors.permissions && (
                                             <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -910,22 +1003,24 @@ export default function Index() {
                                         )}
                                     </div>
 
-                                    <div className="flex justify-end space-x-3 pt-4">
-                                        <button
-                                            type="button"
-                                            onClick={closeModal}
-                                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                                        >
-                                            Batal
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                                        >
-                                            {modalMode === "create"
-                                                ? "Simpan"
-                                                : "Update"}
-                                        </button>
+                                    <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-3 mt-4">
+                                        <div className="flex justify-end gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={closeModal}
+                                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                            >
+                                                Batal
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                            >
+                                                {modalMode === "create"
+                                                    ? "Simpan"
+                                                    : "Update"}
+                                            </button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -1003,6 +1098,7 @@ export default function Index() {
                                             value={passwordData.password}
                                             onChange={handlePasswordChange}
                                             required
+                                                minLength={6}
                                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                                 errors.password
                                                     ? "border-red-500"
@@ -1029,6 +1125,7 @@ export default function Index() {
                                             }
                                             onChange={handlePasswordChange}
                                             required
+                                                minLength={6}
                                             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                                 errors.password_confirmation
                                                     ? "border-red-500"
@@ -1215,12 +1312,18 @@ export default function Index() {
                                                 );
                                                 if (!source) return;
                                                 try {
-                                                    const payload = {
+                                                const normalizeNik = (v) => {
+                                                    const s = String(v || "").trim();
+                                                    if (!s || s === "-" || s === "—") return null;
+                                                    return s;
+                                                };
+
+                                                const payload = {
                                                         name: selectedUser.name,
                                                         username:
                                                             selectedUser.username,
                                                         email: selectedUser.email,
-                                                        nik: selectedUser.nik,
+                                                    nik: normalizeNik(selectedUser.nik),
                                                         roles: source.roles.map(
                                                             (r) => r.name
                                                         ),
@@ -1229,20 +1332,37 @@ export default function Index() {
                                                                 (p) => p.name
                                                             ),
                                                     };
+                                                    try {
+                                                        await axios.get('/sanctum/csrf-cookie', {
+                                                            withCredentials: true,
+                                                            headers: {
+                                                                'Accept': 'application/json',
+                                                                'X-Requested-With': 'XMLHttpRequest',
+                                                            },
+                                                        });
+                                                        await new Promise((r) => setTimeout(r, 250));
+                                                    } catch (_) {}
+
                                                     await axios.put(
                                                         `/api/users/${selectedUser.id}`,
-                                                        payload
+                                                        payload,
+                                                        {
+                                                            withCredentials: true,
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'Accept': 'application/json',
+                                                                'X-Requested-With': 'XMLHttpRequest',
+                                                            },
+                                                        }
                                                     );
                                                     closeModal();
                                                     fetchUsers();
                                                 } catch (error) {
-                                                    alert(
-                                                        "Gagal menyalin hak akses: " +
-                                                            (error.response
-                                                                ?.data
-                                                                ?.message ||
-                                                                "Error")
-                                                    );
+                                                    const status = error?.response?.status;
+                                                    const msg = status === 419
+                                                        ? 'Session/CSRF expired. Silakan refresh halaman lalu coba lagi.'
+                                                        : (error?.response?.data?.message || 'Error');
+                                                    alert("Gagal menyalin hak akses: " + msg);
                                                 }
                                             }}
                                             className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
@@ -1256,6 +1376,6 @@ export default function Index() {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </SidebarPengaturan>
     );
 }

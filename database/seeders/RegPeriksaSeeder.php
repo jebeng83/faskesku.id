@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Doctor;
-use App\Models\Patient;
+ 
 use App\Models\Poliklinik;
 use App\Models\RegPeriksa;
 use Carbon\Carbon;
@@ -17,7 +17,7 @@ class RegPeriksaSeeder extends Seeder
     public function run(): void
     {
         // Buat data dokter contoh
-        $dokter1 = Doctor::firstOrCreate(
+        Doctor::firstOrCreate(
             ['kd_dokter' => 'D001'],
             [
                 'nm_dokter' => 'Dr. Ahmad Wijaya',
@@ -36,7 +36,7 @@ class RegPeriksaSeeder extends Seeder
             ]
         );
 
-        $dokter2 = Doctor::firstOrCreate(
+        Doctor::firstOrCreate(
             ['kd_dokter' => 'D002'],
             [
                 'nm_dokter' => 'Dr. Siti Nurhaliza',
@@ -56,7 +56,7 @@ class RegPeriksaSeeder extends Seeder
         );
 
         // Buat data poli contoh
-        $poli1 = Poliklinik::firstOrCreate(
+        Poliklinik::firstOrCreate(
             ['kd_poli' => 'P001'],
             [
                 'nm_poli' => 'Poli Umum',
@@ -64,7 +64,7 @@ class RegPeriksaSeeder extends Seeder
             ]
         );
 
-        $poli2 = Poliklinik::firstOrCreate(
+        Poliklinik::firstOrCreate(
             ['kd_poli' => 'P002'],
             [
                 'nm_poli' => 'Poli Anak',
@@ -72,7 +72,7 @@ class RegPeriksaSeeder extends Seeder
             ]
         );
 
-        $poli3 = Poliklinik::firstOrCreate(
+        Poliklinik::firstOrCreate(
             ['kd_poli' => 'P003'],
             [
                 'nm_poli' => 'Poli Kandungan',
@@ -80,54 +80,7 @@ class RegPeriksaSeeder extends Seeder
             ]
         );
 
-        // Buat data pasien contoh jika belum ada
-        $pasien1 = Patient::firstOrCreate(
-            ['no_rkm_medis' => 'P001'],
-            [
-                'no_ktp' => '1234567890123456',
-                'nm_pasien' => 'John Doe',
-                'jk' => 'L',
-                'tmp_lahir' => 'Jakarta',
-                'tgl_lahir' => '1990-01-15',
-                'alamat' => 'Jl. Merdeka No. 123',
-                'no_tlp' => '081234567890',
-                'agama' => 'Islam',
-                'stts_nikah' => 'BELUM MENIKAH',
-                'pekerjaan' => 'Karyawan',
-            ]
-        );
-
-        $pasien2 = Patient::firstOrCreate(
-            ['no_rkm_medis' => 'P002'],
-            [
-                'no_ktp' => '1234567890123457',
-                'nm_pasien' => 'Jane Smith',
-                'jk' => 'P',
-                'tmp_lahir' => 'Bandung',
-                'tgl_lahir' => '1985-03-20',
-                'alamat' => 'Jl. Asia Afrika No. 456',
-                'no_tlp' => '081234567891',
-                'agama' => 'Kristen',
-                'stts_nikah' => 'MENIKAH',
-                'pekerjaan' => 'Ibu Rumah Tangga',
-            ]
-        );
-
-        $pasien3 = Patient::firstOrCreate(
-            ['no_rkm_medis' => 'P003'],
-            [
-                'no_ktp' => '1234567890123458',
-                'nm_pasien' => 'Ahmad Rahman',
-                'jk' => 'L',
-                'tmp_lahir' => 'Surabaya',
-                'tgl_lahir' => '2020-06-10',
-                'alamat' => 'Jl. Tunjungan No. 789',
-                'no_tlp' => '081234567892',
-                'agama' => 'Islam',
-                'stts_nikah' => 'BELUM MENIKAH',
-                'pekerjaan' => 'Pelajar',
-            ]
-        );
+        // Gunakan pasien yang sudah disediakan oleh PatientSeeder
 
         // Buat data registrasi periksa contoh
         $regPeriksas = [
@@ -137,7 +90,7 @@ class RegPeriksaSeeder extends Seeder
                 'tgl_registrasi' => Carbon::now()->subDays(1),
                 'jam_reg' => '08:00:00',
                 'kd_dokter' => 'D001',
-                'no_rkm_medis' => 'P001',
+                'no_rkm_medis' => '000001',
                 'kd_poli' => 'P001',
                 'p_jawab' => 'John Doe',
                 'almt_pj' => 'Jl. Merdeka No. 123',
@@ -158,7 +111,7 @@ class RegPeriksaSeeder extends Seeder
                 'tgl_registrasi' => Carbon::now()->subDays(2),
                 'jam_reg' => '09:30:00',
                 'kd_dokter' => 'D002',
-                'no_rkm_medis' => 'P002',
+                'no_rkm_medis' => '000002',
                 'kd_poli' => 'P003',
                 'p_jawab' => 'Jane Smith',
                 'almt_pj' => 'Jl. Asia Afrika No. 456',
@@ -179,7 +132,7 @@ class RegPeriksaSeeder extends Seeder
                 'tgl_registrasi' => Carbon::now(),
                 'jam_reg' => '10:15:00',
                 'kd_dokter' => 'D002',
-                'no_rkm_medis' => 'P003',
+                'no_rkm_medis' => '000003',
                 'kd_poli' => 'P002',
                 'p_jawab' => 'Ahmad Rahman',
                 'almt_pj' => 'Jl. Tunjungan No. 789',

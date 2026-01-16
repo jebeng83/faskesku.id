@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Penjab;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PenjabSeeder extends Seeder
 {
@@ -84,8 +86,26 @@ class PenjabSeeder extends Seeder
             ],
         ];
 
+        $useAlamatAsuransi = Schema::hasColumn('penjab', 'alamat_asuransi');
+        $useAlamatPerusahaan = Schema::hasColumn('penjab', 'alamat_perusahaan');
+
         foreach ($penjabs as $penjab) {
-            Penjab::create($penjab);
+            $data = $penjab;
+
+            if ($useAlamatAsuransi && array_key_exists('alamat_perusahaan', $data)) {
+                $data['alamat_asuransi'] = $data['alamat_perusahaan'];
+                unset($data['alamat_perusahaan']);
+            }
+
+            $where = ['kd_pj' => $data['kd_pj']];
+            $values = $data;
+            unset($values['kd_pj']);
+
+            if ($useAlamatAsuransi || $useAlamatPerusahaan) {
+                DB::table('penjab')->updateOrInsert($where, $values);
+            } else {
+                Penjab::updateOrCreate($where, $data);
+            }
         }
     }
 }

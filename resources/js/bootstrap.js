@@ -107,6 +107,7 @@ if (token) {
 const refreshCsrfToken = async () => {
     try {
         await window.axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise((resolve) => setTimeout(resolve, 300));
         const p = '; ' + document.cookie;
         const r = p.split('; XSRF-TOKEN=');
         const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';

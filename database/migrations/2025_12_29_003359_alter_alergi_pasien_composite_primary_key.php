@@ -15,6 +15,9 @@ return new class extends Migration
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
             return;
         }
+        if (! Schema::hasTable('alergi_pasien')) {
+            return;
+        }
         Schema::table('alergi_pasien', function (Blueprint $table) {
             // Hapus primary key yang ada
             $table->dropPrimary(['no_rkm_medis']);
@@ -48,6 +51,9 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+        if (! Schema::hasTable('alergi_pasien')) {
             return;
         }
         Schema::table('alergi_pasien', function (Blueprint $table) {

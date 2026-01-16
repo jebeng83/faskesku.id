@@ -26,17 +26,41 @@ return new class extends Migration
                 $table->date('masa_berlaku');
                 $table->enum('status', ['0', '1']);
 
-                // Foreign key constraint ke tabel pegawai
-                $table->foreign('nik')
-                    ->references('nik')
-                    ->on('pegawai')
-                    ->onDelete('restrict')
-                    ->onUpdate('cascade');
-
                 // Index untuk performa query
                 $table->index('masa_berlaku');
                 $table->index('status');
             });
+
+            // Tambahkan FK secara terpisah dengan pengecekan kolasi agar tidak gagal
+            try {
+                $collPegawaiRow = collect(DB::select(
+                    "SELECT TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pegawai'"
+                ))->first();
+                $collSipRow = collect(DB::select(
+                    "SELECT TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sip_pegawai'"
+                ))->first();
+
+                $collPegawai = $collPegawaiRow->TABLE_COLLATION ?? null;
+                $collSip = $collSipRow->TABLE_COLLATION ?? null;
+
+                if ($collPegawai && $collSip && $collPegawai === $collSip) {
+                    DB::statement(
+                        'ALTER TABLE sip_pegawai ADD CONSTRAINT sip_pegawai_nik_foreign '
+                        .'FOREIGN KEY (nik) REFERENCES pegawai (nik) ON DELETE RESTRICT ON UPDATE CASCADE'
+                    );
+                } else {
+                    Schema::table('sip_pegawai', function (Blueprint $table) {
+                        $table->index('nik', 'sip_pegawai_nik_idx');
+                    });
+                }
+            } catch (\Throwable $e) {
+                try {
+                    Schema::table('sip_pegawai', function (Blueprint $table) {
+                        $table->index('nik', 'sip_pegawai_nik_idx');
+                    });
+                } catch (\Throwable $e2) {
+                }
+            }
 
             if ($driver !== 'sqlite') {
                 DB::statement('ALTER TABLE sip_pegawai ENGINE = InnoDB');

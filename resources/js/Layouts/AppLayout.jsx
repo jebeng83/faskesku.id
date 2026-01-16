@@ -5,6 +5,7 @@ import { route } from "ziggy-js";
 import SidebarMenu from "@/Components/SidebarMenu";
 import Breadcrumb from "@/Components/Breadcrumb";
 import MenuSearch from "@/Components/MenuSearch";
+import useTheme from "@/hooks/useTheme";
 
 export default function AppLayout({
     title = "Faskesku",
@@ -15,9 +16,7 @@ export default function AppLayout({
     const { auth, menu_hierarchy, current_menu } = page.props;
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    // Theme: light | dark | system
-    const [theme, setTheme] = useState("system");
-    const [isDark, setIsDark] = useState(false);
+    const { theme, cycleTheme } = useTheme();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isMenuSearchOpen, setIsMenuSearchOpen] = useState(false);
 
@@ -49,51 +48,7 @@ export default function AppLayout({
         },
     };
 
-    // Restore theme preference
-    useEffect(() => {
-        try {
-            const savedTheme = localStorage.getItem("theme-preference");
-            if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
-                setTheme(savedTheme);
-            }
-        } catch (_) {}
-    }, []);
-
-    // Compute dark mode from theme + system preference
-    useEffect(() => {
-        const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-        const compute = () => {
-            const systemPrefersDark = mediaQuery ? mediaQuery.matches : false;
-            const nextIsDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
-            setIsDark(nextIsDark);
-        };
-        compute();
-        if (mediaQuery) {
-            const listener = () => compute();
-            if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', listener);
-            else if (mediaQuery.addListener) mediaQuery.addListener(listener);
-            return () => {
-                if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', listener);
-                else if (mediaQuery.removeListener) mediaQuery.removeListener(listener);
-            };
-        }
-    }, [theme]);
-
-    useEffect(() => {
-        const root = document.documentElement;
-        if (isDark) {
-            root.classList.add("dark");
-        } else {
-            root.classList.remove("dark");
-        }
-    }, [isDark]);
-
-    // Persist theme preference
-    useEffect(() => {
-        try {
-            localStorage.setItem("theme-preference", theme);
-        } catch (_) {}
-    }, [theme]);
+    
 
     useEffect(() => {
         const limit = 30 * 60 * 1000;
@@ -204,8 +159,7 @@ export default function AppLayout({
 	}, [isMenuSearchOpen]);
 
     
-
-    const cycleTheme = () => setTheme((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'));
+    
 
     if (variant === "auth") {
         return (

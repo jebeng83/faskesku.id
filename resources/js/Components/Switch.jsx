@@ -10,12 +10,19 @@ export default function Switch({
     offLabel = "Tidak",
 }) {
     const sizes = {
+        xs: {
+            wrapper: "w-14 h-5",
+            knob: "w-4 h-4",
+            translateOn: "translate-x-9",
+            translateOff: "translate-x-1",
+            text: "text-[10px]",
+        },
         sm: {
-            wrapper: "w-24 h-8",
-            knob: "w-7 h-7",
-            translateOn: "translate-x-16",
-            translateOff: "translate-x-2",
-            text: "text-xs",
+            wrapper: "w-16 h-6",
+            knob: "w-5 h-5",
+            translateOn: "translate-x-10",
+            translateOff: "translate-x-1",
+            text: "text-[10px]",
         },
         md: {
             wrapper: "w-32 h-10",

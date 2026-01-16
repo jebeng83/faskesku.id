@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 // Sidebar khusus modul Laboratorium, mengikuti pola SidebarFarmasi/SidebarPengaturan
+import useTheme from "@/hooks/useTheme";
+
 export default function SidebarLaboratorium({
     title = "Laboratorium",
     children,
@@ -25,15 +27,10 @@ export default function SidebarLaboratorium({
     const [openMaster, setOpenMaster] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isDark, setIsDark] = useState(false);
+    const { isDark, toggleDarkLight } = useTheme();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
-    // Sinkronisasi tema
-    useEffect(() => {
-        const root = document.documentElement;
-        if (isDark) root.classList.add("dark");
-        else root.classList.remove("dark");
-    }, [isDark]);
+    
 
     // Restore sidebar state dari localStorage
     useEffect(() => {
@@ -349,7 +346,7 @@ export default function SidebarLaboratorium({
                     <div className="flex items-center gap-3">
                         {/* Theme Toggle */}
                         <button
-                            onClick={() => setIsDark(!isDark)}
+                            onClick={toggleDarkLight}
                             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             aria-label="Toggle theme"
                         >

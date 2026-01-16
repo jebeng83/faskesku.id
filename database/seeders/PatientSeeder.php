@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Patient;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class PatientSeeder extends Seeder
 {
@@ -33,7 +34,7 @@ class PatientSeeder extends Seeder
                 'pnd' => 'S1',
                 'keluarga' => 'DIRI SENDIRI',
                 'namakeluarga' => 'Ahmad Wijaya',
-                'kd_pj' => 'UMUM',
+                'kd_pj' => 'PJ2',
                 'no_peserta' => '',
                 'pekerjaanpj' => 'Karyawan Swasta',
                 'alamatpj' => 'Jl. Merdeka No. 123',
@@ -45,10 +46,10 @@ class PatientSeeder extends Seeder
                 'kd_kel' => 1,
                 'kd_kec' => 1,
                 'kd_kab' => 1,
-                'perusahaan_pasien' => '00000000',
+                'perusahaan_pasien' => '-',
                 'suku_bangsa' => 1,
                 'bahasa_pasien' => 1,
-                'cacat_fisik' => 0,
+                'cacat_fisik' => 1,
                 'nip' => '',
                 'kd_prop' => 1,
             ],
@@ -71,7 +72,7 @@ class PatientSeeder extends Seeder
                 'pnd' => 'S1',
                 'keluarga' => 'DIRI SENDIRI',
                 'namakeluarga' => 'Siti Nurhaliza',
-                'kd_pj' => 'UMUM',
+                'kd_pj' => 'PJ2',
                 'no_peserta' => '',
                 'pekerjaanpj' => 'Guru',
                 'alamatpj' => 'Jl. Asia Afrika No. 456',
@@ -83,10 +84,10 @@ class PatientSeeder extends Seeder
                 'kd_kel' => 1,
                 'kd_kec' => 1,
                 'kd_kab' => 1,
-                'perusahaan_pasien' => '00000000',
+                'perusahaan_pasien' => '-',
                 'suku_bangsa' => 1,
                 'bahasa_pasien' => 1,
-                'cacat_fisik' => 0,
+                'cacat_fisik' => 1,
                 'nip' => '',
                 'kd_prop' => 1,
             ],
@@ -109,7 +110,7 @@ class PatientSeeder extends Seeder
                 'pnd' => 'SMA',
                 'keluarga' => 'DIRI SENDIRI',
                 'namakeluarga' => 'Budi Santoso',
-                'kd_pj' => 'UMUM',
+                'kd_pj' => 'PJ2',
                 'no_peserta' => '',
                 'pekerjaanpj' => 'Wiraswasta',
                 'alamatpj' => 'Jl. Diponegoro No. 789',
@@ -121,19 +122,23 @@ class PatientSeeder extends Seeder
                 'kd_kel' => 1,
                 'kd_kec' => 1,
                 'kd_kab' => 1,
-                'perusahaan_pasien' => '00000000',
+                'perusahaan_pasien' => '-',
                 'suku_bangsa' => 1,
                 'bahasa_pasien' => 1,
-                'cacat_fisik' => 0,
+                'cacat_fisik' => 1,
                 'nip' => '',
                 'kd_prop' => 1,
             ],
         ];
 
+        $columns = Schema::getColumnListing('pasien');
+
         foreach ($patients as $patientData) {
+            $filtered = array_intersect_key($patientData, array_flip($columns));
+
             Patient::updateOrCreate(
-                ['no_rkm_medis' => $patientData['no_rkm_medis']],
-                $patientData
+                ['no_rkm_medis' => $filtered['no_rkm_medis']],
+                $filtered
             );
         }
     }

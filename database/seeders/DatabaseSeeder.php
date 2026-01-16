@@ -15,10 +15,21 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            \App\Models\User::firstOrCreate(
+                ['email' => 'test@example.com'],
+                [
+                    'name' => 'Test User',
+                    'username' => 'imulyani',
+                    'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                    'email_verified_at' => now(),
+                ]
+            );
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+        }
 
         // Run seeders
         $this->call([
@@ -27,13 +38,14 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             MenuSeeder::class,
             RouteSeeder::class,
-            DokterSeeder::class,
             SpesialisSeeder::class,
             PoliklinikSeeder::class,
+            DokterSeeder::class,
             PenjabSeeder::class,
+            KecamatanMinimalSeeder::class,
+            PatientSeeder::class,
             RegPeriksaSeeder::class,
             UserEmployeeSeeder::class,
-            PatientSeeder::class,
             RawatJalanSeeder::class,
             BankSeeder::class,
             RekeningSeeder::class,

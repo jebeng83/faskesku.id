@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Dokter;
+use App\Models\Employee;
 use Illuminate\Database\Seeder;
 
 class DokterSeeder extends Seeder
@@ -93,7 +94,17 @@ class DokterSeeder extends Seeder
         ];
 
         foreach ($dokters as $dokter) {
-            Dokter::create($dokter);
+            $nik = $dokter['kd_dokter'];
+            Employee::firstOrCreate(
+                ['nik' => $nik],
+                [
+                    'nik' => $nik,
+                    'nama' => $dokter['nm_dokter'],
+                    'jk' => ($dokter['jk'] === 'P') ? 'Wanita' : 'Pria',
+                ]
+            );
+
+            Dokter::updateOrCreate(['kd_dokter' => $dokter['kd_dokter']], $dokter);
         }
     }
 }

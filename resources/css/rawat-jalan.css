@@ -1,0 +1,5 @@
+@reference "./app.css";
+
+@source "../js/Pages/RawatJalan/**/*.{js,jsx,ts,tsx}";
+@source "../js/Layouts/SidebarRalan.jsx";
+@source "../js/Layouts/LanjutanRalanLayout.jsx";
