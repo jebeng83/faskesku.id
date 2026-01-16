@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import '../../css/rawat-jalan.css';
 import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import useTheme from '@/hooks/useTheme';
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
 export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
@@ -12,15 +14,10 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
   const [openRalan, setOpenRalan] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleDarkLight } = useTheme();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
-  // Sinkronisasi tema ke root
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) root.classList.add('dark');
-    else root.classList.remove('dark');
-  }, [isDark]);
+  
 
   // Restore sidebar toggle state dari localStorage
   useEffect(() => {
@@ -205,7 +202,7 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           <div className="flex items-center gap-3">
             {/* Theme Toggle */}
             <button
-              onClick={() => setIsDark(!isDark)}
+              onClick={toggleDarkLight}
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Toggle theme"
             >

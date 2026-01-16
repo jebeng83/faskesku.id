@@ -13,6 +13,7 @@ import {
 import ralan from "@/routes/laporan/ralan";
 import ranap from "@/routes/laporan/ranap";
 import MobileBottomNav from "@/Components/MobileBottomNav";
+import useTheme from "@/hooks/useTheme";
 
 export default function SidebarLaporan({ title = "Laporan", children }) {
     const { url } = usePage();
@@ -22,14 +23,10 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
     const [openRanap, setOpenRanap] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isDark, setIsDark] = useState(false);
+    const { isDark, toggleDarkLight } = useTheme();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
-    useEffect(() => {
-        const root = document.documentElement;
-        if (isDark) root.classList.add("dark");
-        else root.classList.remove("dark");
-    }, [isDark]);
+    
 
     useEffect(() => {
         try {
@@ -324,7 +321,7 @@ export default function SidebarLaporan({ title = "Laporan", children }) {
 
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => setIsDark(!isDark)}
+                            onClick={toggleDarkLight}
                             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             aria-label="Toggle theme"
                         >

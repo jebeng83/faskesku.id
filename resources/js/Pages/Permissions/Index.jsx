@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-import AppLayout from "@/Layouts/AppLayout";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import Button from "@/Components/Button";
 import Modal from "@/Components/Modal";
@@ -333,18 +333,18 @@ export default function PermissionsIndex() {
 		}
 	};
 
-	if (loading) {
-		return (
-			<AppLayout title="Permission Management">
-				<div className="flex items-center justify-center h-64">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-				</div>
-			</AppLayout>
-		);
-	}
+    if (loading) {
+        return (
+            <SidebarPengaturan title="Permission Management" wide>
+                <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </SidebarPengaturan>
+        );
+    }
 
-	return (
-		<AppLayout title="Permission Management">
+    return (
+        <SidebarPengaturan title="Permission Management" wide>
 			<Head title="Permission Management" />
 
 			<div className="space-y-6">
@@ -508,6 +508,6 @@ export default function PermissionsIndex() {
 					}}
 				/>
 			</Modal>
-		</AppLayout>
+        </SidebarPengaturan>
 	);
 }

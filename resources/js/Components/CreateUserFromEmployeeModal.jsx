@@ -120,18 +120,47 @@ export default function CreateUserFromEmployeeModal({
 		setErrors({});
 		setLoading(true);
 
+		const normalizeNik = (v) => {
+			const s = String(v || "").trim();
+			if (!s || s === "-" || s === "—") return null;
+			return s;
+		};
+
+		const baseHeaders = {
+			"Content-Type": "application/json",
+			Accept: "application/json",
+			"X-Requested-With": "XMLHttpRequest",
+		};
+
 		try {
+			try {
+				await axios.get("/sanctum/csrf-cookie", {
+					withCredentials: true,
+					headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+				});
+				await new Promise((r) => setTimeout(r, 200));
+			} catch (_) {}
+
 			if (isEditMode && existingUser) {
-				// Update existing user with method spoofing
-				const fd = new FormData();
-				Object.entries(formData).forEach(([key, value]) => fd.append(key, value ?? ""));
-				fd.append("_method", "PUT");
-				await axios.post(`/api/users/${existingUser.id}`, fd, {
-					headers: { "Content-Type": "multipart/form-data" },
+				const payload = {
+					...formData,
+					nik: normalizeNik(formData.nik),
+				};
+				if (!payload.password) delete payload.password;
+				if (!payload.password_confirmation) delete payload.password_confirmation;
+				await axios.put(`/api/users/${existingUser.id}`, payload, {
+					withCredentials: true,
+					headers: baseHeaders,
 				});
 			} else {
-				// Create new user
-				await axios.post("/api/users", formData);
+				const payload = {
+					...formData,
+					nik: normalizeNik(formData.nik),
+				};
+				await axios.post("/api/users", payload, {
+					withCredentials: true,
+					headers: baseHeaders,
+				});
 			}
 			onSuccess();
 			onClose();
@@ -252,6 +281,7 @@ export default function CreateUserFromEmployeeModal({
 							value={formData.password}
 							onChange={handleFormChange}
 							required={!isEditMode}
+				minLength={6}
 							placeholder={
 								isEditMode ? "Kosongkan jika tidak ingin mengubah password" : ""
 							}
@@ -280,6 +310,7 @@ export default function CreateUserFromEmployeeModal({
 							value={formData.password_confirmation}
 							onChange={handleFormChange}
 							required={!isEditMode}
+				minLength={6}
 							placeholder={
 								isEditMode ? "Kosongkan jika tidak ingin mengubah password" : ""
 							}

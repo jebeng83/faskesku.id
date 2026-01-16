@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from "react";
+import "../../css/rawat-jalan.css";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
+import useTheme from "@/hooks/useTheme";
 
 export default function LanjutanRalanLayout({
     title = "Lanjutan Rawat Jalan",
@@ -40,19 +42,12 @@ export default function LanjutanRalanLayout({
             },
         },
     };
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-	const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-	const [isDark, setIsDark] = useState(false);
+const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+const { isDark, toggleDarkLight } = useTheme();
 	const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
-	useEffect(() => {
-		const root = document.documentElement;
-		if (isDark) {
-			root.classList.add("dark");
-		} else {
-			root.classList.remove("dark");
-		}
-	}, [isDark]);
+ 
 
 	// Restore sidebar toggle state from localStorage
 	useEffect(() => {
@@ -199,8 +194,8 @@ export default function LanjutanRalanLayout({
 					{/* Right side - User menu */}
 					<div className="flex items-center gap-3">
 						{/* Theme Toggle */}
-						<button
-							onClick={() => setIsDark(!isDark)}
+                        <button
+                            onClick={toggleDarkLight}
 							className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
 							aria-label="Toggle theme"
 						>

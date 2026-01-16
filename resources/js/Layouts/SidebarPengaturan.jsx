@@ -13,13 +13,13 @@ import {
     FileText,
     Home,
 } from "lucide-react";
+import useTheme from "@/hooks/useTheme";
 
-// Theme toggle terkontrol, state diangkat ke parent agar sinkron di semua instance
-function ThemeToggle({ isDark, setIsDark }) {
+function ThemeToggle({ isDark, onToggle }) {
     return (
         <button
             type="button"
-            onClick={() => setIsDark((v) => !v)}
+            onClick={onToggle}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded border bg-white/70 dark:bg-slate-800 text-slate-700 dark:text-slate-100 hover:bg-white"
             title={isDark ? "Tema gelap aktif" : "Tema terang aktif"}
         >
@@ -92,17 +92,7 @@ export default function SidebarPengaturan({
         return localStorage.getItem("pengaturanSidebarCollapsed") === "true";
     });
 
-    // State tema terpusat + sinkron dengan prefers-color-scheme
-    const [isDark, setIsDark] = useState(() => {
-        if (typeof window === "undefined") return false;
-        const saved = localStorage.getItem("theme");
-        if (saved === "dark") return true;
-        if (saved === "light") return false;
-        return (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-        );
-    });
+    const { isDark, toggleDarkLight } = useTheme();
 
     useEffect(() => {
         try {
@@ -122,12 +112,7 @@ export default function SidebarPengaturan({
         } catch (_) {}
     }, [isSidebarCollapsed]);
 
-    useEffect(() => {
-        try {
-            document.documentElement.classList.toggle("dark", isDark);
-            localStorage.setItem("theme", isDark ? "dark" : "light");
-        } catch (_) {}
-    }, [isDark]);
+    
 
     const paths = useMemo(
         () => ({
@@ -208,10 +193,7 @@ export default function SidebarPengaturan({
                     </div>
                     <div className="flex items-center gap-2">
                         {!isSidebarCollapsed && (
-                            <ThemeToggle
-                                isDark={isDark}
-                                setIsDark={setIsDark}
-                            />
+                            <ThemeToggle isDark={isDark} onToggle={toggleDarkLight} />
                         )}
                         <button
                             type="button"
@@ -393,7 +375,7 @@ export default function SidebarPengaturan({
 
                     {/* Right side - Theme toggle */}
                     <div className="flex items-center gap-3">
-                        <ThemeToggle isDark={isDark} setIsDark={setIsDark} />
+                        <ThemeToggle isDark={isDark} onToggle={toggleDarkLight} />
                     </div>
                 </div>
             </header>

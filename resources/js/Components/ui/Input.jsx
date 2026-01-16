@@ -19,6 +19,10 @@ const Input = ({
     : 'bg-white text-gray-900';
   
   const classes = `${baseClasses} ${stateClasses} ${disabledClasses} ${className}`;
+  const inputProps = { ...props };
+  if (Object.prototype.hasOwnProperty.call(inputProps, 'value') && inputProps.value === null) {
+    inputProps.value = '';
+  }
   
   return (
     <input
@@ -26,7 +30,7 @@ const Input = ({
       className={classes}
       disabled={disabled}
       placeholder={placeholder}
-      {...props}
+      {...inputProps}
     />
   );
 };

@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
+import useTheme from "@/hooks/useTheme";
 
 function LanjutanRegistrasiLayout({
   title = "Registrasi Pasien",
@@ -14,57 +15,11 @@ function LanjutanRegistrasiLayout({
   const currentUrl = page?.url || (typeof window !== "undefined" ? window.location.pathname : "");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  // Theme: light | dark | system
-  const [theme, setTheme] = useState("system");
-  const [isDark, setIsDark] = useState(false);
+  const { theme, cycleTheme } = useTheme();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  // Restore theme preference
-  useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem("theme-preference");
-      if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
-        setTheme(savedTheme);
-      }
-    } catch (_) {}
-  }, []);
-
-  // Compute dark mode from theme + system preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-    const compute = () => {
-      const systemPrefersDark = mediaQuery ? mediaQuery.matches : false;
-      const nextIsDark = theme === 'dark' || (theme === 'system' && systemPrefersDark);
-      setIsDark(nextIsDark);
-    };
-    compute();
-    if (mediaQuery) {
-      const listener = () => compute();
-      if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', listener);
-      else if (mediaQuery.addListener) mediaQuery.addListener(listener);
-      return () => {
-        if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', listener);
-        else if (mediaQuery.removeListener) mediaQuery.removeListener(listener);
-      };
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [isDark]);
-
-  // Persist theme preference
-  useEffect(() => {
-    try {
-      localStorage.setItem("theme-preference", theme);
-    } catch (_) {}
-  }, [theme]);
+  
 
   // Restore sidebar toggle state from localStorage
   useEffect(() => {
@@ -282,7 +237,7 @@ function LanjutanRegistrasiLayout({
           <div className="flex items-center gap-3">
             {/* Theme Switcher */}
             <button
-              onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light'))}
+              onClick={cycleTheme}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
               aria-label="Toggle theme"
               title={`Theme: ${theme}`}

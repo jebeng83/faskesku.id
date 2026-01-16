@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import {
+import { 
     Pill,
     Gauge,
     ClipboardList,
@@ -16,6 +16,7 @@ import {
     Home,
     BarChart2,
 } from "lucide-react";
+import useTheme from "@/hooks/useTheme";
 
 // Sidebar khusus modul Farmasi, konsisten dengan pola LanjutanRalanLayout/SidebarRalan
 export default function SidebarFarmasi({ title = "Farmasi", children }) {
@@ -29,16 +30,11 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
     const [openLaporan, setOpenLaporan] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isDark, setIsDark] = useState(false);
+    const { isDark, toggleDarkLight } = useTheme();
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [expandedGroupIds, setExpandedGroupIds] = useState(new Set());
 
-    // Sinkronisasi tema ke root
-    useEffect(() => {
-        const root = document.documentElement;
-        if (isDark) root.classList.add("dark");
-        else root.classList.remove("dark");
-    }, [isDark]);
+    
 
     // Restore sidebar toggle state dari localStorage
     useEffect(() => {
@@ -166,10 +162,14 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
             return slug === "farmasi" || name.includes("farmasi");
         };
         const dfs = (arr) => {
+            if (!Array.isArray(arr)) return null;
             for (const m of arr) {
                 if (match(m)) return m;
-                const children =
-                    m?.active_children_recursive || m?.children || [];
+                const children = Array.isArray(m?.active_children_recursive)
+                    ? m.active_children_recursive
+                    : Array.isArray(m?.children)
+                    ? m.children
+                    : [];
                 const found = dfs(children);
                 if (found) return found;
             }
@@ -180,18 +180,23 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
 
     const dynamicItems = useMemo(() => {
         if (!findFarmasiNode) return null;
-        const rawChildren =
-            findFarmasiNode.active_children_recursive ||
-            findFarmasiNode.children ||
-            [];
-        const children = (rawChildren || []).filter(isMenuEnabled);
+        const rawChildren = Array.isArray(
+            findFarmasiNode.active_children_recursive
+        )
+            ? findFarmasiNode.active_children_recursive
+            : Array.isArray(findFarmasiNode.children)
+            ? findFarmasiNode.children
+            : [];
+        const children = rawChildren.filter(isMenuEnabled);
         if (!children.length) return null;
         const built = [];
         for (const child of children) {
             const grand = (
-                child.active_children_recursive ||
-                child.children ||
-                []
+                Array.isArray(child.active_children_recursive)
+                    ? child.active_children_recursive
+                    : Array.isArray(child.children)
+                    ? child.children
+                    : []
             ).filter(isMenuEnabled);
             if (grand.length > 0) {
                 built.push({
@@ -750,7 +755,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     <div className="flex items-center gap-3">
                         {/* Theme Toggle */}
                         <button
-                            onClick={() => setIsDark(!isDark)}
+                            onClick={toggleDarkLight}
                             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             aria-label="Toggle theme"
                         >
