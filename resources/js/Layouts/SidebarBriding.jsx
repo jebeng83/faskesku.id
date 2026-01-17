@@ -13,15 +13,19 @@ import {
   User,
   BadgeInfo,
 } from "lucide-react";
+import usePermission from "@/hooks/usePermission";
 
 export default function SidebarBriding({ title = "Briding", children, wide = false }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { permissions, can } = usePermission();
 
   const items = useMemo(() => [
-    { label: "Dashboard", href: "/dashboard", icon: Squares2X2Icon },
-    { label: "Home", href: safeRoute("pcare.index", "/pcare"), icon: HomeIcon },
+    { label: "Dashboard", href: "/dashboard", icon: Squares2X2Icon, permission: "dashboard.index" },
+    { label: "Home", href: safeRoute("pcare.index", "/pcare"), icon: HomeIcon, permission: "pcare.index" },
   ], []);
+
+  const filteredTop = useMemo(() => items.filter((it) => !it.permission || can(it.permission)), [items, permissions]);
 
   function safeRoute(name, fallback) {
     try {
@@ -60,6 +64,32 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
     []
   );
 
+  const pcareLinks = useMemo(
+    () => [
+      { href: paths.pcareSetting, label: "Setting Bridging PCare", icon: LucideLink, permission: "pcare.setting-briding-pcare" },
+      { href: paths.mobileJknSetting, label: "Setting Mobile JKN", icon: LucideLink, permission: "pcare.setting-briding-mobile-jkn" },
+      { href: paths.pcarePasswordAntrol, label: "Password Briding Antrol", icon: LucideLink, permission: "pcare.password-briding-bpjs" },
+      { href: paths.pcareMapDokter, label: "Mapping Dokter PCare", icon: Stethoscope, permission: "pcare.mapping-dokter" },
+      { href: paths.pcareMapPoli, label: "Mapping Poli PCare", icon: NotebookTabs, permission: "pcare.mapping-poli" },
+      { href: paths.pcareMapObat, label: "Mapping Obat PCare", icon: Pill, permission: "pcare.mapping-obat" },
+      { href: paths.jadwalDokter, label: "Jadwal Dokter", icon: CalendarDays, permission: "jadwal.index" },
+    ].filter((l) => !l.permission || can(l.permission)),
+    [paths, permissions]
+  );
+
+  const ssLinks = useMemo(
+    () => [
+      { href: paths.ssOrg, label: "Mapping Organisasi", icon: Building2, permission: "satusehat.index" },
+      { href: paths.ssLoc, label: "Mapping Location", icon: NotebookTabs, permission: "satusehat.index" },
+      { href: paths.ssLocFarmasi, label: "Mapping Location Farmasi", icon: NotebookTabs, permission: "satusehat.index" },
+      { href: paths.ssLocRanap, label: "Mapping Location Ranap", icon: NotebookTabs, permission: "satusehat.index" },
+      { href: paths.ssPrPractitioner, label: "Referensi Practitioner", icon: BadgeInfo, permission: "satusehat.index" },
+      { href: paths.ssPrPatient, label: "Referensi Pasien", icon: User, permission: "satusehat.index" },
+      { href: paths.ssInteropRajalEncounter, label: "Encounter Rajal", icon: HeartPulse, permission: "satusehat.index" },
+    ].filter((l) => !l.permission || can(l.permission)),
+    [paths, permissions]
+  );
+
   const isActive = (href) => {
     try {
       const u = new URL(href, window.location.origin);
@@ -81,7 +111,7 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
           )}
         </div>
         <nav className="px-2 py-2 space-y-1 text-white/90">
-          {items.map((it) => (
+          {filteredTop.map((it) => (
             <Link
               key={it.label}
               href={it.href}
@@ -95,151 +125,38 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
           ))}
 
           <div className="mt-2">
-            {!isSidebarCollapsed && (
+            {!isSidebarCollapsed && pcareLinks.length > 0 && (
               <div className="px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Bridging PCare</div>
             )}
-            <Link
-              href={paths.pcareSetting}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.pcareSetting) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <LucideLink className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Setting Bridging PCare</span>}
-            </Link>
-            <Link
-              href={paths.mobileJknSetting}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.mobileJknSetting) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <LucideLink className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Setting Mobile JKN</span>}
-            </Link>
-            <Link
-              href={paths.pcarePasswordAntrol}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.pcarePasswordAntrol) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <LucideLink className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Password Briding Antrol</span>}
-            </Link>
-            <Link
-              href={paths.pcareMapDokter}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.pcareMapDokter) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <Stethoscope className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Dokter PCare</span>}
-            </Link>
-            <Link
-              href={paths.pcareMapPoli}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.pcareMapPoli) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Poli PCare</span>}
-            </Link>
-            <Link
-              href={paths.pcareMapObat}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.pcareMapObat) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <Pill className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Obat PCare</span>}
-            </Link>
-            <Link
-              href={paths.jadwalDokter}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.jadwalDokter) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <CalendarDays className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Jadwal Dokter</span>}
-            </Link>
+            {pcareLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                }`}
+              >
+                <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+                {!isSidebarCollapsed && <span className="text-sm">{l.label}</span>}
+              </Link>
+            ))}
 
-            {!isSidebarCollapsed && (
+            {!isSidebarCollapsed && ssLinks.length > 0 && (
               <div className="mt-4 px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Bridging Satu Sehat</div>
             )}
-            <Link
-              href={paths.ssOrg}
-              aria-label="Mapping Organisasi"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssOrg) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <Building2 className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Organisasi</span>}
-            </Link>
-            <Link
-              href={paths.ssLoc}
-              aria-label="Mapping Location"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssLoc) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Location</span>}
-            </Link>
-            <Link
-              href={paths.ssLocFarmasi}
-              aria-label="Mapping Location Farmasi"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssLocFarmasi) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Mapping Location Farmasi</span>}
-            </Link>
-          <Link
-            href={paths.ssLocRanap}
-            aria-label="Mapping Location Ranap"
-            className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-              isActive(paths.ssLocRanap) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-            }`}
-          >
-            <NotebookTabs className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-            {!isSidebarCollapsed && <span className="text-sm">Mapping Location Ranap</span>}
-          </Link>
-
-            <Link
-              href={paths.ssPrPractitioner}
-              aria-label="Referensi Practitioner"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssPrPractitioner) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <BadgeInfo className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Referensi Practitioner</span>}
-            </Link>
-            <Link
-              href={paths.ssPrPatient}
-              aria-label="Referensi Pasien"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssPrPatient) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <User className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Referensi Pasien</span>}
-            </Link>
-
-            {!isSidebarCollapsed && (
-              <div className="mt-4 px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Interoperabilitas Satu Sehat</div>
-            )}
-            <Link
-              href={paths.ssInteropRajalEncounter}
-              aria-label="Encounter Rajal"
-              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(paths.ssInteropRajalEncounter) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-              }`}
-            >
-              <HeartPulse className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
-              {!isSidebarCollapsed && <span className="text-sm">Encounter Rajal</span>}
-            </Link>
+            {ssLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-label={l.label}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                  isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                }`}
+              >
+                <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+                {!isSidebarCollapsed && <span className="text-sm">{l.label}</span>}
+              </Link>
+            ))}
         </div>
         </nav>
       </aside>

@@ -4,11 +4,13 @@ import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
 import useTheme from '@/hooks/useTheme';
+import usePermission from '@/hooks/usePermission';
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
 export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
   const { url, props } = usePage();
   const auth = props?.auth || {};
+  const { permissions, can } = usePermission();
 
   // State untuk menu dan tampilan
   const [openRalan, setOpenRalan] = useState(true);
@@ -58,6 +60,7 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
       label: 'Dashboard',
       href: route('dashboard'),
       icon: <Gauge className="w-4 h-4" />,
+      permission: 'dashboard.index',
     },
     {
       label: 'Rawat Jalan',
@@ -67,20 +70,39 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           label: 'Rawat Jalan',
           href: route('rawat-jalan.index'),
           icon: <Hospital className="w-4 h-4" />,
+          permission: 'reg-periksa.index',
         },
         {
           label: 'Tarif Ralan',
           href: route('daftar-tarif.index', { category: 'rawat-jalan', search: '', status: '1' }),
           icon: <Receipt className="w-4 h-4" />,
+          permission: 'daftar-tarif.index',
         },
         {
           label: 'Satu Sehat',
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
+          permission: 'satusehat.index',
         },
       ],
     },
   ]), []);
+
+  const filteredItems = useMemo(() => {
+    return items
+      .map((item) => {
+        if (!item.children) {
+          if (item.permission && !can(item.permission)) return null;
+          return item;
+        }
+        const children = (item.children || []).filter(
+          (c) => !c.permission || can(c.permission)
+        );
+        if (children.length === 0) return null;
+        return { ...item, children };
+      })
+      .filter(Boolean);
+  }, [items, permissions]);
 
   const isActive = (href) => {
     try {
@@ -106,7 +128,7 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
         </div>
         {/* Sidebar Menu */}
         <nav className="px-2 py-2 space-y-1 text-white/90">
-          {items.map((item, idx) => (
+          {filteredItems.map((item, idx) => (
             <div key={idx}>
               {!item.children ? (
                 <Link

@@ -52,6 +52,8 @@ class UserController extends Controller
             'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik',
             'roles' => 'array',
             'roles.*' => 'exists:roles,name',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,name',
         ]);
 
         if ($validator->fails()) {
@@ -73,6 +75,11 @@ class UserController extends Controller
         // Assign roles
         if ($request->has('roles') && is_array($request->roles)) {
             $user->assignRole($request->roles);
+        }
+
+        // Assign direct permissions
+        if ($request->has('permissions') && is_array($request->permissions)) {
+            $user->syncPermissions($request->permissions);
         }
 
         $user->load(['employee', 'roles', 'permissions']);
@@ -105,6 +112,8 @@ class UserController extends Controller
             'nik' => 'nullable|string|max:20|exists:pegawai,nik|unique:users,nik,'.$user->id,
             'roles' => 'array',
             'roles.*' => 'exists:roles,name',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,name',
         ]);
 
         if ($validator->fails()) {
@@ -131,6 +140,11 @@ class UserController extends Controller
         // Sync roles
         if ($request->has('roles')) {
             $user->syncRoles($request->roles);
+        }
+
+        // Sync direct permissions
+        if ($request->has('permissions')) {
+            $user->syncPermissions($request->permissions ?? []);
         }
 
         $user->load(['employee', 'roles', 'permissions']);

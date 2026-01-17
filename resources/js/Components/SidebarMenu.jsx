@@ -99,12 +99,15 @@ export default function SidebarMenu({
 	useEffect(() => {
 		if (!normalizedMenus.length || !current_menu) return;
 
-		const findParentMenus = (menus, targetMenuId, parentIds = []) => {
+        const findParentMenus = (menus, targetMenuId, parentIds = []) => {
 			for (const menu of menus) {
 				if (menu.id === targetMenuId) {
 					return parentIds;
 				}
-				const children = menu.active_children_recursive || menu.children || [];
+                const rawChildren = menu.active_children_recursive || menu.children || [];
+                const children = Array.isArray(rawChildren)
+                    ? rawChildren
+                    : (rawChildren && typeof rawChildren === 'object' ? Object.values(rawChildren) : []);
 				if (children.length > 0) {
 					const result = findParentMenus(children, targetMenuId, [
 						...parentIds,
@@ -173,8 +176,11 @@ export default function SidebarMenu({
 			}
 		}
 
-		// Check children recursively
-		const children = menu.active_children_recursive || menu.children || [];
+        // Check children recursively
+        const rawChildren = menu.active_children_recursive || menu.children || [];
+        const children = Array.isArray(rawChildren)
+            ? rawChildren
+            : (rawChildren && typeof rawChildren === 'object' ? Object.values(rawChildren) : []);
 		if (children && children.length > 0) {
 			const hasActiveChild = children.some((child) => isMenuActive(child));
             return hasActiveChild;
@@ -338,9 +344,12 @@ export default function SidebarMenu({
 	};
 
 	const renderMenuItem = (menu, level = 0) => {
-		const rawChildren = menu.active_children_recursive || menu.children || [];
+        const rawChildren = menu.active_children_recursive || menu.children || [];
         // Tampilkan dropdown hanya untuk anak-anak yang benar-benar aktif/terlihat
-        const children = (rawChildren || []).filter(isMenuEnabled);
+        const childrenSource = Array.isArray(rawChildren)
+            ? rawChildren
+            : (rawChildren && typeof rawChildren === 'object' ? Object.values(rawChildren) : []);
+        const children = childrenSource.filter(isMenuEnabled);
 		const hasChildren = children && children.length > 0;
 		const isExpanded = expandedMenus.has(menu.id);
 		const isActive = isMenuActive(menu);

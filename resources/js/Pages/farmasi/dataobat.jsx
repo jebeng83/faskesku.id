@@ -5,6 +5,7 @@ import { route } from "ziggy-js";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAnimationFrame } from "motion/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import usePermission from "@/hooks/usePermission";
 
 // Util: kunci harga yang didukung
 const PRICE_KEYS = [
@@ -133,6 +134,7 @@ const PageHeader = ({
     onPrimaryAction,
     onSecondaryAction,
     busy,
+    disabledPrimary,
 }) => (
     <motion.div
         className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg"
@@ -160,7 +162,7 @@ const PageHeader = ({
                         className="rounded-md px-3 py-1.5 text-sm font-medium bg-white/60 text-indigo-700 hover:bg-white/80 border border-white/60"
                         whileHover={{ scale: 1.03, y: -1 }}
                         whileTap={{ scale: 0.98 }}
-                        disabled={busy}
+                        disabled={busy || disabledPrimary}
                     >
                         {busy ? "Memperbarui..." : "Update Harga Semua"}
                     </motion.button>
@@ -1238,7 +1240,13 @@ export default function DataObatPage() {
 
     // Bulk update harga untuk seluruh data di tabel databarang
     const [bulkUpdating, setBulkUpdating] = useState(false);
+    const { can } = usePermission();
+    const canBulkUpdate = can("farmasi.data-obat.update-harga-semua");
     const updateHargaSemua = async () => {
+        if (!canBulkUpdate) {
+            alert("Anda tidak memiliki izin melakukan pembaruan harga massal.");
+            return;
+        }
         if (
             !window.confirm(
                 "Update semua harga jual di tabel databarang sekarang?"
@@ -1275,6 +1283,7 @@ export default function DataObatPage() {
                     onPrimaryAction={updateHargaSemua}
                     onSecondaryAction={openCreate}
                     busy={bulkUpdating}
+                    disabledPrimary={!canBulkUpdate}
                 />
 
                 <ObatModal

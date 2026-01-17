@@ -83,6 +83,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 ]);
             }
 
+            if ($response->getStatusCode() === 403) {
+                if ($request->expectsJson() || $request->wantsJson() || $request->header('Accept') === 'application/json') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Maaf, User Anda tidak mempunyak akses ke halaman ini',
+                        'error_code' => 'ACCESS_DENIED',
+                    ], 403);
+                }
+
+                return \Inertia\Inertia::render('Errors/AccessDenied', [
+                    'message' => 'Maaf, User Anda tidak mempunyak akses ke halaman ini',
+                ])->toResponse($request)->setStatusCode(403);
+            }
+
             // Ensure JSON responses for API requests
             if ($request->expectsJson() || $request->wantsJson() || $request->header('Accept') === 'application/json') {
                 // If response is HTML but request expects JSON, return JSON error

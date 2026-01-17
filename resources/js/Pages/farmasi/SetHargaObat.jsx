@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import JenisSelector from '@/Components/JenisSelector';
 import DataBarangSelector from '@/Components/DataBarangSelector';
+import usePermission from '@/hooks/usePermission';
 // Local helper components MUST be defined at module scope to avoid re-mounting on each render.
 function PercentageField({ id, label, value, onChange, error }) {
     return (
@@ -81,6 +82,13 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
     };
 
     const { data, setData, processing, errors } = useForm(initialData);
+    const { can } = usePermission();
+    const canUpdateGlobal = can('farmasi.set-harga-obat.update');
+    const canUpdateUmum = can('farmasi.set-penjualan-umum.update');
+    const canStoreJenis = can('farmasi.set-penjualan.store');
+    const canDestroyJenis = can('farmasi.set-penjualan.destroy');
+    const canStoreBarang = can('farmasi.set-penjualan-barang.store');
+    const canDestroyBarang = can('farmasi.set-penjualan-barang.destroy');
 
     // Tabs + Global setter (incremental change)
     const [activeTab, setActiveTab] = useState('pengaturan');
@@ -101,6 +109,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
     // Simpan tab "Pengaturan Harga Umum" ke tabel setpenjualanumum
     const handleSubmitUmum = (e) => {
         e.preventDefault();
+        if (!canUpdateUmum) {
+            import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin menyimpan pengaturan umum')).catch(() => {});
+            return;
+        }
         const toNumber = (val) => {
             const n = Number(val);
             return Number.isFinite(n) ? n : 0;
@@ -130,6 +142,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
 
     // Simpan khusus dari tab "Pengaturan Harga" tanpa form submit
     const handleSavePengaturan = () => {
+        if (!canUpdateGlobal) {
+            import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin memperbarui pengaturan'));
+            return;
+        }
         // Backend mewajibkan semua field numeric + enum. Pastikan dikirim lengkap.
         const toNumber = (val) => {
             const n = Number(val);
@@ -165,6 +181,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
     // Simpan pengaturan per-jenis ke tabel setpenjualan
     const handleSubmitJenis = (e) => {
         e.preventDefault();
+        if (!canStoreJenis) {
+            import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin menyimpan pengaturan per jenis')).catch(() => {});
+            return;
+        }
         const toNumber = (val) => {
             const n = Number(val);
             return Number.isFinite(n) ? n : 0;
@@ -202,6 +222,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
     // Simpan pengaturan per-barang dengan mengupdate persentase di tabel databarang
     const handleSubmitBarang = (e) => {
         e.preventDefault();
+        if (!canStoreBarang) {
+            import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin menyimpan pengaturan per barang')).catch(() => {});
+            return;
+        }
         const toNumber = (val) => {
             const n = Number(val);
             return Number.isFinite(n) ? n : 0;
@@ -365,7 +389,7 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
                                     <div className="flex items-center justify-end mt-4">
                                         <button
                                             type="button"
-                                            disabled={processing}
+                                            disabled={processing || !canUpdateGlobal}
                                             onClick={handleSavePengaturan}
                                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
@@ -430,7 +454,7 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
                                 <div className="flex items-center justify-end mt-8">
                                     <button
                                         type="submit"
-                                        disabled={processing}
+                                        disabled={processing || !canUpdateUmum}
                                         className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                     >
                                         {processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
@@ -500,6 +524,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
                                             }}
                                             onDelete={(row) => {
                                                 if (!row || !row.kdjns) return;
+                                                if (!canDestroyJenis) {
+                                                    import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin menghapus pengaturan per jenis')).catch(() => {});
+                                                    return;
+                                                }
                                                 const kode = String(row.kdjns).toUpperCase();
                                                 if (!window.confirm(`Yakin hapus pengaturan untuk jenis ${kode}?`)) return;
                                                 // Gunakan metode spoofing: POST + _method=DELETE (lihat PUT_METHOD_NOT_ALLOWED_FIX.md)
@@ -521,7 +549,7 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
 
                                     {!jenisCollapsed && (
                                         <div className="flex items-center justify-end mt-6">
-                                            <button type="submit" disabled={processing} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
+                                            <button type="submit" disabled={processing || !canStoreJenis} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
                                                 {processing ? 'Menyimpan...' : 'Simpan Pengaturan Per Jenis'}
                                             </button>
                                         </div>
@@ -572,7 +600,7 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
 
                                     {!barangCollapsed && (
                                         <div className="flex items-center justify-end mt-6">
-                                            <button type="submit" disabled={processing} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
+                                            <button type="submit" disabled={processing || !canStoreBarang} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
                                                 {processing ? 'Menyimpan...' : 'Simpan Pengaturan Per Barang'}
                                             </button>
                                         </div>
@@ -594,6 +622,10 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
                                             }}
                                             onDelete={(row) => {
                                                 if (!row || !row.kode_brng) return;
+                                                if (!canDestroyBarang) {
+                                                    import('@/tools/toast').then(({ toast }) => toast.error('Anda tidak memiliki izin menghapus pengaturan per barang')).catch(() => {});
+                                                    return;
+                                                }
                                                 const kode = String(row.kode_brng).toUpperCase();
                                                 if (!window.confirm(`Yakin hapus pengaturan untuk barang ${kode}?`)) return;
                                                 // Gunakan metode spoofing: POST + _method=DELETE (lihat PUT_METHOD_NOT_ALLOWED_FIX.md)

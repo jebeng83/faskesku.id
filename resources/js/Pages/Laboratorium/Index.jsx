@@ -9,6 +9,7 @@ import Pagination from "@/Components/Pagination";
 import Alert from "@/Components/Alert";
 import Modal from "@/Components/Modal";
 import { Search, Eye, Trash2, Clock, ClipboardList, RefreshCw, Printer } from "lucide-react";
+import usePermission from "@/hooks/usePermission";
 
 // Helper function untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
 // Menggunakan timezone Asia/Jakarta (UTC+7)
@@ -55,6 +56,7 @@ const itemVariants = {
 export default function Index({ permintaanLab = null, dokters = [], filters = {}, flash, errors: pageErrors }) {
     const { auth } = usePage().props;
     const page = usePage();
+    const { can } = usePermission();
     
     // Set default tanggal ke hari ini jika tidak ada filter dari server
     const defaultStartDate = filters.start_date || getTodayDate();
@@ -764,44 +766,50 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                     item={item}
                     viewRoute={null}
                     editRoute={null}
-                    onDelete={() => handleDelete(item)}
+                    onDelete={can('laboratorium.edit') ? (() => handleDelete(item)) : undefined}
                     customItems={
                         <>
-                            <button
-                                onClick={() => {
-                                    router.get(
-                                        route("laboratorium.permintaan-lab.show", { permintaan_lab: item.noorder })
-                                    );
-                                }}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                            >
-                                <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
-                                    <Eye className="w-4 h-4" />
-                                </span>
-                                Lihat Detail
-                            </button>
-                            <button
-                                onClick={() => openSampleModal(item)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                            >
-                                <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
-                                    <Clock className="w-4 h-4" />
-                                </span>
-                                Update Sampel
-                            </button>
-                            <button
-                                onClick={() => handleInputHasil(item)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                                disabled={
-                                    !item.tgl_sampel || item.tgl_sampel === "0000-00-00"
-                                }
-                            >
-                                <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
-                                    <ClipboardList className="w-4 h-4" />
-                                </span>
-                                Input Hasil
-                            </button>
-                            {item.has_hasil && (
+                            {can('laboratorium.show') && (
+                                <button
+                                    onClick={() => {
+                                        router.get(
+                                            route("laboratorium.permintaan-lab.show", { permintaan_lab: item.noorder })
+                                        );
+                                    }}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                                >
+                                    <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
+                                        <Eye className="w-4 h-4" />
+                                    </span>
+                                    Lihat Detail
+                                </button>
+                            )}
+                            {can('laboratorium.edit') && (
+                                <button
+                                    onClick={() => openSampleModal(item)}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                                >
+                                    <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
+                                        <Clock className="w-4 h-4" />
+                                    </span>
+                                    Update Sampel
+                                </button>
+                            )}
+                            {can('laboratorium.edit') && (
+                                <button
+                                    onClick={() => handleInputHasil(item)}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                                    disabled={
+                                        !item.tgl_sampel || item.tgl_sampel === "0000-00-00"
+                                    }
+                                >
+                                    <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
+                                        <ClipboardList className="w-4 h-4" />
+                                    </span>
+                                    Input Hasil
+                                </button>
+                            )}
+                            {item.has_hasil && can('laboratorium.cetak') && (
                                 <button
                                     onClick={() => {
                                         window.open(

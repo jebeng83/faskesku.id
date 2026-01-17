@@ -3,8 +3,10 @@ import { Head, Link, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
+import usePermission from "@/hooks/usePermission";
 
 export default function Create({ refs = {} }) {
+    const { can } = usePermission();
     const [showJenjangJabatanModal, setShowJenjangJabatanModal] = useState(false);
     const [jenjangJabatanOptions, setJenjangJabatanOptions] = useState(
         (refs.jnjJabatan || []).map((r) => ({ value: r.kode, label: `${r.kode} - ${r.nama}` }))
@@ -928,41 +930,45 @@ export default function Create({ refs = {} }) {
                                 {errors.departemen && (<p className="mt-1 text-sm text-red-600">{errors.departemen}</p>)}
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bidang</label>
-                                <div className="flex gap-2">
-                                    <div className="flex-1">
-                                        <SearchableSelect
-                                            options={options.bidang}
-                                            value={data.bidang}
-                                            onChange={(v) => setData("bidang", v)}
-                                            placeholder="Pilih bidang"
-                                            searchPlaceholder="Cari nama bidang"
-                                            error={!!errors.bidang}
-                                        />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowBidangModal(true)}
-                                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
-                                        title="Tambah Bidang Baru"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="currentColor"
-                                            className="w-5 h-5"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
-                                                clipRule="evenodd"
+                            {can("bidang.view") && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bidang</label>
+                                    <div className="flex gap-2">
+                                        <div className="flex-1">
+                                            <SearchableSelect
+                                                options={options.bidang}
+                                                value={data.bidang}
+                                                onChange={(v) => setData("bidang", v)}
+                                                placeholder="Pilih bidang"
+                                                searchPlaceholder="Cari nama bidang"
+                                                error={!!errors.bidang}
                                             />
-                                        </svg>
-                                    </button>
+                                        </div>
+                                        {can("bidang.create") && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowBidangModal(true)}
+                                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center justify-center"
+                                                title="Tambah Bidang Baru"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                    {errors.bidang && (<p className="mt-1 text-sm text-red-600">{errors.bidang}</p>)}
                                 </div>
-                                {errors.bidang && (<p className="mt-1 text-sm text-red-600">{errors.bidang}</p>)}
-                            </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status WP</label>
@@ -2072,7 +2078,7 @@ export default function Create({ refs = {} }) {
 					)}
 
 					{/* Modal Tambah Bidang */}
-					{showBidangModal && (
+                    {showBidangModal && can("bidang.create") && (
 						<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
 							<div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-gray-200 dark:border-gray-700">
 								<div className="p-6">

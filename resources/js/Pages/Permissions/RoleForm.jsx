@@ -73,14 +73,57 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 		}
 	};
 
-	// Group permissions by category
-	const groupedPermissions = permissions.reduce((groups, permission) => {
-		const category = permission.name.split("-")[0];
-		if (!groups[category]) {
-			groups[category] = [];
-		}
-		groups[category].push(permission);
-		return groups;
+	const toKey = (name) => {
+		if (typeof name !== "string") return "lainnya";
+		if (name.includes(".")) return name.split(".")[0];
+		const verbs = ["view", "create", "edit", "delete"];
+		const parts = name.split("-");
+		if (verbs.includes(parts[0]) && parts.length > 1) return parts.slice(1).join("-");
+		return name;
+	};
+
+	const toLabel = (key) => {
+		const map = {
+			patients: "Pasien",
+			employees: "Pegawai",
+			doctor: "Dokter",
+			spesialis: "Spesialis",
+			penjab: "Penjab",
+			poliklinik: "Poliklinik",
+			users: "User",
+			permissions: "Permissions",
+			menu: "Menu",
+			menus: "Menu",
+			profile: "Profil",
+			registration: "Registrasi",
+			"reg-periksa": "Reg Periksa",
+			akutansi: "Akutansi",
+			anjungan: "Anjungan",
+			antrian: "Antrian",
+			"daftar-tarif": "Daftar Tarif",
+			kepegawaian: "Kepegawaian",
+			laboratorium: "Laboratorium",
+			laporan: "Laporan",
+			"master-data": "Master Data",
+			odontogram: "Odontogram",
+			pcare: "PCare",
+			pembayaran: "Pembayaran",
+			"rawat-inap": "Rawat Inap",
+			"rawat-jalan": "Rawat Jalan",
+			farmasi: "Farmasi",
+			dashboard: "Dashboard",
+			"sip-pegawai": "SIP Pegawai",
+			satusehat: "SATUSEHAT",
+			setting: "Pengaturan",
+		};
+		return map[key] || key.replace(/-/g, " ");
+	};
+
+	const groupedPermissions = permissions.reduce((acc, permission) => {
+		const key = toKey(permission.name);
+		if (!acc[key]) acc[key] = { label: toLabel(key), items: [] };
+		acc[key].items.push(permission);
+		return acc;
 	}, {});
 
 	return (
@@ -158,33 +201,47 @@ export default function RoleForm({ role, permissions, onSubmit, onCancel }) {
 				</div>
 
 				<div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-4 space-y-4">
-					{Object.entries(groupedPermissions).map(
-						([category, categoryPermissions]) => (
-							<div key={category}>
-								<h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 capitalize">
-									{category}
-								</h4>
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-									{categoryPermissions.map((permission) => (
-										<label
-											key={permission.id}
-											className="flex items-center space-x-2 text-sm"
-										>
-											<input
-												type="checkbox"
-												checked={formData.permissions.includes(permission.id)}
-												onChange={() => handlePermissionChange(permission.id)}
-												className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-											/>
-											<span className="text-gray-700 dark:text-gray-300">
-												{permission.name}
-											</span>
-										</label>
-									))}
+					{Object.entries(groupedPermissions)
+						.sort((a, b) => a[1].label.localeCompare(b[1].label))
+						.map(([key, group]) => {
+							const sorted = [...group.items].sort((a, b) => {
+								const score = (n) =>
+									n.includes(".index") || /^view-/.test(n) ? 0 :
+									n.includes(".show") ? 1 :
+									/^create-/.test(n) || n.includes(".create") ? 2 :
+									/^edit-/.test(n) || n.includes(".edit") ? 3 :
+									/^delete-/.test(n) || n.includes(".delete") ? 4 : 5;
+								const sa = score(a.name);
+								const sb = score(b.name);
+								if (sa !== sb) return sa - sb;
+								return a.name.localeCompare(b.name);
+							});
+							return (
+								<div key={key}>
+									<h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 capitalize">
+										{group.label}
+									</h4>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+										{sorted.map((permission) => (
+											<label
+												key={permission.id}
+												className="flex items-center space-x-2 text-sm"
+											>
+												<input
+													type="checkbox"
+													checked={formData.permissions.includes(permission.id)}
+													onChange={() => handlePermissionChange(permission.id)}
+													className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+												/>
+												<span className="text-gray-700 dark:text-gray-300">
+													{permission.name}
+												</span>
+											</label>
+										))}
+									</div>
 								</div>
-							</div>
-						)
-					)}
+							);
+						})}
 				</div>
 			</div>
 

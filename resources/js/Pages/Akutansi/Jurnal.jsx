@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
 import { BookOpen, Calendar, Clock, Info, Plus, RefreshCcw, Search, Trash2 } from 'lucide-react';
+import usePermission from '@/hooks/usePermission';
 
 const Card = ({ title, children, right }) => (
   <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
@@ -40,6 +41,7 @@ export default function JurnalPage() {
   const today = useMemo(() => new Date().toISOString().slice(0,10), []);
   const [from, setFrom] = useState(today);
   const [to, setTo] = useState(today);
+  const { can } = usePermission();
 
   const [rekeningOptions, setRekeningOptions] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -250,9 +252,11 @@ export default function JurnalPage() {
           title="Jurnal"
           right={(
             <div className="flex items-center gap-2">
-              <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
-                <Plus className="w-4 h-4" /> Tambah Jurnal Umum
-              </button>
+              {can('akutansi.jurnal') && (
+                <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                  <Plus className="w-4 h-4" /> Tambah Jurnal Umum
+                </button>
+              )}
               <button onClick={fetchItems} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 <RefreshCcw className="w-4 h-4" /> Refresh
               </button>
@@ -333,7 +337,7 @@ export default function JurnalPage() {
                       <td className="px-4 py-2 text-right">
                         <div className="flex justify-end gap-2">
                           <button onClick={() => openDetail(item)} className="rounded-lg border border-blue-200 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50">Detail</button>
-                          {item.jenis === 'U' ? (
+                          {item.jenis === 'U' && can('akutansi.jurnal') ? (
                             <button onClick={() => handleDelete(item)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4 inline-block" /> Hapus</button>
                           ) : (
                             <span className="text-xs text-gray-500">-</span>
