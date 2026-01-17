@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,12 +49,18 @@ class RegPeriksa extends Model
     public static function generateNoReg($kd_dokter, $kd_poli, $tgl_registrasi = null)
     {
         $date = $tgl_registrasi ? date('Y-m-d', strtotime($tgl_registrasi)) : date('Y-m-d');
-        $lastNoReg = self::where('tgl_registrasi', $date)
-            ->where('kd_dokter', $kd_dokter)
-            ->where('kd_poli', $kd_poli)
-            ->max('no_reg');
+        $urut = env('URUT_NO_REG', 'dokter + poli');
+        $norm = strtolower(str_replace(' ', '', (string) $urut));
+        $isIgd = strtoupper(trim((string) $kd_poli)) === 'IGDK';
 
-        return str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
+        $qb = self::where('tgl_registrasi', $date)->where('kd_poli', $kd_poli);
+        if (! $isIgd && $norm === 'dokter+poli' && $kd_dokter) {
+            $qb->where('kd_dokter', $kd_dokter);
+        }
+
+        $lastNo = $qb->selectRaw('IFNULL(MAX(CONVERT(no_reg, SIGNED)), 0) as no')->first()->no;
+
+        return str_pad((string) ($lastNo + 1), 3, '0', STR_PAD_LEFT);
     }
 
     public static function generateNoRawat($tgl_registrasi = null)
@@ -64,6 +71,7 @@ class RegPeriksa extends Model
             ->first()->no;
 
         $prefix = date('Y/m/d', strtotime($date));
+
         return $prefix.'/'.str_pad($lastNoRawat + 1, 6, '0', STR_PAD_LEFT);
     }
 
@@ -116,43 +124,64 @@ class RegPeriksa extends Model
     // Query scopes
     public function scopeByStatus($query, $status)
     {
-        if ($status === null || $status === '') return $query;
+        if ($status === null || $status === '') {
+            return $query;
+        }
+
         return $query->where('stts', $status);
     }
 
     public function scopeByStatusDaftar($query, $status)
     {
-        if ($status === null || $status === '') return $query;
+        if ($status === null || $status === '') {
+            return $query;
+        }
+
         return $query->where('stts_daftar', $status);
     }
 
     public function scopeByStatusLanjut($query, $status)
     {
-        if ($status === null || $status === '') return $query;
+        if ($status === null || $status === '') {
+            return $query;
+        }
+
         return $query->where('status_lanjut', $status);
     }
 
     public function scopeByDokter($query, $kdDokter)
     {
-        if ($kdDokter === null || $kdDokter === '') return $query;
+        if ($kdDokter === null || $kdDokter === '') {
+            return $query;
+        }
+
         return $query->where('kd_dokter', $kdDokter);
     }
 
     public function scopeByPoli($query, $kdPoli)
     {
-        if ($kdPoli === null || $kdPoli === '') return $query;
+        if ($kdPoli === null || $kdPoli === '') {
+            return $query;
+        }
+
         return $query->where('kd_poli', $kdPoli);
     }
 
     public function scopeByStatusBayar($query, $status)
     {
-        if ($status === null || $status === '') return $query;
+        if ($status === null || $status === '') {
+            return $query;
+        }
+
         return $query->where('status_bayar', $status);
     }
 
     public function scopeByTanggalRegistrasi($query, $tanggal)
     {
-        if ($tanggal === null || $tanggal === '') return $query;
+        if ($tanggal === null || $tanggal === '') {
+            return $query;
+        }
+
         return $query->whereDate('tgl_registrasi', $tanggal);
     }
 
@@ -169,6 +198,24 @@ class RegPeriksa extends Model
         if ($end) {
             return $query->whereDate('tgl_registrasi', '<=', $end);
         }
+
         return $query;
+    }
+
+    public function hitungUmur($tglLahir, $tglRegistrasi)
+    {
+        $birth = Carbon::parse($tglLahir);
+        $date = Carbon::parse($tglRegistrasi);
+        $years = $birth->diffInYears($date);
+        if ($years > 0) {
+            return ['umur' => $years, 'satuan' => 'Th'];
+        }
+        $months = $birth->diffInMonths($date);
+        if ($months > 0) {
+            return ['umur' => $months, 'satuan' => 'Bl'];
+        }
+        $days = $birth->diffInDays($date);
+
+        return ['umur' => $days, 'satuan' => 'Hr'];
     }
 }

@@ -193,6 +193,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::prefix('reg-periksa')->group(function () {
         Route::get('/', [RegPeriksaController::class, 'index'])->name('api.reg-periksa.index');
         Route::post('/', [RegPeriksaController::class, 'store'])->name('api.reg-periksa.store');
+        Route::get('/next-numbers', [RegPeriksaController::class, 'nextNumbers'])->name('api.reg-periksa.next-numbers');
         // Endpoint aman untuk ambil data berdasarkan no_rawat (mendukung karakter '/')
         Route::get('/by-rawat', [RegPeriksaController::class, 'findByNoRawat'])->name('api.reg-periksa.by-rawat');
         // Endpoint alternatif: update keputusan berdasarkan no_rawat di payload (menghindari '/' di path)
@@ -547,6 +548,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         // Route alternatif tanpa start dan limit (default)
         Route::get('/skrining/peserta/{nomorPeserta}', function (string $nomorPeserta) {
             $controller = app(PcareController::class);
+
             return $controller->getSkriningPeserta($nomorPeserta, 0, 10);
         })->where('nomorPeserta', '[^/]+')
             ->name('api.pcare.skrining.peserta.default');
@@ -556,6 +558,7 @@ Route::middleware(['web', 'auth'])->group(function () {
             ->name('api.pcare.prolanis.dm');
         Route::get('/prolanis/dm/{nomorPeserta}', function (string $nomorPeserta) {
             $controller = app(PcareController::class);
+
             return $controller->getProlanisDm($nomorPeserta, 1, 10);
         })->where('nomorPeserta', '[^/]+')
             ->name('api.pcare.prolanis.dm.default');
@@ -565,6 +568,7 @@ Route::middleware(['web', 'auth'])->group(function () {
             ->name('api.pcare.prolanis.ht');
         Route::get('/prolanis/ht/{nomorPeserta}', function (string $nomorPeserta) {
             $controller = app(PcareController::class);
+
             return $controller->getProlanisHt($nomorPeserta, 1, 10);
         })->where('nomorPeserta', '[^/]+')
             ->name('api.pcare.prolanis.ht.default');

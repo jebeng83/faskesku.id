@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import SidebarRawatInap from '@/Layouts/SidebarRawatInap';
 
 export default function Index(props = {}) {
     const { rawatInap = { data: [], meta: {} }, filters = {}, sttsPulangOptions = [] } = props;
@@ -56,7 +56,7 @@ export default function Index(props = {}) {
     };
 
     return (
-        <AppLayout>
+        <SidebarRawatInap>
             <Head title="Rawat Inap" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -237,6 +237,6 @@ export default function Index(props = {}) {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </SidebarRawatInap>
     );
 }
