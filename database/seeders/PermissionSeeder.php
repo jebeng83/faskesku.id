@@ -126,6 +126,92 @@ class PermissionSeeder extends Seeder
 
             // Farmasi module landing permission
             'farmasi.index',
+            // Farmasi module detailed permissions (routes)
+            'farmasi.dashboard',
+            'farmasi.pembelian-obat',
+            'farmasi.hutang-obat',
+            'farmasi.hutang-obat.data',
+            'farmasi.penjualan-obat',
+            'farmasi.resep-obat',
+            'farmasi.permintaan-resep',
+            'farmasi.riwayat-transaksi-gudang',
+            'farmasi.riwayat-transaksi-gudang.data',
+            'farmasi.riwayat-barang-medis',
+            'farmasi.riwayat-barang-medis.data',
+            'farmasi.stok-obat',
+            'farmasi.stok-opname',
+            'farmasi.darurat-stok',
+            'farmasi.darurat-stok.data',
+            'farmasi.sirkulasi-obat',
+            'farmasi.sirkulasi-obat.data',
+            'farmasi.cek-stok-obat',
+            'farmasi.sisa-stok',
+            'farmasi.sisa-stok.data',
+            'farmasi.fast-moving',
+            'farmasi.fast-moving.data',
+            'farmasi.data-opname',
+            'farmasi.cetak.data-opname',
+            // Data Obat (CRUD + helpers)
+            'farmasi.data-obat',
+            'farmasi.data-obat.store',
+            'farmasi.data-obat.update',
+            'farmasi.data-obat.destroy',
+            'farmasi.data-obat.update-harga-semua',
+            // Set Penjualan per Barang
+            'farmasi.set-penjualan-barang.store',
+            'farmasi.set-penjualan-barang.show',
+            'farmasi.set-penjualan-barang.destroy',
+            // Set Penjualan umum
+            'farmasi.set-penjualan-umum.show',
+            'farmasi.set-penjualan-umum.update',
+            // Set Harga Obat page & actions
+            'farmasi.set-harga-obat',
+            'farmasi.set-harga-obat.update',
+            // Set Penjualan per Jenis
+            'farmasi.set-penjualan.show',
+            'farmasi.set-penjualan.store',
+            'farmasi.set-penjualan.destroy',
+            // Kategori Obat
+            'farmasi.kategori-obat.index',
+            'farmasi.kategori-obat.store',
+            'farmasi.kategori-obat.update',
+            'farmasi.kategori-obat.destroy',
+            // Golongan Obat
+            'farmasi.golongan-obat.index',
+            'farmasi.golongan-obat.store',
+            'farmasi.golongan-obat.update',
+            'farmasi.golongan-obat.destroy',
+            // Industri Farmasi
+            'farmasi.industri-farmasi.index',
+            'farmasi.industri-farmasi.store',
+            'farmasi.industri-farmasi.update',
+            'farmasi.industri-farmasi.destroy',
+            // Data Suplier
+            'farmasi.datasuplier.index',
+            'farmasi.datasuplier.store',
+            'farmasi.datasuplier.update',
+            'farmasi.datasuplier.destroy',
+            'farmasi.supplier.index',
+            // Satuan Barang
+            'farmasi.satuan-barang.index',
+            'farmasi.satuan-barang.store',
+            'farmasi.satuan-barang.update',
+            'farmasi.satuan-barang.destroy',
+            // Metode Racik
+            'farmasi.metode-racik.index',
+            'farmasi.metode-racik.store',
+            'farmasi.metode-racik.update',
+            'farmasi.metode-racik.destroy',
+            // Konversi Satuan
+            'farmasi.konversi-satuan.index',
+            'farmasi.konversi-satuan.store',
+            'farmasi.konversi-satuan.update',
+            'farmasi.konversi-satuan.destroy',
+            // Jenis Obat
+            'farmasi.jenis-obat.index',
+            'farmasi.jenis-obat.store',
+            'farmasi.jenis-obat.update',
+            'farmasi.jenis-obat.destroy',
             // Bridging PCare landing permission
             'pcare.index',
             // SATUSEHAT landing permission

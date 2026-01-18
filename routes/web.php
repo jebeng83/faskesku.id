@@ -1668,7 +1668,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Farmasi routes
-    Route::prefix('farmasi')->name('farmasi.')->group(function () {
+    Route::prefix('farmasi')->name('farmasi.')->middleware('permission:farmasi.index')->group(function () {
         // Landing page for Farmasi module
         Route::get('/', function () {
             return Inertia::render('farmasi/Index');
@@ -1677,81 +1677,81 @@ Route::middleware('auth')->group(function () {
         // Dashboard & Analitik page
         Route::get('/dashboard', function () {
             return Inertia::render('farmasi/Dashboard');
-        })->name('dashboard');
+        })->name('dashboard')->middleware('permission:farmasi.dashboard');
 
         Route::get('/pembelian-obat', function () {
             return Inertia::render('farmasi/PembelianObat');
-        })->name('pembelian-obat');
+        })->name('pembelian-obat')->middleware('permission:farmasi.pembelian-obat');
 
         Route::get('/hutang-obat', function () {
             return Inertia::render('farmasi/HutangObat');
-        })->name('hutang-obat');
+        })->name('hutang-obat')->middleware('permission:farmasi.hutang-obat');
         Route::get('/hutang-obat/data', [\App\Http\Controllers\Farmasi\PemesananController::class, 'listHutang'])
-            ->name('hutang-obat.data');
+            ->name('hutang-obat.data')->middleware('permission:farmasi.hutang-obat.data');
 
         Route::get('/penjualan-obat', function () {
             return Inertia::render('farmasi/PenjualanObat');
-        })->name('penjualan-obat');
+        })->name('penjualan-obat')->middleware('permission:farmasi.penjualan-obat');
 
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
-        })->name('resep-obat');
+        })->name('resep-obat')->middleware('permission:farmasi.resep-obat');
 
         // Daftar Permintaan Resep (search by no_rawat / no_rkm_medis)
         Route::get('/permintaan-resep', function () {
             return Inertia::render('farmasi/DaftarPermintaanResep');
-        })->name('permintaan-resep');
+        })->name('permintaan-resep')->middleware('permission:farmasi.permintaan-resep');
 
         Route::get('/riwayat-transaksi-gudang', function () {
             return Inertia::render('farmasi/RiwayatTransaksiGudang');
-        })->name('riwayat-transaksi-gudang');
+        })->name('riwayat-transaksi-gudang')->middleware('permission:farmasi.riwayat-transaksi-gudang');
 
         Route::get('/riwayat-transaksi-gudang/data', [\App\Http\Controllers\Farmasi\RiwayatTransaksiGudangController::class, 'data'])
-            ->name('riwayat-transaksi-gudang.data');
+            ->name('riwayat-transaksi-gudang.data')->middleware('permission:farmasi.riwayat-transaksi-gudang.data');
 
         // Riwayat Barang Medis (Inertia page + JSON data endpoint)
         Route::get('/riwayat-barang-medis', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'index'])
-            ->name('riwayat-barang-medis');
+            ->name('riwayat-barang-medis')->middleware('permission:farmasi.riwayat-barang-medis');
         Route::get('/riwayat-barang-medis/data', [\App\Http\Controllers\Farmasi\RiwayatBarangMedisController::class, 'data'])
-            ->name('riwayat-barang-medis.data');
+            ->name('riwayat-barang-medis.data')->middleware('permission:farmasi.riwayat-barang-medis.data');
 
         Route::get('/stok-obat', function () {
             return Inertia::render('farmasi/StokObat');
-        })->name('stok-obat');
+        })->name('stok-obat')->middleware('permission:farmasi.stok-obat');
         Route::get('/stok-opname', function () {
             return Inertia::render('farmasi/StokOpname');
-        })->name('stok-opname');
+        })->name('stok-opname')->middleware('permission:farmasi.stok-opname');
         Route::get('/darurat-stok', function () {
             return Inertia::render('farmasi/DaruratStok');
-        })->name('darurat-stok');
+        })->name('darurat-stok')->middleware('permission:farmasi.darurat-stok');
         Route::get('/darurat-stok/data', [\App\Http\Controllers\Farmasi\DaruratStokController::class, 'index'])
-            ->name('darurat-stok.data');
+            ->name('darurat-stok.data')->middleware('permission:farmasi.darurat-stok.data');
         Route::get('/sirkulasi-obat', function () {
             return Inertia::render('farmasi/SirkulasiObat');
-        })->name('sirkulasi-obat');
+        })->name('sirkulasi-obat')->middleware('permission:farmasi.sirkulasi-obat');
         Route::get('/sirkulasi-obat/data', [\App\Http\Controllers\Farmasi\SirkulasiObatController::class, 'index'])
-            ->name('sirkulasi-obat.data');
+            ->name('sirkulasi-obat.data')->middleware('permission:farmasi.sirkulasi-obat.data');
         Route::get('/cek-stok-obat', function () {
             return Inertia::render('farmasi/CekStok');
-        })->name('cek-stok-obat');
+        })->name('cek-stok-obat')->middleware('permission:farmasi.cek-stok-obat');
         Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
         Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {
             return Inertia::render('farmasi/SisaStok');
-        })->name('sisa-stok');
+        })->name('sisa-stok')->middleware('permission:farmasi.sisa-stok');
         Route::get('/sisa-stok/data', [\App\Http\Controllers\Farmasi\SisaStokController::class, 'index'])
-            ->name('sisa-stok.data');
+            ->name('sisa-stok.data')->middleware('permission:farmasi.sisa-stok.data');
 
         Route::get('/obat-fast-moving', function () {
             return Inertia::render('farmasi/10ObatFastMoving');
-        })->name('fast-moving');
+        })->name('fast-moving')->middleware('permission:farmasi.fast-moving');
         Route::get('/obat-fast-moving/data', [\App\Http\Controllers\Farmasi\FastMovingController::class, 'index'])
-            ->name('fast-moving.data');
+            ->name('fast-moving.data')->middleware('permission:farmasi.fast-moving.data');
 
         // Farmasi - Data Opname (laporan/daftar hasil opname)
         Route::get('/data-opname', function () {
             return Inertia::render('farmasi/DataOpname');
-        })->name('data-opname');
+        })->name('data-opname')->middleware('permission:farmasi.data-opname');
 
         // Alias route under farmasi namespace for consistency dengan frontend route helpers
         Route::get('/farmasi/data-opname', function () {
@@ -1759,95 +1759,95 @@ Route::middleware('auth')->group(function () {
         })->name('farmasi.data-opname');
         Route::get('/cetak/data-opname', function () {
             return Inertia::render('farmasi/CetakFarmasi/DataOpname');
-        })->name('cetak.data-opname');
+        })->name('cetak.data-opname')->middleware('permission:farmasi.cetak.data-opname');
         Route::get('/farmasi/cetak/data-opname', function () {
             return Inertia::render('farmasi/CetakFarmasi/DataOpname');
         })->name('farmasi.cetak.data-opname');
         // Data Obat (DataBarang) CRUD routes with auto-code via props.nextCode
-        Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat');
+        Route::get('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'index'])->name('data-obat')->middleware('permission:farmasi.data-obat');
         Route::post('/data-obat', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'store'])->name('data-obat.store');
         Route::put('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update'])->name('data-obat.update');
         Route::patch('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'update']);
         Route::delete('/data-obat/{kode_brng}', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'destroy'])->name('data-obat.destroy');
 
         // Bulk update semua harga jual databarang berdasarkan konfigurasi Set Harga Obat
-        Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua');
+        Route::put('/data-obat/update-harga-semua', [\App\Http\Controllers\Farmasi\DataBarangController::class, 'updateHargaSemua'])->name('data-obat.update-harga-semua')->middleware('permission:farmasi.data-obat.update-harga-semua');
 
         // Simpan pengaturan harga per barang
-        Route::post('/set-penjualan-barang', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerBarang'])->name('set-penjualan-barang.store');
+        Route::post('/set-penjualan-barang', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'storePenjualanPerBarang'])->name('set-penjualan-barang.store')->middleware('permission:farmasi.set-penjualan-barang.store');
         // Ambil pengaturan harga per barang yang tersimpan (JSON)
-        Route::get('/set-penjualan-barang/{kode_brng}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanPerBarang'])->name('set-penjualan-barang.show');
+        Route::get('/set-penjualan-barang/{kode_brng}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanPerBarang'])->name('set-penjualan-barang.show')->middleware('permission:farmasi.set-penjualan-barang.show');
         // Hapus pengaturan harga per barang
-        Route::delete('/set-penjualan-barang/{kode_brng}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'destroyPenjualanPerBarang'])->name('set-penjualan-barang.destroy');
+        Route::delete('/set-penjualan-barang/{kode_brng}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'destroyPenjualanPerBarang'])->name('set-penjualan-barang.destroy')->middleware('permission:farmasi.set-penjualan-barang.destroy');
 
         // Ambil pengaturan harga umum (JSON)
-        Route::get('/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanUmum'])->name('set-penjualan-umum.show');
+        Route::get('/set-penjualan-umum', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanUmum'])->name('set-penjualan-umum.show')->middleware('permission:farmasi.set-penjualan-umum.show');
         // Update pengaturan harga umum (POST sudah ada di bawah - alias global)
 
         // Kategori Obat CRUD routes (no migrations/seeding required)
-        Route::get('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'index'])->name('kategori-obat.index');
-        Route::post('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'store'])->name('kategori-obat.store');
-        Route::put('/kategori-obat/{kode}', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'update'])->name('kategori-obat.update');
+        Route::get('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'index'])->name('kategori-obat.index')->middleware('permission:farmasi.kategori-obat.index');
+        Route::post('/kategori-obat', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'store'])->name('kategori-obat.store')->middleware('permission:farmasi.kategori-obat.store');
+        Route::put('/kategori-obat/{kode}', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'update'])->name('kategori-obat.update')->middleware('permission:farmasi.kategori-obat.update');
         Route::patch('/kategori-obat/{kode}', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'update']);
-        Route::delete('/kategori-obat/{kode}', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'destroy'])->name('kategori-obat.destroy');
+        Route::delete('/kategori-obat/{kode}', [\App\Http\Controllers\Farmasi\KategoriBarangController::class, 'destroy'])->name('kategori-obat.destroy')->middleware('permission:farmasi.kategori-obat.destroy');
 
         // Golongan Obat CRUD routes (no migrations/seeding required)
-        Route::get('/set-penjualan/{kdjns}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanPerJenis'])->name('set-penjualan.show');
+        Route::get('/set-penjualan/{kdjns}', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'showPenjualanPerJenis'])->name('set-penjualan.show')->middleware('permission:farmasi.set-penjualan.show');
         // Endpoint JSON untuk konfigurasi set_harga_obat (single-row table)
-        Route::get('/set-harga-obat/json', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'getPercentageData'])->name('set-harga-obat.json');
+        Route::get('/set-harga-obat/json', [\App\Http\Controllers\Farmasi\SetHargaObatController::class, 'getPercentageData'])->name('set-harga-obat.json')->middleware('permission:farmasi.set-harga-obat');
 
-        Route::get('/golongan-obat', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'index'])->name('golongan-obat.index');
-        Route::post('/golongan-obat', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'store'])->name('golongan-obat.store');
-        Route::put('/golongan-obat/{kode}', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'update'])->name('golongan-obat.update');
+        Route::get('/golongan-obat', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'index'])->name('golongan-obat.index')->middleware('permission:farmasi.golongan-obat.index');
+        Route::post('/golongan-obat', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'store'])->name('golongan-obat.store')->middleware('permission:farmasi.golongan-obat.store');
+        Route::put('/golongan-obat/{kode}', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'update'])->name('golongan-obat.update')->middleware('permission:farmasi.golongan-obat.update');
         Route::patch('/golongan-obat/{kode}', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'update']);
-        Route::delete('/golongan-obat/{kode}', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'destroy'])->name('golongan-obat.destroy');
+        Route::delete('/golongan-obat/{kode}', [\App\Http\Controllers\Farmasi\GolonganBarangController::class, 'destroy'])->name('golongan-obat.destroy')->middleware('permission:farmasi.golongan-obat.destroy');
 
         // Industri Farmasi CRUD routes (no migrations/seeding required)
-        Route::get('/industri-farmasi', [IndustriFarmasiController::class, 'index'])->name('industri-farmasi.index');
-        Route::post('/industri-farmasi', [IndustriFarmasiController::class, 'store'])->name('industri-farmasi.store');
-        Route::put('/industri-farmasi/{kode_industri}', [IndustriFarmasiController::class, 'update'])->name('industri-farmasi.update');
+        Route::get('/industri-farmasi', [IndustriFarmasiController::class, 'index'])->name('industri-farmasi.index')->middleware('permission:farmasi.industri-farmasi.index');
+        Route::post('/industri-farmasi', [IndustriFarmasiController::class, 'store'])->name('industri-farmasi.store')->middleware('permission:farmasi.industri-farmasi.store');
+        Route::put('/industri-farmasi/{kode_industri}', [IndustriFarmasiController::class, 'update'])->name('industri-farmasi.update')->middleware('permission:farmasi.industri-farmasi.update');
         Route::patch('/industri-farmasi/{kode_industri}', [IndustriFarmasiController::class, 'update']);
-        Route::delete('/industri-farmasi/{kode_industri}', [IndustriFarmasiController::class, 'destroy'])->name('industri-farmasi.destroy');
+        Route::delete('/industri-farmasi/{kode_industri}', [IndustriFarmasiController::class, 'destroy'])->name('industri-farmasi.destroy')->middleware('permission:farmasi.industri-farmasi.destroy');
 
         // Data Suplier CRUD routes (no migrations/seeding required)
-        Route::get('/datasuplier', [DataSuplierController::class, 'index'])->name('datasuplier.index');
-        Route::post('/datasuplier', [DataSuplierController::class, 'store'])->name('datasuplier.store');
-        Route::put('/datasuplier/{kode_suplier}', [DataSuplierController::class, 'update'])->name('datasuplier.update');
+        Route::get('/datasuplier', [DataSuplierController::class, 'index'])->name('datasuplier.index')->middleware('permission:farmasi.datasuplier.index');
+        Route::post('/datasuplier', [DataSuplierController::class, 'store'])->name('datasuplier.store')->middleware('permission:farmasi.datasuplier.store');
+        Route::put('/datasuplier/{kode_suplier}', [DataSuplierController::class, 'update'])->name('datasuplier.update')->middleware('permission:farmasi.datasuplier.update');
         Route::patch('/datasuplier/{kode_suplier}', [DataSuplierController::class, 'update']);
-        Route::delete('/datasuplier/{kode_suplier}', [DataSuplierController::class, 'destroy'])->name('datasuplier.destroy');
+        Route::delete('/datasuplier/{kode_suplier}', [DataSuplierController::class, 'destroy'])->name('datasuplier.destroy')->middleware('permission:farmasi.datasuplier.destroy');
 
         // Backward-compatible alias for old menu path
         Route::get('/supplier', function () {
             return redirect()->route('farmasi.datasuplier.index');
-        })->name('supplier.index');
+        })->name('supplier.index')->middleware('permission:farmasi.supplier.index');
 
         // Satuan Barang CRUD routes (no migrations/seeding required)
-        Route::get('/satuan-barang', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'index'])->name('satuan-barang.index');
-        Route::post('/satuan-barang', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'store'])->name('satuan-barang.store');
-        Route::put('/satuan-barang/{kode_sat}', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'update'])->name('satuan-barang.update');
+        Route::get('/satuan-barang', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'index'])->name('satuan-barang.index')->middleware('permission:farmasi.satuan-barang.index');
+        Route::post('/satuan-barang', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'store'])->name('satuan-barang.store')->middleware('permission:farmasi.satuan-barang.store');
+        Route::put('/satuan-barang/{kode_sat}', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'update'])->name('satuan-barang.update')->middleware('permission:farmasi.satuan-barang.update');
         Route::patch('/satuan-barang/{kode_sat}', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'update']);
-        Route::delete('/satuan-barang/{kode_sat}', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'destroy'])->name('satuan-barang.destroy');
+        Route::delete('/satuan-barang/{kode_sat}', [\App\Http\Controllers\Farmasi\SatuanBarangController::class, 'destroy'])->name('satuan-barang.destroy')->middleware('permission:farmasi.satuan-barang.destroy');
 
         // Metode Racik CRUD routes (no migrations/seeding required)
-        Route::get('/metode-racik', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'index'])->name('metode-racik.index');
-        Route::post('/metode-racik', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'store'])->name('metode-racik.store');
-        Route::put('/metode-racik/{kd_racik}', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'update'])->name('metode-racik.update');
+        Route::get('/metode-racik', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'index'])->name('metode-racik.index')->middleware('permission:farmasi.metode-racik.index');
+        Route::post('/metode-racik', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'store'])->name('metode-racik.store')->middleware('permission:farmasi.metode-racik.store');
+        Route::put('/metode-racik/{kd_racik}', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'update'])->name('metode-racik.update')->middleware('permission:farmasi.metode-racik.update');
         Route::patch('/metode-racik/{kd_racik}', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'update']);
-        Route::delete('/metode-racik/{kd_racik}', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'destroy'])->name('metode-racik.destroy');
+        Route::delete('/metode-racik/{kd_racik}', [\App\Http\Controllers\Farmasi\MetodeRacikController::class, 'destroy'])->name('metode-racik.destroy')->middleware('permission:farmasi.metode-racik.destroy');
 
         // Konversi Satuan CRUD routes (no migrations/seeding required)
-        Route::get('/konversi-satuan', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'index'])->name('konversi-satuan.index');
-        Route::post('/konversi-satuan', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'store'])->name('konversi-satuan.store');
-        Route::put('/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'update'])->name('konversi-satuan.update');
+        Route::get('/konversi-satuan', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'index'])->name('konversi-satuan.index')->middleware('permission:farmasi.konversi-satuan.index');
+        Route::post('/konversi-satuan', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'store'])->name('konversi-satuan.store')->middleware('permission:farmasi.konversi-satuan.store');
+        Route::put('/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'update'])->name('konversi-satuan.update')->middleware('permission:farmasi.konversi-satuan.update');
         Route::patch('/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'update']);
-        Route::delete('/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'destroy'])->name('konversi-satuan.destroy');
+        Route::delete('/konversi-satuan/{kode_sat}/{sat_konversi}/{nilai}/{nilai_konversi}', [\App\Http\Controllers\Farmasi\KonversiSatuanController::class, 'destroy'])->name('konversi-satuan.destroy')->middleware('permission:farmasi.konversi-satuan.destroy');
 
         // Jenis Obat CRUD routes (no migrations/seeding required)
-        Route::get('/jenis-obat', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'index'])->name('jenis-obat.index');
-        Route::post('/jenis-obat', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'store'])->name('jenis-obat.store');
-        Route::put('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update'])->name('jenis-obat.update');
+        Route::get('/jenis-obat', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'index'])->name('jenis-obat.index')->middleware('permission:farmasi.jenis-obat.index');
+        Route::post('/jenis-obat', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'store'])->name('jenis-obat.store')->middleware('permission:farmasi.jenis-obat.store');
+        Route::put('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update'])->name('jenis-obat.update')->middleware('permission:farmasi.jenis-obat.update');
         Route::patch('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'update']);
-        Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy');
+        Route::delete('/jenis-obat/{kdjns}', [\App\Http\Controllers\Farmasi\JenisObatController::class, 'destroy'])->name('jenis-obat.destroy')->middleware('permission:farmasi.jenis-obat.destroy');
     });
     // Pcare routes
     // Global alias: allow direct access to '/cetak/data-opname' and forward to Farmasi route
@@ -2229,17 +2229,22 @@ Route::middleware('auth')->group(function () {
 
 // Pengaturan Harga Obat
 Route::get('/farmasi/set-harga-obat', [SetHargaObatController::class, 'index'])
-    ->name('farmasi.set-harga-obat');
+    ->name('farmasi.set-harga-obat')
+    ->middleware('permission:farmasi.set-harga-obat');
 Route::post('/farmasi/set-harga-obat', [SetHargaObatController::class, 'update'])
-    ->name('set-harga-obat.update');
+    ->name('set-harga-obat.update')
+    ->middleware('permission:farmasi.set-harga-obat.update');
 
 // Pengaturan Harga Umum (setpenjualanumum)
 Route::post('/farmasi/set-penjualan-umum', [SetHargaObatController::class, 'updatePenjualanUmum'])
-    ->name('set-penjualan-umum.update');
+    ->name('set-penjualan-umum.update')
+    ->middleware('permission:farmasi.set-penjualan-umum.update');
 
 // Pengaturan Harga Per Jenis (setpenjualan)
 Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenjualanPerJenis'])
-    ->name('set-penjualan.store');
+    ->name('set-penjualan.store')
+    ->middleware('permission:farmasi.set-penjualan.store');
 // Hapus pengaturan harga per jenis
 Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
-    ->name('set-penjualan.destroy');
+    ->name('set-penjualan.destroy')
+    ->middleware('permission:farmasi.set-penjualan.destroy');

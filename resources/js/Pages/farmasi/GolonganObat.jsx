@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import usePermission from '@/hooks/usePermission';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
@@ -53,6 +54,7 @@ const ConfirmDelete = ({ open, onClose, onConfirm, item }) => (
 export default function GolonganObatPage() {
   const { props } = usePage();
   const { items, filters, flash, nextCode } = props;
+  const { can } = usePermission();
 
   const [query, setQuery] = useState(filters?.q || '');
   const [perPage, setPerPage] = useState(filters?.perPage || 10);
@@ -215,7 +217,9 @@ export default function GolonganObatPage() {
                   {[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
-              <button onClick={openCreate} className="mt-6 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">+ Tambah Golongan</button>
+              {can('farmasi.index') && (
+                <button onClick={openCreate} className="mt-6 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">+ Tambah Golongan</button>
+              )}
             </div>
           </div>
 
@@ -235,8 +239,12 @@ export default function GolonganObatPage() {
                     <td className="px-4 py-2 text-sm">{item.nama}</td>
                     <td className="px-4 py-2 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => openEdit(item)} className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50">Edit</button>
-                        <button onClick={() => confirmDelete(item)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">Hapus</button>
+                        {can('farmasi.index') && (
+                          <>
+                            <button onClick={() => openEdit(item)} className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50">Edit</button>
+                            <button onClick={() => confirmDelete(item)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">Hapus</button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

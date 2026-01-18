@@ -14,6 +14,7 @@ import {
 
 // Sidebar khusus modul Laboratorium, mengikuti pola SidebarFarmasi/SidebarPengaturan
 import useTheme from "@/hooks/useTheme";
+import usePermission from "@/hooks/usePermission";
 
 export default function SidebarLaboratorium({
     title = "Laboratorium",
@@ -21,6 +22,7 @@ export default function SidebarLaboratorium({
 }) {
     const { url, props } = usePage();
     const auth = props?.auth || {};
+    const { permissions, can } = usePermission();
 
     // State tampilan
     const [openPemeriksaan, setOpenPemeriksaan] = useState(true);
@@ -94,13 +96,13 @@ export default function SidebarLaboratorium({
         }
     };
 
-    // Menu konfigurasi
     const items = useMemo(
         () => [
             {
                 label: "Dashboard",
-                href: route("dashboard"), // global dashboard sesuai permintaan
+                href: route("dashboard"),
                 icon: <Gauge className="w-4 h-4" />,
+                permission: "dashboard.index",
             },
             {
                 label: "Pemeriksaan Lab",
@@ -110,6 +112,7 @@ export default function SidebarLaboratorium({
                         label: "Permintaan Lab",
                         href: route("laboratorium.permintaan-lab.index"),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "laboratorium.index",
                     },
                 ],
             },
@@ -123,6 +126,7 @@ export default function SidebarLaboratorium({
                             category: "laboratorium",
                         }),
                         icon: <TestTube className="w-4 h-4" />,
+                        permission: "daftar-tarif.index",
                     },
                     {
                         label: "Template Lab",
@@ -130,12 +134,29 @@ export default function SidebarLaboratorium({
                             category: "laboratorium",
                         }),
                         icon: <NotebookTabs className="w-4 h-4" />,
+                        permission: "daftar-tarif.index",
                     },
                 ],
             },
         ],
         []
     );
+
+    const filteredItems = useMemo(() => {
+        return items
+            .map((item) => {
+                if (!item.children) {
+                    if (item.permission && !can(item.permission)) return null;
+                    return item;
+                }
+                const children = (item.children || []).filter(
+                    (c) => !c.permission || can(c.permission)
+                );
+                if (children.length === 0) return null;
+                return { ...item, children };
+            })
+            .filter(Boolean);
+    }, [items, permissions]);
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
@@ -158,7 +179,7 @@ export default function SidebarLaboratorium({
                 </div>
                 {/* Sidebar Menu */}
                 <nav className="px-2 py-2 space-y-1 text-white/90">
-                    {items.map((item, idx) => (
+                    {filteredItems.map((item, idx) => (
                         <div key={idx}>
                             {!item.children ? (
                                 <Link

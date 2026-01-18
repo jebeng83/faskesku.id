@@ -16,6 +16,7 @@ import {
     Home,
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
+import usePermission from "@/hooks/usePermission";
 
 // Sidebar khusus modul Keuangan/Akutansi, serasi dengan LanjutanRalanLayout & SidebarFarmasi
 export default function SidebarKeuangan({ title = "Keuangan", children }) {
@@ -89,11 +90,13 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                 label: "Dashboard",
                 href: route("dashboard"),
                 icon: <Gauge className="w-4 h-4" />,
+                permission: "dashboard.index",
             },
             {
                 label: "Home",
                 href: "/akutansi/home",
                 icon: <Home className="w-4 h-4" />,
+                permission: "akutansi.index",
             },
             {
                 label: "Pengaturan Akun",
@@ -103,26 +106,31 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         label: "Pengaturan Rekening",
                         href: "/akutansi/pengaturan-rekening",
                         icon: <Banknote className="w-4 h-4" />,
+                        permission: "akutansi.pengaturan-rekening",
                     },
                     {
                         label: "Rekening",
                         href: "/akutansi/rekening",
                         icon: <Banknote className="w-4 h-4" />,
+                        permission: "akutansi.rekening",
                     },
                     {
                         label: "Rekening Tahun",
                         href: "/akutansi/rekening-tahun",
                         icon: <Calendar className="w-4 h-4" />,
+                        permission: "akutansi.rekening-tahun",
                     },
                     {
                         label: "Akun Bayar",
                         href: "/akutansi/akun-bayar",
                         icon: <CreditCard className="w-4 h-4" />,
+                        permission: "akutansi.akun-bayar",
                     },
                     {
                         label: "Akun Piutang",
                         href: "/akutansi/akun-piutang",
                         icon: <Wallet className="w-4 h-4" />,
+                        permission: "akutansi.akun-piutang",
                     },
                 ],
             },
@@ -134,26 +142,31 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         label: "Jurnal",
                         href: "/akutansi/jurnal",
                         icon: <BookOpen className="w-4 h-4" />,
+                        permission: "akutansi.jurnal",
                     },
                     {
                         label: "Jurnal Penyesuaian",
                         href: "/akutansi/jurnal-penyesuaian",
                         icon: <BookOpen className="w-4 h-4" />,
+                        permission: "akutansi.jurnal-penyesuaian",
                     },
                     {
                         label: "Jurnal Penutup",
                         href: "/akutansi/jurnal-penutup",
                         icon: <BookOpen className="w-4 h-4" />,
+                        permission: "akutansi.jurnal-penutup",
                     },
                     {
                         label: "Detail Jurnal",
                         href: "/akutansi/detail-jurnal",
                         icon: <FileText className="w-4 h-4" />,
+                        permission: "akutansi.detail-jurnal",
                     },
                     {
                         label: "Buku Besar",
                         href: "/akutansi/buku-besar",
                         icon: <BookOpen className="w-4 h-4" />,
+                        permission: "akutansi.buku-besar",
                     },
                 ],
             },
@@ -165,16 +178,19 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         label: "Kasir Ralan",
                         href: "/akutansi/kasir-ralan",
                         icon: <Receipt className="w-4 h-4" />,
+                        permission: "akutansi.kasir-ralan",
                     },
                     {
                         label: "Billing",
                         href: "/akutansi/billing",
                         icon: <Receipt className="w-4 h-4" />,
+                        permission: "akutansi.billing",
                     },
                     {
                         label: "Nota Jalan",
                         href: "/akutansi/nota-jalan",
                         icon: <Receipt className="w-4 h-4" />,
+                        permission: "akutansi.nota-jalan",
                     },
                     {
                         label: "Nota Inap",
@@ -185,32 +201,54 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         label: "Cash Flow",
                         href: "/akutansi/cashflow",
                         icon: <Wallet className="w-4 h-4" />,
+                        permission: "akutansi.cash-flow",
                     },
                     {
                         label: "Neraca",
                         href: "/akutansi/neraca",
                         icon: <Scale className="w-4 h-4" />,
+                        permission: "akutansi.neraca",
                     },
                     {
                         label: "Mutasi Rekening",
                         href: "/akutansi/mutasi-rekening",
                         icon: <Banknote className="w-4 h-4" />,
+                        permission: "akutansi.mutasi-rekening",
                     },
                     {
                         label: "Mutasi Kas",
                         href: "/akutansi/mutasi-kas",
                         icon: <Wallet className="w-4 h-4" />,
+                        permission: "akutansi.mutasi-kas",
                     },
                     {
                         label: "Setoran Bank",
                         href: "/akutansi/setoran-bank",
                         icon: <Banknote className="w-4 h-4" />,
+                        permission: "akutansi.setoran-bank",
                     },
                 ],
             },
         ],
         []
     );
+
+    const { permissions, can } = usePermission();
+    const filteredItems = useMemo(() => {
+        return items
+            .map((item) => {
+                if (!item.children) {
+                    if (item.permission && !can(item.permission)) return null;
+                    return item;
+                }
+                const children = item.children.filter(
+                    (c) => !c.permission || can(c.permission)
+                );
+                if (children.length === 0) return null;
+                return { ...item, children };
+            })
+            .filter(Boolean);
+    }, [items, permissions]);
 
     const isActive = (href) => {
         try {
@@ -222,13 +260,14 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
     };
 
     const MobileBottomNav = React.memo(function MobileBottomNav() {
+        const { can: canMobile } = usePermission();
         const navItems = [
-            { href: "/akutansi/home", icon: Home },
-            { href: "/akutansi/jurnal", icon: BookOpen },
-            { href: "/akutansi/kasir-ralan", icon: Receipt },
-            { href: "/akutansi/rekening", icon: Banknote },
-            { href: "/akutansi/neraca", icon: Scale },
-        ];
+            { href: "/akutansi/home", icon: Home, permission: "akutansi.index" },
+            { href: "/akutansi/jurnal", icon: BookOpen, permission: "akutansi.jurnal" },
+            { href: "/akutansi/kasir-ralan", icon: Receipt, permission: "akutansi.kasir-ralan" },
+            { href: "/akutansi/rekening", icon: Banknote, permission: "akutansi.rekening" },
+            { href: "/akutansi/neraca", icon: Scale, permission: "akutansi.neraca" },
+        ].filter((n) => !n.permission || canMobile(n.permission));
 
         return (
             <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-gray-900/85 backdrop-blur border-t border-slate-200/70 dark:border-gray-800">
@@ -274,7 +313,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                 </div>
                 {/* Sidebar Menu */}
                 <nav className="px-2 py-2 space-y-1 text-white/90">
-                    {items.map((item, idx) => (
+                    {filteredItems.map((item, idx) => (
                         <div key={idx}>
                             {!item.children ? (
                                 <Link

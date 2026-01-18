@@ -731,6 +731,9 @@ export default function Registration({
     // Select patient for registration
     const selectPatient = (patient) => {
         setSelectedPatient(patient);
+        setSearchTerm("");
+        setAlamatTerm("");
+        setSearchResults([]);
 
         const fullAddress = [
             patient.alamat,
@@ -2272,7 +2275,7 @@ export default function Registration({
                                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                             />
                                         </motion.svg>
-                                        <p className="text-sm lg:text-base">
+                                        <p className="text-xs">
                                             Masukkan kata kunci untuk mencari
                                             pasien
                                         </p>
@@ -2642,18 +2645,18 @@ export default function Registration({
                                                             value={bpjsNik}
                                                             onChange={(e) => setBpjsNik(sanitizeNik(e.target.value))}
                                                             placeholder="Masukkan NIK"
-                                                            className="w-40 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                                                            className="w-36 rounded-md border border-slate-300 px-1.5 py-0.5 text-xs"
                                                         />
                                                         <button
                                                             type="button"
                                                             onClick={() => fetchBpjsByNik()}
                                                             disabled={bpjsLoading}
-                                                            className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-white shadow ${bpjsLoading ? "bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                                                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-white shadow ${bpjsLoading ? "bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"}`}
                                                         >
                                                             {bpjsLoading ? (
-                                                                <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                                                                <ArrowPathIcon className="h-3 w-3 animate-spin" />
                                                             ) : (
-                                                                <MagnifyingGlassIcon className="h-4 w-4" />
+                                                                <MagnifyingGlassIcon className="h-3 w-3" />
                                                             )}
                                                             {bpjsLoading ? "Mencari…" : "Cari"}
                                                         </button>
@@ -2664,10 +2667,26 @@ export default function Registration({
                                                                 setBpjsError(null);
                                                                 setBpjsData(null);
                                                             }}
-                                                            className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50"
+                                                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs hover:bg-slate-50"
                                                         >
                                                             Reset
                                                         </button>
+                                                        <div className="hidden md:flex items-center gap-2 ml-2">
+                                                            {bpjsLoading ? (
+                                                                <span className="text-slate-600 text-xs">Memuat…</span>
+                                                            ) : bpjsError ? (
+                                                                <span className="text-red-700 text-xs">{bpjsError}</span>
+                                                            ) : bpjsData?.response ? (
+                                                                <>
+                                                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bpjsData.response?.aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                                                        {bpjsData.response?.aktif ? 'AKTIF' : 'TIDAK AKTIF'}
+                                                                    </span>
+                                                                    <span className="text-xs text-slate-700 truncate max-w-[12rem]">
+                                                                        FKTP: {bpjsData.response?.kdProviderPst?.nmProvider || '-'}
+                                                                    </span>
+                                                                </>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
                                                 </div>
 

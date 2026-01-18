@@ -4,8 +4,10 @@ import { route } from "ziggy-js";
 import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { toast } from "@/tools/toast";
+import usePermission from "@/hooks/usePermission";
 
 export default function Edit({ employee, refs = {} }) {
+    const { can } = usePermission();
     const { data, setData, processing, errors } = useForm({
         // Data utama
         nik: employee?.nik || "",
@@ -381,20 +383,22 @@ export default function Edit({ employee, refs = {} }) {
                                         )}
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bidang</label>
-                                        <SearchableSelect
-                                            options={options.bidang}
-                                            value={data.bidang}
-                                            onChange={(v) => setData("bidang", v)}
-                                            placeholder="Pilih bidang"
-                                            searchPlaceholder="Cari nama bidang"
-                                            error={!!errors.bidang}
-                                        />
-                                        {errors.bidang && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.bidang}</p>
-                                        )}
-                                    </div>
+                                    {can("bidang.view") && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bidang</label>
+                                            <SearchableSelect
+                                                options={options.bidang}
+                                                value={data.bidang}
+                                                onChange={(v) => setData("bidang", v)}
+                                                placeholder="Pilih bidang"
+                                                searchPlaceholder="Cari nama bidang"
+                                                error={!!errors.bidang}
+                                            />
+                                            {errors.bidang && (
+                                                <p className="mt-1 text-sm text-red-600">{errors.bidang}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status WP</label>

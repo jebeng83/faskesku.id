@@ -17,6 +17,7 @@ import {
     BarChart2,
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
+import usePermission from "@/hooks/usePermission";
 
 // Sidebar khusus modul Farmasi, konsisten dengan pola LanjutanRalanLayout/SidebarRalan
 export default function SidebarFarmasi({ title = "Farmasi", children }) {
@@ -289,18 +290,22 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         }
     })();
 
+    const { can } = usePermission();
+
     const items = useMemo(() => {
         if (dynamicItems && Array.isArray(dynamicItems)) return dynamicItems;
-        return [
+        const base = [
             {
                 label: "Dashboard",
-                href: route("dashboard", {}, false),
+                href: route("farmasi.dashboard", {}, false),
                 icon: <Gauge className="w-4 h-4" />,
+                permission: "farmasi.dashboard",
             },
             {
                 label: "Home",
                 href: route("farmasi.index", {}, false),
                 icon: <Home className="w-4 h-4" />,
+                permission: "farmasi.index",
             },
             {
                 label: "Pelayanan Farmasi",
@@ -310,27 +315,31 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         label: "Stok Opname",
                         href: route("farmasi.stok-opname", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.stok-opname",
                     },
                     {
                         label: "Pembelian Obat",
                         href: route("farmasi.pembelian-obat", {}, false),
                         icon: <Truck className="w-4 h-4" />,
+                        permission: "farmasi.pembelian-obat",
                     },
                     {
                         label: "Hutang Obat",
                         href: hutangObatUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.hutang-obat",
                     },
                     {
                         label: "Penjualan Obat",
                         href: route("farmasi.penjualan-obat", {}, false),
                         icon: <ShoppingCart className="w-4 h-4" />,
+                        permission: "farmasi.penjualan-obat",
                     },
                     {
                         label: "Permintaan Obat",
                         href: route("farmasi.permintaan-resep", {}, false),
-                        disabled: false,
                         icon: <Package className="w-4 h-4" />,
+                        permission: "farmasi.permintaan-resep",
                     },
                 ],
             },
@@ -340,57 +349,63 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                 children: [
                     {
                         label: "Industri Farmasi",
-                        href: route(
-                            "farmasi.industri-farmasi.index",
-                            {},
-                            false
-                        ),
+                        href: route("farmasi.industri-farmasi.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.industri-farmasi.index",
                     },
                     {
                         label: "Data Suplier",
                         href: route("farmasi.datasuplier.index", {}, false),
                         icon: <Truck className="w-4 h-4" />,
+                        permission: "farmasi.datasuplier.index",
                     },
                     {
                         label: "Satuan Barang",
                         href: route("farmasi.satuan-barang.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.satuan-barang.index",
                     },
                     {
                         label: "Metode Racik",
                         href: route("farmasi.metode-racik.index", {}, false),
                         icon: <FlaskConical className="w-4 h-4" />,
+                        permission: "farmasi.metode-racik.index",
                     },
                     {
                         label: "Konversi Satuan",
                         href: route("farmasi.konversi-satuan.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.konversi-satuan.index",
                     },
                     {
                         label: "Jenis Obat, Alkes & BHP",
                         href: route("farmasi.jenis-obat.index", {}, false),
                         icon: <Pill className="w-4 h-4" />,
+                        permission: "farmasi.jenis-obat.index",
                     },
                     {
                         label: "Kategori Obat",
                         href: route("farmasi.kategori-obat.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.kategori-obat.index",
                     },
                     {
                         label: "Golongan Obat",
                         href: route("farmasi.golongan-obat.index", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.golongan-obat.index",
                     },
                     {
                         label: "Setting Harga Obat",
                         href: route("farmasi.set-harga-obat", {}, false),
                         icon: <Settings className="w-4 h-4" />,
+                        permission: "farmasi.set-harga-obat",
                     },
                     {
                         label: "Data Obat",
                         href: route("farmasi.data-obat", {}, false),
                         icon: <Pill className="w-4 h-4" />,
+                        permission: "farmasi.data-obat",
                     },
                 ],
             },
@@ -408,36 +423,60 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                         label: "Sirkulasi Obat",
                         href: sirkulasiObatUrl,
                         icon: <BarChart2 className="w-4 h-4" />,
+                        permission: "farmasi.sirkulasi-obat",
                     },
                     {
                         label: "Cek Stok Obat",
                         href: cekStokObatUrl,
                         icon: <Boxes className="w-4 h-4" />,
+                        permission: "farmasi.cek-stok-obat",
                     },
                     {
                         label: "Riwayat Barang Medis",
                         href: riwayatBarangMedisUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.riwayat-barang-medis",
                     },
                     {
                         label: "Riwayat Transaksi Gudang",
                         href: riwayatTransaksiGudangUrl,
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.riwayat-transaksi-gudang",
                     },
                     {
                         label: "Sisa Stok",
                         href: sisaStokUrl,
                         icon: <Boxes className="w-4 h-4" />,
+                        permission: "farmasi.sisa-stok",
                     },
                     {
                         label: "Darurat Stok",
                         href: route("farmasi.darurat-stok", {}, false),
                         icon: <ClipboardList className="w-4 h-4" />,
+                        permission: "farmasi.darurat-stok",
                     },
                 ],
             },
         ];
-    }, [dynamicItems]);
+
+        const filterGroup = (group) => {
+            if (!group.children) return can(group.permission);
+            const children = group.children.filter((c) => !c.permission || can(c.permission));
+            if (children.length === 0) return false;
+            return { ...group, children };
+        };
+
+        const filtered = [];
+        for (const g of base) {
+            if (!g.children) {
+                if (!g.permission || can(g.permission)) filtered.push(g);
+            } else {
+                const fg = filterGroup(g);
+                if (fg) filtered.push(fg);
+            }
+        }
+        return filtered;
+    }, [dynamicItems, can]);
 
     const isActive = (href) => {
         try {
@@ -459,6 +498,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     }
                 })(),
                 icon: Home,
+                permission: "farmasi.index",
             },
             {
                 href: (() => {
@@ -469,6 +509,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     }
                 })(),
                 icon: ShoppingCart,
+                permission: "farmasi.penjualan-obat",
             },
             {
                 href: (() => {
@@ -479,6 +520,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     }
                 })(),
                 icon: Package,
+                permission: "farmasi.permintaan-resep",
             },
             {
                 href: (() => {
@@ -489,18 +531,21 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                     }
                 })(),
                 icon: Truck,
+                permission: "farmasi.pembelian-obat",
             },
             {
                 href: cekStokObatUrl,
                 icon: Boxes,
+                permission: "farmasi.cek-stok-obat",
             },
         ];
-
+        const { can } = usePermission();
+        const visible = navItems.filter((n) => !n.permission || can(n.permission));
         return (
             <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 dark:bg-gray-900/85 backdrop-blur border-t border-slate-200/70 dark:border-gray-800">
                 <div className="h-16 px-4 pb-[env(safe-area-inset-bottom)]">
                     <div className="grid grid-cols-5 gap-2 h-full">
-                        {navItems.map((item) => (
+                        {visible.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}

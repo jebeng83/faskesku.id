@@ -14,6 +14,7 @@ import {
     Home,
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
+import usePermission from "@/hooks/usePermission";
 
 function ThemeToggle({ isDark, onToggle }) {
     return (
@@ -81,6 +82,7 @@ export default function SidebarPengaturan({
     wide = false,
 }) {
     const { url } = usePage();
+    const { can } = usePermission();
 
     // State mirip LanjutanRalanLayout: open (mobile), collapsed (desktop), dan dark theme
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -213,40 +215,48 @@ export default function SidebarPengaturan({
 
                 <nav className="px-2 py-2 text-white">
                     <Section title="Menu Utama" collapsed={isSidebarCollapsed}>
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.dashboard}
-                            icon={LayoutDashboard}
-                            label="Dashboard"
-                            active={isActive(paths.dashboard)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.profileHome}
-                            icon={Home}
-                            label="Home"
-                            active={isActive(paths.profileHome)}
-                        />
+                        {can("dashboard.index") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.dashboard}
+                                icon={LayoutDashboard}
+                                label="Dashboard"
+                                active={isActive(paths.dashboard)}
+                            />
+                        )}
+                        {can("profile.home") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.profileHome}
+                                icon={Home}
+                                label="Home"
+                                active={isActive(paths.profileHome)}
+                            />
+                        )}
                     </Section>
 
                     <Section
                         title="Pengaturan Aplikasi"
                         collapsed={isSidebarCollapsed}
                     >
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.settingIndex}
-                            icon={Settings}
-                            label="Setting Aplikasi"
-                            active={isActive(paths.settingIndex)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.antrianSuara}
-                            icon={Stethoscope}
-                            label="Suara Poli"
-                            active={isActive(paths.antrianSuara)}
-                        />
+                        {can("view-settings") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.settingIndex}
+                                icon={Settings}
+                                label="Setting Aplikasi"
+                                active={isActive(paths.settingIndex)}
+                            />
+                        )}
+                        {can("antrian.suara-display") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.antrianSuara}
+                                icon={Stethoscope}
+                                label="Suara Poli"
+                                active={isActive(paths.antrianSuara)}
+                            />
+                        )}
                     </Section>
 
                     {/* Setting User */}
@@ -254,45 +264,55 @@ export default function SidebarPengaturan({
                         title="Setting User"
                         collapsed={isSidebarCollapsed}
                     >
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.userIndex}
-                            icon={User}
-                            label="User"
-                            active={isActive(paths.userIndex)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.userLogin}
-                            icon={LogIn}
-                            label="User Login"
-                            active={isActive(paths.userLogin)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.userMapping}
-                            icon={NotebookTabs}
-                            label="Mapping"
-                            active={isActive(paths.userMapping)}
-                        />
+                        {can("users.index") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.userIndex}
+                                icon={User}
+                                label="User"
+                                active={isActive(paths.userIndex)}
+                            />
+                        )}
+                        {can("user.view") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.userLogin}
+                                icon={LogIn}
+                                label="User Login"
+                                active={isActive(paths.userLogin)}
+                            />
+                        )}
+                        {can("permission.view") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.userMapping}
+                                icon={NotebookTabs}
+                                label="Mapping"
+                                active={isActive(paths.userMapping)}
+                            />
+                        )}
                     </Section>
 
                     {/* Kepegawaian */}
                     <Section title="Kepegawaian" collapsed={isSidebarCollapsed}>
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.employeesIndex}
-                            icon={Users}
-                            label="Pegawai"
-                            active={isActive(paths.employeesIndex)}
-                        />
-                        <NavItem
-                            collapsed={isSidebarCollapsed}
-                            href={paths.sipPegawaiIndex}
-                            icon={FileText}
-                            label="SIP Pegawai"
-                            active={isActive(paths.sipPegawaiIndex)}
-                        />
+                        {can("employees.index") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.employeesIndex}
+                                icon={Users}
+                                label="Pegawai"
+                                active={isActive(paths.employeesIndex)}
+                            />
+                        )}
+                        {can("sip-pegawai.index") && (
+                            <NavItem
+                                collapsed={isSidebarCollapsed}
+                                href={paths.sipPegawaiIndex}
+                                icon={FileText}
+                                label="SIP Pegawai"
+                                active={isActive(paths.sipPegawaiIndex)}
+                            />
+                        )}
                     </Section>
 
                     

@@ -33,11 +33,11 @@ use Illuminate\Http\Request;
 echo "=== Uji Coba Registrasi Pasien ===\n\n";
 
 // Data registrasi
-$noRM = '000019';
-$kdDokter = 'D0000003';
-$kdPoli = 'UMU';
+$noRM = '000002';
+$kdDokter = 'D0000002';
+$kdPoli = 'IGDK';
 $kdPj = 'A09';
-$pJawab = 'RIZKI AMALIA';
+$pJawab = 'John Test';
 $almtPj = 'Alamat Pasien';
 $hubunganPj = 'DIRI SENDIRI';
 
