@@ -82,7 +82,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:65
 * @route '/api/whatsapp/credentials/{credential}'
 */
-export const show = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -97,7 +97,7 @@ show.definition = {
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:65
 * @route '/api/whatsapp/credentials/{credential}'
 */
-show.url = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { credential: args }
     }
@@ -130,7 +130,7 @@ show.url = (args: { credential: string | number | { id: string | number } } | [c
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:65
 * @route '/api/whatsapp/credentials/{credential}'
 */
-show.get = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -140,7 +140,7 @@ show.get = (args: { credential: string | number | { id: string | number } } | [c
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:65
 * @route '/api/whatsapp/credentials/{credential}'
 */
-show.head = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -150,7 +150,7 @@ show.head = (args: { credential: string | number | { id: string | number } } | [
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:83
 * @route '/api/whatsapp/credentials/{credential}'
 */
-export const update = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -165,7 +165,7 @@ update.definition = {
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:83
 * @route '/api/whatsapp/credentials/{credential}'
 */
-update.url = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+update.url = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { credential: args }
     }
@@ -198,7 +198,7 @@ update.url = (args: { credential: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:83
 * @route '/api/whatsapp/credentials/{credential}'
 */
-update.put = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -208,7 +208,7 @@ update.put = (args: { credential: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:134
 * @route '/api/whatsapp/credentials/{credential}'
 */
-export const destroy = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -223,7 +223,7 @@ destroy.definition = {
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:134
 * @route '/api/whatsapp/credentials/{credential}'
 */
-destroy.url = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { credential: args }
     }
@@ -256,7 +256,7 @@ destroy.url = (args: { credential: string | number | { id: string | number } } |
 * @see app/Http/Controllers/API/WhatsAppCredentialController.php:134
 * @route '/api/whatsapp/credentials/{credential}'
 */
-destroy.delete = (args: { credential: string | number | { id: string | number } } | [credential: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { credential: number | { id: number } } | [credential: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })

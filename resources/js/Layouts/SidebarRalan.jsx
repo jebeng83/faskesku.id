@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import '../../css/rawat-jalan.css';
 import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt, FileText } from 'lucide-react';
 import useTheme from '@/hooks/useTheme';
 import usePermission from '@/hooks/usePermission';
 

@@ -869,16 +869,34 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
                                         <span className="text-gray-400 text-center">:</span>
-                                        <span
-                                            className={
-                                                (rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS')
+                                        <span>
+                                            {(() => {
+                                                const penjamin =
+                                                    rawatJalan?.nm_penjamin ||
+                                                    rawatJalan?.penjab?.png_jawab ||
+                                                    rawatJalan?.png_jawab ||
+                                                    rawatJalan?.cara_bayar;
+
+                                                if (!penjamin) {
+                                                    return null;
+                                                }
+
+                                                const isBpjs = penjamin
                                                     .toUpperCase()
-                                                    .includes('BPJS')
-                                                    ? 'text-blue-600 dark:text-blue-300'
-                                                    : 'text-yellow-600 dark:text-yellow-300'
-                                            }
-                                        >
-                                            {rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}
+                                                    .includes('BPJS');
+
+                                                return (
+                                                    <div
+                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                                            isBpjs
+                                                                ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                                                                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                                                        }`}
+                                                    >
+                                                        {penjamin}
+                                                    </div>
+                                                );
+                                            })()}
                                         </span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">

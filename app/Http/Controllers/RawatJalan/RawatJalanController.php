@@ -237,16 +237,30 @@ class RawatJalanController extends Controller
         // Cari data bila parameter ada; jangan 404-kan agar tidak memutus navigasi
         $rawat = null;
         if ($noRawat) {
-            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
+            $rawat = RawatJalan::with([
+                    'patient.kelurahan',
+                    'patient.kecamatan',
+                    'patient.kabupaten',
+                    'penjab',
+                ])
                 ->when($noRkmMedis, fn ($q) => $q->where('no_rkm_medis', $noRkmMedis))
                 ->where('no_rawat', $noRawat)
                 ->first();
         } elseif ($noRkmMedis) {
-            $rawat = RawatJalan::with(['patient.kelurahan', 'patient.kecamatan', 'patient.kabupaten'])
+            $rawat = RawatJalan::with([
+                    'patient.kelurahan',
+                    'patient.kecamatan',
+                    'patient.kabupaten',
+                    'penjab',
+                ])
                 ->where('no_rkm_medis', $noRkmMedis)
                 ->orderByDesc('tgl_registrasi')
                 ->orderByDesc('jam_reg')
                 ->first();
+        }
+
+        if ($rawat) {
+            $rawat->nm_penjamin = optional($rawat->penjab)->png_jawab;
         }
 
         // Hitung hari sejak kunjungan terakhir (reg_periksa sebelumnya)

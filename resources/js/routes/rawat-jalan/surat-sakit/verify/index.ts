@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2165
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2179
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}/verify'
 */
 export const byNomor = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ byNomor.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2165
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2179
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}/verify'
 */
 byNomor.url = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ byNomor.url = (args: { no_surat: string | number } | [no_surat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2165
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2179
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}/verify'
 */
 byNomor.get = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ byNomor.get = (args: { no_surat: string | number } | [no_surat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::byNomor
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2165
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2179
 * @route '/rawat-jalan/surat-sakit/nomor/{no_surat}/verify'
 */
 byNomor.head = (args: { no_surat: string | number } | [no_surat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
