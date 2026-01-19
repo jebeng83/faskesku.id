@@ -40,6 +40,7 @@ use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\SDKI\SdkiController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Http\Request;
@@ -261,6 +262,18 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
     Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+
+    // SDKI CRUD endpoints
+    Route::get('/sdki', [SdkiController::class, 'index'])->name('api.sdki.index');
+    Route::post('/sdki', [SdkiController::class, 'store'])->name('api.sdki.store');
+    Route::put('/sdki/{idOrKode}', [SdkiController::class, 'update'])
+        ->where('idOrKode', '.*')
+        ->name('api.sdki.update');
+    Route::delete('/sdki/{idOrKode}', [SdkiController::class, 'destroy'])
+        ->where('idOrKode', '.*')
+        ->name('api.sdki.destroy');
+
+    // Kategori SDKI endpoints telah dihapus
 
     Route::post('/aturan-pakai', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store');
     Route::post('/aturan-pakai/store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.alt');

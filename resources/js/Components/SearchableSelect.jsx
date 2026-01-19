@@ -237,6 +237,24 @@ const REFERENSI_CONFIG = {
             }));
         },
     },
+    // Sumber: alergi pasien dari tabel alergi_pasien (lokal)
+    // Endpoint: GET /api/alergi/pasien?no_rkm_medis=XXXXXX
+    alergi_pasien: {
+        supportsSearch: false,
+        defaultParams: { no_rkm_medis: "" },
+        buildUrl: ({ no_rkm_medis = "" } = {}) => {
+            const params = new URLSearchParams({ no_rkm_medis });
+            return `/api/alergi/pasien?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.list) ? json.list : []);
+            return list.map((it) => ({
+                value: it?.kd_alergi || it?.kdAlergi || it?.kode || "",
+                label: it?.nm_alergi || it?.nmAlergi || it?.nama || "",
+                kode_jenis: it?.kode_jenis ?? null,
+            }));
+        },
+    },
     // ===== Tambahan sumber lokal untuk kebutuhan SATUSEHAT Location mapping =====
     // Sumber: tabel poliklinik lokal
     // Endpoint: GET /api/poliklinik (mendukung q/start/limit)
@@ -927,6 +945,44 @@ const SearchableSelect = ({
         return () => clearTimeout(handle);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, isOpen, source, JSON.stringify(sourceParams)]);
+
+    useEffect(() => {
+        if (!useRemote) return;
+        if (!cfg) return;
+        if (!value) return;
+        if (isOpen) return;
+        if ((remoteOptions || []).length > 0) return;
+        const params = {
+            ...(cfg?.defaultParams || {}),
+            ...(sourceParams || {}),
+            q: String(value || ""),
+        };
+        const url = cfg.buildUrl(params);
+        const cached = cacheRef.current.get(url);
+        if (cached) {
+            setRemoteOptions(Array.isArray(cached) ? cached : []);
+            return;
+        }
+        (async () => {
+            try {
+                setRemoteLoading(true);
+                const res = await fetch(url, {
+                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                    credentials: "include",
+                });
+                const json = await res.json();
+                const opts = cfg.parse(json);
+                const arr = Array.isArray(opts) ? opts : [];
+                setRemoteOptions(arr);
+                cacheRef.current.set(url, arr);
+                setRemoteError("");
+            } catch (_e) {
+                setRemoteError(_e?.message || "Gagal memuat data");
+            } finally {
+                setRemoteLoading(false);
+            }
+        })();
+    }, [useRemote, cfg, value, isOpen, JSON.stringify(sourceParams)]);
 
     return (
         <div

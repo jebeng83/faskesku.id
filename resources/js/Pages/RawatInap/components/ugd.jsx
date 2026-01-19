@@ -455,9 +455,18 @@ export default function UGD() {
       listAbortRef.current = controller;
       const params = {};
       if (query) params.search = query;
-      if (dateFrom && dateTo && dateFrom === dateTo) params.tanggal = dateFrom;
-      else if (dateFrom && !dateTo) params.tanggal = dateFrom;
-      else if (!dateFrom && dateTo) params.tanggal = dateTo;
+      if (dateFrom && dateTo) {
+        if (dateFrom === dateTo) {
+          params.tanggal = dateFrom;
+        } else {
+          params.start_date = dateFrom;
+          params.end_date = dateTo;
+        }
+      } else if (dateFrom) {
+        params.tanggal = dateFrom;
+      } else if (dateTo) {
+        params.tanggal = dateTo;
+      }
       const url = regPeriksaList.url(params);
       const res = await axios.get(url, { signal: controller.signal });
       const data = Array.isArray(res?.data?.data?.data)
@@ -467,7 +476,27 @@ export default function UGD() {
         : Array.isArray(res?.data)
         ? res.data
         : [];
-      const filtered = (data || []).filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
+      const normalizeDate = (val) => {
+        const s = String(val || '').trim();
+        if (!s) return '';
+        // Expect formats like 'YYYY-MM-DD' or 'YYYY/MM/DD HH:MM:SS'
+        const core = s.slice(0, 10).replace(/\//g, '-');
+        return core;
+      };
+      const withinRange = (row) => {
+        const d = normalizeDate(row?.tgl_registrasi);
+        if (!d) return false;
+        if (dateFrom && dateTo) {
+          const from = String(dateFrom);
+          const to = String(dateTo);
+          return d >= from && d <= to;
+        }
+        if (dateFrom) return d >= String(dateFrom);
+        if (dateTo) return d <= String(dateTo);
+        return true;
+      };
+      const filteredByDate = (data || []).filter(withinRange);
+      const filtered = filteredByDate.filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
       const q = String(query || '').trim().toLowerCase();
       const finalRows = q
         ? filtered.filter((r) => {
@@ -499,6 +528,13 @@ export default function UGD() {
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [query]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [dateFrom, dateTo]);
 
   const onChange = (k) => (e) => {
     setForm((f) => ({ ...f, [k]: e?.target?.value ?? e }));

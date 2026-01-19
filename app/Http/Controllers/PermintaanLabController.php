@@ -1019,6 +1019,14 @@ class PermintaanLabController extends Controller
 
         if ($request->filled('tanggal')) {
             $query->whereDate('tgl_registrasi', $request->tanggal);
+        } else {
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('tgl_registrasi', [$request->start_date, $request->end_date]);
+            } elseif ($request->filled('start_date')) {
+                $query->whereDate('tgl_registrasi', '>=', $request->start_date);
+            } elseif ($request->filled('end_date')) {
+                $query->whereDate('tgl_registrasi', '<=', $request->end_date);
+            }
         }
 
         $regPeriksa = $query->limit(10)->get();

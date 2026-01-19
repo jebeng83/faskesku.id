@@ -6,13 +6,13 @@ use App\Http\Controllers\Akutansi\AkutansiController;
 use App\Http\Controllers\Akutansi\BillingController;
 use App\Http\Controllers\Akutansi\BukuBesarController;
 use App\Http\Controllers\Akutansi\CashFlowController;
-use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\ClosingKasirController;
+use App\Http\Controllers\Akutansi\JurnalController;
+use App\Http\Controllers\Akutansi\KategoriPemasukanLainController;
+use App\Http\Controllers\Akutansi\PemasukanLainController;
 use App\Http\Controllers\Akutansi\RekeningController;
 use App\Http\Controllers\Akutansi\SetAkunController;
 use App\Http\Controllers\Akutansi\SetoranBankController;
-use App\Http\Controllers\Akutansi\PemasukanLainController;
-use App\Http\Controllers\Akutansi\KategoriPemasukanLainController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\DoctorController;
@@ -1320,6 +1320,12 @@ Route::middleware('auth')->group(function () {
     Route::post('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'storePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.store');
     Route::delete('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'deletePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.delete');
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
+
+    Route::get('rawat-jalan/asuhan-keperawatan/sdki', function () {
+        return Inertia::render('RawatJalan/AsuhanKeperawatan/sdki');
+    })->name('rawat-jalan.asuhan-keperawatan.sdki');
+
+    // Kategori SDKI web & fallback routes telah dihapus
     Route::get('rawat-jalan/obat-ralan/{no_rawat}', [RawatJalanController::class, 'getobatRalanPublic'])
         ->name('rawat-jalan.obat-ralan')
         ->where('no_rawat', '.*');
@@ -1345,6 +1351,21 @@ Route::middleware('auth')->group(function () {
         ->name('rawat-jalan.surat-sakit')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
+
+    // Awal Keperawatan Umum (Ralan)
+    Route::get('rawat-jalan/awal-keperawatan-umum/{no_rawat}', [RawatJalanController::class, 'awalKeperawatanUmum'])
+        ->name('rawat-jalan.awal-keperawatan-umum')
+        ->where('no_rawat', '.*');
+
+    // CRUD Penilaian Awal Keperawatan Ralan
+    Route::post('rawat-jalan/penilaian-awal-keperawatan-ralan', [RawatJalanController::class, 'storePenilaianAwalKeperawatanRalan'])
+        ->name('penilaian-awal-keperawatan-ralan.store');
+    Route::put('rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}', [RawatJalanController::class, 'updatePenilaianAwalKeperawatanRalan'])
+        ->name('penilaian-awal-keperawatan-ralan.update')
+        ->where('no_rawat', '.*');
+    Route::delete('rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}', [RawatJalanController::class, 'destroyPenilaianAwalKeperawatanRalan'])
+        ->name('penilaian-awal-keperawatan-ralan.destroy')
+        ->where('no_rawat', '.*');
 
     // API routes untuk obat
     Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
