@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::test
-* @see app/Http/Controllers/Pcare/PcareController.php:3349
+* @see app/Http/Controllers/Pcare/PcareController.php:3433
 * @route '/pcare/api/srk/rekap/test'
 */
 export const test = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ test.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::test
-* @see app/Http/Controllers/Pcare/PcareController.php:3349
+* @see app/Http/Controllers/Pcare/PcareController.php:3433
 * @route '/pcare/api/srk/rekap/test'
 */
 test.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ test.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::test
-* @see app/Http/Controllers/Pcare/PcareController.php:3349
+* @see app/Http/Controllers/Pcare/PcareController.php:3433
 * @route '/pcare/api/srk/rekap/test'
 */
 test.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ test.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::test
-* @see app/Http/Controllers/Pcare/PcareController.php:3349
+* @see app/Http/Controllers/Pcare/PcareController.php:3433
 * @route '/pcare/api/srk/rekap/test'
 */
 test.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

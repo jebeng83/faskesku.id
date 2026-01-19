@@ -7,7 +7,7 @@ import axios from "axios";
 
 export default function Lanjutan() {
   // Set tab aktif ke "registrasi" agar item sidebar "Registrasi" disorot pada halaman ini
-  const [activeTab, setActiveTab] = useState("registrasi");
+  const activeTab = "registrasi";
   const [queueCurrent, setQueueCurrent] = useState(null);
   const [queueLastCalledNumber, setQueueLastCalledNumber] = useState(null);
   const [queueStatusCode, setQueueStatusCode] = useState(null);

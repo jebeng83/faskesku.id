@@ -2540,38 +2540,122 @@ class PcareController extends Controller
         $start = (int) $request->query('start', 0);
         $limit = (int) $request->query('limit', 25);
 
-        $cfg = $this->pcareConfig();
-        $base = rtrim($cfg['base_url'] ?? '', '/');
-
-        // Default keyword untuk empty string
-        $keyword = $q === '' ? '-' : $q; // beberapa katalog PCare menggunakan '-' untuk all
-
-        // Deteksi v3 berdasarkan base URL
-        $isV3 = str_contains($base, 'pcare-rest-v3.0');
-
-        if ($isV3) {
-            // v3 menggunakan query parameter
-            $endpoint = 'diagnosa';
-            $query = [
-                'keyword' => $keyword,
-                'offset' => $start,
-                'limit' => $limit,
-            ];
-            $result = $this->pcareRequest('GET', $endpoint, $query);
-        } else {
-            // legacy menggunakan path segment
-            $endpoint = 'diagnosa/'.urlencode($keyword).'/'.$start.'/'.$limit;
-            $result = $this->pcareRequest('GET', $endpoint);
+        // 1. Cari data lokal (Penyakit)
+        $localResults = [];
+        try {
+            if ($q !== '') {
+                $localResults = \App\Models\Penyakit::where('kd_penyakit', 'like', "%{$q}%")
+                    ->orWhere('nm_penyakit', 'like', "%{$q}%")
+                    ->limit($limit)
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'kdDiag' => $item->kd_penyakit,
+                            'nmDiag' => $item->nm_penyakit,
+                            'nonSpesialis' => true,
+                            'source' => 'local',
+                        ];
+                    })
+                    ->toArray();
+            }
+        } catch (\Throwable $e) {
+            // Abaikan error database lokal, lanjut ke BPJS
+            Log::error('Error searching local penyakit: '.$e->getMessage());
         }
 
-        $response = $result['response'];
-        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+        // 2. Cari data BPJS
+        $bpjsResults = [];
+        $bpjsStatus = 200;
+        $bpjsMessage = 'OK';
+        $isBpjsOffline = false;
 
-        if (! is_array($processed)) {
-            $processed = ['raw' => $processed];
+        try {
+            $cfg = $this->pcareConfig();
+            $base = rtrim($cfg['base_url'] ?? '', '/');
+
+            // Default keyword untuk empty string
+            $keyword = $q === '' ? '-' : $q; // beberapa katalog PCare menggunakan '-' untuk all
+
+            // Deteksi v3 berdasarkan base URL
+            $isV3 = str_contains($base, 'pcare-rest-v3.0');
+
+            if ($isV3) {
+                // v3 menggunakan query parameter
+                $endpoint = 'diagnosa';
+                $query = [
+                    'keyword' => $keyword,
+                    'offset' => $start,
+                    'limit' => $limit,
+                ];
+                $result = $this->pcareRequest('GET', $endpoint, $query);
+            } else {
+                // legacy menggunakan path segment
+                $endpoint = 'diagnosa/'.urlencode($keyword).'/'.$start.'/'.$limit;
+                $result = $this->pcareRequest('GET', $endpoint);
+            }
+
+            $response = $result['response'];
+            $bpjsStatus = $response->status();
+            
+            if ($bpjsStatus >= 200 && $bpjsStatus < 300) {
+                $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+                
+                if (! is_array($processed)) {
+                    $processed = ['raw' => $processed];
+                }
+
+                // Normalisasi struktur list dari BPJS
+                if (isset($processed['response']['list']) && is_array($processed['response']['list'])) {
+                    $bpjsResults = $processed['response']['list'];
+                } elseif (isset($processed['list']) && is_array($processed['list'])) {
+                    $bpjsResults = $processed['list'];
+                }
+            } else {
+                $isBpjsOffline = true;
+                $bpjsMessage = 'BPJS Error: Status ' . $bpjsStatus;
+            }
+
+        } catch (\Throwable $e) {
+            $isBpjsOffline = true;
+            $bpjsMessage = 'BPJS Connection Error: ' . $e->getMessage();
+            // Lanjut untuk mengembalikan data lokal
         }
 
-        return response()->json($processed, $response->status());
+        // 3. Gabungkan Hasil (Local + BPJS)
+        // Tandai source BPJS
+        $bpjsResults = array_map(function ($item) {
+            $item['source'] = 'bpjs';
+            return $item;
+        }, $bpjsResults);
+
+        // Gabungkan: Local priority (atau bisa diubah logicnya)
+        // Kita merge unik by kdDiag
+        $merged = $localResults;
+        $existingCodes = array_column($localResults, 'kdDiag');
+
+        foreach ($bpjsResults as $bpjsItem) {
+            $kode = $bpjsItem['kdDiag'] ?? $bpjsItem['kode'] ?? '';
+            if (!in_array($kode, $existingCodes)) {
+                $merged[] = $bpjsItem;
+                $existingCodes[] = $kode;
+            }
+        }
+
+        // Format response agar kompatibel dengan frontend yang mengharapkan { response: { list: [] } } atau flat
+        // Kita kembalikan struktur standar PCare wrapper kita tapi dengan data hybrid
+        $finalData = [
+            'metaData' => [
+                'code' => $isBpjsOffline ? 201 : 200, // 201 warning jika BPJS mati? Atau tetap 200
+                'message' => $isBpjsOffline ? "Data dari Database Lokal (Koneksi BPJS Bermasalah: $bpjsMessage)" : 'OK',
+                'bpjs_offline' => $isBpjsOffline,
+            ],
+            'response' => [
+                'list' => $merged,
+                'count' => count($merged)
+            ]
+        ];
+
+        return response()->json($finalData, 200);
     }
 
     public function getDpho(Request $request)

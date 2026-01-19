@@ -24,6 +24,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     
+    const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [resepAppendItems, setResepAppendItems] = useState(null);
     const [selectedDokterForResep, setSelectedDokterForResep] = useState(() => {
         const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
@@ -286,8 +287,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     <CpptSoap 
                         {...commonProps} 
                         onOpenResep={() => setActiveTab("resep")} 
+                        onOpenDiagnosa={() => setActiveTab("diagnosa")}
                         appendToPlanning={resepAppendItems} 
                         onPlanningAppended={() => setResepAppendItems(null)} 
+                        appendToAssessment={diagnosaAppendItems}
+                        onAssessmentAppended={() => setDiagnosaAppendItems(null)}
                         onPemeriksaChange={(dok) => {
                             if (!dok) return;
                             if (typeof dok === "string") {
@@ -319,7 +323,13 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 </div>
 
                 {activeTab === "tarifTindakan" && <TarifTindakan {...commonProps} />}
-                {activeTab === "diagnosa" && <Diagnosa {...commonProps} />}
+                {activeTab === "diagnosa" && <Diagnosa 
+                    {...commonProps} 
+                    onDiagnosaSaved={(items) => {
+                        setDiagnosaAppendItems(items);
+                        setActiveTab("cppt");
+                    }}
+                />}
                 {activeTab === "lab" && <PermintaanLab {...commonProps} />}
                 {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
             </>

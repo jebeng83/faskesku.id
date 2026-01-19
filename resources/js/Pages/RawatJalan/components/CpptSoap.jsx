@@ -6,7 +6,7 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, appendToPlanning = null, onPlanningAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -739,6 +739,39 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         }
     }, [appendToPlanning]);
+
+    useEffect(() => {
+        if (appendToAssessment && Array.isArray(appendToAssessment) && appendToAssessment.length > 0) {
+            const utama = appendToAssessment.find(d => d.type === 'utama');
+            const sekunder = appendToAssessment.filter(d => d.type === 'sekunder');
+            
+            let block = '';
+            
+            if (utama) {
+                block += `Diagnosa Utama: [${utama.kode}] ${utama.nama}`;
+            }
+            
+            if (sekunder.length > 0) {
+                if (block) block += '\n';
+                block += 'Diagnosa Sekunder:';
+                sekunder.forEach((d, idx) => {
+                    block += `\n${idx + 1}. [${d.kode}] ${d.nama}`;
+                });
+            }
+            
+            if (block) {
+                setFormData((prev) => ({
+                    ...prev,
+                    penilaian: prev.penilaian ? `${prev.penilaian}\n\n${block}` : block,
+                }));
+            }
+            
+            if (typeof onAssessmentAppended === 'function') {
+                try { onAssessmentAppended(); } catch (_) {}
+            }
+        }
+    }, [appendToAssessment]);
+
     const clearTemplateFields = () => {
         setFormData((prev) => ({
             ...prev,
@@ -1819,7 +1852,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="space-y-px md:space-y-px">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
                                 <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                if (typeof onOpenDiagnosa === 'function') {
+                                                    e.preventDefault();
+                                                    onOpenDiagnosa();
+                                                }
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+                                            aria-label="Buka tab Diagnosa"
+                                            title="Buka Diagnosa (ICD-10)"
+                                        >
+                                            ICD
+                                        </button>
+                                    </div>
                                     <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
                                 <div className="flex flex-col h-full">
