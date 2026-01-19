@@ -10,6 +10,7 @@ import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
 import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
+import OdontogramForm from "../Odontogram/odontogram";
  
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
@@ -222,6 +223,27 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             color: "red",
         },
         {
+            key: "odontogram",
+            title: "Odontogram",
+            subtitle: "Pemeriksaan Gigi",
+            icon: (
+                <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                    />
+                </svg>
+            ),
+            color: "teal",
+        },
+        {
             key: "lab",
             title: "Permintaan Lab",
             subtitle: "Laboratorium & Pemeriksaan",
@@ -278,7 +300,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             noRawat: selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat,
         };
 
-        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi"].includes(activeTab));
+        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi", "odontogram"].includes(activeTab));
         const isResep = activeTab === "resep";
 
         return (
@@ -330,6 +352,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         setActiveTab("cppt");
                     }}
                 />}
+                {activeTab === "odontogram" && <OdontogramForm {...commonProps} />}
                 {activeTab === "lab" && <PermintaanLab {...commonProps} />}
                 {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
             </>
