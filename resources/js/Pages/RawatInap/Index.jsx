@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, RefreshCw, Globe } from 'lucide-react';
 import SidebarRawatInap from '@/Layouts/SidebarRawatInap';
 
 export default function Index(props = {}) {
@@ -9,6 +11,16 @@ export default function Index(props = {}) {
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
     const [sortBy, setSortBy] = useState(filters.sort || 'terbaru');
     const [sttsPulang, setSttsPulang] = useState(filters.stts_pulang ?? '-');
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
+        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+    };
+    const rowVariants = {
+        hidden: { opacity: 0, x: -20 },
+        visible: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 20 },
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -55,60 +67,74 @@ export default function Index(props = {}) {
         return val || '(Kosong)';
     };
 
+    const getGabungBadge = (role, pairRawat) => {
+        if (!role) return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200">-</span>
+        );
+
+        const config = role === 'Ibu'
+            ? { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' }
+            : { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-200' };
+
+        return (
+            <span className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
+                {role}
+                {pairRawat ? <span className="font-mono text-[10px] opacity-80">{pairRawat}</span> : null}
+            </span>
+        );
+    };
+
     return (
         <SidebarRawatInap>
             <Head title="Rawat Inap" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6">
-                {/* Header dengan Gradient */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
-                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h1 className="text-3xl font-bold mb-2">
-                                        Rawat Inap
-                                    </h1>
-                                    <p className="text-indigo-100 text-lg">
-                                        Manajemen pasien rawat inap dan perawatan intensive
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="hidden lg:block">
-                                <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-4">
-                                    <div className="text-center">
-                                        <div className="text-2xl font-bold">{rawatInap?.meta?.total ?? (Array.isArray(rawatInap?.data) ? rawatInap.data.length : 0)}</div>
-                                        <div className="text-sm text-indigo-200">Total Pasien</div>
-                                    </div>
+                <motion.div
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+                >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <motion.h1
+                            className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                        >
+                            Rawat Inap
+                        </motion.h1>
+                        <div className="hidden lg:block">
+                            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-xl px-4 py-2 shadow-xl shadow-blue-500/5">
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-gray-900 dark:text-white">{rawatInap?.meta?.total ?? (Array.isArray(rawatInap?.data) ? rawatInap.data.length : 0)}</div>
+                                    <div className="text-xs text-gray-600 dark:text-gray-300">Total Pasien</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Filter Section */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
+                <div className="bg-white/80 dark:bg-gray-900/80 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/5 mb-6 backdrop-blur-xl">
                     <div className="p-6">
-                        <form onSubmit={handleSearch} className="flex flex-col lg:flex-row lg:items-end gap-4 lg:justify-end">
+                        <form onSubmit={handleSearch} className="flex flex-col lg:flex-row lg:items-end gap-4 lg:justify-between">
                             <div className="flex-1 lg:max-w-md">
-                                <input
-                                    type="text"
-                                    placeholder="Cari nama pasien, no. RM, atau no. rawat..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Cari nama pasien, no. RM, atau no. rawat..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none transition-colors placeholder:text-gray-400 text-sm h-10 pl-10 pr-3"
+                                    />
+                                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="h-10 px-3 text-sm rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-gray-900 dark:text-white"
                                 >
                                     <option value="">Semua Status</option>
                                     <option value="Menunggu">Menunggu</option>
@@ -119,7 +145,7 @@ export default function Index(props = {}) {
                                 <select
                                     value={sttsPulang}
                                     onChange={(e) => setSttsPulang(e.target.value)}
-                                    className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="h-10 px-3 text-sm rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-gray-900 dark:text-white"
                                 >
                                     <option value="">Semua Status Pulang</option>
                                     {Array.isArray(sttsPulangOptions) && sttsPulangOptions.map((opt) => (
@@ -129,7 +155,7 @@ export default function Index(props = {}) {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="h-10 px-3 text-sm rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-gray-900 dark:text-white"
                                 >
                                     <option value="terbaru">Terbaru</option>
                                     <option value="terlama">Terlama</option>
@@ -137,19 +163,18 @@ export default function Index(props = {}) {
                                 </select>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-medium text-sm px-4 py-2 rounded-md"
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
+                                    <Search className="w-3 h-3" />
                                     Cari
                                 </button>
                                 {(searchTerm || statusFilter || sortBy !== 'terbaru' || sttsPulang !== '-') && (
                                     <button
                                         type="button"
                                         onClick={clearFilters}
-                                        className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+                                        className="inline-flex items-center gap-1 bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium text-sm px-3 py-1.5 rounded-md"
                                     >
+                                        <RefreshCw className="w-3 h-3" />
                                         Reset
                                     </button>
                                 )}
@@ -158,13 +183,14 @@ export default function Index(props = {}) {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
+                <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-xl shadow-blue-500/5">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">No. Rawat</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">No. RM</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama Pasien</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Gabung</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Kamar</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tgl Masuk</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dokter</th>
@@ -174,35 +200,55 @@ export default function Index(props = {}) {
                         </thead>
                         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                             {Array.isArray(rawatInap?.data) && rawatInap.data.length > 0 ? (
-                                rawatInap.data.map((row) => (
-                                    <tr key={row.no_rawat} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">{row.no_rawat}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.patient?.no_rkm_medis || '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            {row.patient?.nm_pasien ? (
-                                                <Link
-                                                    href={route('rawat-inap.lanjutan')}
-                                                    data={{ no_rawat: row.no_rawat, no_rkm_medis: row.patient?.no_rkm_medis }}
-                                                    preserveState
-                                                    preserveScroll
-                                                    className="text-indigo-600 dark:text-indigo-400 hover:underline"
-                                                >
-                                                    {row.patient.nm_pasien}
-                                                </Link>
-                                            ) : (
-                                                <span className="text-gray-900 dark:text-white">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.kamar || '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_masuk ? new Date(row.tgl_masuk).toLocaleDateString('id-ID') : '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.dokter?.nm_dokter || '-'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(row.stts_pulang || '-')}</td>
-                                    </tr>
-                                ))
+                                <AnimatePresence>
+                                    {rawatInap.data.map((row, idx) => (
+                                        <motion.tr
+                                            key={row.no_rawat}
+                                            className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200"
+                                            variants={rowVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="exit"
+                                            transition={{ delay: idx * 0.02 }}
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">{row.no_rawat}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.patient?.no_rkm_medis || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                {row.patient?.nm_pasien ? (
+                                                    <Link
+                                                        href={route('rawat-inap.lanjutan')}
+                                                        data={{ no_rawat: row.no_rawat, no_rkm_medis: row.patient?.no_rkm_medis }}
+                                                        preserveState
+                                                        preserveScroll
+                                                        className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                    >
+                                                        {row.patient.nm_pasien}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-gray-900 dark:text-white">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                {getGabungBadge(row.gabung_role, row.gabung_pair_rawat)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.kamar || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_masuk ? new Date(row.tgl_masuk).toLocaleDateString('id-ID') : '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.dokter?.nm_dokter || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(row.stts_pulang || '-')}</td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
                             ) : (
                                 <tr>
-                                    <td className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={7}>
-                                        Belum ada pasien rawat inap
+                                    <td className="px-6 py-12 text-center" colSpan={8}>
+                                        <motion.div
+                                            className="flex flex-col items-center justify-center gap-2 text-gray-500 dark:text-gray-400"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                        >
+                                            <Globe className="w-8 h-8" />
+                                            <span>Tidak ada data.</span>
+                                        </motion.div>
                                     </td>
                                 </tr>
                             )}

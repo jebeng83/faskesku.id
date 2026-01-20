@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, Pencil, Trash2, Activity, MoreVertical, RefreshCw } from "lucide-react";
 import { regPeriksa as regPeriksaList } from "@/routes/api";
 import regPeriksaApi from "@/routes/api/reg-periksa";
+import kamarApi from "@/routes/api/kamar";
+import kamarInapApi from "@/routes/api/kamar-inap";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -19,6 +21,8 @@ import {
   TableCell,
 } from "@/Components/ui/Table";
 import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
+import { toast } from "@/tools/toast";
+import Badge from "@/Components/ui/Badge";
 
 export default function UGD() {
   const [query, setQuery] = useState("");
@@ -32,6 +36,7 @@ export default function UGD() {
   const [items, setItems] = useState([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +58,9 @@ export default function UGD() {
   const [bpjsLoading, setBpjsLoading] = useState(false);
   const [bpjsError, setBpjsError] = useState(null);
   const [bpjsData, setBpjsData] = useState(null);
+  const [checkInRooms, setCheckInRooms] = useState([]);
+  const [checkInForm, setCheckInForm] = useState({ kd_kamar: "", diagnosa_awal: "" });
+  const [checkInErrors, setCheckInErrors] = useState({});
   const [form, setForm] = useState({
     no_reg: "",
     no_rawat: "",
@@ -76,6 +84,7 @@ export default function UGD() {
     status_bayar: "Belum Bayar",
     status_poli: "Baru",
   });
+  const [errors, setErrors] = useState({});
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -108,6 +117,28 @@ export default function UGD() {
     };
     loadDokter();
   }, []);
+
+  useEffect(() => {
+    if (!checkInOpen) return;
+    const loadRooms = async () => {
+      try {
+        const url = kamarApi.index.url({ status: "KOSONG", limit: 200 });
+        const resp = await axios.get(url, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+        const list = Array.isArray(resp?.data?.list)
+          ? resp.data.list
+          : Array.isArray(resp?.data?.data)
+          ? resp.data.data
+          : Array.isArray(resp?.data)
+          ? resp.data
+          : [];
+        const filtered = list.filter((k) => k && k.status === "KOSONG" && String(k.statusdata) === "1");
+        setCheckInRooms(filtered);
+      } catch {
+        setCheckInRooms([]);
+      }
+    };
+    loadRooms();
+  }, [checkInOpen]);
 
   const dokterMap = useMemo(() => {
     const m = {};
@@ -454,13 +485,15 @@ export default function UGD() {
       const controller = new AbortController();
       listAbortRef.current = controller;
       const params = {};
+      params.poli = 'IGDK';
+      params.per_page = 200;
       if (query) params.search = query;
       if (dateFrom && dateTo) {
         if (dateFrom === dateTo) {
           params.tanggal = dateFrom;
         } else {
-          params.start_date = dateFrom;
-          params.end_date = dateTo;
+          params.tanggal_awal = dateFrom;
+          params.tanggal_akhir = dateTo;
         }
       } else if (dateFrom) {
         params.tanggal = dateFrom;
@@ -468,7 +501,7 @@ export default function UGD() {
         params.tanggal = dateTo;
       }
       const url = regPeriksaList.url(params);
-      const res = await axios.get(url, { signal: controller.signal });
+      const res = await axios.get(url, { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, withCredentials: true });
       const data = Array.isArray(res?.data?.data?.data)
         ? res.data.data.data
         : Array.isArray(res?.data?.data)
@@ -498,7 +531,7 @@ export default function UGD() {
       const filteredByDate = (data || []).filter(withinRange);
       const filtered = filteredByDate.filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
       const q = String(query || '').trim().toLowerCase();
-      const finalRows = q
+      let finalRows = q
         ? filtered.filter((r) => {
             const noRawat = String(r?.no_rawat || '').toLowerCase();
             const noRm = String(r?.no_rkm_medis || '').toLowerCase();
@@ -508,6 +541,21 @@ export default function UGD() {
             );
           })
         : filtered;
+
+      if (!finalRows.length && Array.isArray(data) && data.length) {
+        finalRows = (data || []).filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
+      }
+
+      if (q.includes('/')) {
+        try {
+          const byRawatRes = await axios.get(regPeriksaApi.byRawat.url({ no_rawat: query }), { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+          const item = byRawatRes?.data?.data;
+          if (item && withinRange(item) && String(item?.kd_poli || '').trim() === 'IGDK') {
+            const exists = finalRows.some((r) => String(r?.no_rawat || '') === String(item.no_rawat));
+            if (!exists) finalRows = [item, ...finalRows];
+          }
+        } catch (_) {}
+      }
       setItems(finalRows);
     } catch (e) {
       const code = e?.code || e?.name || '';
@@ -562,19 +610,175 @@ export default function UGD() {
       status_bayar: "Belum Bayar",
       status_poli: "Baru",
     });
+    setErrors({});
+  };
+
+  const validateCreate = () => {
+    const f = form || {};
+    const e = {};
+    const required = (v) => String(v || "").trim().length > 0;
+    if (!required(f.no_rkm_medis)) e.no_rkm_medis = "No. RM wajib diisi";
+    if (!required(f.kd_dokter)) e.kd_dokter = "Dokter wajib dipilih";
+    if (!required(f.kd_pj)) e.kd_pj = "Cara bayar wajib dipilih";
+    if (!required(f.p_jawab)) e.p_jawab = "Nama Penanggung Jawab wajib diisi";
+    if (!required(f.almt_pj)) e.almt_pj = "Alamat Penanggung Jawab wajib diisi";
+    if (!required(f.hubunganpj)) e.hubunganpj = "Hubungan P.J. wajib diisi";
+    if (!required(f.tgl_registrasi)) e.tgl_registrasi = "Tanggal wajib diisi";
+    if (!required(f.jam_reg)) e.jam_reg = "Jam wajib diisi";
+    // Pastikan kd_poli IGD ada
+    if (!required(f.kd_poli)) e.kd_poli = "Poliklinik IGD tidak valid";
+    // biaya_reg wajib numeric, default ke 0 jika kosong
+    const biayaStr = String(f.biaya_reg ?? "").trim();
+    if (!biayaStr) {
+      // tidak menandai error, tetapi isi default agar lulus validasi backend
+      f.biaya_reg = "0";
+    }
+    setErrors(e);
+    if (Object.keys(e).length) {
+      const msg = Object.values(e)
+        .map((m) => String(Array.isArray(m) ? m[0] : m))
+        .join("\n- ");
+      toast.error(`Lengkapi data berikut:\n- ${msg}`);
+    }
+    return e;
   };
 
   const submitCreate = async () => {
+    const e = validateCreate();
+    if (Object.keys(e).length) return;
+    const payload = { ...form };
+    delete payload.no_rawat;
+    delete payload.no_reg;
+    payload.kd_poli = "IGDK";
     try {
-      const payload = { ...form };
-      if (!payload.no_rawat || String(payload.no_rawat).trim() === "") delete payload.no_rawat;
-      if (!payload.no_reg || String(payload.no_reg).trim() === "") delete payload.no_reg;
-      payload.kd_poli = "IGDK";
-      await axios.post(regPeriksaApi.store.url(), payload);
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+        await new Promise((r) => setTimeout(r, 300));
+      } catch {}
+      await axios.post(regPeriksaApi.store.url(), payload, { withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
       setCreateOpen(false);
       resetForm();
       fetchData();
-    } catch {}
+    } catch (err) {
+      try {
+        if (err?.response?.status === 422) {
+          const backendErrors = err?.response?.data?.errors || {};
+          const messages = Object.values(backendErrors)
+            .flat()
+            .map((m) => String(m));
+          setErrors(backendErrors);
+          toast.error(messages.length ? messages.join("\n") : "Validasi gagal");
+          return;
+        }
+        if (err?.response?.status === 419) {
+          try {
+            await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            await new Promise((r) => setTimeout(r, 300));
+            const retryPayload = { ...form };
+            delete retryPayload.no_rawat;
+            delete retryPayload.no_reg;
+            retryPayload.kd_poli = 'IGDK';
+            await axios.post(regPeriksaApi.store.url(), retryPayload, { withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            setCreateOpen(false);
+            resetForm();
+            fetchData();
+            return;
+          } catch {}
+          toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          return;
+        }
+      } catch {}
+    }
+  };
+
+  const openCheckIn = (row) => {
+    setSelected(row);
+    setForm({
+      no_reg: row?.no_reg || "",
+      no_rawat: row?.no_rawat || "",
+      tgl_registrasi: row?.tgl_registrasi || "",
+      jam_reg: row?.jam_reg || "",
+      kd_dokter: row?.kd_dokter || "",
+      nm_dokter: row?.dokter?.nm_dokter || row?.nm_dokter || "",
+      no_rkm_medis: row?.no_rkm_medis || "",
+      nm_pasien: row?.patient?.nm_pasien || row?.nm_pasien || "",
+      kd_poli: row?.kd_poli || "IGDK",
+      p_jawab: row?.p_jawab || "",
+      almt_pj: row?.almt_pj || "",
+      hubunganpj: row?.hubunganpj || "",
+      biaya_reg: row?.biaya_reg || "",
+      stts: row?.stts || "Belum",
+      stts_daftar: row?.stts_daftar || "Baru",
+      status_lanjut: "Ralan",
+      kd_pj: row?.kd_pj || "",
+      status_bayar: row?.status_bayar || "Belum Bayar",
+      status_poli: row?.status_poli || "Baru",
+    });
+    setCheckInForm({ kd_kamar: "", diagnosa_awal: "" });
+    setCheckInErrors({});
+    setCheckInOpen(true);
+  };
+
+  const validateCheckIn = () => {
+    const e = {};
+    const required = (v) => String(v || "").trim().length > 0;
+    if (!required(checkInForm.kd_kamar)) e.kd_kamar = "Kamar wajib dipilih";
+    if (!required(checkInForm.diagnosa_awal)) e.diagnosa_awal = "Diagnosa awal wajib diisi";
+    setCheckInErrors(e);
+    if (Object.keys(e).length) {
+      const msg = Object.values(e)
+        .map((m) => String(Array.isArray(m) ? m[0] : m))
+        .join("\n- ");
+      toast.error(`Lengkapi data berikut:\n- ${msg}`);
+    }
+    return e;
+  };
+
+  const submitCheckIn = async () => {
+    if (!selected?.no_rawat) {
+      toast.error("Data IGD tidak valid");
+      return;
+    }
+    const errs = validateCheckIn();
+    if (Object.keys(errs).length) return;
+    const id = selected.no_rawat;
+    try {
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+        await new Promise((r) => setTimeout(r, 200));
+      } catch {}
+
+      await axios.post(kamarInapApi.store.url(), { no_rawat: id, kd_kamar: checkInForm.kd_kamar, diagnosa_awal: checkInForm.diagnosa_awal }, { withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+
+      setCheckInOpen(false);
+      setCheckInForm({ kd_kamar: '', diagnosa_awal: '' });
+      fetchData();
+      toast.success('Pasien masuk kamar inap berhasil');
+    } catch (err) {
+      try {
+        if (err?.response?.status === 422) {
+          const be = err?.response?.data?.errors || {};
+          setCheckInErrors(be);
+          const messages = Object.values(be).flat().map((m) => String(m));
+          toast.error(messages.length ? messages.join("\n") : 'Validasi gagal');
+          return;
+        }
+        if (err?.response?.status === 419) {
+          try {
+            await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            await new Promise((r) => setTimeout(r, 200));
+            await axios.post(kamarInapApi.store.url(), { no_rawat: id, kd_kamar: checkInForm.kd_kamar, diagnosa_awal: checkInForm.diagnosa_awal }, { withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            setCheckInOpen(false);
+            setCheckInForm({ kd_kamar: '', diagnosa_awal: '' });
+            fetchData();
+            toast.success('Pasien masuk kamar inap berhasil');
+            return;
+          } catch {}
+          toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          return;
+        }
+      } catch {}
+    }
   };
 
   const openEdit = (row) => {
@@ -679,6 +883,7 @@ export default function UGD() {
               <TableHead className="hidden sm:table-cell px-3 sm:px-4">Jam</TableHead>
               <TableHead className="hidden md:table-cell px-3 sm:px-4">Penjamin</TableHead>
               <TableHead className="px-3 sm:px-4">Status</TableHead>
+              <TableHead className="px-3 sm:px-4">Lanjut</TableHead>
               <TableHead className="hidden md:table-cell px-3 sm:px-4">Status Bayar</TableHead>
             </TableRow>
           </TableHeader>
@@ -686,7 +891,7 @@ export default function UGD() {
             <AnimatePresence initial={false}>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={10}>
+                  <TableCell colSpan={11}>
                     <div className="py-8 text-center text-gray-500 dark:text-gray-400">Memuat data IGD...</div>
                   </TableCell>
                 </TableRow>
@@ -707,6 +912,7 @@ export default function UGD() {
                         align="start"
                       >
                         <DropdownItem onClick={() => openEdit(r)} icon={<Pencil className="w-4 h-4" />}>Edit</DropdownItem>
+                        <DropdownItem onClick={() => openCheckIn(r)} icon={<Activity className="w-4 h-4" />}>Masuk kamar inap</DropdownItem>
                         <DropdownItem onClick={() => submitDelete(r)} icon={<Trash2 className="w-4 h-4" />}>Hapus</DropdownItem>
                       </DropdownMenu>
                     </TableCell>
@@ -729,12 +935,26 @@ export default function UGD() {
                       || "-"
                     }</TableCell>
                     <TableCell className="px-3 sm:px-4">{r?.stts || r?.stts_daftar || "-"}</TableCell>
+                    <TableCell className="px-3 sm:px-4">
+                      <Badge
+                        variant={
+                          r?.status_lanjut === "Ranap"
+                            ? "danger"
+                            : r?.status_lanjut === "Ralan"
+                            ? "success"
+                            : "default"
+                        }
+                        size="sm"
+                      >
+                        {r?.status_lanjut || "-"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="hidden md:table-cell px-3 sm:px-4">{r?.status_bayar || "-"}</TableCell>
                   </motion.tr>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={10}>
+                  <TableCell colSpan={11}>
                     <div className="py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data IGD</div>
                   </TableCell>
                 </TableRow>
@@ -769,10 +989,10 @@ export default function UGD() {
                   <Input value={alamatTerm} onChange={(e) => setAlamatTerm(e.target.value)} placeholder="Filter Alamat (opsional)" className="h-8 text-xs" />
                 </div>
                 <div className="md:basis-[15%]">
-                  <Input type="date" value={form.tgl_registrasi} onChange={onChange("tgl_registrasi")} className="h-8 text-xs" />
+                  <Input type="date" value={form.tgl_registrasi} onChange={onChange("tgl_registrasi")} className="h-8 text-xs" error={!!errors.tgl_registrasi} />
                 </div>
                 <div className="md:basis-[10%]">
-                  <Input type="time" value={form.jam_reg} onChange={onChange("jam_reg")} className="h-8 text-xs" />
+                  <Input type="time" value={form.jam_reg} onChange={onChange("jam_reg")} className="h-8 text-xs" error={!!errors.jam_reg} />
                 </div>
               </div>
               <div className="max-h-56 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700">
@@ -800,7 +1020,7 @@ export default function UGD() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
               <div className="sm:basis-[10%] w-full">
                 <Label>No. RM</Label>
-                <Input value={form.no_rkm_medis} onChange={onChange("no_rkm_medis")} placeholder="No. RM" className="h-8 text-xs px-2 py-1" />
+                <Input value={form.no_rkm_medis} onChange={onChange("no_rkm_medis")} placeholder="No. RM" className="h-8 text-xs px-2 py-1" error={!!errors.no_rkm_medis} />
               </div>
               <div className="sm:basis-[30%] w-full">
                 <Label>Nama Pasien</Label>
@@ -814,7 +1034,7 @@ export default function UGD() {
               </div>
               <div className="sm:basis-[25%] w-full">
                 <Label required>Dokter</Label>
-                <select value={form.kd_dokter} onChange={onChange("kd_dokter")} className="w-full h-8 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                <select value={form.kd_dokter} onChange={onChange("kd_dokter")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_dokter ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}> 
                   <option value="">Pilih Dokter</option>
                   {(Array.isArray(dokterOptions) ? dokterOptions : []).map((d) => (
                     <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
@@ -823,7 +1043,7 @@ export default function UGD() {
               </div>
               <div className="sm:basis-[25%] w-full">
                 <Label required>Cara Bayar</Label>
-                <select value={form.kd_pj} onChange={onChange("kd_pj")} className="w-full h-8 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                <select value={form.kd_pj} onChange={onChange("kd_pj")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_pj ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}> 
                   <option value="">Pilih Cara Bayar</option>
                   {(Array.isArray(penjabOptions) ? penjabOptions : []).map((p) => (
                     <option key={p.kd_pj} value={p.kd_pj}>{p.png_jawab}</option>
@@ -844,7 +1064,7 @@ export default function UGD() {
               <Label className="mb-0 text-xs">No. Registrasi</Label>
               <span className="text-[10px] text-gray-500 dark:text-gray-400">Terakhir: {noRegInfo.last || '-'}</span>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <Input value={form.no_reg} onChange={onChange("no_reg")} placeholder="No. Registrasi" className="h-8 text-xs px-2 py-1 w-40 md:w-48" />
+                  <Input value={form.no_reg} onChange={onChange("no_reg")} placeholder="No. Registrasi" className="h-8 text-xs px-2 py-1 w-40 md:w-48" readOnly />
                   <div className="hidden md:flex items-center gap-2 ml-2">
                     {bpjsLoading ? (
                       <span className="text-gray-600 text-xs">Memuat…</span>
@@ -871,11 +1091,11 @@ export default function UGD() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label required className="text-xs">Nama Penanggung Jawab</Label>
-                  <Input value={form.p_jawab} onChange={onChange("p_jawab")} placeholder="Nama Penanggung Jawab" className="h-8 text-xs px-2 py-1" />
+                  <Input value={form.p_jawab} onChange={onChange("p_jawab")} placeholder="Nama Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.p_jawab} />
                 </div>
                 <div>
                   <Label required className="text-xs">Hubungan</Label>
-                  <Input value={form.hubunganpj} onChange={onChange("hubunganpj")} placeholder="Hubungan P.J." className="h-8 text-xs px-2 py-1" />
+                  <Input value={form.hubunganpj} onChange={onChange("hubunganpj")} placeholder="Hubungan P.J." className="h-8 text-xs px-2 py-1" error={!!errors.hubunganpj} />
                 </div>
               </div>
               <div>
@@ -888,7 +1108,7 @@ export default function UGD() {
                     </label>
                   )}
                 </div>
-                <Input value={form.almt_pj} onChange={onChange("almt_pj")} placeholder="Alamat Penanggung Jawab" className="h-8 text-xs px-2 py-1" />
+                <Input value={form.almt_pj} onChange={onChange("almt_pj")} placeholder="Alamat Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.almt_pj} />
               </div>
             </div>
           </div>
@@ -1016,6 +1236,50 @@ export default function UGD() {
           <div className="relative px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-end gap-2">
             <Button onClick={() => setEditOpen(false)} className="bg-gray-200 dark:bg-gray-700">Batal</Button>
             <Button onClick={submitEdit} className="bg-amber-600 hover:bg-amber-700 text-white">Simpan Perubahan</Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal show={checkInOpen} onClose={() => setCheckInOpen(false)}>
+        <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500" />
+          <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-emerald-50/80 via-teal-50/80 to-sky-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Masuk Kamar Inap (Check In)
+            </h3>
+          </div>
+          <div className="relative p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label required>Pilih Kamar</Label>
+                <select
+                  value={checkInForm.kd_kamar}
+                  onChange={(e) => setCheckInForm((s) => ({ ...s, kd_kamar: e.target.value }))}
+                  className={`w-full h-10 text-sm rounded-md ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-emerald-500/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ${checkInErrors.kd_kamar ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                >
+                  <option value="">Pilih kamar kosong</option>
+                  {(Array.isArray(checkInRooms) ? checkInRooms : []).map((k) => (
+                    <option key={k.kd_kamar} value={k.kd_kamar}>
+                      {(k.nm_bangsal || k.kd_bangsal)} — {k.kd_kamar} {k.kelas ? `(${k.kelas})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label required>Diagnosa Awal</Label>
+                <Input
+                  value={checkInForm.diagnosa_awal}
+                  onChange={(e) => setCheckInForm((s) => ({ ...s, diagnosa_awal: e.target.value }))}
+                  placeholder="Contoh: Pneumonia"
+                  className={`h-10 text-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-emerald-500/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ${checkInErrors.diagnosa_awal ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="relative px-6 py-4 border-t border-gray-200/50 dark:border-gray-700/50 flex items-center justify-end gap-2">
+            <Button onClick={() => setCheckInOpen(false)} className="bg-gray-200 dark:bg-gray-700">Batal</Button>
+            <Button onClick={submitCheckIn} className="bg-emerald-600 hover:bg-emerald-700 text-white">Simpan</Button>
           </div>
         </div>
       </Modal>

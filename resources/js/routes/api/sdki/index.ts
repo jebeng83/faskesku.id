@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::index
-* @see app/Http/Controllers/SDKI/SdkiController.php:40
+* @see app/Http/Controllers/SDKI/SdkiController.php:41
 * @route '/api/sdki'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::index
-* @see app/Http/Controllers/SDKI/SdkiController.php:40
+* @see app/Http/Controllers/SDKI/SdkiController.php:41
 * @route '/api/sdki'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::index
-* @see app/Http/Controllers/SDKI/SdkiController.php:40
+* @see app/Http/Controllers/SDKI/SdkiController.php:41
 * @route '/api/sdki'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::index
-* @see app/Http/Controllers/SDKI/SdkiController.php:40
+* @see app/Http/Controllers/SDKI/SdkiController.php:41
 * @route '/api/sdki'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::store
-* @see app/Http/Controllers/SDKI/SdkiController.php:68
+* @see app/Http/Controllers/SDKI/SdkiController.php:92
 * @route '/api/sdki'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::store
-* @see app/Http/Controllers/SDKI/SdkiController.php:68
+* @see app/Http/Controllers/SDKI/SdkiController.php:92
 * @route '/api/sdki'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::store
-* @see app/Http/Controllers/SDKI/SdkiController.php:68
+* @see app/Http/Controllers/SDKI/SdkiController.php:92
 * @route '/api/sdki'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::update
-* @see app/Http/Controllers/SDKI/SdkiController.php:113
+* @see app/Http/Controllers/SDKI/SdkiController.php:219
 * @route '/api/sdki/{idOrKode}'
 */
 export const update = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::update
-* @see app/Http/Controllers/SDKI/SdkiController.php:113
+* @see app/Http/Controllers/SDKI/SdkiController.php:219
 * @route '/api/sdki/{idOrKode}'
 */
 update.url = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update.url = (args: { idOrKode: string | number } | [idOrKode: string | number ]
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::update
-* @see app/Http/Controllers/SDKI/SdkiController.php:113
+* @see app/Http/Controllers/SDKI/SdkiController.php:219
 * @route '/api/sdki/{idOrKode}'
 */
 update.put = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update.put = (args: { idOrKode: string | number } | [idOrKode: string | number ]
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::destroy
-* @see app/Http/Controllers/SDKI/SdkiController.php:149
+* @see app/Http/Controllers/SDKI/SdkiController.php:255
 * @route '/api/sdki/{idOrKode}'
 */
 export const destroy = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::destroy
-* @see app/Http/Controllers/SDKI/SdkiController.php:149
+* @see app/Http/Controllers/SDKI/SdkiController.php:255
 * @route '/api/sdki/{idOrKode}'
 */
 destroy.url = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ destroy.url = (args: { idOrKode: string | number } | [idOrKode: string | number 
 
 /**
 * @see \App\Http\Controllers\SDKI\SdkiController::destroy
-* @see app/Http/Controllers/SDKI/SdkiController.php:149
+* @see app/Http/Controllers/SDKI/SdkiController.php:255
 * @route '/api/sdki/{idOrKode}'
 */
 destroy.delete = (args: { idOrKode: string | number } | [idOrKode: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

@@ -26,6 +26,8 @@ class RawatInapController extends Controller
                 'dokter:kd_dokter,nm_dokter',
             ])
             ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->leftJoin('ranap_gabung as rg', 'rg.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->leftJoin('ranap_gabung as rg2', 'rg2.no_rawat2', '=', 'reg_periksa.no_rawat')
             ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
             ->where('reg_periksa.status_lanjut', 'Ranap')
             ->select([
@@ -36,6 +38,8 @@ class RawatInapController extends Controller
                 'kamar_inap.tgl_keluar',
                 'kamar_inap.jam_keluar',
                 'kamar_inap.stts_pulang',
+                DB::raw('case when rg.no_rawat2 is not null then "Ibu" when rg2.no_rawat is not null then "Bayi" else null end as gabung_role'),
+                DB::raw('coalesce(rg.no_rawat2, rg2.no_rawat) as gabung_pair_rawat'),
             ]);
 
         if ($search !== '') {

@@ -318,6 +318,16 @@ class PermissionSeeder extends Seeder
 
             'rawat-inap.index',
             'rawat-inap.lanjutan',
+            'view-bangsal',
+            'create-bangsal',
+            'edit-bangsal',
+            'delete-bangsal',
+            'rawat-inap.bangsal',
+            'view-kamar',
+            'create-kamar',
+            'edit-kamar',
+            'delete-kamar',
+            'rawat-inap.kamar',
         ];
 
         foreach ($permissions as $permission) {

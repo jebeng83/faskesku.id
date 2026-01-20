@@ -1322,7 +1322,7 @@ Route::middleware('auth')->group(function () {
     Route::put('rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'updatePemeriksaanRalan'])->name('rawat-jalan.pemeriksaan-ralan.update');
 
     Route::get('rawat-jalan/asuhan-keperawatan/sdki', function () {
-        return Inertia::render('RawatJalan/AsuhanKeperawatan/sdki');
+        return Inertia::render('SDKI/sdki');
     })->name('rawat-jalan.asuhan-keperawatan.sdki');
 
     // Kategori SDKI web & fallback routes telah dihapus
@@ -1418,9 +1418,17 @@ Route::middleware('auth')->group(function () {
 
     // Pelayanan Medis routes
     Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
+    Route::get('rawat-inap/bangsal', function () {
+        return Inertia::render('RawatInap/components/Bangsal');
+    })->name('rawat-inap.bangsal');
+    Route::get('rawat-inap/kamar', function () {
+        return Inertia::render('RawatInap/components/Kamar');
+    })->name('rawat-inap.kamar');
     Route::resource('rawat-inap', RawatInapController::class);
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
+
+    
 
     // Penunjang Medis routes
     Route::prefix('laboratorium')->name('laboratorium.')->group(function () {

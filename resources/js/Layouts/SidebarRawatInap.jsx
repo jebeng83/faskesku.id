@@ -81,6 +81,16 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
             icon: <Activity className="w-4 h-4" />,
           },
           {
+            label: "Bangsal",
+            href: route("rawat-inap.bangsal"),
+            icon: <Activity className="w-4 h-4" />,
+          },
+          {
+            label: "Kamar",
+            href: "/rawat-inap/kamar",
+            icon: <Bed className="w-4 h-4" />,
+          },
+          {
             label: "Pasien Inap",
             href: route("rawat-inap.index"),
             icon: <Users className="w-4 h-4" />,

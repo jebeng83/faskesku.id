@@ -666,6 +666,52 @@ const REFERENSI_CONFIG = {
             });
         },
     },
+    // Sumber: kategori_sdki dari tabel lokal
+    kategori_sdki: {
+        supportsSearch: true,
+        defaultParams: { q: "" },
+        buildUrl: ({ q = "" } = {}) => {
+            const params = new URLSearchParams({ q });
+            return `/api/kategori-sdki?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => {
+                const kode = it?.kode ?? it?.kd_kategori ?? "";
+                const nama = it?.nama ?? it?.nm_kategori ?? it?.label ?? "";
+                return {
+                    value: kode,
+                    label: `${kode} — ${nama}`.trim(),
+                    kode,
+                    nama,
+                };
+            });
+        },
+    },
+    // Sumber: subkategori_sdki dari tabel lokal
+    subkategori_sdki: {
+        supportsSearch: true,
+        defaultParams: { q: "", kategori: "" },
+        buildUrl: ({ q = "", kategori = "" } = {}) => {
+            const params = new URLSearchParams();
+            if (q) params.append("q", q);
+            if (kategori) params.append("kategori", kategori);
+            return `/api/subkategori-sdki?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.data || json?.list || [];
+            return list.map((it) => {
+                const kode = it?.kode ?? it?.kd_subkategori ?? "";
+                const nama = it?.nama ?? it?.nm_subkategori ?? it?.label ?? "";
+                return {
+                    value: kode,
+                    label: `${kode} — ${nama}`.trim(),
+                    kode,
+                    nama,
+                };
+            });
+        },
+    },
 };
 
 const SearchableSelect = ({
