@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1272
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1648
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1272
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1648
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::store
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1272
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1648
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1350
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1726
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 export const update = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -50,7 +50,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1350
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1726
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 update.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ update.url = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1350
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1726
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 update.put = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -87,7 +87,7 @@ update.put = (args: { no_rawat: string | number } | [no_rawat: string | number ]
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::destroy
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1427
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1803
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 export const destroy = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -102,7 +102,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::destroy
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1427
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1803
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -129,7 +129,7 @@ destroy.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::destroy
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1427
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1803
 * @route '/rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}'
 */
 destroy.delete = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
