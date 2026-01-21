@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
@@ -69,6 +69,23 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             kunjungan: shouldOpenKunjungan,
         }));
     }, []);
+
+    // Sync doctor from rawatJalan on mount/update if not set
+    // This ensures that if the page is refreshed and rawatJalan is populated,
+    // the doctor state is correctly initialized even if useState logic missed it (e.g. if props updated late)
+    useEffect(() => {
+        if (rawatJalan) {
+            const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
+            const nama = rawatJalan?.dokter?.nm_dokter || "";
+            
+            if (kd && !selectedDokterForResep) {
+                setSelectedDokterForResep(String(kd));
+            }
+            if (nama && !selectedDokterNamaForResep) {
+                setSelectedDokterNamaForResep(String(nama));
+            }
+        }
+    }, [rawatJalan]);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -289,6 +306,22 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
     
 
+    // Callback to handle pemeriksa change from CpptSoap
+    const handlePemeriksaChange = useCallback((dok) => {
+        if (!dok) return;
+        if (typeof dok === "string") {
+            setSelectedDokterForResep(String(dok));
+            setSelectedDokterNamaForResep("");
+        } else if (typeof dok === "object") {
+            if (dok.id) {
+                setSelectedDokterForResep(String(dok.id));
+            }
+            if (dok.nama) {
+                setSelectedDokterNamaForResep(String(dok.nama));
+            }
+        }
+    }, []);
+
     const renderActiveTabContent = () => {
         const commonProps = {
             token:
@@ -315,20 +348,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         onPlanningAppended={() => setResepAppendItems(null)} 
                         appendToAssessment={diagnosaAppendItems}
                         onAssessmentAppended={() => setDiagnosaAppendItems(null)}
-                        onPemeriksaChange={(dok) => {
-                            if (!dok) return;
-                            if (typeof dok === "string") {
-                                setSelectedDokterForResep(String(dok));
-                                setSelectedDokterNamaForResep("");
-                            } else if (typeof dok === "object") {
-                                if (dok.id) {
-                                    setSelectedDokterForResep(String(dok.id));
-                                }
-                                if (dok.nama) {
-                                    setSelectedDokterNamaForResep(String(dok.nama));
-                                }
-                            }
-                        }}
+                        onPemeriksaChange={handlePemeriksaChange}
                     />
                 </div>
                 

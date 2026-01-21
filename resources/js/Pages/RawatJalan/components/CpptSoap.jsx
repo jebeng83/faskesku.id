@@ -705,9 +705,24 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const q = sessionStorage.getItem('cpptSoap_pegawaiQuery');
             if (q) setPegawaiQuery(q);
             const nip = sessionStorage.getItem('cpptSoap_nip');
-            if (nip) setFormData((prev) => ({ ...prev, nip }));
+            if (nip) {
+                setFormData((prev) => ({ ...prev, nip }));
+                if (typeof onPemeriksaChange === 'function') {
+                    // Try to extract name from q if possible, format: "Name (NIK)"
+                    let nama = '';
+                    if (q) {
+                        const match = q.match(/^(.*)\s\((.*)\)$/);
+                        if (match) {
+                            nama = match[1];
+                        } else {
+                            nama = q; // fallback
+                        }
+                    }
+                    onPemeriksaChange({ id: nip, nama: nama });
+                }
+            }
         } catch (_) {}
-    }, []);
+    }, [onPemeriksaChange]);
 
     useEffect(() => {
         try {

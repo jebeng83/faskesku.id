@@ -125,6 +125,17 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
         dokter.kd_dokter?.toLowerCase().includes(dokterSearch.toLowerCase())
     );
 
+    // Auto-fill nama dokter jika kd_dokter ada tapi nama kosong (misal dari prop initialDokter yang hanya bawa kode)
+    useEffect(() => {
+        if (dokterOptions.length > 0 && dokterPerujuk.kd_dokter && !dokterPerujuk.nm_dokter) {
+            const found = dokterOptions.find(d => String(d.kd_dokter) === String(dokterPerujuk.kd_dokter));
+            if (found) {
+                setDokterPerujuk(prev => ({ ...prev, nm_dokter: found.nm_dokter }));
+                setDokterSearch(found.nm_dokter);
+            }
+        }
+    }, [dokterOptions, dokterPerujuk.kd_dokter]);
+
     // Handle dokter selection
     const handleDokterSelect = (dokter) => {
         if (dokter) {
