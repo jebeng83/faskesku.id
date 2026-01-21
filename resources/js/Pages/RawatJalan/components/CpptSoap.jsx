@@ -6,7 +6,7 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -1874,20 +1874,36 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="flex flex-col h-full">
                                     <div className="flex items-center justify-between">
                                         <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
-                                        <Link
-                                            href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
-                                            onClick={(e) => {
-                                                if (typeof onOpenResep === 'function') {
-                                                    e.preventDefault();
-                                                    onOpenResep();
-                                                }
-                                            }}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                            aria-label="Buka tab Resep"
-                                            title="Buka Resep Obat"
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    if (typeof onOpenLab === 'function') {
+                                                        e.preventDefault();
+                                                        onOpenLab();
+                                                    }
+                                                }}
+                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 transition-colors"
+                                                aria-label="Buka tab Laboratorium"
+                                                title="Buka Permintaan Lab"
                                             >
-                                            Resep
-                                        </Link>
+                                                Laborat
+                                            </button>
+                                            <Link
+                                                href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
+                                                onClick={(e) => {
+                                                    if (typeof onOpenResep === 'function') {
+                                                        e.preventDefault();
+                                                        onOpenResep();
+                                                    }
+                                                }}
+                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+                                                aria-label="Buka tab Resep"
+                                                title="Buka Resep Obat"
+                                            >
+                                                Resep
+                                            </Link>
+                                        </div>
                                     </div>
                                     <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>

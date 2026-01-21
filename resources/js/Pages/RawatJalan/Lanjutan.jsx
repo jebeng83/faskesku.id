@@ -310,6 +310,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         {...commonProps} 
                         onOpenResep={() => setActiveTab("resep")} 
                         onOpenDiagnosa={() => setActiveTab("diagnosa")}
+                        onOpenLab={() => setActiveTab("lab")}
                         appendToPlanning={resepAppendItems} 
                         onPlanningAppended={() => setResepAppendItems(null)} 
                         appendToAssessment={diagnosaAppendItems}
@@ -353,7 +354,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     }}
                 />}
                 {activeTab === "odontogram" && <OdontogramForm {...commonProps} />}
-                {activeTab === "lab" && <PermintaanLab {...commonProps} />}
+                {activeTab === "lab" && <PermintaanLab 
+                    {...commonProps} 
+                    initialDokter={selectedDokterForResep}
+                    initialDokterNama={selectedDokterNamaForResep}
+                />}
                 {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
             </>
         );
