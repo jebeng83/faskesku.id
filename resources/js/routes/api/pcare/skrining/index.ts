@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefa
 import peserta13f34f from './peserta'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::peserta
-* @see app/Http/Controllers/Pcare/PcareController.php:2909
+* @see app/Http/Controllers/Pcare/PcareController.php:2993
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
 export const peserta = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ peserta.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::peserta
-* @see app/Http/Controllers/Pcare/PcareController.php:2909
+* @see app/Http/Controllers/Pcare/PcareController.php:2993
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
 peserta.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
@@ -46,7 +46,7 @@ peserta.url = (args: { nomorPeserta: string | number, start: string | number, li
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::peserta
-* @see app/Http/Controllers/Pcare/PcareController.php:2909
+* @see app/Http/Controllers/Pcare/PcareController.php:2993
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
 peserta.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ peserta.get = (args: { nomorPeserta: string | number, start: string | number, li
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::peserta
-* @see app/Http/Controllers/Pcare/PcareController.php:2909
+* @see app/Http/Controllers/Pcare/PcareController.php:2993
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
 peserta.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -62,6 +62,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -146,6 +147,14 @@ Route::get('/antrian/loket', function () {
 // Surat: preview HTML (public untuk preview)
 Route::get('/surat/preview', [SuratController::class, 'preview'])
     ->name('surat.preview');
+
+// Public validation for Surat Keterangan Sehat (berbasis no_surat)
+Route::get('/surat-sehat', [RawatJalanController::class, 'publicSuratSehat'])
+    ->name('public.surat-sehat.show');
+
+// Public validation for Surat Keterangan Sakit (berbasis no_surat)
+Route::get('/surat-sakit', [RawatJalanController::class, 'publicSuratSakit'])
+    ->name('public.surat-sakit.show');
 
 Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
@@ -598,7 +607,14 @@ Route::get('rawat-jalan/surat-sakit/{no_rawat}/verify', [RawatJalanController::c
     ->where('no_rawat', '.*');
 
 Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextNoSuratSakit'])
-    ->name('rawat-jalan.surat-sakit.next-no-surat');
+        ->name('rawat-jalan.surat-sakit.next-no-surat');
+    Route::get('rawat-jalan/surat-sakit/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSakit'])
+        ->name('rawat-jalan.surat-sakit.check-duplicate');
+
+    Route::get('rawat-jalan/surat-sehat/next-no-surat', [RawatJalanController::class, 'nextNoSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.next-no-surat');
+    Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.check-duplicate');
 
 Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}', [RawatJalanController::class, 'suratSakitByNomor'])
     ->name('rawat-jalan.surat-sakit.by-nomor')
@@ -1342,10 +1358,193 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
     // Surat Sehat dan Surat Sakit routes
+    Route::get('rawat-jalan/surat-sehat', function (Request $request) {
+        $tab = (string) $request->query('tab', 'sehat');
+        $search = trim((string) $request->query('search', ''));
+        $startDate = (string) $request->query('start_date', '');
+        $endDate = (string) $request->query('end_date', '');
+
+        $suratSehat = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        $suratSakit = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        if (Schema::hasTable('surat_keterangan_sehat')) {
+            $querySehat = DB::table('surat_keterangan_sehat')
+                ->leftJoin('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'surat_keterangan_sehat.no_surat',
+                    'surat_keterangan_sehat.no_rawat',
+                    'surat_keterangan_sehat.tanggalsurat',
+                    'surat_keterangan_sehat.berat',
+                    'surat_keterangan_sehat.tinggi',
+                    'surat_keterangan_sehat.tensi',
+                    'surat_keterangan_sehat.suhu',
+                    'surat_keterangan_sehat.butawarna',
+                    'surat_keterangan_sehat.keperluan',
+                    'surat_keterangan_sehat.kesimpulan',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySehat->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('surat_keterangan_sehat.no_surat', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.no_rawat', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.keperluan', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.kesimpulan', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySehat->whereBetween('surat_keterangan_sehat.tanggalsurat', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySehat->where('surat_keterangan_sehat.tanggalsurat', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySehat->where('surat_keterangan_sehat.tanggalsurat', '<=', $endDate);
+            }
+
+            $suratSehat = $querySehat
+                ->orderBy('surat_keterangan_sehat.tanggalsurat', 'desc')
+                ->orderBy('surat_keterangan_sehat.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        if (Schema::hasTable('suratsakit')) {
+            $querySakit = DB::table('suratsakit')
+                ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'suratsakit.no_surat',
+                    'suratsakit.no_rawat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySakit->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('suratsakit.no_surat', 'like', $like)
+                        ->orWhere('suratsakit.no_rawat', 'like', $like)
+                        ->orWhere('suratsakit.lamasakit', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySakit->whereBetween('suratsakit.tanggalawal', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '<=', $endDate);
+            }
+
+            $suratSakit = $querySakit
+                ->orderBy('suratsakit.tanggalawal', 'desc')
+                ->orderBy('suratsakit.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSehatList', [
+            'suratSehat' => $suratSehat,
+            'suratSakit' => $suratSakit,
+            'tab' => $tab,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    })->name('rawat-jalan.surat-sehat.index');
+
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->name('rawat-jalan.surat-sehat')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
+
+    Route::get('rawat-jalan/surat-sakit', function (Request $request) {
+        $search = trim((string) $request->query('search', ''));
+        $startDate = (string) $request->query('start_date', '');
+        $endDate = (string) $request->query('end_date', '');
+
+        $suratSakit = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        if (Schema::hasTable('suratsakit')) {
+            $querySakit = DB::table('suratsakit')
+                ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'suratsakit.no_surat',
+                    'suratsakit.no_rawat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySakit->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('suratsakit.no_surat', 'like', $like)
+                        ->orWhere('suratsakit.no_rawat', 'like', $like)
+                        ->orWhere('suratsakit.lamasakit', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySakit->whereBetween('suratsakit.tanggalawal', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '<=', $endDate);
+            }
+
+            $suratSakit = $querySakit
+                ->orderBy('suratsakit.tanggalawal', 'desc')
+                ->orderBy('suratsakit.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSakitList', [
+            'suratSakit' => $suratSakit,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    })->name('rawat-jalan.surat-sakit.index');
+
     // moved to public routes above
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
         ->name('rawat-jalan.surat-sakit')

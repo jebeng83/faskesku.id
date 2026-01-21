@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import frekuensiPenyakit3ceec5 from './frekuensi-penyakit'
 import kunjunganAc275e from './kunjungan'
 /**
-* @see routes/web.php:658
+* @see routes/web.php:674
 * @route '/laporan/ralan/frekuensi-penyakit'
 */
 export const frekuensiPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ frekuensiPenyakit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:658
+* @see routes/web.php:674
 * @route '/laporan/ralan/frekuensi-penyakit'
 */
 frekuensiPenyakit.url = (options?: RouteQueryOptions) => {
@@ -24,7 +24,7 @@ frekuensiPenyakit.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:658
+* @see routes/web.php:674
 * @route '/laporan/ralan/frekuensi-penyakit'
 */
 frekuensiPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,7 +33,7 @@ frekuensiPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:658
+* @see routes/web.php:674
 * @route '/laporan/ralan/frekuensi-penyakit'
 */
 frekuensiPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -42,7 +42,7 @@ frekuensiPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 })
 
 /**
-* @see routes/web.php:673
+* @see routes/web.php:689
 * @route '/laporan/ralan/kunjungan'
 */
 export const kunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ kunjungan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:673
+* @see routes/web.php:689
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.url = (options?: RouteQueryOptions) => {
@@ -64,7 +64,7 @@ kunjungan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:673
+* @see routes/web.php:689
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +73,7 @@ kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:673
+* @see routes/web.php:689
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dokter
-* @see app/Http/Controllers/Pcare/PcareController.php:4022
+* @see app/Http/Controllers/Pcare/PcareController.php:4106
 * @route '/api/v1/rs/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ dokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dokter
-* @see app/Http/Controllers/Pcare/PcareController.php:4022
+* @see app/Http/Controllers/Pcare/PcareController.php:4106
 * @route '/api/v1/rs/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dokter
-* @see app/Http/Controllers/Pcare/PcareController.php:4022
+* @see app/Http/Controllers/Pcare/PcareController.php:4106
 * @route '/api/v1/rs/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dokter
-* @see app/Http/Controllers/Pcare/PcareController.php:4022
+* @see app/Http/Controllers/Pcare/PcareController.php:4106
 * @route '/api/v1/rs/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::poliklinik
-* @see app/Http/Controllers/Pcare/PcareController.php:4001
+* @see app/Http/Controllers/Pcare/PcareController.php:4085
 * @route '/api/v1/rs/poliklinik'
 */
 export const poliklinik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ poliklinik.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::poliklinik
-* @see app/Http/Controllers/Pcare/PcareController.php:4001
+* @see app/Http/Controllers/Pcare/PcareController.php:4085
 * @route '/api/v1/rs/poliklinik'
 */
 poliklinik.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ poliklinik.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::poliklinik
-* @see app/Http/Controllers/Pcare/PcareController.php:4001
+* @see app/Http/Controllers/Pcare/PcareController.php:4085
 * @route '/api/v1/rs/poliklinik'
 */
 poliklinik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ poliklinik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::poliklinik
-* @see app/Http/Controllers/Pcare/PcareController.php:4001
+* @see app/Http/Controllers/Pcare/PcareController.php:4085
 * @route '/api/v1/rs/poliklinik'
 */
 poliklinik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

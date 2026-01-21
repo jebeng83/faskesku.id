@@ -3,7 +3,7 @@ import dm65116f from './dm'
 import ht10dee4 from './ht'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dm
-* @see app/Http/Controllers/Pcare/PcareController.php:3008
+* @see app/Http/Controllers/Pcare/PcareController.php:3092
 * @route '/api/pcare/prolanis/dm/{nomorPeserta}/{start}/{limit}'
 */
 export const dm = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ dm.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dm
-* @see app/Http/Controllers/Pcare/PcareController.php:3008
+* @see app/Http/Controllers/Pcare/PcareController.php:3092
 * @route '/api/pcare/prolanis/dm/{nomorPeserta}/{start}/{limit}'
 */
 dm.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
@@ -47,7 +47,7 @@ dm.url = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dm
-* @see app/Http/Controllers/Pcare/PcareController.php:3008
+* @see app/Http/Controllers/Pcare/PcareController.php:3092
 * @route '/api/pcare/prolanis/dm/{nomorPeserta}/{start}/{limit}'
 */
 dm.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -57,7 +57,7 @@ dm.get = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::dm
-* @see app/Http/Controllers/Pcare/PcareController.php:3008
+* @see app/Http/Controllers/Pcare/PcareController.php:3092
 * @route '/api/pcare/prolanis/dm/{nomorPeserta}/{start}/{limit}'
 */
 dm.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -67,7 +67,7 @@ dm.head = (args: { nomorPeserta: string | number, start: string | number, limit:
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3104
+* @see app/Http/Controllers/Pcare/PcareController.php:3188
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 export const ht = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -82,7 +82,7 @@ ht.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3104
+* @see app/Http/Controllers/Pcare/PcareController.php:3188
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ ht.url = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3104
+* @see app/Http/Controllers/Pcare/PcareController.php:3188
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -121,7 +121,7 @@ ht.get = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3104
+* @see app/Http/Controllers/Pcare/PcareController.php:3188
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({

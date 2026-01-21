@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:2834
+* @see app/Http/Controllers/Pcare/PcareController.php:2918
 * @route '/api/pcare/mcu/kunjungan/{noKunjungan}'
 */
 export const kunjungan = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ kunjungan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:2834
+* @see app/Http/Controllers/Pcare/PcareController.php:2918
 * @route '/api/pcare/mcu/kunjungan/{noKunjungan}'
 */
 kunjungan.url = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ kunjungan.url = (args: { noKunjungan: string | number } | [noKunjungan: string |
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:2834
+* @see app/Http/Controllers/Pcare/PcareController.php:2918
 * @route '/api/pcare/mcu/kunjungan/{noKunjungan}'
 */
 kunjungan.get = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ kunjungan.get = (args: { noKunjungan: string | number } | [noKunjungan: string |
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::kunjungan
-* @see app/Http/Controllers/Pcare/PcareController.php:2834
+* @see app/Http/Controllers/Pcare/PcareController.php:2918
 * @route '/api/pcare/mcu/kunjungan/{noKunjungan}'
 */
 kunjungan.head = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ kunjungan.head = (args: { noKunjungan: string | number } | [noKunjungan: string 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2730
+* @see app/Http/Controllers/Pcare/PcareController.php:2814
 * @route '/api/pcare/mcu'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2730
+* @see app/Http/Controllers/Pcare/PcareController.php:2814
 * @route '/api/pcare/mcu'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:2730
+* @see app/Http/Controllers/Pcare/PcareController.php:2814
 * @route '/api/pcare/mcu'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

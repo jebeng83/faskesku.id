@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
@@ -10,6 +10,7 @@ import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
 import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
+import OdontogramForm from "../Odontogram/odontogram";
  
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
@@ -24,7 +25,16 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
     
+    const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [resepAppendItems, setResepAppendItems] = useState(null);
+    const [selectedDokterForResep, setSelectedDokterForResep] = useState(() => {
+        const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
+        return kd ? String(kd) : "";
+    });
+    const [selectedDokterNamaForResep, setSelectedDokterNamaForResep] = useState(() => {
+        const nama = rawatJalan?.dokter?.nm_dokter || "";
+        return nama ? String(nama) : "";
+    });
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
     const [soapModalOpen, setSoapModalOpen] = useState(false);
     const [soapModalLoading, setSoapModalLoading] = useState(false);
@@ -39,12 +49,26 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [poliCalling, setPoliCalling] = useState(false);
     const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
 
+    const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
+
     const toggle = (section) => {
         setOpenAcc((prev) => ({
             ...prev,
             [section]: !prev[section],
         }));
     };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const width = window.innerWidth || 0;
+        const shouldOpenKunjungan = width >= 768;
+        setOpenAcc((prev) => ({
+            ...prev,
+            kunjungan: shouldOpenKunjungan,
+        }));
+    }, []);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -199,6 +223,27 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             color: "red",
         },
         {
+            key: "odontogram",
+            title: "Odontogram",
+            subtitle: "Pemeriksaan Gigi",
+            icon: (
+                <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                    />
+                </svg>
+            ),
+            color: "teal",
+        },
+        {
             key: "lab",
             title: "Permintaan Lab",
             subtitle: "Laboratorium & Pemeriksaan",
@@ -255,31 +300,63 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             noRawat: selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat,
         };
 
-        switch (activeTab) {
-            case "cppt":
-                return <CpptSoap {...commonProps} onOpenResep={() => setActiveTab("resep")} appendToPlanning={resepAppendItems} onPlanningAppended={() => setResepAppendItems(null)} />;
-            case "tarifTindakan":
-                return <TarifTindakan {...commonProps} />;
-            case "resep":
-                return (
+        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi", "odontogram"].includes(activeTab));
+        const isResep = activeTab === "resep";
+
+        return (
+            <>
+                <div className={`${isCppt ? "block" : "hidden"} h-full`}>
+                    <CpptSoap 
+                        {...commonProps} 
+                        onOpenResep={() => setActiveTab("resep")} 
+                        onOpenDiagnosa={() => setActiveTab("diagnosa")}
+                        appendToPlanning={resepAppendItems} 
+                        onPlanningAppended={() => setResepAppendItems(null)} 
+                        appendToAssessment={diagnosaAppendItems}
+                        onAssessmentAppended={() => setDiagnosaAppendItems(null)}
+                        onPemeriksaChange={(dok) => {
+                            if (!dok) return;
+                            if (typeof dok === "string") {
+                                setSelectedDokterForResep(String(dok));
+                                setSelectedDokterNamaForResep("");
+                            } else if (typeof dok === "object") {
+                                if (dok.id) {
+                                    setSelectedDokterForResep(String(dok.id));
+                                }
+                                if (dok.nama) {
+                                    setSelectedDokterNamaForResep(String(dok.nama));
+                                }
+                            }
+                        }}
+                    />
+                </div>
+                
+                <div className={`${isResep ? "block" : "hidden"} h-full`}>
                     <Resep
                         {...commonProps}
                         kdPoli={rawatJalan?.kd_poli || params?.kd_poli || ""}
+                        initialDokter={selectedDokterForResep}
+                        initialDokterNama={selectedDokterNamaForResep}
                         onResepSaved={(items) => {
                             setResepAppendItems(items);
                             setActiveTab("cppt");
                         }}
                     />
-                );
-            case "diagnosa":
-                return <Diagnosa {...commonProps} />;
-            case "lab":
-                return <PermintaanLab {...commonProps} />;
-            case "radiologi":
-                return <PermintaanRadiologi {...commonProps} />;
-            default:
-                return <CpptSoap {...commonProps} />;
-        }
+                </div>
+
+                {activeTab === "tarifTindakan" && <TarifTindakan {...commonProps} />}
+                {activeTab === "diagnosa" && <Diagnosa 
+                    {...commonProps} 
+                    onDiagnosaSaved={(items) => {
+                        setDiagnosaAppendItems(items);
+                        setActiveTab("cppt");
+                    }}
+                />}
+                {activeTab === "odontogram" && <OdontogramForm {...commonProps} />}
+                {activeTab === "lab" && <PermintaanLab {...commonProps} />}
+                {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
+            </>
+        );
     };
 
     const handlePanggilPasien = async () => {
@@ -400,6 +477,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         } finally {
             setPoliRepeatCalling(false);
         }
+    };
+
+    const handleOpenSurat = () => {
+        if (!currentNoRawat) return;
+        router.visit(route("rawat-jalan.surat-sehat", currentNoRawat));
     };
 
     const openSoapHistoryModal = async (showAll = false) => {
@@ -690,9 +772,9 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
                 {/* Main Content Area - two columns 50:50 (riwayat : input) */}
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
-                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full overflow-x-hidden items-stretch`}>
+                <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full min-w-0 overflow-x-hidden items-stretch`}>
                     {/* Left Column - Riwayat Perawatan (scrollable) */}
-                    <div className={`transition-all duration-300 w-full lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
+                    <div className={`transition-all duration-300 w-full max-w-full min-w-0 lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-all duration-300 flex flex-col">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
                                 openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
@@ -766,9 +848,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     )}
                                 </button>
                             </div>
-                            {/* Patient summary under the Riwayat header for large screens */}
-                            <div className="hidden lg:block px-2 py-0.5 border-b border-gray-200 dark:border-gray-700">
-                                <div className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-1">Identitas Pasien</div>
+                            <div className="block px-2 py-0.5 border-b border-gray-200 dark:border-gray-700">
+                                <div className="text-[11px] font-medium text-gray-800 dark:text-gray-200 mb-1">
+                                    Identitas Pasien
+                                </div>
                                 <div className="space-y-0 text-[12px] leading-tight">
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Nama</span>
@@ -819,7 +902,35 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="text-left text-gray-700 dark:text-gray-300">Cara bayar</span>
                                         <span className="text-gray-400 text-center">:</span>
-                                        <span className="text-gray-900 dark:text-white">{rawatJalan?.penjab?.png_jawab || rawatJalan?.cara_bayar || 'BPJS'}</span>
+                                        <span>
+                                            {(() => {
+                                                const penjamin =
+                                                    rawatJalan?.nm_penjamin ||
+                                                    rawatJalan?.penjab?.png_jawab ||
+                                                    rawatJalan?.png_jawab ||
+                                                    rawatJalan?.cara_bayar;
+
+                                                if (!penjamin) {
+                                                    return null;
+                                                }
+
+                                                const isBpjs = penjamin
+                                                    .toUpperCase()
+                                                    .includes('BPJS');
+
+                                                return (
+                                                    <div
+                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                                            isBpjs
+                                                                ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                                                                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                                                        }`}
+                                                    >
+                                                        {penjamin}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-[7.5rem_0.75rem_1fr] md:grid-cols-[8.5rem_0.9rem_1fr] items-baseline gap-x-0.5">
                                         <span className="block mb-1 text-left text-gray-700 dark:text-gray-300">Kunjung Terakhir</span>
@@ -853,26 +964,72 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 {poliRepeatCalling ? 'Mengulang...' : 'Ulang panggil'}
                                             </button>
+                                            <button
+                                                onClick={handleOpenSurat}
+                                                disabled={!currentNoRawat}
+                                                className="text-xs px-3 py-1.5 rounded border bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 disabled:opacity-60"
+                                                title="Buat surat (pilih Surat Sehat / Surat Sakit)"
+                                            >
+                                                Surat
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             {openAcc.pemeriksaan && (
                                 <div className="p-3">
-                                    {/* Updated to use the new combined component */}
-                                    <RiwayatPerawatan
-                                        token={
-                                            typeof window !== "undefined"
-                                                ? new URLSearchParams(
-                                                     window.location.search
-                                                 ).get("t")
-                                                : ""
-                                        }
-                                        noRkmMedis={
-                                            params?.no_rkm_medis ||
-                                            rawatJalan?.patient?.no_rkm_medis
-                                        }
-                                    />
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                                            Riwayat Kunjungan
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setOpenAcc((prev) => ({
+                                                    ...prev,
+                                                    kunjungan: !prev.kunjungan,
+                                                }))
+                                            }
+                                            className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                            title={
+                                                openAcc.kunjungan
+                                                    ? "Sembunyikan daftar kunjungan"
+                                                    : "Tampilkan daftar kunjungan"
+                                            }
+                                        >
+                                            <svg
+                                                className={`w-3 h-3 transition-transform duration-200 ${
+                                                    openAcc.kunjungan ? "rotate-180" : ""
+                                                }`}
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M19 9l-7 7-7-7"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {openAcc.kunjungan && (
+                                        <RiwayatPerawatan
+                                            token={
+                                                typeof window !== "undefined"
+                                                    ? new URLSearchParams(
+                                                          window.location.search
+                                                      ).get("t")
+                                                    : ""
+                                            }
+                                            noRkmMedis={
+                                                params?.no_rkm_medis ||
+                                                rawatJalan?.patient?.no_rkm_medis
+                                            }
+                                            onSelectNoRawat={setSelectedNoRawat}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>
