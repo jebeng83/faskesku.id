@@ -661,7 +661,7 @@ suratSakit.head = (args: { no_rawat: string | number } | [no_rawat: string | num
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::awalKeperawatanUmum
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1612
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
 * @route '/rawat-jalan/awal-keperawatan-umum/{no_rawat}'
 */
 export const awalKeperawatanUmum = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -676,7 +676,7 @@ awalKeperawatanUmum.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::awalKeperawatanUmum
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1612
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
 * @route '/rawat-jalan/awal-keperawatan-umum/{no_rawat}'
 */
 awalKeperawatanUmum.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -703,7 +703,7 @@ awalKeperawatanUmum.url = (args: { no_rawat: string | number } | [no_rawat: stri
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::awalKeperawatanUmum
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1612
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
 * @route '/rawat-jalan/awal-keperawatan-umum/{no_rawat}'
 */
 awalKeperawatanUmum.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -713,7 +713,7 @@ awalKeperawatanUmum.get = (args: { no_rawat: string | number } | [no_rawat: stri
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::awalKeperawatanUmum
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1612
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1236
 * @route '/rawat-jalan/awal-keperawatan-umum/{no_rawat}'
 */
 awalKeperawatanUmum.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1054,7 +1054,6 @@ const rawatJalan = {
     radiologi: Object.assign(radiologi, radiologi),
     dokter: Object.assign(dokter, dokter),
     statistics: Object.assign(statistics, statistics),
-    awalKeperawatanUmum: Object.assign(awalKeperawatanUmum, awalKeperawatanUmum),
     create: Object.assign(create, create),
     store: Object.assign(store, store),
     show: Object.assign(show, show),
