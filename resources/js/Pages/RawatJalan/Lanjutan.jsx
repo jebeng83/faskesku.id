@@ -365,7 +365,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     />
                 </div>
 
-                {activeTab === "tarifTindakan" && <TarifTindakan {...commonProps} />}
+                {activeTab === "tarifTindakan" && <TarifTindakan 
+                    {...commonProps} 
+                    initialDokter={selectedDokterForResep}
+                    initialDokterNama={selectedDokterNamaForResep}
+                />}
                 {activeTab === "diagnosa" && <Diagnosa 
                     {...commonProps} 
                     onDiagnosaSaved={(items) => {
