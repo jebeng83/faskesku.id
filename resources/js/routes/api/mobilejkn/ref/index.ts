@@ -45,7 +45,7 @@ poli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::dokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 export const dokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +60,7 @@ dokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::dokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 dokter.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ dokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::dokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +79,7 @@ dokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::dokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 dokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

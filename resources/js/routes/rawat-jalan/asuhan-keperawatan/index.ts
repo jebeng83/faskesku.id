@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:1324
+* @see routes/web.php:1339
 * @route '/rawat-jalan/asuhan-keperawatan/sdki'
 */
 export const sdki = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ sdki.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1324
+* @see routes/web.php:1339
 * @route '/rawat-jalan/asuhan-keperawatan/sdki'
 */
 sdki.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ sdki.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1324
+* @see routes/web.php:1339
 * @route '/rawat-jalan/asuhan-keperawatan/sdki'
 */
 sdki.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ sdki.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1324
+* @see routes/web.php:1339
 * @route '/rawat-jalan/asuhan-keperawatan/sdki'
 */
 sdki.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

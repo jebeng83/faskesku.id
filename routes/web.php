@@ -1178,6 +1178,21 @@ Route::middleware('auth')->group(function () {
             ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
     });
 
+    // Triase UGD routes (CRUD)
+    Route::prefix('triase-ugd')->name('triase-ugd.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TriaseUgdController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\TriaseUgdController::class, 'store'])->name('store');
+        Route::get('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'show'])
+            ->name('show')
+            ->where(['no_rawat' => '.*']);
+        Route::put('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'update'])
+            ->name('update')
+            ->where(['no_rawat' => '.*']);
+        Route::delete('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'destroy'])
+            ->name('destroy')
+            ->where(['no_rawat' => '.*']);
+    });
+
     // Employee routes
     Route::resource('employees', EmployeeController::class);
 
@@ -1418,6 +1433,7 @@ Route::middleware('auth')->group(function () {
 
     // Pelayanan Medis routes
     Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
+    Route::get('rawat-inap/canvas', [RawatInapController::class, 'canvas'])->name('rawat-inap.canvas');
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');

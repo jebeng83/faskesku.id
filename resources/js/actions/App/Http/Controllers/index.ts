@@ -29,6 +29,7 @@ import PatientController from './PatientController'
 import Pasien from './Pasien'
 import RegistrationController from './RegistrationController'
 import SkriningVisualController from './SkriningVisualController'
+import TriaseUgdController from './TriaseUgdController'
 import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
@@ -79,6 +80,7 @@ const Controllers = {
     Pasien: Object.assign(Pasien, Pasien),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),
     SkriningVisualController: Object.assign(SkriningVisualController, SkriningVisualController),
+    TriaseUgdController: Object.assign(TriaseUgdController, TriaseUgdController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),

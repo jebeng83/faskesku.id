@@ -211,7 +211,26 @@ export default function Index(props = {}) {
                                             exit="exit"
                                             transition={{ delay: idx * 0.02 }}
                                         >
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">{row.no_rawat}</td>
+                                            <td
+                                                className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                                                onClick={() => {
+                                                    try {
+                                                        const url = route('rawat-inap.canvas', {
+                                                            no_rawat: row?.no_rawat,
+                                                            no_rkm_medis: row?.patient?.no_rkm_medis || ''
+                                                        });
+                                                        router.visit(url);
+                                                    } catch (_) {
+                                                        const params = new URLSearchParams({
+                                                            no_rawat: row?.no_rawat || '',
+                                                            no_rkm_medis: row?.patient?.no_rkm_medis || ''
+                                                        }).toString();
+                                                        router.visit(`/rawat-inap/canvas?${params}`);
+                                                    }
+                                                }}
+                                            >
+                                                {row.no_rawat}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.patient?.no_rkm_medis || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 {row.patient?.nm_pasien ? (

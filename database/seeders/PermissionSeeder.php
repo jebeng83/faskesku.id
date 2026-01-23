@@ -318,6 +318,7 @@ class PermissionSeeder extends Seeder
 
             'rawat-inap.index',
             'rawat-inap.lanjutan',
+            'rawat-inap.canvas',
             'view-bangsal',
             'create-bangsal',
             'edit-bangsal',

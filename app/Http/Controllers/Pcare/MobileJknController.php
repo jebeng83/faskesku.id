@@ -152,18 +152,33 @@ class MobileJknController extends Controller
                 ], 400);
             }
 
-            // Ambil jam praktek dari tabel jadwal (fallback jika tidak ada)
-            $jadwal = DB::table('jadwal')
+            $hariMap = [1 => 'SENIN', 2 => 'SELASA', 3 => 'RABU', 4 => 'KAMIS', 5 => 'JUMAT', 6 => 'SABTU', 7 => 'MINGGU'];
+            $hari = $hariMap[(int) date('N', strtotime($tanggalPeriksa))] ?? null;
+
+            $jadwalQuery = DB::table('jadwal')
                 ->select(['jam_mulai', 'jam_selesai'])
                 ->where('kd_dokter', $kdDokter)
                 ->where('kd_poli', $kdPoli)
-                // Optional: filter by hari jika tersedia pada tabel (tidak diasumsikan di sini)
-                ->orderBy('jam_mulai')
-                ->first();
+                ->orderBy('jam_mulai');
+
+            if ($hari) {
+                $jadwalQuery = $jadwalQuery->where('hari_kerja', $hari);
+            }
+
+            $jadwal = $jadwalQuery->first();
+
+            if (! $jadwal) {
+                return response()->json([
+                    'metadata' => [
+                        'code' => 400,
+                        'message' => 'Jadwal dokter tidak ditemukan',
+                    ],
+                ], 400);
+            }
 
             // Normalisasi format jam ke HH:mm (tanpa detik) sesuai spesifikasi Mobile JKN
-            $rawJamMulai = $jadwal?->jam_mulai ?: '08:00';
-            $rawJamSelesai = $jadwal?->jam_selesai ?: '16:00';
+            $rawJamMulai = $jadwal->jam_mulai ?: '08:00';
+            $rawJamSelesai = $jadwal->jam_selesai ?: '16:00';
             $formatJam = function ($time) {
                 // Terima input seperti '07:30', '07:30:00', bahkan '7:30'
                 if (! is_string($time)) {
