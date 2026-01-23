@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 
-export default function PermintaanLab({ noRawat = '' }) {
+export default function PermintaanLab({ noRawat = '', initialDokter = '', initialDokterNama = '' }) {
     const [selectedTests, setSelectedTests] = useState([]);
     const [availableTests, setAvailableTests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -12,12 +12,26 @@ export default function PermintaanLab({ noRawat = '' }) {
     const [activeCategory, setActiveCategory] = useState('PK'); // PK, PA, MB
     
     // Dokter Perujuk State
-    const [dokterPerujuk, setDokterPerujuk] = useState({ kd_dokter: '', nm_dokter: '' });
+    const [dokterPerujuk, setDokterPerujuk] = useState({ 
+        kd_dokter: initialDokter || '', 
+        nm_dokter: initialDokterNama || '' 
+    });
     const [dokterOptions, setDokterOptions] = useState([]);
     const [loadingDokter, setLoadingDokter] = useState(false);
-    const [dokterSearch, setDokterSearch] = useState('');
+    const [dokterSearch, setDokterSearch] = useState(initialDokterNama || '');
     const [isDokterDropdownOpen, setIsDokterDropdownOpen] = useState(false);
     const dokterDropdownRef = useRef(null);
+    
+    // Effect to sync with initial props when they change
+    useEffect(() => {
+        if (initialDokter || initialDokterNama) {
+            setDokterPerujuk({ 
+                kd_dokter: initialDokter || '', 
+                nm_dokter: initialDokterNama || '' 
+            });
+            setDokterSearch(initialDokterNama || '');
+        }
+    }, [initialDokter, initialDokterNama]);
     
     // Template State - menyimpan template yang dipilih per jenis pemeriksaan
     const [selectedTemplates, setSelectedTemplates] = useState({}); // { kd_jenis_prw: [id_template1, id_template2] }
@@ -111,6 +125,17 @@ export default function PermintaanLab({ noRawat = '' }) {
         dokter.kd_dokter?.toLowerCase().includes(dokterSearch.toLowerCase())
     );
 
+    // Auto-fill nama dokter jika kd_dokter ada tapi nama kosong (misal dari prop initialDokter yang hanya bawa kode)
+    useEffect(() => {
+        if (dokterOptions.length > 0 && dokterPerujuk.kd_dokter && !dokterPerujuk.nm_dokter) {
+            const found = dokterOptions.find(d => String(d.kd_dokter) === String(dokterPerujuk.kd_dokter));
+            if (found) {
+                setDokterPerujuk(prev => ({ ...prev, nm_dokter: found.nm_dokter }));
+                setDokterSearch(found.nm_dokter);
+            }
+        }
+    }, [dokterOptions, dokterPerujuk.kd_dokter]);
+
     // Handle dokter selection
     const handleDokterSelect = (dokter) => {
         if (dokter) {
@@ -201,6 +226,16 @@ export default function PermintaanLab({ noRawat = '' }) {
             delete newState[kd_jenis_prw];
             return newState;
         });
+    };
+
+    const removeAllTests = () => {
+        if (selectedTests.length === 0) return;
+        
+        if (window.confirm('Apakah Anda yakin ingin menghapus semua pemeriksaan terpilih?')) {
+            setSelectedTests([]);
+            setSelectedTemplates({});
+            setTemplatesData({});
+        }
     };
 
     // Toggle template selection
@@ -456,7 +491,7 @@ export default function PermintaanLab({ noRawat = '' }) {
 
     return (
         <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-4 md:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-900 rounded-2xl border-t-4 border-green-500 shadow-lg p-4 md:p-6">
             {/* Form Data Permintaan */}
                 <div className="space-y-4">
                     {/* Baris 1: Tanggal Permintaan, Jam Permintaan, Dokter Perujuk */}
@@ -493,9 +528,8 @@ export default function PermintaanLab({ noRawat = '' }) {
                                         setDokterSearch(e.target.value);
                                         setIsDokterDropdownOpen(true);
                                     }}
-                                    onFocus={() => setIsDokterDropdownOpen(true)}
                                     className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-                                    placeholder="Cari dokter perujuk..."
+                                    placeholder="Ketik nama dokter untuk mencari..."
                                     required
                                 />
                                 {isDokterDropdownOpen && (
@@ -600,8 +634,9 @@ export default function PermintaanLab({ noRawat = '' }) {
                     </button>
                 </div>
 
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Pencarian Pemeriksaan */}
-                <div className="space-y-4">
+                <div className="space-y-4 bg-blue-50/50 dark:bg-blue-900/10 p-5 rounded-xl border border-blue-100 dark:border-blue-800/30 transition-all hover:shadow-md">
                     <div className="flex items-center justify-between">
                         <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -656,7 +691,7 @@ export default function PermintaanLab({ noRawat = '' }) {
                 </div>
 
                 {/* Selected Tests */}
-                <div className="space-y-4">
+                <div className="space-y-4 bg-green-50/50 dark:bg-green-900/10 p-5 rounded-xl border border-green-100 dark:border-green-800/30 transition-all hover:shadow-md">
                     <div className="flex items-center justify-between">
                         <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -664,9 +699,20 @@ export default function PermintaanLab({ noRawat = '' }) {
                             </svg>
                             Pemeriksaan Terpilih
                         </h4>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                            {selectedTests.length} pemeriksaan
-                        </span>
+                        <div className="flex items-center space-x-3">
+                            {selectedTests.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={removeAllTests}
+                                    className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium underline transition-colors"
+                                >
+                                    Hapus Semua
+                                </button>
+                            )}
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                {selectedTests.length} pemeriksaan
+                            </span>
+                        </div>
                     </div>
                     {selectedTests.length > 0 ? (
                         <div className="border-t border-gray-200 dark:border-gray-700">
@@ -804,6 +850,7 @@ export default function PermintaanLab({ noRawat = '' }) {
                             <span className="text-lg font-bold text-gray-900 dark:text-white">Rp {getTotalBiaya().toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                         </div>
                     )}
+                </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
