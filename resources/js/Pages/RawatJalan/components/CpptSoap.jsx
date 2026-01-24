@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
+import Modal from '@/Components/Modal';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
@@ -530,6 +532,46 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [kunjunganResult, setKunjunganResult] = useState(null); // hasil kirim kunjungan
     const [rujukForm, setRujukForm] = useState({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
     const [viewMode, setViewMode] = useState('current');
+    const [showGrafikModal, setShowGrafikModal] = useState(false);
+
+    // Konstanta rentang normal
+    const NORMAL_RANGES = {
+        sistole: { min: 90, max: 120, label: 'Normal Sistole', color: '#ef4444' },
+        diastole: { min: 60, max: 80, label: 'Normal Diastole', color: '#3b82f6' },
+        suhu: { min: 36.5, max: 37.5, label: 'Normal Suhu', color: '#f59e0b' },
+        nadi: { min: 60, max: 100, label: 'Normal Nadi', color: '#10b981' },
+        respirasi: { min: 12, max: 20, label: 'Normal Respirasi', color: '#8b5cf6' }
+    };
+
+    const grafikData = useMemo(() => {
+        if (!list || list.length === 0) return [];
+        // Sort by date ascending
+        const sorted = [...list].sort((a, b) => {
+            const dateA = new Date(`${a.tgl_perawatan}T${a.jam_rawat || '00:00'}`);
+            const dateB = new Date(`${b.tgl_perawatan}T${b.jam_rawat || '00:00'}`);
+            return dateA - dateB;
+        });
+
+        return sorted.map(item => {
+            let sistole = null;
+            let diastole = null;
+            if (item.tensi && item.tensi.includes('/')) {
+                const parts = item.tensi.split('/');
+                sistole = parseInt(parts[0]);
+                diastole = parseInt(parts[1]);
+            }
+            return {
+                date: item.tgl_perawatan,
+                datetime: `${item.tgl_perawatan} ${item.jam_rawat ? item.jam_rawat.substring(0, 5) : ''}`,
+                suhu: parseFloat(item.suhu_tubuh) || null,
+                nadi: parseFloat(item.nadi) || null,
+                respirasi: parseFloat(item.respirasi) || null,
+                spo2: parseFloat(item.spo2) || null,
+                sistole,
+                diastole
+            };
+        }).filter(item => item.suhu || item.nadi || item.respirasi || item.sistole || item.diastole);
+    }, [list]);
     // Referensi Poli & Dokter (untuk menampilkan nama pada KD Poli/Dokter)
     const [poliOptions, setPoliOptions] = useState([]);
     const [dokterOptions, setDokterOptions] = useState([]);
@@ -3235,6 +3277,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             >
                                 Semua record
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowGrafikModal(true)}
+                                disabled={!noRkmMedis}
+                                className={`text-sm px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Tampilkan grafik vital sign"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                    Grafik
+                                </div>
+                            </button>
                         </div>
                     </div>
                     {loadingList ? (
@@ -3510,6 +3564,172 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     )}
                 </>
             </div>
+            
+            <Modal show={showGrafikModal} onClose={() => setShowGrafikModal(false)} size="wide" title="Grafik Tanda Vital">
+                {grafikData.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        Belum ada data vital sign yang cukup untuk ditampilkan
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Grafik Tensi */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 lg:col-span-2 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Tekanan Darah (mmHg)
+                                </h3>
+                                <div className="h-72 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 30, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            {/* Area Normal Sistole */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.sistole.min} 
+                                                y2={NORMAL_RANGES.sistole.max} 
+                                                fill={NORMAL_RANGES.sistole.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Normal Sistole', position: 'insideRight', fill: NORMAL_RANGES.sistole.color, fontSize: 10 }}
+                                            />
+                                            {/* Area Normal Diastole */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.diastole.min} 
+                                                y2={NORMAL_RANGES.diastole.max} 
+                                                fill={NORMAL_RANGES.diastole.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Normal Diastole', position: 'insideRight', fill: NORMAL_RANGES.diastole.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 11}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600', marginBottom: '4px'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="sistole" stroke="#ef4444" name="Sistole" strokeWidth={2.5} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                            <Line type="monotone" dataKey="diastole" stroke="#3b82f6" name="Diastole" strokeWidth={2.5} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Grafik Suhu */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    Suhu Tubuh (°C)
+                                </h3>
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 20, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.suhu.min} 
+                                                y2={NORMAL_RANGES.suhu.max} 
+                                                fill={NORMAL_RANGES.suhu.color} 
+                                                fillOpacity={0.15}
+                                                label={{ value: 'Normal', position: 'insideRight', fill: NORMAL_RANGES.suhu.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 10}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="suhu" stroke="#f59e0b" name="Suhu" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Grafik Nadi & Respirasi */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Nadi & Respirasi (x/menit)
+                                </h3>
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 20, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            {/* Area Normal Nadi */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.nadi.min} 
+                                                y2={NORMAL_RANGES.nadi.max} 
+                                                fill={NORMAL_RANGES.nadi.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Nadi Normal', position: 'insideTopRight', fill: NORMAL_RANGES.nadi.color, fontSize: 10 }}
+                                            />
+                                            {/* Area Normal Respirasi */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.respirasi.min} 
+                                                y2={NORMAL_RANGES.respirasi.max} 
+                                                fill={NORMAL_RANGES.respirasi.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Resp. Normal', position: 'insideBottomRight', fill: NORMAL_RANGES.respirasi.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 10}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="nadi" stroke="#10b981" name="Nadi" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                            <Line type="monotone" dataKey="respirasi" stroke="#8b5cf6" name="Respirasi" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                    </div>
+                )}
+                
+                <div className="mt-6 flex justify-end">
+                    <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                        onClick={() => setShowGrafikModal(false)}
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 }
