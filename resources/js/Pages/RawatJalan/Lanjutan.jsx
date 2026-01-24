@@ -540,7 +540,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         new Date(a.tgl_registrasi || 0)
                 );
             if (!showAll) {
-                arr = arr.slice(0, 5);
+                arr = arr.slice(0, 6);
             }
             setSoapShowAll(showAll);
             const results = await Promise.all(
@@ -670,12 +670,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     };
 
     const SOAP_PAGE_SIZE = 5;
-    const soapTotalRows = soapModalItems.reduce((acc, h) => {
-        if (Array.isArray(h?.entries)) {
-            return acc + h.entries.length;
-        }
-        return acc;
-    }, 0);
+    const soapTotalRows = soapModalItems.reduce(
+        (acc, curr) =>
+            acc + (Array.isArray(curr.entries) ? curr.entries.length : 0),
+        0
+    );
     const soapTotalPages = Math.max(
         1,
         Math.ceil(soapTotalRows / SOAP_PAGE_SIZE || 1)
@@ -1207,9 +1206,19 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 Semua record
                                             </button>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                                {soapModalItems.length} record
-                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => openSoapHistoryModal(false)}
+                                                aria-pressed={!soapShowAll}
+                                                className={`text-xs px-3 py-1 rounded border transition-colors ${
+                                                    !soapShowAll
+                                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                                        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                                                }`}
+                                                title="Tampilkan 6 riwayat terakhir"
+                                            >
+                                                6 Record
+                                            </button>
                                             <div className="flex items-center gap-1">
                                                 <button
                                                     type="button"

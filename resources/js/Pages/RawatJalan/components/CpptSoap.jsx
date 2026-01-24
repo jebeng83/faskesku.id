@@ -1500,14 +1500,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
     };
 
-    const fetchAllByNoRm = async () => {
+    const fetchAllByNoRm = async (limit = 0) => {
         if (!noRkmMedis) return;
         setLoadingList(true);
         try {
             const base = route('rawat-jalan.riwayat');
             const res = await fetch(`${base}?no_rkm_medis=${encodeURIComponent(noRkmMedis)}`, { headers: { 'Accept': 'application/json' } });
             const json = await res.json();
-            const regs = (Array.isArray(json.data) ? json.data : []).filter((r) => String(r?.stts || '').toLowerCase() !== 'batal');
+            let regs = (Array.isArray(json.data) ? json.data : []).filter((r) => String(r?.stts || '').toLowerCase() !== 'batal');
+            
+            // Sort by latest registration first
+            regs.sort((a, b) => new Date(b.tgl_registrasi || 0) - new Date(a.tgl_registrasi || 0));
+
+            // Ambil lebih banyak data registrasi untuk memastikan kita mendapatkan data pemeriksaan yang cukup
+            // (karena tidak semua registrasi memiliki data pemeriksaan/SOAP)
+            if (limit > 0) {
+                // Kita ambil buffer yang cukup besar (misal 50) untuk mencari 6 record valid
+                regs = regs.slice(0, 50);
+            }
+
             const promises = regs
                 .map((r) => r?.no_rawat)
                 .filter(Boolean)
@@ -1532,7 +1543,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 const db = new Date(tb);
                 return db - da;
             });
-            setList(allRows);
+            
+            if (limit > 0) {
+                setList(allRows.slice(0, limit));
+            } else {
+                setList(allRows);
+            }
+
             const ids = Array.from(new Set(allRows.map((r) => String(r?.nik || r?.nip || '')).filter((s) => !!s)));
             const missing = ids.filter((id) => !(id in pegawaiMap));
             if (missing.length) {
@@ -1560,6 +1577,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     useEffect(() => {
         if (viewMode === 'current') {
             fetchList();
+        } else if (viewMode === 'limit_6') {
+            fetchAllByNoRm(6);
         } else {
             fetchAllByNoRm();
         }
@@ -3192,6 +3211,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </button>
                             <button
                                 type="button"
+                                onClick={() => setViewMode('limit_6')}
+                                disabled={!noRkmMedis}
+                                aria-pressed={viewMode === 'limit_6'}
+                                className={`text-sm px-3 py-1 rounded ${viewMode === 'limit_6'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                } ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Tampilkan 6 pemeriksaan terakhir"
+                            >
+                                6 record
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => setViewMode('all')}
                                 disabled={!noRkmMedis}
                                 aria-pressed={viewMode === 'all'}
@@ -3203,9 +3235,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             >
                                 Semua record
                             </button>
-                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                {list.length} record
-                            </span>
                         </div>
                     </div>
                     {loadingList ? (
