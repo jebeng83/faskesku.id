@@ -487,22 +487,20 @@ export default function UGD() {
       const controller = new AbortController();
       listAbortRef.current = controller;
       const params = {};
-      params.poli = 'IGDK';
-      params.per_page = 200;
+      params.limit = 200;
       if (query) params.search = query;
       if (dateFrom && dateTo) {
         if (dateFrom === dateTo) {
           params.tanggal = dateFrom;
         } else {
-          params.tanggal_awal = dateFrom;
-          params.tanggal_akhir = dateTo;
+          params.start_date = dateFrom;
+          params.end_date = dateTo;
         }
-      } else if (dateFrom) {
-        params.tanggal = dateFrom;
-      } else if (dateTo) {
-        params.tanggal = dateTo;
+      } else {
+        if (dateFrom) params.start_date = dateFrom;
+        if (dateTo) params.end_date = dateTo;
       }
-      const url = regPeriksaList.url(params);
+      const url = regPeriksaList.url({ query: params });
       const res = await axios.get(url, { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, withCredentials: true });
       const data = Array.isArray(res?.data?.data?.data)
         ? res.data.data.data
@@ -531,7 +529,13 @@ export default function UGD() {
         return true;
       };
       const filteredByDate = (data || []).filter(withinRange);
-      const filtered = filteredByDate.filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
+      const isIGDRow = (r) => {
+        const kdPoli = String(r?.kd_poli ?? r?.poliklinik?.kd_poli ?? '').trim().toUpperCase();
+        if (kdPoli) return kdPoli === 'IGDK' || kdPoli === 'IGD';
+        const nmPoli = String(r?.poliklinik?.nm_poli ?? '').toLowerCase();
+        return nmPoli.includes('igd');
+      };
+      const filtered = filteredByDate.filter(isIGDRow);
       const q = String(query || '').trim().toLowerCase();
       let finalRows = q
         ? filtered.filter((r) => {
@@ -545,9 +549,12 @@ export default function UGD() {
         : filtered;
       if (q.includes('/')) {
         try {
-          const byRawatRes = await axios.get(regPeriksaApi.byRawat.url({ no_rawat: query }), { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+          const byRawatRes = await axios.get(
+            regPeriksaApi.byRawat.url({ query: { no_rawat: query } }),
+            { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
+          );
           const item = byRawatRes?.data?.data;
-          if (item && withinRange(item) && String(item?.kd_poli || '').trim() === 'IGDK') {
+          if (item && withinRange(item) && isIGDRow(item)) {
             const exists = finalRows.some((r) => String(r?.no_rawat || '') === String(item.no_rawat));
             if (!exists) finalRows = [item, ...finalRows];
           }
@@ -812,6 +819,15 @@ export default function UGD() {
     setTriaseOpen(true);
   };
 
+  const openAsuhanKeperawatan = (row) => {
+    try {
+      const id = String(row?.no_rawat || '').trim();
+      const base = '/igd/asuhan-keperawatan';
+      const url = id ? `${base}?q=${encodeURIComponent(id)}` : base;
+      window.location.assign(url);
+    } catch {}
+  };
+
   const submitEdit = async () => {
     try {
       const id = selected?.no_rawat || selected?.id || "";
@@ -914,6 +930,7 @@ export default function UGD() {
                         align="start"
                       >
                         <DropdownItem onClick={() => openEdit(r)} icon={<Pencil className="w-4 h-4" />}>Edit</DropdownItem>
+                        <DropdownItem onClick={() => openAsuhanKeperawatan(r)} icon={<Search className="w-4 h-4" />}>Asuhan Keperawatan</DropdownItem>
                         <DropdownItem onClick={() => openTriase(r)} icon={<HeartPulse className="w-4 h-4" />}>Triase</DropdownItem>
                         <DropdownItem onClick={() => openCheckIn(r)} icon={<Activity className="w-4 h-4" />}>Masuk kamar inap</DropdownItem>
                         <DropdownItem onClick={() => submitDelete(r)} icon={<Trash2 className="w-4 h-4" />}>Hapus</DropdownItem>

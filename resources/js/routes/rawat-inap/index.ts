@@ -88,7 +88,7 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1437
+* @see routes/web.php:1438
 * @route '/rawat-inap/bangsal'
 */
 export const bangsal = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -102,7 +102,7 @@ bangsal.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1437
+* @see routes/web.php:1438
 * @route '/rawat-inap/bangsal'
 */
 bangsal.url = (options?: RouteQueryOptions) => {
@@ -110,7 +110,7 @@ bangsal.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1437
+* @see routes/web.php:1438
 * @route '/rawat-inap/bangsal'
 */
 bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -119,7 +119,7 @@ bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1437
+* @see routes/web.php:1438
 * @route '/rawat-inap/bangsal'
 */
 bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -128,7 +128,7 @@ bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1440
+* @see routes/web.php:1441
 * @route '/rawat-inap/kamar'
 */
 export const kamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -142,7 +142,7 @@ kamar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1440
+* @see routes/web.php:1441
 * @route '/rawat-inap/kamar'
 */
 kamar.url = (options?: RouteQueryOptions) => {
@@ -150,7 +150,7 @@ kamar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1440
+* @see routes/web.php:1441
 * @route '/rawat-inap/kamar'
 */
 kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -159,7 +159,7 @@ kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1440
+* @see routes/web.php:1441
 * @route '/rawat-inap/kamar'
 */
 kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

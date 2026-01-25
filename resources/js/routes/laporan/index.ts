@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import ralan from './ralan'
 import ranap from './ranap'
 /**
-* @see routes/web.php:625
+* @see routes/web.php:626
 * @route '/laporan'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:625
+* @see routes/web.php:626
 * @route '/laporan'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,7 +24,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:625
+* @see routes/web.php:626
 * @route '/laporan'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,7 +33,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:625
+* @see routes/web.php:626
 * @route '/laporan'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -42,7 +42,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:701
+* @see routes/web.php:702
 * @route '/laporan/stats'
 */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ stats.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:701
+* @see routes/web.php:702
 * @route '/laporan/stats'
 */
 stats.url = (options?: RouteQueryOptions) => {
@@ -64,7 +64,7 @@ stats.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:701
+* @see routes/web.php:702
 * @route '/laporan/stats'
 */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +73,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:701
+* @see routes/web.php:702
 * @route '/laporan/stats'
 */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

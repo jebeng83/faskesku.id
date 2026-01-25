@@ -1,31 +1,20 @@
 import React, { useState } from "react";
+import Modal from "@/Components/Modal";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import efekEnakMd from "../../../../docs/Efekenak.md?raw";
 import { Head } from "@inertiajs/react";
-import Tabs from "@/Components/Tabs";
 import { getAppTimeZone } from "@/tools/datetime";
 import {
-  Stethoscope,
-  Pill,
-  User,
-  UserCheck,
-  Users,
-  HeartPulse,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 
-export default function CanvasRanap(props = {}) {
-  const { patient = {}, no_rawat = "", children } = props;
+export default function CanvasAskep(props = {}) {
+  const { patient = {}, no_rawat = "", children, leftMenu = null } = props;
   const [isIdentityOpen, setIsIdentityOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState("pemeriksaan_cppt");
-
-  const tabs = [
-    { id: "pemeriksaan_cppt", label: "Pemeriksaan & CPPT", icon: <Stethoscope className="w-4 h-4" /> },
-    { id: "resep_obat", label: "Resep Obat", icon: <Pill className="w-4 h-4" /> },
-    { id: "tindakan_dokter", label: "Tindakan Dokter", icon: <User className="w-4 h-4" /> },
-    { id: "tindakan_perawat", label: "Tindakan Perawat", icon: <UserCheck className="w-4 h-4" /> },
-    { id: "tindakan_dokter_perawat", label: "Tindakan Dokter Perawat", icon: <Users className="w-4 h-4" /> },
-    { id: "diagnosa", label: "Diagnosa", icon: <HeartPulse className="w-4 h-4" /> },
-  ];
+  const [docOpen, setDocOpen] = useState(false);
+  
 
   const formatDateIdShort = (date) => {
     if (!date) return "-";
@@ -44,39 +33,7 @@ export default function CanvasRanap(props = {}) {
     }
   };
 
-  const renderTabContent = () => {
-    if (activeTab === "pemeriksaan_cppt") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Pemeriksaan & CPPT</div>
-      );
-    }
-    if (activeTab === "resep_obat") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Resep Obat</div>
-      );
-    }
-    if (activeTab === "tindakan_dokter") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Tindakan Dokter</div>
-      );
-    }
-    if (activeTab === "tindakan_perawat") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Tindakan Perawat</div>
-      );
-    }
-    if (activeTab === "tindakan_dokter_perawat") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Tindakan Dokter Perawat</div>
-      );
-    }
-    if (activeTab === "diagnosa") {
-      return (
-        <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl shadow-xl shadow-blue-500/5 p-4">Diagnosa</div>
-      );
-    }
-    return null;
-  };
+  
 
   const leftIdentity = [
     { label: "No Rawat", value: no_rawat || "-" },
@@ -97,10 +54,10 @@ export default function CanvasRanap(props = {}) {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <Head title="Canvas Ranap" />
+      <Head title="Asuhan Keperawatan IGD" />
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="w-full px-2 sm:px-3 h-14 flex items-center">
-          <h1 className="text-lg font-semibold">Canvas Rawat Inap</h1>
+          <h1 className="text-lg font-semibold">Asuhan Keperawatan</h1>
         </div>
       </header>
       <main className="w-full px-1 sm:px-2 md:px-3 pt-16 pb-4 overflow-x-hidden">
@@ -144,6 +101,13 @@ export default function CanvasRanap(props = {}) {
                 </div>
               )}
             </div>
+            {leftMenu ? (
+              <div className="rounded-xl border border-gray-200 bg-white mb-6">
+                <div className="px-2 py-1.5 md:px-3 md:py-2 text-xs">
+                  {leftMenu}
+                </div>
+              </div>
+            ) : null}
           </div>
           <div className="w-full min-w-0">
             <div className="rounded-xl border border-gray-200 bg-white mb-6 md:hidden">
@@ -184,16 +148,7 @@ export default function CanvasRanap(props = {}) {
                 </div>
               )}
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white">
-              <div className="px-4 py-3 border-b border-gray-200">
-                <div className="overflow-x-auto -mx-4 px-4">
-                  <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} variant="underline" size="md" />
-                </div>
-              </div>
-              <div className="p-3 md:p-4">
-                {renderTabContent()}
-              </div>
-            </div>
+            
             {children ? (
               <div className="mt-4 rounded-xl border border-gray-200 bg-white">
                 <div className="p-3 md:p-4">
@@ -201,9 +156,21 @@ export default function CanvasRanap(props = {}) {
                 </div>
               </div>
             ) : null}
+            {leftMenu ? (
+              <div className="rounded-xl border border-gray-200 bg-white mb-6 md:hidden">
+                <div className="px-2 py-1.5 md:px-3 md:py-2 text-xs">
+                  {leftMenu}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </main>
+      <Modal show={docOpen} onClose={() => setDocOpen(false)} title="Efek Enak" size="lg" showTopGradient>
+        <div className="text-sm">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{efekEnakMd}</ReactMarkdown>
+        </div>
+      </Modal>
     </div>
   );
 }

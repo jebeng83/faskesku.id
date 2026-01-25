@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import asuhanKeperawatan from './asuhan-keperawatan'
 /**
 * @see \App\Http\Controllers\IGDController::index
 * @see app/Http/Controllers/IGDController.php:13
@@ -360,6 +361,7 @@ destroy.delete = (args: { igd: string | number } | [igd: string | number ] | str
 })
 
 const igd = {
+    asuhanKeperawatan: Object.assign(asuhanKeperawatan, asuhanKeperawatan),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

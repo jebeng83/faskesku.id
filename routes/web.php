@@ -21,6 +21,7 @@ use App\Http\Controllers\Farmasi\DataSuplierController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
 use App\Http\Controllers\IGDController;
+use App\Http\Controllers\IGD\AsuhanKeperawatanController;
 use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\Kepegawaian\BankController;
@@ -1441,6 +1442,14 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('RawatInap/components/Kamar');
     })->name('rawat-inap.kamar');
     Route::resource('rawat-inap', RawatInapController::class);
+    // Pastikan route spesifik IGD didefinisikan SEBELUM wildcard resource '/igd/{igd}'
+    Route::prefix('igd')->name('igd.')->group(function () {
+        Route::get('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'index'])->name('asuhan-keperawatan.index');
+        Route::get('/asuhan-keperawatan/{noRawat}/edit', [AsuhanKeperawatanController::class, 'edit'])->name('asuhan-keperawatan.edit')->where('noRawat', '.*');
+        Route::post('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'store'])->name('asuhan-keperawatan.store');
+        Route::put('/asuhan-keperawatan/{noRawat}', [AsuhanKeperawatanController::class, 'update'])->name('asuhan-keperawatan.update')->where('noRawat', '.*');
+        Route::delete('/asuhan-keperawatan/{noRawat}', [AsuhanKeperawatanController::class, 'destroy'])->name('asuhan-keperawatan.destroy')->where('noRawat', '.*');
+    });
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
 

@@ -6,8 +6,8 @@ export default function Table({
 	keyField = "id",
 	onRowClick = null,
 	className = "",
-	emptyMessage = "Tidak ada data",
-	emptyIcon = null,
+	_emptyMessage = "Tidak ada data",
+	_emptyIcon = null,
 }) {
 	return (
 		<div
@@ -28,19 +28,9 @@ export default function Table({
 						</tr>
 					</thead>
 					<tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-						{data.length === 0 ? (
-							<tr>
-								<td colSpan={columns.length} className="px-6 py-12 text-center">
-									<div className="flex flex-col items-center">
-										{emptyIcon && <div className="mb-4">{emptyIcon}</div>}
-										<h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-											{emptyMessage}
-										</h3>
-									</div>
-								</td>
-							</tr>
-						) : (
-							data.map((row, rowIndex) => (
+						{data.length === 0
+							? null
+							: data.map((row, rowIndex) => (
 								<tr
 									key={row[keyField] || rowIndex}
 									className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
@@ -54,11 +44,10 @@ export default function Table({
 											className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
 										>
 											{column.render ? column.render(row) : row[column.key]}
-										</td>
-									))}
-								</tr>
-							))
-						)}
+											</td>
+										))}
+									</tr>
+								))}
 					</tbody>
 				</table>
 			</div>

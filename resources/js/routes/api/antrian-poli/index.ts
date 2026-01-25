@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:538
+* @see routes/web.php:539
 * @route '/api/antrian-poli/call'
 */
 export const call = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -14,7 +14,7 @@ call.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see routes/web.php:538
+* @see routes/web.php:539
 * @route '/api/antrian-poli/call'
 */
 call.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ call.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:538
+* @see routes/web.php:539
 * @route '/api/antrian-poli/call'
 */
 call.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -31,7 +31,7 @@ call.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/web.php:568
+* @see routes/web.php:569
 * @route '/api/antrian-poli/repeat'
 */
 export const repeat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -45,7 +45,7 @@ repeat.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see routes/web.php:568
+* @see routes/web.php:569
 * @route '/api/antrian-poli/repeat'
 */
 repeat.url = (options?: RouteQueryOptions) => {
@@ -53,7 +53,7 @@ repeat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:568
+* @see routes/web.php:569
 * @route '/api/antrian-poli/repeat'
 */
 repeat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
