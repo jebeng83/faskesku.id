@@ -3,7 +3,7 @@ import { Head } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Search as SearchIcon, RefreshCcw, PackageOpen } from "lucide-react";
+import { Search as SearchIcon, RefreshCcw, PackageOpen, Printer } from "lucide-react";
 
 export default function CekStok() {
     const [bangsal, setBangsal] = useState([]);
@@ -12,6 +12,7 @@ export default function CekStok() {
     const [q, setQ] = useState("");
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [appSetting, setAppSetting] = useState(null);
 
     const cekStokDataUrl = "/farmasi/sisa-stok/data";
 
@@ -36,6 +37,19 @@ export default function CekStok() {
         };
         fetchLokasi();
         return () => {};
+    }, []);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("/setting/app", { headers: { Accept: "application/json" } });
+                if (res.ok) {
+                    const json = await res.json();
+                    const d = Array.isArray(json?.data) && json.data.length ? json.data[0] : null;
+                    setAppSetting(d);
+                }
+            } catch {}
+        })();
     }, []);
 
     const defaultBangsal = useMemo(() => {
@@ -108,6 +122,114 @@ export default function CekStok() {
         }
     };
 
+    const handlePrint = () => {
+        if (!kdBangsal) return;
+        const now = new Date();
+        const createdAt = now.toLocaleString("id-ID");
+        const locText = kdBangsal ? `${kdBangsal}${nmBangsal ? " — " + nmBangsal : ""}` : "-";
+        const kwText = q || "-";
+        const orgName = appSetting?.nama_instansi || "Nama Instansi";
+        const orgAddrParts = [appSetting?.alamat_instansi || "", [appSetting?.kabupaten, appSetting?.propinsi].filter(Boolean).join(" ")].filter(Boolean);
+        const orgAddr = orgAddrParts.join(" • ");
+        const orgContactParts = [appSetting?.kontak || "", appSetting?.email || ""].filter(Boolean);
+        const orgContact = orgContactParts.join(" • ");
+        const logoUrl = appSetting?.nama_instansi ? `/setting/app/${encodeURIComponent(appSetting.nama_instansi)}/logo` : "";
+        const rowsHtml = (items || [])
+            .map((row) => {
+                const kode = row?.kode_brng || row?.kode || "";
+                const nama = row?.nama_brng || row?.nama || "";
+                const kategori = row?.jenis || row?.kategori || row?.nama || "-";
+                const satuan = row?.kode_sat || row?.satuan || "";
+                const hargaNum = Number(row?.dasar ?? row?.harga ?? 0);
+                const stokNum = Number(row?.stok ?? 0);
+                const harga = hargaNum.toLocaleString("id-ID");
+                const stok = stokNum.toLocaleString("id-ID");
+                return `<tr>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${kode}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${nama}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${kategori}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;">${satuan}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${harga}</td>
+                    <td style="padding:8px;border-bottom:1px solid #f3f4f6;text-align:right;">${stok}</td>
+                </tr>`;
+            })
+            .join("");
+        const totalItems = (items || []).length;
+        const totalStok = (items || []).reduce((acc, it) => acc + Number(it?.stok ?? 0), 0);
+        const totalNilai = (items || []).reduce((acc, it) => acc + Number(it?.stok ?? 0) * Number(it?.dasar ?? 0), 0);
+        const totalStokTxt = totalStok.toLocaleString("id-ID");
+        const totalNilaiTxt = totalNilai.toLocaleString("id-ID", { style: "currency", currency: "IDR" });
+        const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Laporan Cek Stok Obat</title>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", sans-serif; line-height: 1.5; color: #111827; padding: 24px; }
+  .letterhead { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #1f2937; padding-bottom: 12px; margin-bottom: 20px; }
+  .logo { width: 72px; height: 72px; object-fit: contain; }
+  .org { flex: 1; }
+  .org h1 { font-size: 18px; font-weight: 700; margin: 0; color: #0f172a; }
+  .org p { margin: 2px 0; font-size: 12px; color: #374151; }
+  .title { text-align: center; font-size: 16px; font-weight: 600; margin: 8px 0 16px; color: #0f172a; }
+  .meta { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: #f3f4f6; color: #111827; text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; }
+  tbody td { padding: 8px; border-bottom: 1px solid #f3f4f6; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  .summary { margin-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+  .card .label { font-size: 11px; color: #6b7280; }
+  .card .value { font-size: 14px; font-weight: 600; color: #111827; }
+  @media print { thead th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  @page { size: auto; margin: 12mm; }
+</style>
+</head>
+<body>
+  <div class="letterhead">
+    ${logoUrl ? `<img class="logo" src="${logoUrl}" alt="Logo" />` : `<div class="logo" style="border:1px solid #e5e7eb"></div>`}
+    <div class="org">
+      <h1>${orgName}</h1>
+      ${orgAddr ? `<p>${orgAddr}</p>` : ""}
+      ${orgContact ? `<p>${orgContact}</p>` : ""}
+    </div>
+  </div>
+
+  <div class="title">Laporan Cek Stok Obat</div>
+  <div class="meta">Lokasi: ${locText} • Kata kunci: ${kwText} • Dicetak: ${createdAt}</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kode Barang</th>
+        <th>Nama Barang</th>
+        <th>Kategori</th>
+        <th>Satuan</th>
+        <th style="text-align:right;">Harga</th>
+        <th style="text-align:right;">Stok</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+
+  <div class="summary">
+    <div class="card"><div class="label">Jumlah Item</div><div class="value">${totalItems.toLocaleString("id-ID")}</div></div>
+    <div class="card"><div class="label">Total Stok</div><div class="value">${totalStokTxt}</div></div>
+    <div class="card"><div class="label">Total Nilai (IDR)</div><div class="value">${totalNilaiTxt}</div></div>
+  </div>
+</body>
+</html>`;
+        const w = window.open("", "PRINT", "width=1024,height=768");
+        if (!w) return;
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        w.print();
+        w.close();
+    };
+
     const resetFilters = () => {
         if (defaultBangsal) {
             setKdBangsal(defaultBangsal.kd_bangsal);
@@ -177,11 +299,11 @@ export default function CekStok() {
                                 ))}
                             </select>
                         </div>
-                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-4">
+                        <div className="md:col-span-2 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-4">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Kata Kunci
                             </label>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
                                 <input
                                     value={q}
                                     onChange={(e) => setQ(e.target.value)}
@@ -200,6 +322,15 @@ export default function CekStok() {
                                     >
                                         <SearchIcon className="h-4 w-4 mr-2" />
                                         Cari
+                                    </button>
+                                    <button
+                                        onClick={handlePrint}
+                                        disabled={!kdBangsal || loading || items.length === 0}
+                                        aria-label="Cetak hasil"
+                                        className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-700 hover:via-green-700 hover:to-teal-700 hover:shadow-xl hover:shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <Printer className="h-4 w-4 mr-2" />
+                                        Cetak
                                     </button>
                                     <button
                                         onClick={resetFilters}

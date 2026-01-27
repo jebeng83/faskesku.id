@@ -23,7 +23,7 @@ import metodeRacik from './metode-racik'
 import konversiSatuan from './konversi-satuan'
 import jenisObat from './jenis-obat'
 /**
-* @see routes/web.php:1600
+* @see routes/web.php:1603
 * @route '/farmasi/obat-fast-moving'
 */
 export const fastMoving = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -37,7 +37,7 @@ fastMoving.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1600
+* @see routes/web.php:1603
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.url = (options?: RouteQueryOptions) => {
@@ -45,7 +45,7 @@ fastMoving.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1600
+* @see routes/web.php:1603
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ fastMoving.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1600
+* @see routes/web.php:1603
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -627,7 +627,47 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1594
+* @see routes/web.php:1592
+* @route '/farmasi/permintaan-obat'
+*/
+export const permintaanObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: permintaanObat.url(options),
+    method: 'get',
+})
+
+permintaanObat.definition = {
+    methods: ["get","head"],
+    url: '/farmasi/permintaan-obat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:1592
+* @route '/farmasi/permintaan-obat'
+*/
+permintaanObat.url = (options?: RouteQueryOptions) => {
+    return permintaanObat.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:1592
+* @route '/farmasi/permintaan-obat'
+*/
+permintaanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: permintaanObat.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:1592
+* @route '/farmasi/permintaan-obat'
+*/
+permintaanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: permintaanObat.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:1597
 * @route '/farmasi/sisa-stok'
 */
 export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -641,7 +681,7 @@ sisaStok.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1594
+* @see routes/web.php:1597
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.url = (options?: RouteQueryOptions) => {
@@ -649,7 +689,7 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1594
+* @see routes/web.php:1597
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -658,7 +698,7 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1594
+* @see routes/web.php:1597
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -667,7 +707,7 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1607
+* @see routes/web.php:1610
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -681,7 +721,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1607
+* @see routes/web.php:1610
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -689,7 +729,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1607
+* @see routes/web.php:1610
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -698,7 +738,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1607
+* @see routes/web.php:1610
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -811,6 +851,7 @@ const farmasi = {
     daruratStok: Object.assign(daruratStok, daruratStokFb6373),
     sirkulasiObat: Object.assign(sirkulasiObat, sirkulasiObatDb42f9),
     cekStokObat: Object.assign(cekStokObat, cekStokObat),
+    permintaanObat: Object.assign(permintaanObat, permintaanObat),
     sisaStok: Object.assign(sisaStok, sisaStok71ee58),
     dataOpname: Object.assign(dataOpname, dataOpname),
     farmasi: Object.assign(farmasi, farmasi),

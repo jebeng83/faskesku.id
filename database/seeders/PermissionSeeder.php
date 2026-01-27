@@ -145,6 +145,7 @@ class PermissionSeeder extends Seeder
             'farmasi.sirkulasi-obat',
             'farmasi.sirkulasi-obat.data',
             'farmasi.cek-stok-obat',
+            'farmasi.permintaan-obat',
             'farmasi.sisa-stok',
             'farmasi.sisa-stok.data',
             'farmasi.fast-moving',
@@ -329,6 +330,20 @@ class PermissionSeeder extends Seeder
             'edit-kamar',
             'delete-kamar',
             'rawat-inap.kamar',
+            'rawat-jalan.awal-keperawatan-umum',
+            'penilaian-awal-keperawatan-ralan.store',
+            'penilaian-awal-keperawatan-ralan.update',
+            'penilaian-awal-keperawatan-ralan.destroy',
+            'igd.asuhan-keperawatan.index',
+            'igd.asuhan-keperawatan.edit',
+            'igd.asuhan-keperawatan.store',
+            'igd.asuhan-keperawatan.update',
+            'igd.asuhan-keperawatan.destroy',
+            'triase-ugd.index',
+            'triase-ugd.store',
+            'triase-ugd.show',
+            'triase-ugd.update',
+            'triase-ugd.destroy',
         ];
 
         foreach ($permissions as $permission) {

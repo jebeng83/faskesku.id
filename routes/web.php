@@ -1589,6 +1589,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/cek-stok-obat', function () {
             return Inertia::render('farmasi/CekStok');
         })->name('cek-stok-obat')->middleware('permission:farmasi.cek-stok-obat');
+        Route::get('/permintaan-obat', function () {
+            return Inertia::render('farmasi/PermintaanObat');
+        })->name('permintaan-obat')->middleware('permission:farmasi.permintaan-obat');
         Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
         Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {
