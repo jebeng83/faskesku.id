@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { BeakerIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
-export default function RiwayatKunjungan({ token, noRkmMedis }) {
+export default function RiwayatKunjungan({ token, noRkmMedis, onSelectNoRawat }) {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -119,6 +119,24 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         }
     }, [soapData, token]);
 
+    const toggleVisitDetails = (visit) => {
+        if (expandedVisit && expandedVisit.no_rawat === visit.no_rawat) {
+            setExpandedVisit(null);
+        } else {
+            setExpandedVisit(visit);
+            setOpenSections(prev => ({
+                ...prev,
+                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false, odontogram: false }
+            }));
+            fetchMedicationData(visit.no_rawat);
+            fetchSoapData(visit.no_rawat);
+            fetchOdontogramData(visit.no_rawat);
+            if (onSelectNoRawat) {
+                onSelectNoRawat(visit.no_rawat);
+            }
+        }
+    };
+
     useEffect(() => {
         const controller = new AbortController();
         async function fetchData() {
@@ -134,11 +152,11 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
                 });
                 if (!res.ok) throw new Error('Gagal memuat riwayat');
                 const json = await res.json();
-                setItems(Array.isArray(json.data) ? json.data : []);
-                
-                // Set the first visit as expanded by default if there are items
-                if (Array.isArray(json.data) && json.data.length > 0) {
-                    setExpandedVisit(json.data[0]);
+                const data = Array.isArray(json.data) ? json.data : [];
+                setItems(data);
+
+                if (data.length > 0 && onSelectNoRawat) {
+                    onSelectNoRawat(data[0].no_rawat);
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') setError(e.message || 'Terjadi kesalahan');
@@ -148,25 +166,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
         }
         fetchData();
         return () => controller.abort();
-    }, [token, noRkmMedis]);
-
-    // Lazy load per section via header toggle; no auto-fetch here
-
-    const toggleVisitDetails = (visit) => {
-        if (expandedVisit && expandedVisit.no_rawat === visit.no_rawat) {
-            setExpandedVisit(null);
-        } else {
-            setExpandedVisit(visit);
-            // Auto-open Obat section for this visit and fetch immediately
-            setOpenSections(prev => ({
-                ...prev,
-                [visit.no_rawat]: { obat: true, soap: true, lab: false, rad: false, odontogram: false }
-            }));
-            fetchMedicationData(visit.no_rawat);
-            fetchSoapData(visit.no_rawat);
-            fetchOdontogramData(visit.no_rawat);
-        }
-    };
+    }, [token, noRkmMedis, onSelectNoRawat]);
 
     const renderMedicationTable = (noRawat) => {
         const medications = medicationData[noRawat] || [];
@@ -740,9 +740,9 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
     // Tampilan header mobile: netral (tanpa warna khusus)
 
     return (
-        <div className="overflow-hidden">
+        <div className="overflow-hidden w-full max-w-full">
             {/* Mobile: Card list */}
-            <div className="md:hidden grid gap-3 pr-1 h-[396px] overflow-y-auto">
+            <div className="md:hidden grid gap-3 pr-1 max-h-[60vh] overflow-y-auto">
                 {items.map((row, index) => {
                     const isOpen = expandedVisit && expandedVisit.no_rawat === row.no_rawat;
                     return (
@@ -794,7 +794,7 @@ export default function RiwayatKunjungan({ token, noRkmMedis }) {
 
             {/* Desktop: List dengan header klik-untuk-expand (tanpa tabel) */}
             <div className="hidden md:block">
-                <div className="space-y-2 pr-1 h-[376px] overflow-y-auto">
+                <div className="space-y-2 pr-1 max-h-[60vh] overflow-y-auto">
                     {items.map((row) => (
                         <div
                             key={row.no_rawat}

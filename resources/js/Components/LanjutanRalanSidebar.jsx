@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { ChevronDownIcon, HomeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, CalculatorIcon, BeakerIcon, HeartIcon, CameraIcon, ClockIcon, DocumentIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, HomeIcon, UserGroupIcon, ClipboardDocumentListIcon, DocumentTextIcon, CalculatorIcon, BeakerIcon, HeartIcon, CameraIcon, ClockIcon, DocumentIcon, CalendarIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
@@ -25,7 +25,8 @@ export default function LanjutanRalanSidebar({
 		'camera': CameraIcon,
 		'clock': ClockIcon,
 		'document': DocumentIcon,
-		'calendar': CalendarIcon
+		'calendar': CalendarIcon,
+		'face-smile': FaceSmileIcon
 	};
 
 	// Helper function to render icon
@@ -93,6 +94,12 @@ export default function LanjutanRalanSidebar({
 					? 'bg-gray-500 text-white shadow-lg shadow-gray-500/30'
 					: 'bg-gray-50 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300 border-l-4 border-gray-500',
 				inactive: 'text-white/80 hover:text-gray-300 hover:bg-gray-500/20'
+			},
+			teal: {
+				active: isCollapsed 
+					? 'bg-teal-500 text-white shadow-lg shadow-teal-500/30'
+					: 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border-l-4 border-teal-500',
+				inactive: 'text-white/80 hover:text-teal-300 hover:bg-teal-500/20'
 			}
 		};
 
@@ -171,6 +178,14 @@ export default function LanjutanRalanSidebar({
                     description: 'Diagnosis & Kode ICD',
                     active: menuConfig.activeTab === 'diagnosa',
                     colorScheme: 'red'
+                },
+                {
+                    id: 'odontogram',
+                    name: 'Odontogram',
+                    icon: 'face-smile',
+                    description: 'Pemeriksaan Gigi',
+                    active: menuConfig.activeTab === 'odontogram',
+                    colorScheme: 'teal'
                 },
                 {
                     id: 'lab',
@@ -290,13 +305,14 @@ export default function LanjutanRalanSidebar({
 	const handleMenuClick = (menu) => {
 		if (menu.children && menu.children.length > 0) {
 			toggleExpanded(menu.id);
-		} else if (menuConfig.onTabChange && ['cppt', 'tarif-tindakan', 'resep', 'diagnosa', 'lab', 'radiologi'].includes(menu.id)) {
+		} else if (menuConfig.onTabChange && ['cppt', 'tarif-tindakan', 'resep', 'diagnosa', 'odontogram', 'lab', 'radiologi'].includes(menu.id)) {
 			// Handle tab change for examination menus
 			const tabMap = {
 				'cppt': 'cppt',
 				'tarif-tindakan': 'tarifTindakan',
 				'resep': 'resep',
 				'diagnosa': 'diagnosa',
+				'odontogram': 'odontogram',
 				'lab': 'lab',
 				'radiologi': 'radiologi'
 			};

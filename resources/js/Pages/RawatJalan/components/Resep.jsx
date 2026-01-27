@@ -13,6 +13,8 @@ export default function Resep({
     noRawat = "",
     kdPoli = "",
     onResepSaved = null,
+    initialDokter = "",
+    initialDokterNama = "",
 }) {
     const [items, setItems] = useState([
         {
@@ -36,7 +38,7 @@ export default function Resep({
     const [dokterOptions, setDokterOptions] = useState([]);
     const [selectedDokter, setSelectedDokter] = useState("");
     const [loadingDokter, setLoadingDokter] = useState(false);
-    // Dokter Penanggung Jawab (berdasarkan reg_periksa.kd_dokter)
+    // Dokter Pembuat Resep (berdasarkan reg_periksa.kd_dokter)
     const [dokterPJ, setDokterPJ] = useState({ kd_dokter: "", nm_dokter: "" });
     const [loadingDokterPJ, setLoadingDokterPJ] = useState(false);
     const [dokterPJError, setDokterPJError] = useState(null);
@@ -174,7 +176,7 @@ export default function Resep({
         }
     };
 
-    // Fetch Dokter Penanggung Jawab berdasar no_rawat -> reg_periksa.kd_dokter join dokter untuk nm_dokter
+    // Fetch Dokter Pembuat Resep berdasar no_rawat -> reg_periksa.kd_dokter join dokter untuk nm_dokter
     const fetchDokterPenanggungJawab = async () => {
         if (!noRawat) return;
         setLoadingDokterPJ(true);
@@ -264,17 +266,25 @@ export default function Resep({
         fetchDokterPenanggungJawab();
     }, [noRawat]);
 
-    // Sinkronkan dropdown pilihan dokter begitu daftar dokter & dokterPJ tersedia
     useEffect(() => {
-        if (dokterPJ?.kd_dokter && dokterOptions?.length > 0) {
+        const initialKode = initialDokter ? String(initialDokter) : "";
+        if (initialKode && dokterOptions?.length > 0) {
+            const existsInitial = dokterOptions.some(
+                (d) => String(d.kd_dokter) === initialKode
+            );
+            if (existsInitial) {
+                setSelectedDokter(initialKode);
+            }
+        } else if (!initialKode && dokterPJ?.kd_dokter && dokterOptions?.length > 0 && !selectedDokter) {
+            const pjKode = String(dokterPJ.kd_dokter || "");
             const exists = dokterOptions.some(
-                (d) => d.kd_dokter === dokterPJ.kd_dokter
+                (d) => String(d.kd_dokter) === pjKode
             );
             if (exists) {
-                setSelectedDokter(dokterPJ.kd_dokter);
+                setSelectedDokter(pjKode);
             }
         }
-    }, [dokterPJ, dokterOptions]);
+    }, [initialDokter, dokterPJ, dokterOptions, selectedDokter]);
 
     // Load riwayat resep saat komponen dimount atau noRawat berubah
     useEffect(() => {
@@ -787,7 +797,7 @@ export default function Resep({
 
             {activeTab === "resep" && (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Dokter Penanggung Jawab - ditampilkan sesuai reg_periksa.kd_dokter (join dokter untuk nm_dokter) */}
+                    {/* Dokter Pembuat Resep - ditampilkan sesuai reg_periksa.kd_dokter (join dokter untuk nm_dokter) */}
                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -804,7 +814,7 @@ export default function Resep({
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                     />
                                 </svg>
-                                Dokter Penanggung Jawab
+                                Dokter Pembuat Resep
                             </label>
                             {loadingDokterPJ ? (
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -816,21 +826,10 @@ export default function Resep({
                                 </span>
                             ) : null}
                         </div>
-                        <div className="mt-1 mb-3">
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {loadingDokterPJ
-                                    ? "Memuat..."
-                                    : dokterPJ?.nm_dokter || "-"}
-                            </p>
-                            {dokterPJ?.kd_dokter && (
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    Kode: {dokterPJ.kd_dokter}
-                                </p>
-                            )}
-                        </div>
+                        <div className="mt-1 mb-3"></div>
                         {/* Tetap tampilkan dropdown untuk mengubah dokter jika diperlukan, default mengikuti reg_periksa */}
                         <select
-                            value={selectedDokter}
+                            value={selectedDokter || (initialDokter ? String(initialDokter) : "")}
                             onChange={(e) => setSelectedDokter(e.target.value)}
                             className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:shadow-md transition-all"
                             required
@@ -841,14 +840,23 @@ export default function Resep({
                             ) : (
                                 <>
                                     <option value="">Pilih Dokter</option>
-                                    {dokterOptions.map((dokter) => (
-                                        <option
-                                            key={dokter.kd_dokter}
-                                            value={dokter.kd_dokter}
-                                        >
-                                            {dokter.nm_dokter}
-                                        </option>
-                                    ))}
+                                    {dokterOptions.map((dokter) => {
+                                        const kodeInit = initialDokter ? String(initialDokter) : "";
+                                        const namaInit = initialDokterNama ? String(initialDokterNama) : "";
+                                        const kode = String(dokter.kd_dokter);
+                                        const label =
+                                            kodeInit && namaInit && kode === kodeInit
+                                                ? namaInit
+                                                : dokter.nm_dokter;
+                                        return (
+                                            <option
+                                                key={dokter.kd_dokter}
+                                                value={dokter.kd_dokter}
+                                            >
+                                                {label}
+                                            </option>
+                                        );
+                                    })}
                                 </>
                             )}
                         </select>
