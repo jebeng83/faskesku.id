@@ -109,3 +109,87 @@
 - Pemilihan gudang tujuan: [DlgPermintaan.java:L772-L802](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgPermintaan.java#L772-L802)
 - Akses & default `DEPOAKTIFOBAT`: [DlgPermintaan.java:L1063-L1079](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgPermintaan.java#L1063-L1079)
 
+## Dialog Cari Permintaan (Referensi Swing)
+
+- Komponen rujukan: [DlgCariPermintaan.java](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java)
+- Kolom tabel header: Tanggal, No Permintaan, Asal Permintaan, Pegawai, Ditujukan Ke [DlgCariPermintaan.java:L54-L76](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L54-L76)
+- Filter yang didukung:
+  - Rentang tanggal: Tanggal1–Tanggal2 [DlgCariPermintaan.java:L157-L168](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L157-L168)
+  - Nomor permintaan, gudang asal (nm_bangsal), petugas (nama), status, jenis, kategori, golongan, nama barang, pencarian bebas (TCari) [DlgCariPermintaan.java:L1244-L1272](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L1244-L1272)
+- Query header: join ke bangsal asal/tujuan, pegawai, serta memastikan ada detail (join detail_permintaan_medis, databarang) dan group by no_permintaan [DlgCariPermintaan.java:L1210-L1241](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L1210-L1241)
+- Render detail: setelah setiap header, dialog memuat baris-baris detail (kode, nama, jumlah, satuan, keterangan) dengan penomoran dan baris pemisah [DlgCariPermintaan.java:L1282-L1322](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L1282-L1322)
+- Aksi konteks (popup menu): Hapus, Disetujui (Mutasi), Disetujui (Stok Keluar), Tidak Disetujui [DlgCariPermintaan.java:L175-L239](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L175-L239)
+- Validasi status saat menyetujui, dan refresh daftar setelah aksi [DlgCariPermintaan.java:L1000-L1012](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L1000-L1012)
+- Total record ditampilkan di LTotal [DlgCariPermintaan.java:L343-L347](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgCariPermintaan.java#L343-L347)
+
+## Rencana Pengembangan UI Cari Permintaan (Aplikasi Web)
+
+- Tabel header: tampilkan kolom Tanggal, No Permintaan, Gudang Asal (nm_bangsal), Gudang Tujuan (nm_bangsal), Petugas (nama), Status.
+- Filter:
+  - Rentang tanggal (dari–ke) dan status (Semua/Baru/Disetujui/Tidak Disetujui).
+  - Pencarian nomor permintaan, gudang, petugas, serta pencarian bebas.
+  - Opsional: filter jenis/kategori/golongan/nama barang untuk penyaringan detail.
+- Detail expandable: kemampuan membuka baris header untuk melihat daftar item (kode, nama, jumlah, satuan, keterangan).
+- Aksi:
+  - Pilih (mengisi form Permintaan Obat dengan header terpilih).
+  - Hapus, Setujui (Mutasi), Setujui (Stok Keluar), Tidak Disetujui — disesuaikan dengan peran/permission.
+  - Cetak daftar/permintaan.
+- Kinerja & UX:
+  - Pagination, debounce pencarian, indikator loading, dan penunjuk jumlah record.
+  - Pengambilan nm_bangsal dan nama petugas melalui join untuk tampilkan label ramah pengguna.
+  - Endpoint detail lazy-load saat expand.
+
+## Desain API Backend (Rancangan) — Revisi
+
+- GET `/farmasi/permintaan/search` — daftar header permintaan
+  - Query params: `tanggal` atau `from`+`to`, `q`, `kd_bangsal`, `kd_bangsaltujuan`, `nip`, `status`, `perPage`, `page`
+  - Response: `items:[{no_permintaan,tanggal,kd_bangsal,nm_bangsal,kd_bangsaltujuan,nm_bangsaltujuan,nip,nama,status}]`, `total`
+- GET `/farmasi/permintaan/{no_permintaan}` — detail transaksi
+  - Response: header + `details:[{kode_brng,nama_brng,kode_sat,satuan,jumlah,keterangan}]`
+- PATCH `/farmasi/permintaan/{no_permintaan}/approve-mutasi` — setujui permintaan untuk mutasi stok
+- PATCH `/farmasi/permintaan/{no_permintaan}/approve-keluar` — setujui permintaan untuk stok keluar
+- PATCH `/farmasi/permintaan/{no_permintaan}/reject` — tandai `status='Tidak Disetujui'`
+- DELETE `/farmasi/permintaan/{no_permintaan}` — hapus permintaan (izin admin)
+
+### Catatan Implementasi UI (Popup Cari)
+
+- Default filter menggunakan rentang tanggal: dari dan sampai sama dengan hari ini.
+- Tombol Aksi pada setiap baris membuka popup pilihan tindakan (misal: Pilih Permintaan, Lihat Detail, Batal) yang akan diselaraskan dengan endpoint backend pada saat aksi lanjutan diimplementasikan.
+
+## Kesesuaian Implementasi Saat Ini
+
+- Sudah sesuai:
+  - Pencarian per tanggal harian via popup [CariPermintaan.jsx](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/resources/js/Pages/farmasi/CariPermintaan.jsx#L34-L43)
+  - Kolom: No Permintaan, Tanggal, Gudang Asal (kd), Gudang Tujuan (kd), Petugas (nip), dan aksi Pilih [CariPermintaan.jsx:L146-L181](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/resources/js/Pages/farmasi/CariPermintaan.jsx#L146-L181)
+  - Integrasi klik Pilih mengisi form header di Permintaan Obat.
+- Belum sesuai referensi Swing (gap):
+  - Tidak ada filter rentang tanggal (hanya satu tanggal) dan tidak ada filter status.
+  - Tidak menampilkan nm_bangsal dan nama petugas; saat ini memakai kode (`kd_bangsal`, `nip`).
+  - Tidak memuat detail item di bawah header (expandable list).
+  - Belum ada pagination, total record, cetak, dan aksi konteks (hapus/setujui/tidak disetujui) berbasis permission.
+- Rencana penyesuaian:
+  - Perlu extend endpoint search untuk mengembalikan nm_bangsal dan nama petugas (join bangsal/pegawai) serta mendukung `from`–`to`, `status`.
+  - Tambahkan UI filter status dan date range di popup; tampilkan total record.
+  - Implement detail expandable dengan lazy-load GET `/farmasi/permintaan/{no_permintaan}`.
+  - Tambahkan pagination untuk dataset besar.
+  - Definisikan aksi approve/reject/hapus sesuai peran.
+
+## Catatan Implementasi & Permission
+
+- Akses route pencarian harus konsisten dengan akses halaman Permintaan Obat agar popup dapat mengambil data.
+- Pastikan middleware permission untuk GET `/farmasi/permintaan/search` selaras dengan halaman form.
+
+## Belum sesuai referensi (gap utama):
+
+- Tidak ada filter rentang tanggal dan filter status di popup.
+- Tidak menampilkan nm_bangsal dan nama petugas pada tabel.
+- Belum menampilkan kolom Status dan total record dari backend.
+- Belum ada detail item expandable, pagination, dan aksi kontekstual.
+
+## Implementasikan Rekomendasi lanjutan:
+
+- Perkaya endpoint `/farmasi/permintaan/search` dengan join bangsal asal/tujuan dan pegawai.
+- Tambahkan filter rentang tanggal (from–to) dan status pada popup Cari Permintaan.
+- Tampilkan nm_bangsal asal/tujuan, nama petugas, serta Status; tampilkan total record.
+- Rancang endpoint detail `GET /farmasi/permintaan/{no_permintaan}` untuk lazy-load item.
+- Tambahkan pagination dan aksi approve/reject/hapus sesuai permission saat kebutuhan muncul.

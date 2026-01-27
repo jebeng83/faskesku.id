@@ -3,6 +3,7 @@ import { Head } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import CariPermintaan from "@/Pages/farmasi/CariPermintaan";
 import { Plus, Save, Search, RefreshCcw, PackageOpen, Trash2 } from "lucide-react";
 
 export default function PermintaanObat() {
@@ -25,6 +26,7 @@ export default function PermintaanObat() {
     const [stokMap, setStokMap] = useState({});
     const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
+    const [isPermintaanSearchOpen, setPermintaanSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
 
@@ -237,8 +239,15 @@ export default function PermintaanObat() {
     };
 
     const searchPermintaan = () => {
-        const url = "/farmasi/permintaan/search";
-        window.open(url, "_blank");
+        setPermintaanSearchOpen(true);
+    };
+
+    const handleSelectPermintaan = (row) => {
+        setNoPermintaan(row?.no_permintaan || "");
+        setTanggal(row?.tanggal || tanggal);
+        setKdBangsalAsal(row?.kd_bangsal || kdBangsalAsal);
+        setKdBangsalTujuan(row?.kd_bangsaltujuan || kdBangsalTujuan);
+        setKdPetugas(row?.nip || kdPetugas);
     };
 
     const metaText = useMemo(() => {
@@ -543,6 +552,11 @@ export default function PermintaanObat() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                <CariPermintaan
+                    open={isPermintaanSearchOpen}
+                    onClose={() => setPermintaanSearchOpen(false)}
+                    onSelect={handleSelectPermintaan}
+                />
             </div>
         </SidebarFarmasi>
     );

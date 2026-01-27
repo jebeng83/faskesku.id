@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:1840
+* @see routes/web.php:1847
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1840
+* @see routes/web.php:1847
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1840
+* @see routes/web.php:1847
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1840
+* @see routes/web.php:1847
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:1845
+* @see routes/web.php:1852
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1845
+* @see routes/web.php:1852
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1845
+* @see routes/web.php:1852
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1845
+* @see routes/web.php:1852
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -80,7 +80,7 @@ pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1850
+* @see routes/web.php:1857
 * @route '/pcare/layanan/data-prolanis'
 */
 export const dataProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ dataProlanis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1850
+* @see routes/web.php:1857
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.url = (options?: RouteQueryOptions) => {
@@ -102,7 +102,7 @@ dataProlanis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:1850
+* @see routes/web.php:1857
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,7 +111,7 @@ dataProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1850
+* @see routes/web.php:1857
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

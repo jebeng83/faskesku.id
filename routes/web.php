@@ -20,6 +20,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Farmasi\DataSuplierController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
+use App\Http\Controllers\Farmasi\PermintaanObatController;
 use App\Http\Controllers\IGDController;
 use App\Http\Controllers\IGD\AsuhanKeperawatanController;
 use App\Http\Controllers\KamarOperasiController;
@@ -1592,6 +1593,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/permintaan-obat', function () {
             return Inertia::render('farmasi/PermintaanObat');
         })->name('permintaan-obat')->middleware('permission:farmasi.permintaan-obat');
+        Route::post('/permintaan', [PermintaanObatController::class, 'store'])->name('permintaan.store');
+        Route::get('/permintaan/search', [PermintaanObatController::class, 'search'])->name('permintaan.search')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/approve-mutasi', [PermintaanObatController::class, 'approveMutasi'])->name('permintaan.approve-mutasi')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/approve-stok-keluar', [PermintaanObatController::class, 'approveStokKeluar'])->name('permintaan.approve-stok-keluar')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/reject', [PermintaanObatController::class, 'reject'])->name('permintaan.reject')->middleware('permission:farmasi.permintaan-obat');
+        Route::delete('/permintaan/{no}', [PermintaanObatController::class, 'destroy'])->name('permintaan.destroy')->middleware('permission:farmasi.permintaan-obat');
         Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
         Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {
