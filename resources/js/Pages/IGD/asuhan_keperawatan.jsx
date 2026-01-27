@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import efekEnakMd from "../../../../docs/Efekenak.md?raw";
+import DataAlergi from "@/Alergi/DataAlergi";
+import { Plus } from "lucide-react";
 
 export default function AsuhanKeperawatanPage({ items, filters, editing }) {
   const [q, _setQ] = useState(filters?.q || "");
@@ -23,6 +25,8 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
   const [noRawat, setNoRawat] = useState("");
   const [selectedSection, setSelectedSection] = useState("keluhan-utama");
   const [docOpen, setDocOpen] = useState(false);
+  const [alergiModalOpen, setAlergiModalOpen] = useState(false);
+  const [dataAlergi, setDataAlergi] = useState([]);
 
   useEffect(() => {
     setEditOpen(!!editing);
@@ -89,24 +93,24 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
     region_radiasi: editing?.region_radiasi || "",
     severity_gejala: editing?.severity_gejala || "",
     
-    riwayat_penyakit_kronis: editing?.riwayat_penyakit_kronis || "",
-    riwayat_operasi: editing?.riwayat_operasi || "",
-    riwayat_rawat_inap: editing?.riwayat_rawat_inap || "",
-    riwayat_trauma: editing?.riwayat_trauma || "",
-    riwayat_transfusi: editing?.riwayat_transfusi || "Tidak",
+    riwayat_penyakit_kronis: editing?.riwayat_penyakit_kronis || "Tidak Ada",
+    riwayat_operasi: editing?.riwayat_operasi || "Belum pernah Operasi",
+    riwayat_rawat_inap: editing?.riwayat_rawat_inap || "Tidak Ada",
+    riwayat_trauma: editing?.riwayat_trauma || "Tidak Ada",
+    riwayat_transfusi: editing?.riwayat_transfusi || "Tidak Ada",
     tgl_transfusi_terakhir: editing?.tgl_transfusi_terakhir || "",
-    pengobatan_rutin: editing?.pengobatan_rutin || "",
-    pengobatan_herbal_suplemen: editing?.pengobatan_herbal_suplemen || "",
-    riwayat_alergi_obat: editing?.riwayat_alergi_obat || "",
-    reaksi_alergi: editing?.reaksi_alergi || "",
-    riwayat_alergi_makanan: editing?.riwayat_alergi_makanan || "",
-    riwayat_alergi_lainnya: editing?.riwayat_alergi_lainnya || "",
-    riwayat_keluarga_penyakit_kardiovaskular: editing?.riwayat_keluarga_penyakit_kardiovaskular || "",
-    riwayat_keluarga_diabetes: editing?.riwayat_keluarga_diabetes || "",
-    riwayat_keluarga_kanker: editing?.riwayat_keluarga_kanker || "",
-    riwayat_keluarga_hipertensi: editing?.riwayat_keluarga_hipertensi || "",
-    riwayat_keluarga_penyakit_mental: editing?.riwayat_keluarga_penyakit_mental || "",
-    riwayat_keluarga_penyakit_genetik: editing?.riwayat_keluarga_penyakit_genetik || "",
+    pengobatan_rutin: editing?.pengobatan_rutin || "Tidak",
+    pengobatan_herbal_suplemen: editing?.pengobatan_herbal_suplemen || "Tidak Ada",
+    riwayat_alergi_obat: editing?.riwayat_alergi_obat || "Tidak Ada",
+    reaksi_alergi: editing?.reaksi_alergi || "Tidak Ada",
+    riwayat_alergi_makanan: editing?.riwayat_alergi_makanan || "Tidak Ada",
+    riwayat_alergi_lainnya: editing?.riwayat_alergi_lainnya || "Tidak Ada",
+    riwayat_keluarga_penyakit_kardiovaskular: editing?.riwayat_keluarga_penyakit_kardiovaskular || "Tidak Ada",
+    riwayat_keluarga_diabetes: editing?.riwayat_keluarga_diabetes || "Tidak Ada",
+    riwayat_keluarga_kanker: editing?.riwayat_keluarga_kanker || "Tidak Ada",
+    riwayat_keluarga_hipertensi: editing?.riwayat_keluarga_hipertensi || "Tidak Ada",
+    riwayat_keluarga_penyakit_mental: editing?.riwayat_keluarga_penyakit_mental || "Tidak Ada",
+    riwayat_keluarga_penyakit_genetik: editing?.riwayat_keluarga_penyakit_genetik || "Tidak Ada",
     genogram_data: editing?.genogram_data ? JSON.stringify(editing.genogram_data) : "",
     genogram_path: editing?.genogram_path || "",
     genogram_deskripsi: editing?.genogram_deskripsi || "",
@@ -117,10 +121,10 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
     akses_air_bersih: editing?.akses_air_bersih || "Ya",
     sanitasi: editing?.sanitasi || "MCK sendiri",
     paparan_polusi: editing?.paparan_polusi || "Tidak",
-    paparan_bahan_berbahaya: editing?.paparan_bahan_berbahaya || "",
-    pekerjaan_terakhir: editing?.pekerjaan_terakhir || "",
-    lingkungan_kerja: editing?.lingkungan_kerja || "",
-    lama_kerja: editing?.lama_kerja || "",
+    paparan_bahan_berbahaya: editing?.paparan_bahan_berbahaya || "Tidak Ada",
+    pekerjaan_terakhir: editing?.pekerjaan_terakhir || "Swasta",
+    lingkungan_kerja: editing?.lingkungan_kerja || "Baik",
+    lama_kerja: editing?.lama_kerja || "0",
     status_ekonomi: editing?.status_ekonomi || "Cukup",
     stresor_psikososial: editing?.stresor_psikososial || "",
     dukungan_sosial_tersedia: editing?.dukungan_sosial_tersedia || "",
@@ -283,6 +287,29 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
     asal_rujukan: editing?.asal_rujukan || "",
     tujuan_rujukan: editing?.tujuan_rujukan || "",
   });
+
+  
+
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get("/api/alergi", {
+        params: { per_page: 100 },
+        withCredentials: true,
+        headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+      })
+      .then((resp) => {
+        if (cancelled) return;
+        const items = Array.isArray(resp?.data?.data) ? resp.data.data : [];
+        setDataAlergi(items);
+      })
+      .catch(() => {
+        if (!cancelled) setDataAlergi([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const _painEmoji = (v) => {
     const n = Number(v) || 0;
@@ -486,8 +513,29 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
               
               <div className="grid grid-cols-5 gap-4">
                 <div>
-                  <Label>yang memperburuk/meredakan nyeri?</Label>
-                  <Input value={data.provokatif_palliatif} onChange={(e) => setData("provokatif_palliatif", e.target.value)} />
+                  <Label>Yang Memperburuk Nyeri?</Label>
+                  <Select value={String(data.provokatif_palliatif)} onValueChange={(v) => setData("provokatif_palliatif", v)}>
+                    <SelectTrigger className="w-full px-2 py-1.5 text-sm"><SelectValue placeholder="Tidak Ada" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tidak Ada">Tidak Ada</SelectItem>
+                      <SelectItem value="Berjalan/aktivitas">Berjalan/aktivitas</SelectItem>
+                      <SelectItem value="Naik tangga">Naik tangga</SelectItem>
+                      <SelectItem value="Mengangkat beban">Mengangkat beban</SelectItem>
+                      <SelectItem value="Membungkuk">Membungkuk</SelectItem>
+                      <SelectItem value="Rotasi tubuh">Rotasi tubuh</SelectItem>
+                      <SelectItem value="Batuk/bersin">Batuk/bersin</SelectItem>
+                      <SelectItem value="Berbaring telentang">Berbaring telentang</SelectItem>
+                      <SelectItem value="Berdiri lama">Berdiri lama</SelectItem>
+                      <SelectItem value="Duduk lama">Duduk lama</SelectItem>
+                      <SelectItem value="Makanan pedas/berlemak">Makanan pedas/berlemak</SelectItem>
+                      <SelectItem value="Minum kopi/alkohol">Minum kopi/alkohol</SelectItem>
+                      <SelectItem value="Makanan asam">Makanan asam</SelectItem>
+                      <SelectItem value="Stres emosional">Stres emosional</SelectItem>
+                      <SelectItem value="Cuaca dingin">Cuaca dingin</SelectItem>
+                      <SelectItem value="Suara bising">Suara bising</SelectItem>
+                      <SelectItem value="Cahaya terang">Cahaya terang</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Bagaimana rasanya?</Label>
@@ -506,11 +554,36 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
                 </div>
                 <div>
                   <Label>Dimana lokasinya? Apakah menyebar?</Label>
-                  <Input value={data.region_radiasi} onChange={(e) => setData("region_radiasi", e.target.value)} />
+                  <Select value={String(data.region_radiasi)} onValueChange={(v) => setData("region_radiasi", v)}>
+                    <SelectTrigger className="w-full px-2 py-1.5 text-sm"><SelectValue placeholder="Pilih" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tidak Ada Nyeri">Tidak Ada Nyeri</SelectItem>   
+                      <SelectItem value="Dada kiri, belakang tulang dada">Dada kiri, belakang tulang dada</SelectItem>
+                      <SelectItem value="Ulu hati, dada tengah">Ulu hati, dada tengah</SelectItem>
+                      <SelectItem value="Satu sisi kepala">Satu sisi kepala</SelectItem>
+                      <SelectItem value="Pinggang kanan/kiri">Pinggang kanan/kiri</SelectItem>
+                      <SelectItem value="Punggung bawah">Punggung bawah</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Skala 0-10</Label>
-                  <Input value={data.severity_gejala} onChange={(e) => setData("severity_gejala", e.target.value)} />
+                  <Select value={String(data.severity_gejala)} onValueChange={(v) => setData("severity_gejala", v)}>
+                    <SelectTrigger className="w-full px-2 py-1.5 text-sm"><SelectValue placeholder="0" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0</SelectItem>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="6">6</SelectItem>
+                      <SelectItem value="7">7</SelectItem>
+                      <SelectItem value="8">8</SelectItem>
+                      <SelectItem value="9">9</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
               </div>
@@ -526,11 +599,11 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
                 </div>
                 <div>
                   <Label>Operasi</Label>
-                  <Textarea rows={2} value={data.riwayat_operasi} onChange={(e) => setData("riwayat_operasi", e.target.value)} />
+                  <Textarea rows={2} placeholder="Tidak Ada" value={data.riwayat_operasi} onChange={(e) => setData("riwayat_operasi", e.target.value)} />
                 </div>
                 <div>
                   <Label>Rawat Inap</Label>
-                  <Textarea rows={2} value={data.riwayat_rawat_inap} onChange={(e) => setData("riwayat_rawat_inap", e.target.value)} />
+                  <Textarea rows={2} placeholder="Tidak Ada" value={data.riwayat_rawat_inap} onChange={(e) => setData("riwayat_rawat_inap", e.target.value)} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -571,8 +644,25 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label>Alergi Obat</Label>
-                  <Input value={data.riwayat_alergi_obat} onChange={(e) => setData("riwayat_alergi_obat", e.target.value)} />
+                  <Label>Alergi Pasien</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Select value={String(data.riwayat_alergi_obat)} onValueChange={(v) => setData("riwayat_alergi_obat", v)}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Pilih" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Tidak Ada">Tidak Ada</SelectItem>
+                      {dataAlergi.map((it) => (
+                        <SelectItem key={it.kd_alergi} value={it.nm_alergi}>
+                          {it.nm_alergi}
+                        </SelectItem>
+                      ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button type="button" aria-label="Tambah data alergi" onClick={() => setAlergiModalOpen(true)} className="h-9 px-3 border border-gray-300">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <Label>Reaksi</Label>
@@ -580,7 +670,7 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
                 </div>
                 <div>
                   <Label>Alergi Makanan/Lainnya</Label>
-                  <Input value={data.riwayat_alergi_makanan} onChange={(e) => setData("riwayat_alergi_makanan", e.target.value)} />
+                  <Input placeholder="Tidak Ada" value={data.riwayat_alergi_makanan} onChange={(e) => setData("riwayat_alergi_makanan", e.target.value)} />
                 </div>
               </div>
             </div>
@@ -639,17 +729,17 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
                 </div>
                 <div>
                   <Label>Pekerjaan Terakhir</Label>
-                  <Input value={data.pekerjaan_terakhir} onChange={(e) => setData("pekerjaan_terakhir", e.target.value)} />
+                  <Input placeholder="Tidak Ada" value={data.pekerjaan_terakhir} onChange={(e) => setData("pekerjaan_terakhir", e.target.value)} />
                 </div>
               </div>
               <div>
                 <Label>Kondisi Lingkungan</Label>
-                <Textarea rows={3} value={data.kondisi_lingkungan} onChange={(e) => setData("kondisi_lingkungan", e.target.value)} />
+                <Textarea rows={3} placeholder="Tidak Ada" value={data.kondisi_lingkungan} onChange={(e) => setData("kondisi_lingkungan", e.target.value)} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Paparan Bahan Berbahaya</Label>
-                  <Input value={data.paparan_bahan_berbahaya} onChange={(e) => setData("paparan_bahan_berbahaya", e.target.value)} />
+                  <Input placeholder="Tidak Ada" value={data.paparan_bahan_berbahaya} onChange={(e) => setData("paparan_bahan_berbahaya", e.target.value)} />
                 </div>
                 <div>
                   <Label>Lama Kerja</Label>
@@ -693,7 +783,7 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
               </div>
               <div>
                 <Label>Lokasi Nyeri</Label>
-                <Input value={data.nyeri_lokasi} onChange={(e) => setData("nyeri_lokasi", e.target.value)} />
+                <Input placeholder="Tidak Ada" value={data.nyeri_lokasi} onChange={(e) => setData("nyeri_lokasi", e.target.value)} />
               </div>
               <div>
                 <Label>Head to Toe</Label>
@@ -1914,6 +2004,8 @@ export default function AsuhanKeperawatanPage({ items, filters, editing }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{efekEnakMd}</ReactMarkdown>
         </div>
       </Modal>
+
+      <DataAlergi open={alergiModalOpen} onClose={() => setAlergiModalOpen(false)} jenis={null} />
 
       <ConfirmationAlert
         isOpen={confirmOpen}

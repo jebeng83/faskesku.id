@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import { Pencil, Trash2 } from 'lucide-react';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
@@ -341,11 +342,21 @@ export default function IndustriFarmasiPage() {
                     <td className="px-4 py-2 text-sm">{item.no_telp}</td>
                     <td className="px-4 py-2 text-right">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => openEdit(item)} className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50">
-                          Edit
+                        <button
+                          type="button"
+                          onClick={() => openEdit(item)}
+                          aria-label="Edit"
+                          className="inline-flex items-center justify-center rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 w-8 h-8"
+                        >
+                          <Pencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => confirmDelete(item)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">
-                          Hapus
+                        <button
+                          type="button"
+                          onClick={() => confirmDelete(item)}
+                          aria-label="Hapus"
+                          className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 w-8 h-8"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
