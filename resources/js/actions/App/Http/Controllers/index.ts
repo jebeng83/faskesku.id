@@ -29,6 +29,7 @@ import PatientController from './PatientController'
 import Pasien from './Pasien'
 import RegistrationController from './RegistrationController'
 import SkriningVisualController from './SkriningVisualController'
+import TriaseUgdController from './TriaseUgdController'
 import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
@@ -37,6 +38,7 @@ import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
 import RawatInapController from './RawatInapController'
+import IGD from './IGD'
 import IGDController from './IGDController'
 import KamarOperasiController from './KamarOperasiController'
 import LaboratoriumController from './LaboratoriumController'
@@ -79,6 +81,7 @@ const Controllers = {
     Pasien: Object.assign(Pasien, Pasien),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),
     SkriningVisualController: Object.assign(SkriningVisualController, SkriningVisualController),
+    TriaseUgdController: Object.assign(TriaseUgdController, TriaseUgdController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
@@ -87,6 +90,7 @@ const Controllers = {
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),
+    IGD: Object.assign(IGD, IGD),
     IGDController: Object.assign(IGDController, IGDController),
     KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),
     LaboratoriumController: Object.assign(LaboratoriumController, LaboratoriumController),

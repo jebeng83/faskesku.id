@@ -82,6 +82,14 @@ const cekStokObatUrl = (() => {
     }
 })();
 
+const permintaanObatUrl = (() => {
+    try {
+        return route("farmasi.permintaan-obat", {}, false);
+    } catch {
+        return "/farmasi/permintaan-obat";
+    }
+})();
+
 const riwayatBarangMedisUrl = (() => {
     try {
         return route("farmasi.riwayat-barang-medis", {}, false);
@@ -195,6 +203,14 @@ const tabs = [
                 href: route("farmasi.pembelian-obat", {}, false),
                 icon: TruckIcon,
                 accent: "from-emerald-500 to-teal-500",
+            },
+            {
+                title: "Permintaan Obat",
+                description:
+                    "Permintaan pemindahan stok antar gudang",
+                href: permintaanObatUrl,
+                icon: ClipboardDocumentListIcon,
+                accent: "from-lime-500 to-green-500",
             },
             {
                 title: "Hutang Obat",

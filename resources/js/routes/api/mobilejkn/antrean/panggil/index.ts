@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::test
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 export const test = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ test.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::test
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 test.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ test.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::test
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 test.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

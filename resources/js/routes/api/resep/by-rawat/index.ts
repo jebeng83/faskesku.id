@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::q
-* @see app/Http/Controllers/RawatJalan/ResepController.php:604
+* @see app/Http/Controllers/RawatJalan/ResepController.php:612
 * @route '/api/resep/rawat'
 */
 export const q = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ q.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::q
-* @see app/Http/Controllers/RawatJalan/ResepController.php:604
+* @see app/Http/Controllers/RawatJalan/ResepController.php:612
 * @route '/api/resep/rawat'
 */
 q.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ q.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::q
-* @see app/Http/Controllers/RawatJalan/ResepController.php:604
+* @see app/Http/Controllers/RawatJalan/ResepController.php:612
 * @route '/api/resep/rawat'
 */
 q.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ q.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::q
-* @see app/Http/Controllers/RawatJalan/ResepController.php:604
+* @see app/Http/Controllers/RawatJalan/ResepController.php:612
 * @route '/api/resep/rawat'
 */
 q.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

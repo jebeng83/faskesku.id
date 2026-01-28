@@ -20,7 +20,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Farmasi\DataSuplierController;
 use App\Http\Controllers\Farmasi\IndustriFarmasiController;
 use App\Http\Controllers\Farmasi\SetHargaObatController;
+use App\Http\Controllers\Farmasi\PermintaanObatController;
 use App\Http\Controllers\IGDController;
+use App\Http\Controllers\IGD\AsuhanKeperawatanController;
 use App\Http\Controllers\KamarOperasiController;
 use App\Http\Controllers\KategoriPerawatanController;
 use App\Http\Controllers\Kepegawaian\BankController;
@@ -1194,6 +1196,21 @@ Route::middleware('auth')->group(function () {
             ->where(['no_rkm_medis' => '.*', 'tanggal' => '.*']);
     });
 
+    // Triase UGD routes (CRUD)
+    Route::prefix('triase-ugd')->name('triase-ugd.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\TriaseUgdController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\TriaseUgdController::class, 'store'])->name('store');
+        Route::get('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'show'])
+            ->name('show')
+            ->where(['no_rawat' => '.*']);
+        Route::put('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'update'])
+            ->name('update')
+            ->where(['no_rawat' => '.*']);
+        Route::delete('/{no_rawat}', [\App\Http\Controllers\TriaseUgdController::class, 'destroy'])
+            ->name('destroy')
+            ->where(['no_rawat' => '.*']);
+    });
+
     // Employee routes
     Route::resource('employees', EmployeeController::class);
 
@@ -1617,6 +1634,7 @@ Route::middleware('auth')->group(function () {
 
     // Pelayanan Medis routes
     Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
+    Route::get('rawat-inap/canvas', [RawatInapController::class, 'canvas'])->name('rawat-inap.canvas');
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');
@@ -1624,6 +1642,14 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('RawatInap/components/Kamar');
     })->name('rawat-inap.kamar');
     Route::resource('rawat-inap', RawatInapController::class);
+    // Pastikan route spesifik IGD didefinisikan SEBELUM wildcard resource '/igd/{igd}'
+    Route::prefix('igd')->name('igd.')->group(function () {
+        Route::get('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'index'])->name('asuhan-keperawatan.index');
+        Route::get('/asuhan-keperawatan/{noRawat}/edit', [AsuhanKeperawatanController::class, 'edit'])->name('asuhan-keperawatan.edit')->where('noRawat', '.*');
+        Route::post('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'store'])->name('asuhan-keperawatan.store');
+        Route::put('/asuhan-keperawatan/{noRawat}', [AsuhanKeperawatanController::class, 'update'])->name('asuhan-keperawatan.update')->where('noRawat', '.*');
+        Route::delete('/asuhan-keperawatan/{noRawat}', [AsuhanKeperawatanController::class, 'destroy'])->name('asuhan-keperawatan.destroy')->where('noRawat', '.*');
+    });
     Route::resource('igd', IGDController::class);
     Route::resource('kamar-operasi', KamarOperasiController::class);
 
@@ -1763,6 +1789,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/cek-stok-obat', function () {
             return Inertia::render('farmasi/CekStok');
         })->name('cek-stok-obat')->middleware('permission:farmasi.cek-stok-obat');
+        Route::get('/permintaan-obat', function () {
+            return Inertia::render('farmasi/PermintaanObat');
+        })->name('permintaan-obat')->middleware('permission:farmasi.permintaan-obat');
+        Route::post('/permintaan', [PermintaanObatController::class, 'store'])->name('permintaan.store');
+        Route::get('/permintaan/search', [PermintaanObatController::class, 'search'])->name('permintaan.search')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/approve-mutasi', [PermintaanObatController::class, 'approveMutasi'])->name('permintaan.approve-mutasi')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/approve-stok-keluar', [PermintaanObatController::class, 'approveStokKeluar'])->name('permintaan.approve-stok-keluar')->middleware('permission:farmasi.permintaan-obat');
+        Route::patch('/permintaan/{no}/reject', [PermintaanObatController::class, 'reject'])->name('permintaan.reject')->middleware('permission:farmasi.permintaan-obat');
+        Route::delete('/permintaan/{no}', [PermintaanObatController::class, 'destroy'])->name('permintaan.destroy')->middleware('permission:farmasi.permintaan-obat');
         Route::get('/pembelian/lokasi', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getLokasi']);
         Route::get('/akun-bayar', [\App\Http\Controllers\Farmasi\PembelianController::class, 'getAkunBayar']);
         Route::get('/sisa-stok', function () {

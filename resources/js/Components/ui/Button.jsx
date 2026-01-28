@@ -24,10 +24,15 @@ const Button = ({
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
+    lg: 'px-6 py-3 text-base',
+    icon: 'p-0'
   };
   
-  const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`;
+  // Deteksi jika className mengandung p-0 atau h-8 w-8 (icon button), maka gunakan size icon
+  const isIconButton = className.includes('p-0') || className.includes('h-8 w-8') || size === 'icon';
+  const sizeClass = isIconButton ? sizes.icon : sizes[size];
+  
+  const classes = `${baseClasses} ${variants[variant]} ${sizeClass} ${className}`;
   
   return (
     <button

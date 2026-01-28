@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Pencil, Trash2, Activity, MoreVertical, RefreshCw } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Activity, MoreVertical, RefreshCw, HeartPulse } from "lucide-react";
 import { regPeriksa as regPeriksaList } from "@/routes/api";
 import regPeriksaApi from "@/routes/api/reg-periksa";
 import kamarApi from "@/routes/api/kamar";
@@ -23,6 +23,7 @@ import {
 import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
 import { toast } from "@/tools/toast";
 import Badge from "@/Components/ui/Badge";
+import TriaseUGD from "./TriaseUGD";
 
 export default function UGD() {
   const [query, setQuery] = useState("");
@@ -37,6 +38,7 @@ export default function UGD() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
+  const [triaseOpen, setTriaseOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -485,22 +487,20 @@ export default function UGD() {
       const controller = new AbortController();
       listAbortRef.current = controller;
       const params = {};
-      params.poli = 'IGDK';
-      params.per_page = 200;
+      params.limit = 200;
       if (query) params.search = query;
       if (dateFrom && dateTo) {
         if (dateFrom === dateTo) {
           params.tanggal = dateFrom;
         } else {
-          params.tanggal_awal = dateFrom;
-          params.tanggal_akhir = dateTo;
+          params.start_date = dateFrom;
+          params.end_date = dateTo;
         }
-      } else if (dateFrom) {
-        params.tanggal = dateFrom;
-      } else if (dateTo) {
-        params.tanggal = dateTo;
+      } else {
+        if (dateFrom) params.start_date = dateFrom;
+        if (dateTo) params.end_date = dateTo;
       }
-      const url = regPeriksaList.url(params);
+      const url = regPeriksaList.url({ query: params });
       const res = await axios.get(url, { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, withCredentials: true });
       const data = Array.isArray(res?.data?.data?.data)
         ? res.data.data.data
@@ -529,7 +529,13 @@ export default function UGD() {
         return true;
       };
       const filteredByDate = (data || []).filter(withinRange);
-      const filtered = filteredByDate.filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
+      const isIGDRow = (r) => {
+        const kdPoli = String(r?.kd_poli ?? r?.poliklinik?.kd_poli ?? '').trim().toUpperCase();
+        if (kdPoli) return kdPoli === 'IGDK' || kdPoli === 'IGD';
+        const nmPoli = String(r?.poliklinik?.nm_poli ?? '').toLowerCase();
+        return nmPoli.includes('igd');
+      };
+      const filtered = filteredByDate.filter(isIGDRow);
       const q = String(query || '').trim().toLowerCase();
       let finalRows = q
         ? filtered.filter((r) => {
@@ -541,16 +547,14 @@ export default function UGD() {
             );
           })
         : filtered;
-
-      if (!finalRows.length && Array.isArray(data) && data.length) {
-        finalRows = (data || []).filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
-      }
-
       if (q.includes('/')) {
         try {
-          const byRawatRes = await axios.get(regPeriksaApi.byRawat.url({ no_rawat: query }), { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+          const byRawatRes = await axios.get(
+            regPeriksaApi.byRawat.url({ query: { no_rawat: query } }),
+            { signal: controller.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } }
+          );
           const item = byRawatRes?.data?.data;
-          if (item && withinRange(item) && String(item?.kd_poli || '').trim() === 'IGDK') {
+          if (item && withinRange(item) && isIGDRow(item)) {
             const exists = finalRows.some((r) => String(r?.no_rawat || '') === String(item.no_rawat));
             if (!exists) finalRows = [item, ...finalRows];
           }
@@ -810,6 +814,20 @@ export default function UGD() {
     setEditOpen(true);
   };
 
+  const openTriase = (row) => {
+    setSelected(row);
+    setTriaseOpen(true);
+  };
+
+  const openAsuhanKeperawatan = (row) => {
+    try {
+      const id = String(row?.no_rawat || '').trim();
+      const base = '/igd/asuhan-keperawatan';
+      const url = id ? `${base}?q=${encodeURIComponent(id)}` : base;
+      window.location.assign(url);
+    } catch {}
+  };
+
   const submitEdit = async () => {
     try {
       const id = selected?.no_rawat || selected?.id || "";
@@ -912,6 +930,8 @@ export default function UGD() {
                         align="start"
                       >
                         <DropdownItem onClick={() => openEdit(r)} icon={<Pencil className="w-4 h-4" />}>Edit</DropdownItem>
+                        <DropdownItem onClick={() => openAsuhanKeperawatan(r)} icon={<Search className="w-4 h-4" />}>Asuhan Keperawatan</DropdownItem>
+                        <DropdownItem onClick={() => openTriase(r)} icon={<HeartPulse className="w-4 h-4" />}>Triase</DropdownItem>
                         <DropdownItem onClick={() => openCheckIn(r)} icon={<Activity className="w-4 h-4" />}>Masuk kamar inap</DropdownItem>
                         <DropdownItem onClick={() => submitDelete(r)} icon={<Trash2 className="w-4 h-4" />}>Hapus</DropdownItem>
                       </DropdownMenu>
@@ -1282,6 +1302,31 @@ export default function UGD() {
             <Button onClick={submitCheckIn} className="bg-emerald-600 hover:bg-emerald-700 text-white">Simpan</Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal show={triaseOpen} onClose={() => setTriaseOpen(false)} size="xxl">
+        <TriaseUGD
+          row={selected}
+          onClose={() => setTriaseOpen(false)}
+          onSubmit={async (payload) => {
+            try {
+              if (!payload?.no_rawat || String(payload.no_rawat).trim() === '') {
+                toast.error('No. Rawat tidak ditemukan. Tidak dapat menyimpan triase.');
+                return;
+              }
+              const data = {
+                ...payload,
+                indikator: Array.isArray(payload?.indikator) ? payload.indikator.join(', ') : (payload?.indikator || ''),
+              };
+              await axios.post('/triase-ugd', data, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, withCredentials: true });
+              toast.success("Triase disimpan");
+              setTriaseOpen(false);
+            } catch (e) {
+              const msg = e?.response?.data?.message || e?.message || 'Gagal menyimpan triase';
+              toast.error(msg);
+            }
+          }}
+        />
       </Modal>
     </motion.div>
   );

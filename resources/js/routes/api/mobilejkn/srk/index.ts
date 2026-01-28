@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import check4ef2d3 from './check'
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::check
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 export const check = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ check.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::check
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 check.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ check.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::check
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 check.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

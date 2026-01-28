@@ -95,7 +95,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                 if (response.data && response.data.success) {
                     setData((prevData) => ({
                         ...prevData,
-                        no_rkm_medis: response.data.data,
+                        no_rkm_medis: String(response.data.data ?? ""),
                     }));
                 }
             } catch (error) {
@@ -651,7 +651,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         try {
             let desiredNo = String(data.no_rkm_medis || "").trim();
             const latestResp = await axios.get("/api/pasien/next-no-rm");
-            const latestNo = latestResp?.data?.data || "";
+            const latestNo = String(latestResp?.data?.data ?? "");
 
             if (!desiredNo) {
                 desiredNo = latestNo;
@@ -683,7 +683,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                         if (dup && retriesLeft > 0) {
                             try {
                                 const resp = await axios.get("/api/pasien/next-no-rm");
-                                const nextNo = resp?.data?.data || "";
+                                const nextNo = String(resp?.data?.data ?? "");
                                 if (nextNo) {
                                     setData("no_rkm_medis", nextNo);
                                     retriesLeft -= 1;

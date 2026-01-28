@@ -215,6 +215,96 @@ class RawatInapController extends Controller
         ]);
     }
 
+    public function canvas(Request $request)
+    {
+        $token = $request->query('t');
+        if ($token) {
+            $padded = str_replace(['-', '_'], ['+', '/'], $token);
+            $paddingNeeded = 4 - (strlen($padded) % 4);
+            if ($paddingNeeded < 4) {
+                $padded .= str_repeat('=', $paddingNeeded);
+            }
+            $decoded = json_decode(base64_decode($padded), true);
+            $noRawat = $decoded['no_rawat'] ?? null;
+            $noRkmMedis = $decoded['no_rkm_medis'] ?? null;
+        } else {
+            $noRawat = $request->query('no_rawat');
+            $noRkmMedis = $request->query('no_rkm_medis');
+        }
+
+        $rawat = null;
+        if ($noRawat) {
+            $rawat = RegPeriksa::query()
+                ->with(['patient', 'dokter'])
+                ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('kamar', 'kamar.kd_kamar', '=', 'kamar_inap.kd_kamar')
+                ->leftJoin('bangsal', 'bangsal.kd_bangsal', '=', 'kamar.kd_bangsal')
+                ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+                ->leftJoin('penjab', 'penjab.kd_pj', '=', 'reg_periksa.kd_pj')
+                ->select([
+                    'reg_periksa.*',
+                    DB::raw('kamar_inap.kd_kamar as kamar'),
+                    'kamar_inap.tgl_masuk',
+                    'kamar_inap.jam_masuk',
+                    'kamar_inap.tgl_keluar',
+                    'kamar_inap.jam_keluar',
+                    'kamar_inap.stts_pulang',
+                    DB::raw('bangsal.nm_bangsal as nm_bangsal'),
+                    DB::raw('penjab.png_jawab as nm_penjamin'),
+                ])
+                ->when($noRkmMedis, fn ($q) => $q->where('reg_periksa.no_rkm_medis', $noRkmMedis))
+                ->where('reg_periksa.no_rawat', $noRawat)
+                ->first();
+        } elseif ($noRkmMedis) {
+            $rawat = RegPeriksa::query()
+                ->with(['patient', 'dokter'])
+                ->join('kamar_inap', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('kamar', 'kamar.kd_kamar', '=', 'kamar_inap.kd_kamar')
+                ->leftJoin('bangsal', 'bangsal.kd_bangsal', '=', 'kamar.kd_bangsal')
+                ->leftJoin('pasien', 'pasien.no_rkm_medis', '=', 'reg_periksa.no_rkm_medis')
+                ->leftJoin('penjab', 'penjab.kd_pj', '=', 'reg_periksa.kd_pj')
+                ->where('reg_periksa.status_lanjut', 'Ranap')
+                ->select([
+                    'reg_periksa.*',
+                    DB::raw('kamar_inap.kd_kamar as kamar'),
+                    'kamar_inap.tgl_masuk',
+                    'kamar_inap.jam_masuk',
+                    'kamar_inap.tgl_keluar',
+                    'kamar_inap.jam_keluar',
+                    'kamar_inap.stts_pulang',
+                    DB::raw('bangsal.nm_bangsal as nm_bangsal'),
+                    DB::raw('penjab.png_jawab as nm_penjamin'),
+                ])
+                ->where('reg_periksa.no_rkm_medis', $noRkmMedis)
+                ->orderByDesc('reg_periksa.tgl_registrasi')
+                ->orderByDesc('reg_periksa.jam_reg')
+                ->first();
+        }
+
+        $patient = null;
+        if ($rawat) {
+            $patient = [
+                'nm_pasien' => optional($rawat->patient)->nm_pasien,
+                'no_rkm_medis' => $rawat->no_rkm_medis,
+                'tgl_lahir' => optional($rawat->patient)->tgl_lahir,
+                'jk' => optional($rawat->patient)->jk,
+                'gol_darah' => optional($rawat->patient)->gol_darah,
+                'no_ktp' => optional($rawat->patient)->no_ktp,
+                'no_peserta' => optional($rawat->patient)->no_peserta,
+                'alamat' => optional($rawat->patient)->alamat,
+                'nm_bangsal' => $rawat->nm_bangsal ?? null,
+                'nm_dokter' => optional($rawat->dokter)->nm_dokter,
+                'png_jawab' => $rawat->nm_penjamin ?? null,
+            ];
+        }
+
+        return Inertia::render('RawatInap/CanvasRanap', [
+            'patient' => $patient,
+            'no_rawat' => $rawat ? $rawat->no_rawat : $noRawat,
+            'tab' => $request->query('tab'),
+        ]);
+    }
+
     /**
      * Update the specified resource in storage.
      */
