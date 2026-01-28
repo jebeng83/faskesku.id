@@ -45,10 +45,6 @@ if (token) {
 // (POST, PUT, PATCH, DELETE). Ini memastikan Inertia router (yang menggunakan fetch)
 // dan pemanggilan fetch manual selalu menyertakan token CSRF.
 (() => {
-    const metaToken = document.head.querySelector('meta[name="csrf-token"]');
-    const csrfToken = metaToken ? metaToken.getAttribute('content') : null;
-    if (!csrfToken) return; // sudah ada console.error di atas
-
     const origFetch = window.fetch ? window.fetch.bind(window) : null;
     if (!origFetch) return;
 
@@ -60,7 +56,6 @@ if (token) {
     const isSameOrigin = (input) => {
         try {
             if (typeof input === 'string') {
-                // Relative path => same-origin
                 if (input.startsWith('/')) return true;
                 const url = new URL(input, window.location.href);
                 return url.origin === window.location.origin;
@@ -77,11 +72,16 @@ if (token) {
         try {
             if (isSameOrigin(input) && needsCsrf(init.method)) {
                 const headers = new Headers(init.headers || {});
-                if (!headers.has('X-CSRF-TOKEN')) {
-                    headers.set('X-CSRF-TOKEN', csrfToken);
+                const meta = document.head.querySelector('meta[name="csrf-token"]');
+                const metaToken = meta ? meta.getAttribute('content') : null;
+                const p = '; ' + document.cookie;
+                const r = p.split('; XSRF-TOKEN=');
+                const cookieToken = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : null;
+                if (!headers.has('X-CSRF-TOKEN') && metaToken) {
+                    headers.set('X-CSRF-TOKEN', metaToken);
                 }
-                if (!headers.has('X-XSRF-TOKEN')) {
-                    headers.set('X-XSRF-TOKEN', csrfToken);
+                if (!headers.has('X-XSRF-TOKEN') && cookieToken) {
+                    headers.set('X-XSRF-TOKEN', cookieToken);
                 }
                 if (!headers.has('X-Requested-With')) {
                     headers.set('X-Requested-With', 'XMLHttpRequest');

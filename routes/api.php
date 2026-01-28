@@ -13,6 +13,7 @@ use App\Http\Controllers\API\PenjabController;
 use App\Http\Controllers\API\PermissionController;
 use App\Http\Controllers\API\ReferenceController;
 use App\Http\Controllers\API\RegPeriksaController;
+use App\Http\Controllers\API\KamarInapController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\WilayahController;
 use App\Http\Controllers\BarangController;
@@ -36,10 +37,17 @@ use App\Http\Controllers\Pcare\SettingBridgingBpjsController;
 use App\Http\Controllers\PermintaanLabController;
 use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
+use App\Http\Controllers\BangsalController;
+use App\Http\Controllers\KamarController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
 use App\Http\Controllers\RawatJalan\ResepController;
+use App\Http\Controllers\SDKI\SdkiController;
+use App\Http\Controllers\SDKI\KategoriSdkiController;
+use App\Http\Controllers\SDKI\SubKategoriSdkiController;
+use App\Http\Controllers\SDKI\KeluhanSubyektifController;
+use App\Http\Controllers\SDKI\DataObyektifController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Http\Request;
@@ -236,6 +244,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::match(['put', 'post'], '/reg-periksa-actions/update', [RegPeriksaController::class, 'updateByRawat'])
         ->name('api.reg-periksa.actions.update');
 
+    Route::post('/kamar-inap', [KamarInapController::class, 'store'])->name('api.kamar-inap.store');
+
     // User Management Routes
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('api.users.index');
@@ -261,6 +271,40 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
     Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
+
+    // SDKI CRUD endpoints
+    Route::get('/sdki', [SdkiController::class, 'index'])->name('api.sdki.index');
+    Route::post('/sdki', [SdkiController::class, 'store'])->name('api.sdki.store');
+    Route::put('/sdki/{idOrKode}', [SdkiController::class, 'update'])
+        ->where('idOrKode', '.*')
+        ->name('api.sdki.update');
+    Route::delete('/sdki/{idOrKode}', [SdkiController::class, 'destroy'])
+        ->where('idOrKode', '.*')
+        ->name('api.sdki.destroy');
+
+    // Kategori SDKI endpoints
+    Route::get('/kategori-sdki', [KategoriSdkiController::class, 'index'])->name('api.kategori-sdki.index');
+    Route::post('/kategori-sdki', [KategoriSdkiController::class, 'store'])->name('api.kategori-sdki.store');
+    Route::put('/kategori-sdki/{idOrKey}', [KategoriSdkiController::class, 'update'])->where('idOrKey', '.*')->name('api.kategori-sdki.update');
+    Route::delete('/kategori-sdki/{idOrKey}', [KategoriSdkiController::class, 'destroy'])->where('idOrKey', '.*')->name('api.kategori-sdki.destroy');
+
+    // Sub Kategori SDKI endpoints
+    Route::get('/subkategori-sdki', [SubKategoriSdkiController::class, 'index'])->name('api.subkategori-sdki.index');
+    Route::post('/subkategori-sdki', [SubKategoriSdkiController::class, 'store'])->name('api.subkategori-sdki.store');
+    Route::put('/subkategori-sdki/{idOrKey}', [SubKategoriSdkiController::class, 'update'])->where('idOrKey', '.*')->name('api.subkategori-sdki.update');
+    Route::delete('/subkategori-sdki/{idOrKey}', [SubKategoriSdkiController::class, 'destroy'])->where('idOrKey', '.*')->name('api.subkategori-sdki.destroy');
+
+    // Keluhan Subyektif endpoints
+    Route::get('/keluhan-subyektif', [KeluhanSubyektifController::class, 'index'])->name('api.keluhan-subyektif.index');
+    Route::post('/keluhan-subyektif', [KeluhanSubyektifController::class, 'store'])->name('api.keluhan-subyektif.store');
+    Route::put('/keluhan-subyektif/{idOrKey}', [KeluhanSubyektifController::class, 'update'])->where('idOrKey', '.*')->name('api.keluhan-subyektif.update');
+    Route::delete('/keluhan-subyektif/{idOrKey}', [KeluhanSubyektifController::class, 'destroy'])->where('idOrKey', '.*')->name('api.keluhan-subyektif.destroy');
+
+    // Data Obyektif endpoints
+    Route::get('/data-obyektif', [DataObyektifController::class, 'index'])->name('api.data-obyektif.index');
+    Route::post('/data-obyektif', [DataObyektifController::class, 'store'])->name('api.data-obyektif.store');
+    Route::put('/data-obyektif/{idOrKey}', [DataObyektifController::class, 'update'])->where('idOrKey', '.*')->name('api.data-obyektif.update');
+    Route::delete('/data-obyektif/{idOrKey}', [DataObyektifController::class, 'destroy'])->where('idOrKey', '.*')->name('api.data-obyektif.destroy');
 
     Route::post('/aturan-pakai', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store');
     Route::post('/aturan-pakai/store', [ResepController::class, 'createAturanPakai'])->name('api.resep.master-aturan-pakai.store.alt');
@@ -733,6 +777,20 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // Poliklinik lookup (SearchableSelect) - ringan tanpa auth
     Route::get('/poliklinik', [PoliklinikController::class, 'apiIndex'])->name('api.poliklinik.index');
+
+    Route::prefix('bangsal')->group(function () {
+        Route::get('/', [BangsalController::class, 'apiIndex'])->name('api.bangsal.index');
+        Route::post('/', [BangsalController::class, 'store'])->name('api.bangsal.store');
+        Route::put('/{kd_bangsal}', [BangsalController::class, 'update'])->where('kd_bangsal', '.*')->name('api.bangsal.update');
+        Route::delete('/{kd_bangsal}', [BangsalController::class, 'destroy'])->where('kd_bangsal', '.*')->name('api.bangsal.destroy');
+    });
+
+    Route::prefix('kamar')->group(function () {
+        Route::get('/', [KamarController::class, 'apiIndex'])->name('api.kamar.index');
+        Route::post('/', [KamarController::class, 'apiStore'])->name('api.kamar.store');
+        Route::put('/{kd_kamar}', [KamarController::class, 'apiUpdate'])->where('kd_kamar', '.*')->name('api.kamar.update');
+        Route::delete('/{kd_kamar}', [KamarController::class, 'apiDestroy'])->where('kd_kamar', '.*')->name('api.kamar.destroy');
+    });
 
     // Akutansi - Nota Jalan & Jurnal
     // Akutansi: Cek & buat nota_jalan

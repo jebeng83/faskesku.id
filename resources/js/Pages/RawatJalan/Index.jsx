@@ -15,7 +15,7 @@ import {
   UserIcon,
   BanknotesIcon,
   EllipsisVerticalIcon,
-  ArrowPathIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
@@ -237,9 +237,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         if (!time) return '-';
         return time.substring(0, 5);
     };
-
-    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+    
     
 
     const handleSuratSehat = (noRawAt) => {
@@ -290,6 +288,19 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         setPanggilLoadingMap((prev) => ({ ...prev, [noRawat]: !!loading }));
     };
 
+    const SpinningBalls = () => (
+        <motion.div
+            className="relative w-4 h-4"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+            aria-hidden="true"
+        >
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            <span className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        </motion.div>
+    );
+
     const handleOpenCanvasAndPanggil = async (item) => {
         const noRawat = item?.no_rawat;
         const allowed = isAllowedForAntrean(item);
@@ -302,22 +313,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     status: 1,
                     tanggalperiksa: todayDateString(getAppTimeZone()),
                 };
-                let success = false;
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    try {
-                        const res = await axios.post('/api/mobilejkn/antrean/panggil', payload);
-                        if (res && res.status === 200) {
-                            success = true;
-                            break;
-                        }
-                    } catch (_) {
-                        const backoff = 300 * Math.pow(2, attempt - 1);
-                        await sleep(backoff);
-                    }
-                }
-                if (!success) {
-                    // Gagal panggil setelah retry, lanjutkan navigasi tanpa mengganggu alur
-                }
+                void axios.post('/api/mobilejkn/antrean/panggil', payload).catch(() => {});
             }
         } catch (_) {}
         try {
@@ -335,7 +331,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             }).toString();
             router.visit(`/rawat-jalan/canvas?${params}`);
         }
-        if (allowed && noRawat) setPanggilLoading(noRawat, false);
+        if (allowed && noRawat) setTimeout(() => setPanggilLoading(noRawat, false), 300);
     };
 
     return (
@@ -539,6 +535,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                     >
                                                         Buat Surat
                                                     </DropdownItem>
+                                                    <DropdownItem
+                                                        onClick={() => handleAwalKeperawatanUmum(item.no_rawat)}
+                                                        icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
+                                                    >
+                                                        Awal Keperawatan Umum
+                                                    </DropdownItem>
                                                 </SimpleDropdown>
                                                 {item.patient?.nm_pasien ? (
                                                     <Link
@@ -599,7 +601,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                     {item.no_rawat}
                                                 </span>
                                                 {panggilLoadingMap[item.no_rawat] && (
-                                                    <ArrowPathIcon className="w-3 h-3 text-blue-500 animate-spin" />
+                                                    <SpinningBalls />
                                                 )}
                                             </span>
                                         </td>

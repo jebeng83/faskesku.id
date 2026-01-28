@@ -92,29 +92,37 @@ const Select = ({ children, value, onValueChange, className = "" }) => {
     );
 };
 
-const SelectTrigger = ({ children, className = "", isOpen, setIsOpen, triggerRef }) => {
+const SelectTrigger = ({ children, className = "", isOpen, setIsOpen, triggerRef, selectedValue }) => {
+    const handleToggle = () => setIsOpen && setIsOpen(!isOpen);
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleToggle();
+        }
+    };
     return (
         <button
             ref={triggerRef}
             type="button"
+            tabIndex={0}
+            aria-haspopup="listbox"
+            aria-expanded={Boolean(isOpen)}
             className={`flex items-center justify-between w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${className}`}
-            onClick={() => setIsOpen && setIsOpen(!isOpen)}
+            onClick={handleToggle}
+            onKeyDown={handleKeyDown}
         >
-            {children}
+            {React.Children.map(children, (child) =>
+                React.isValidElement(child)
+                    ? React.cloneElement(child, { selectedValue })
+                    : child
+            )}
             <svg
-                className={`w-4 h-4 transition-transform ${
-                    isOpen ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
             >
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
         </button>
     );

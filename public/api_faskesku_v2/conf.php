@@ -1,9 +1,9 @@
 <?php
     date_default_timezone_set('Asia/Jakarta');
-    define('DB_HOST', '172.16.10.10');
-    define('DB_USER', 'simkes');
-    define('DB_PASS', 'piracetam800mg');
-    define('DB_NAME', 'kerjo_db');
+    define('DB_HOST', 'localhost');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+    define('DB_NAME', 'fufufafa');
     $akunbpjs=fetch_array(bukaquery("select kd_pj,aes_decrypt(usere,'nur') as user,aes_decrypt(passworde,'windi') as pass FROM password_asuransi"));
     @define('USERNAME', $akunbpjs['user']);
     @define('PASSWORD', $akunbpjs['pass']);

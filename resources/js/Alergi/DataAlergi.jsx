@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import Modal from '@/Components/Modal';
+import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
+import { Plus, Pencil, Trash2, Search, Globe, Info, Save, Sparkles } from 'lucide-react';
 
 export default function DataAlergi({ open, onClose, jenis }) {
   const [items, setItems] = useState([]);
@@ -16,6 +18,7 @@ export default function DataAlergi({ open, onClose, jenis }) {
   const [jenisError, setJenisError] = useState(null);
   const [selectedKodeJenis, setSelectedKodeJenis] = useState(null);
   const [newJenisName, setNewJenisName] = useState('');
+  const [q, setQ] = useState('');
 
   const loadJenis = async () => {
     setJenisLoading(true);
@@ -39,7 +42,7 @@ export default function DataAlergi({ open, onClose, jenis }) {
     setError(null);
     try {
       const kode_jenis = selectedKodeJenis ?? (jenis ? String(jenis) : '');
-      const res = await axios.get('/api/alergi', { params: { kode_jenis } });
+      const res = await axios.get('/api/alergi', { params: { kode_jenis, q } });
       const data = Array.isArray(res?.data?.data) ? res.data.data : [];
       setItems(data);
     } catch (e) {
@@ -64,7 +67,7 @@ export default function DataAlergi({ open, onClose, jenis }) {
     if (open && selectedKodeJenis) {
       load();
     }
-  }, [selectedKodeJenis]);
+  }, [selectedKodeJenis, q]);
 
   const createItem = async () => {
     if (!form.kd_alergi || !form.nm_alergi) return;
@@ -203,105 +206,127 @@ export default function DataAlergi({ open, onClose, jenis }) {
     }
   };
 
+  const selectedJenisLabel = selectedKodeJenis ? (jenisList.find((j) => String(j.kode_jenis) === String(selectedKodeJenis))?.nama_jenis || '') : '';
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div className="fixed inset-0 z-[99999] flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="absolute inset-0 bg-[oklch(14.5%_0_0_/_0.6)] backdrop-blur-sm" onClick={onClose} />
-          <motion.div className="relative z-[100000] w-full max-w-2xl rounded-2xl bg-[oklch(14.5%_0_0)] text-[oklch(84.1%_0.238_128.85)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] shadow-[0_0_18px_oklch(84.1%_0.238_128.85_/_0.35)] p-4 font-mono" initial={{ scale: 0.98, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.98, opacity: 0, y: 20 }}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Manajemen Data Alergi</div>
-              <button onClick={onClose} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.45)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]">
-                <XMarkIcon className="h-4 w-4" />
-              </button>
+    <Modal show={open} onClose={onClose} title="Manajemen Data Alergi" size="xl" showTopGradient>
+      <motion.div className="space-y-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-end">
+          <div>
+            <Label className="text-sm font-semibold">Jenis Alergi</Label>
+            <Select value={selectedKodeJenis || ''} onValueChange={(v) => setSelectedKodeJenis(v)}>
+              <SelectTrigger className="h-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+                <SelectValue placeholder={jenisLoading ? 'Memuat…' : 'Pilih'} selectedValue={selectedJenisLabel} />
+              </SelectTrigger>
+              <SelectContent>
+                {jenisList.length === 0 ? (
+                  <SelectItem value="">Belum ada jenis</SelectItem>
+                ) : (
+                  jenisList.map((j) => (
+                    <SelectItem key={j.kode_jenis} value={String(j.kode_jenis)}>{j.nama_jenis}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Label className="text-sm font-semibold">Cari Alergi</Label>
+              <div className="relative">
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari alergi (nama)…" className="h-9 pl-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              </div>
             </div>
-            <div className="mt-3 text-[11px]">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">Jenis Alergi:</span>
-                <select
-                  value={selectedKodeJenis || ''}
-                  onChange={(e) => setSelectedKodeJenis(e.target.value)}
-                  className="h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)]"
-                >
-                  {jenisLoading ? (
-                    <option value="">Memuat…</option>
-                  ) : jenisList.length === 0 ? (
-                    <option value="">Belum ada jenis</option>
+            <div className="flex-1">
+              <Label className="text-sm font-semibold">Jenis Baru / Ubah Nama</Label>
+              <Input value={newJenisName} onChange={(e) => setNewJenisName(e.target.value)} placeholder="Nama jenis" className="h-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" />
+            </div>
+            <Button type="button" onClick={tambahJenis} disabled={saving} className="h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Tambah Jenis
+            </Button>
+            <Button type="button" onClick={renameJenis} disabled={saving || !selectedKodeJenis} className="h-9 px-3 bg-indigo-600 hover:bg-indigo-700 text-white inline-flex items-center gap-2">
+              <Pencil className="w-4 h-4" />
+              Ubah Nama
+            </Button>
+            <Button type="button" onClick={hapusJenis} disabled={saving || !selectedKodeJenis} className="h-9 px-3 border border-red-500 text-red-600 inline-flex items-center gap-2">
+              <Trash2 className="w-4 h-4" />
+              Hapus Jenis
+            </Button>
+          </div>
+        </div>
+
+        {jenisError && (
+          <div className="flex items-center gap-2 text-xs text-red-600">
+            <Info className="w-3 h-3" />
+            {jenisError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-[180px_1fr_auto] gap-3 items-end">
+          <div>
+            <Label className="text-sm font-semibold">Kode Alergi</Label>
+            <Input value={form.kd_alergi} onChange={(e) => setForm((f) => ({ ...f, kd_alergi: e.target.value }))} placeholder="Maks. 5 karakter" maxLength={5} className="h-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" />
+          </div>
+          <div>
+            <Label className="text-sm font-semibold">Nama Alergi</Label>
+            <Input value={form.nm_alergi} onChange={(e) => setForm((f) => ({ ...f, nm_alergi: e.target.value }))} placeholder="Masukkan nama" className="h-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button type="button" onClick={generateKodeAlergi} disabled={saving} variant="outline" className="h-9 px-3 inline-flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Otomatis
+            </Button>
+            <Button type="button" onClick={createItem} disabled={saving || !selectedKodeJenis} className="h-9 px-3 bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Tambah
+            </Button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
+          {loading ? (
+            <div className="p-4 text-sm">Memuat…</div>
+          ) : items.length === 0 ? (
+            <div className="p-8 text-sm flex flex-col items-center justify-center gap-2">
+              <Globe className="w-10 h-10 text-gray-400" />
+              <span>Tidak ada data.</span>
+            </div>
+          ) : (
+            items.map((it) => (
+              <div key={it.kd_alergi} className="p-3 flex items-center gap-3 border-b border-gray-200/50 dark:border-gray-700/50">
+                <div className="w-24 text-sm font-semibold">{it.kd_alergi}</div>
+                <div className="flex-1">
+                  {editing === it.kd_alergi ? (
+                    <Input value={it.nm_alergi} onChange={(e) => setItems((arr) => arr.map((x) => (x.kd_alergi === it.kd_alergi ? { ...x, nm_alergi: e.target.value } : x)))} className="h-9 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" />
                   ) : (
-                    jenisList.map((j) => (
-                      <option key={j.kode_jenis} value={String(j.kode_jenis)}>{j.nama_jenis}</option>
-                    ))
-                  )}
-                </select>
-                <input
-                  value={newJenisName}
-                  onChange={(e) => setNewJenisName(e.target.value)}
-                  className="h-8 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)] flex-1"
-                  placeholder="Nama jenis baru / ubah nama"
-                />
-                <button onClick={tambahJenis} disabled={saving} className="h-8 px-3 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] text-xs border border-[oklch(84.1%_0.238_128.85)]">Tambah Jenis</button>
-                <button onClick={renameJenis} disabled={saving || !selectedKodeJenis} className="h-8 px-3 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] text-xs border border-[oklch(84.1%_0.238_128.85)]">Ubah Nama</button>
-                <button onClick={hapusJenis} disabled={saving || !selectedKodeJenis} className="h-8 px-3 rounded-md border border-red-500 text-red-500 text-xs hover:bg-[oklch(14.5%_0_0_/_0.9)]">Hapus Jenis</button>
-              </div>
-              {jenisError && <div className="mt-1 text-xs text-red-500">{jenisError}</div>}
-            </div>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-end gap-2">
-                <div className="flex-1 grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] mb-1">Kode Alergi</label>
-                    <input value={form.kd_alergi} onChange={(e) => setForm((f) => ({ ...f, kd_alergi: e.target.value }))} className="w-full h-9 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)]" placeholder="Maks. 5 karakter" maxLength={5} />
-                    <div className="mt-2">
-                      <button onClick={generateKodeAlergi} disabled={saving} className="h-8 px-3 rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.45)] text-[oklch(84.1%_0.238_128.85)]">Otomatis</button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] mb-1">Nama Alergi</label>
-                    <input value={form.nm_alergi} onChange={(e) => setForm((f) => ({ ...f, nm_alergi: e.target.value }))} className="w-full h-9 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)]" placeholder="Masukkan nama" />
-                  </div>
-                </div>
-                <button onClick={createItem} disabled={saving || !selectedKodeJenis} className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85)]">
-                  <PlusIcon className="h-4 w-4" />
-                  Tambah
-                </button>
-              </div>
-              <div className="rounded-xl border border-[oklch(84.1%_0.238_128.85_/_0.35)] overflow-hidden">
-                <div className="divide-y divide-[oklch(84.1%_0.238_128.85_/_0.25)]">
-                  {loading ? (
-                    <div className="p-4 text-sm">Memuat…</div>
-                  ) : items.length === 0 ? (
-                    <div className="p-4 text-sm">Belum ada data.</div>
-                  ) : (
-                    items.map((it) => (
-                      <div key={it.kd_alergi} className="p-3 flex items-center gap-3">
-                        <div className="w-24 text-sm font-semibold">{it.kd_alergi}</div>
-                        <div className="flex-1">
-                          {editing === it.kd_alergi ? (
-                            <input value={it.nm_alergi} onChange={(e) => setItems((arr) => arr.map((x) => (x.kd_alergi === it.kd_alergi ? { ...x, nm_alergi: e.target.value } : x)))} className="w-full h-9 px-2 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(84.1%_0.238_128.85_/_0.45)]" />
-                          ) : (
-                            <div className="text-sm">{it.nm_alergi}</div>
-                          )}
-                        </div>
-                        {editing === it.kd_alergi ? (
-                          <button onClick={() => updateItem(it)} disabled={saving} className="h-8 px-3 rounded-md bg-[oklch(84.1%_0.238_128.85)] text-[oklch(14.5%_0_0)] text-xs border border-[oklch(84.1%_0.238_128.85)]">Simpan</button>
-                        ) : (
-                          <button onClick={() => setEditing(it.kd_alergi)} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-[oklch(84.1%_0.238_128.85_/_0.45)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]">
-                            <PencilSquareIcon className="h-4 w-4 text-red-500" />
-                          </button>
-                        )}
-                        <button onClick={() => deleteItem(it.kd_alergi)} disabled={saving} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-red-500 text-red-500 hover:bg-[oklch(14.5%_0_0_/_0.9)]">
-                          <TrashIcon className="h-4 w-4 text-red-500" />
-                        </button>
-                      </div>
-                    ))
+                    <div className="text-sm">{it.nm_alergi}</div>
                   )}
                 </div>
+                {editing === it.kd_alergi ? (
+                  <Button type="button" onClick={() => updateItem(it)} disabled={saving} aria-label="Simpan" size="icon" className="h-8 w-8 bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Save className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button type="button" onClick={() => setEditing(it.kd_alergi)} variant="outline" size="icon" className="h-8 w-8">
+                    <Pencil className="w-4 h-4 text-blue-600" />
+                  </Button>
+                )}
+                <Button type="button" onClick={() => deleteItem(it.kd_alergi)} disabled={saving} variant="outline" size="icon" className="h-8 w-8 border-red-500 text-red-600">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
-              {error && <div className="text-xs text-red-500">{error}</div>}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            ))
+          )}
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2 text-xs text-red-600">
+            <Info className="w-3 h-3" />
+            {error}
+          </div>
+        )}
+      </motion.div>
+    </Modal>
   );
 }

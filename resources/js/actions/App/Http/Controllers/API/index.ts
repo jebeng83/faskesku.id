@@ -7,6 +7,7 @@ import DokterController from './DokterController'
 import EmployeeController from './EmployeeController'
 import PermissionController from './PermissionController'
 import RegPeriksaController from './RegPeriksaController'
+import KamarInapController from './KamarInapController'
 import UserController from './UserController'
 import WhatsAppCredentialController from './WhatsAppCredentialController'
 import MenuSearchController from './MenuSearchController'
@@ -21,6 +22,7 @@ const API = {
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
     PermissionController: Object.assign(PermissionController, PermissionController),
     RegPeriksaController: Object.assign(RegPeriksaController, RegPeriksaController),
+    KamarInapController: Object.assign(KamarInapController, KamarInapController),
     UserController: Object.assign(UserController, UserController),
     WhatsAppCredentialController: Object.assign(WhatsAppCredentialController, WhatsAppCredentialController),
     MenuSearchController: Object.assign(MenuSearchController, MenuSearchController),

@@ -1570,8 +1570,9 @@ export default function Registration({
         // alert("Pasien berhasil ditambahkan!");
         
         if (newPatient && newPatient.no_rkm_medis) {
-            setSearchTerm(newPatient.no_rkm_medis);
-            handleSearch(newPatient.no_rkm_medis, alamatTerm);
+            const term = String(newPatient.no_rkm_medis);
+            setSearchTerm(term);
+            handleSearch(term, alamatTerm);
         }
 
         // Optionally refresh the page or search results

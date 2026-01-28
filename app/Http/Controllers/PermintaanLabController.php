@@ -935,8 +935,15 @@ class PermintaanLabController extends Controller
      */
     public function getRegPeriksa(Request $request): JsonResponse
     {
-        $query = RegPeriksa::with('patient')
-            ->where('status_lanjut', 'Ralan');
+        $query = RegPeriksa::with('patient');
+
+        if ($request->filled('status_lanjut')) {
+            $query->where('status_lanjut', $request->status_lanjut);
+        }
+
+        if ($request->filled('kd_poli')) {
+            $query->where('kd_poli', $request->kd_poli);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -951,9 +958,18 @@ class PermintaanLabController extends Controller
 
         if ($request->filled('tanggal')) {
             $query->whereDate('tgl_registrasi', $request->tanggal);
+        } else {
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('tgl_registrasi', [$request->start_date, $request->end_date]);
+            } elseif ($request->filled('start_date')) {
+                $query->whereDate('tgl_registrasi', '>=', $request->start_date);
+            } elseif ($request->filled('end_date')) {
+                $query->whereDate('tgl_registrasi', '<=', $request->end_date);
+            }
         }
 
-        $regPeriksa = $query->limit(10)->get();
+        $limit = (int) ($request->query('limit', 10));
+        $regPeriksa = $query->limit(max($limit, 1))->get();
 
         return response()->json([
             'success' => true,

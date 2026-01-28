@@ -11,9 +11,15 @@ import penjab from './penjab'
 import pasien from './pasien'
 import permissions from './permissions'
 import regPeriksaD17f92 from './reg-periksa'
+import kamarInap from './kamar-inap'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
+import sdki from './sdki'
+import kategoriSdki from './kategori-sdki'
+import subkategoriSdki from './subkategori-sdki'
+import keluhanSubyektif from './keluhan-subyektif'
+import dataObyektif from './data-obyektif'
 import odontogram from './odontogram'
 import whatsapp from './whatsapp'
 import messages from './messages'
@@ -37,6 +43,8 @@ import mobilejkn from './mobilejkn'
 import jadwal from './jadwal'
 import v1 from './v1'
 import poliklinik from './poliklinik'
+import bangsal from './bangsal'
+import kamar from './kamar'
 import akutansi from './akutansi'
 import paymentPoint from './payment-point'
 import antrianPoli2d4a79 from './antrian-poli'
@@ -88,7 +96,7 @@ regPeriksa.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1215
 * @route '/api/lab-tests'
 */
 export const labTests = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,7 +111,7 @@ labTests.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1215
 * @route '/api/lab-tests'
 */
 labTests.url = (options?: RouteQueryOptions) => {
@@ -112,7 +120,7 @@ labTests.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1215
 * @route '/api/lab-tests'
 */
 labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -122,7 +130,7 @@ labTests.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::labTests
-* @see app/Http/Controllers/PermintaanLabController.php:1199
+* @see app/Http/Controllers/PermintaanLabController.php:1215
 * @route '/api/lab-tests'
 */
 labTests.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -175,7 +183,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:444
+* @see routes/web.php:446
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,7 +197,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:444
+* @see routes/web.php:446
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -197,7 +205,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:444
+* @see routes/web.php:446
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -206,7 +214,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:444
+* @see routes/web.php:446
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -227,9 +235,15 @@ const api = {
     pasien: Object.assign(pasien, pasien),
     permissions: Object.assign(permissions, permissions),
     regPeriksa: Object.assign(regPeriksa, regPeriksaD17f92),
+    kamarInap: Object.assign(kamarInap, kamarInap),
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
+    sdki: Object.assign(sdki, sdki),
+    kategoriSdki: Object.assign(kategoriSdki, kategoriSdki),
+    subkategoriSdki: Object.assign(subkategoriSdki, subkategoriSdki),
+    keluhanSubyektif: Object.assign(keluhanSubyektif, keluhanSubyektif),
+    dataObyektif: Object.assign(dataObyektif, dataObyektif),
     odontogram: Object.assign(odontogram, odontogram),
     whatsapp: Object.assign(whatsapp, whatsapp),
     messages: Object.assign(messages, messages),
@@ -255,6 +269,8 @@ const api = {
     jadwal: Object.assign(jadwal, jadwal),
     v1: Object.assign(v1, v1),
     poliklinik: Object.assign(poliklinik, poliklinik),
+    bangsal: Object.assign(bangsal, bangsal),
+    kamar: Object.assign(kamar, kamar),
     akutansi: Object.assign(akutansi, akutansi),
     paymentPoint: Object.assign(paymentPoint, paymentPoint),
     antrianPoli: Object.assign(antrianPoli, antrianPoli2d4a79),

@@ -9,8 +9,9 @@
 
     <title inertia>{{ config('app.name', 'Faskesku') }}</title>
 
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    @if (app()->environment('production'))
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    @endif
 
     @routes
     @if (app()->environment('local') || config('app.debug'))

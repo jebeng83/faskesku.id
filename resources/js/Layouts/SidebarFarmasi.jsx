@@ -297,7 +297,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         const base = [
             {
                 label: "Dashboard",
-                href: route("farmasi.dashboard", {}, false),
+                href: route("dashboard", {}, false),
                 icon: <Gauge className="w-4 h-4" />,
                 permission: "farmasi.dashboard",
             },

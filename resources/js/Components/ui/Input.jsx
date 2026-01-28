@@ -8,7 +8,7 @@ const Input = ({
   placeholder = '',
   ...props 
 }) => {
-  const baseClasses = 'block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors';
+  const baseClasses = 'block w-full px-2 py-1.5 text-sm border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors';
   
   const stateClasses = error 
     ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 

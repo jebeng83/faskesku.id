@@ -5,21 +5,60 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [iframeUrl, setIframeUrl] = useState("");
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeTimedOut, setIframeTimedOut] = useState(false);
 
   const showIcare = async () => {
-    const noka = (noPeserta || "").toString().trim();
-    if (!noka) {
-      if (typeof window !== "undefined") {
-        alert("Pasien ini tidak memiliki nomor BPJS yang valid");
-      }
-      return;
-    }
     setOpen(true);
     setLoading(true);
     setError("");
     setIframeUrl("");
+    setIframeLoaded(false);
+    setIframeTimedOut(false);
+    let noka = (noPeserta || "").toString().trim();
     const kd = (kodeDokter || "").toString().trim() || "102";
     try {
+      if (!noka && noRawat) {
+        try {
+          const r1 = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            credentials: "include",
+          });
+          if (r1.ok) {
+            const j1 = await r1.json();
+            const d1 = j1?.data || null;
+            noka = (d1?.noKartu || d1?.no_kartu || "").toString().trim();
+          }
+        } catch (_) {}
+      }
+      if (!noka && noRawat) {
+        try {
+          const r2 = await fetch(`/api/reg-periksa/by-rawat?no_rawat=${encodeURIComponent(noRawat)}`, {
+            headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            credentials: "include",
+          });
+          if (r2.ok) {
+            const j2 = await r2.json();
+            const p = j2?.data?.pasien || j2?.data || null;
+            const nik = ((p?.no_ktp || j2?.data?.no_ktp || "").toString().trim());
+            if (nik) {
+              const r3 = await fetch(`/pcare/api/peserta/nik?nik=${encodeURIComponent(nik)}`, {
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+                credentials: "include",
+              });
+              if (r3.ok) {
+                const j3 = await r3.json();
+                const resp = j3?.response || j3 || {};
+                noka = (resp?.noKartu || resp?.peserta?.noKartu || resp?.no_kartu || "").toString().trim();
+              }
+            }
+          }
+        } catch (_) {}
+      }
+      if (!noka) {
+        setError("Nomor BPJS pasien tidak tersedia.");
+        return;
+      }
       let res = await fetch(`/api/icare/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
@@ -28,12 +67,12 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
       });
       if (res.status === 419 || res.status === 401 || (res.status >= 500)) {
         try {
-                  res = await fetch(`/api/icare/proxy/test/${encodeURIComponent('api/pcare/validate')}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-                    credentials: "omit",
-                    body: JSON.stringify({ param: noka, kodedokter: kd, no_rawat: noRawat }),
-                  });
+          res = await fetch(`/api/icare/proxy/test/${encodeURIComponent('api/pcare/validate')}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            credentials: "omit",
+            body: JSON.stringify({ param: noka, kodedokter: kd, no_rawat: noRawat }),
+          });
         } catch (_) {}
       }
       const text = await res.text();
@@ -51,6 +90,16 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (!iframeUrl) return;
+    setIframeLoaded(false);
+    setIframeTimedOut(false);
+    const t = setTimeout(() => {
+      setIframeTimedOut(true);
+    }, 12000);
+    return () => clearTimeout(t);
+  }, [iframeUrl]);
 
   return (
     <div className="inline-block">
@@ -87,8 +136,16 @@ export default function Icare({ noPeserta = "", kodeDokter = "", noRawat = "", l
                   </div>
                   <div className="mx-3 mb-3">
                     <div style={{ height: 600, width: "100%" }} className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                      <iframe title="icare" allowFullScreen frameBorder="0" style={{ width: "100%", height: "100%", border: "none" }} src={iframeUrl || undefined}></iframe>
+                      <iframe title="icare" allowFullScreen frameBorder="0" style={{ width: "100%", height: "100%", border: "none" }} src={iframeUrl || undefined} onLoad={() => setIframeLoaded(true)}></iframe>
                     </div>
+                    {iframeTimedOut && !iframeLoaded ? (
+                      <div className="mt-2 text-xs">
+                        <div className="rounded-md border border-amber-200 bg-amber-50 text-amber-700 px-3 py-2">Tampilan i-Care belum dimuat. Anda bisa membuka langsung di tab baru.</div>
+                        <div className="mt-2">
+                          <button type="button" onClick={() => window.open(iframeUrl || 'https://vclaim.bpjs-kesehatan.go.id/icare/', '_blank')} className="inline-flex items-center rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1">Buka i-Care</button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}

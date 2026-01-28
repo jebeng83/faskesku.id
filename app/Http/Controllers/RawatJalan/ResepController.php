@@ -284,13 +284,14 @@ class ResepController extends Controller
                 ], 400);
             }
 
-            // Validasi opsional payload biaya tambahan per item
+            // Validasi opsional payload biaya tambahan per item dan jumlah yang diserahkan
             $request->validate([
                 'embalase_tuslah' => 'nullable|array',
                 'embalase_tuslah.non_racikan' => 'nullable|array',
                 'embalase_tuslah.non_racikan.*.kode_brng' => 'required_with:embalase_tuslah.non_racikan|string',
                 'embalase_tuslah.non_racikan.*.embalase' => 'nullable|numeric|min:0',
                 'embalase_tuslah.non_racikan.*.tuslah' => 'nullable|numeric|min:0',
+                'embalase_tuslah.non_racikan.*.jml' => 'nullable|numeric|min:0.1',
             ]);
 
             // Ambil default Embalase/Tuslah jika tidak dikirimkan dari client
@@ -303,9 +304,10 @@ class ResepController extends Controller
                 // abaikan jika tabel tidak tersedia
             }
 
-            // Map biaya tambahan dari payload: { embalase_tuslah: { non_racikan: [{kode_brng,embalase,tuslah}], racikan: [...] } }
+            // Map biaya tambahan dari payload: { embalase_tuslah: { non_racikan: [{kode_brng,embalase,tuslah,jml?}], racikan: [...] } }
             $payload = $request->input('embalase_tuslah', []);
             $nonRacikanCharges = [];
+            $overrideJumlah = [];
             if (! empty($payload['non_racikan']) && is_array($payload['non_racikan'])) {
                 foreach ($payload['non_racikan'] as $r) {
                     $kode = $r['kode_brng'] ?? null;
@@ -314,6 +316,9 @@ class ResepController extends Controller
                             'embalase' => (float) ($r['embalase'] ?? $defaultEmbalase),
                             'tuslah' => (float) ($r['tuslah'] ?? $defaultTuslah),
                         ];
+                        if (isset($r['jml'])) {
+                            $overrideJumlah[$kode] = (float) $r['jml'];
+                        }
                     }
                 }
             }
@@ -324,25 +329,28 @@ class ResepController extends Controller
 
             // Validasi stok ulang dan eksekusi pengurangan stok per item
             foreach ($details as $det) {
+                $jumlah = isset($overrideJumlah[$det->kode_brng])
+                    ? max((float) $overrideJumlah[$det->kode_brng], 0.1)
+                    : (float) $det->jml;
                 // Validasi total stok tersedia di depo terkait poli
                 $bangsalList = SetDepoRalan::getBangsalByPoli($reg->kd_poli);
                 $totalStok = 0;
                 foreach ($bangsalList as $kdBangsal) {
                     $totalStok += Gudangbarang::getTotalStokByBarangBangsal($det->kode_brng, $kdBangsal);
                 }
-                if ($totalStok < $det->jml) {
+                if ($totalStok < $jumlah) {
                     DB::rollBack();
                     $barang = Databarang::where('kode_brng', $det->kode_brng)->first();
                     $nama = $barang ? $barang->nama_brng : $det->kode_brng;
 
                     return response()->json([
                         'success' => false,
-                        'message' => "Stok obat $nama tidak mencukupi untuk penyerahan. Tersedia: $totalStok, Diminta: {$det->jml}",
+                        'message' => "Stok obat $nama tidak mencukupi untuk penyerahan. Tersedia: $totalStok, Diminta: $jumlah",
                     ], 400);
                 }
 
                 // Kurangi stok dengan FIFO dan dapatkan batch yang diambil
-                $updatedBatches = $this->updateStokObat($det->kode_brng, $det->jml, $reg->kd_poli);
+                $updatedBatches = $this->updateStokObat($det->kode_brng, $jumlah, $reg->kd_poli);
 
                 // Ambil informasi barang untuk menghitung biaya
                 $barangInfo = Databarang::where('kode_brng', $det->kode_brng)->first();

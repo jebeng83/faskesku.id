@@ -89,7 +89,7 @@ getReferensiPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::getReferensiDokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 export const getReferensiDokter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ getReferensiDokter.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::getReferensiDokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 getReferensiDokter.url = (options?: RouteQueryOptions) => {
@@ -113,7 +113,7 @@ getReferensiDokter.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::getReferensiDokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 getReferensiDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ getReferensiDokter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::getReferensiDokter
-* @see app/Http/Controllers/Pcare/MobileJknController.php:627
+* @see app/Http/Controllers/Pcare/MobileJknController.php:642
 * @route '/api/mobilejkn/ref/dokter'
 */
 getReferensiDokter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -167,7 +167,7 @@ addAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil'
 */
 const panggilAntrean5944077e33133cb7d98397e2fe74ac82 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -182,7 +182,7 @@ panggilAntrean5944077e33133cb7d98397e2fe74ac82.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil'
 */
 panggilAntrean5944077e33133cb7d98397e2fe74ac82.url = (options?: RouteQueryOptions) => {
@@ -191,7 +191,7 @@ panggilAntrean5944077e33133cb7d98397e2fe74ac82.url = (options?: RouteQueryOption
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil'
 */
 panggilAntrean5944077e33133cb7d98397e2fe74ac82.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -201,7 +201,7 @@ panggilAntrean5944077e33133cb7d98397e2fe74ac82.post = (options?: RouteQueryOptio
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 const panggilAntrean0d6ed321e787796635ffbf4db73905af = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -216,7 +216,7 @@ panggilAntrean0d6ed321e787796635ffbf4db73905af.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 panggilAntrean0d6ed321e787796635ffbf4db73905af.url = (options?: RouteQueryOptions) => {
@@ -225,7 +225,7 @@ panggilAntrean0d6ed321e787796635ffbf4db73905af.url = (options?: RouteQueryOption
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::panggilAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:703
+* @see app/Http/Controllers/Pcare/MobileJknController.php:718
 * @route '/api/mobilejkn/antrean/panggil/test'
 */
 panggilAntrean0d6ed321e787796635ffbf4db73905af.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -240,7 +240,7 @@ export const panggilAntrean = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:929
+* @see app/Http/Controllers/Pcare/MobileJknController.php:944
 * @route '/api/mobilejkn/antrean/batal'
 */
 export const batalAntrean = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ batalAntrean.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:929
+* @see app/Http/Controllers/Pcare/MobileJknController.php:944
 * @route '/api/mobilejkn/antrean/batal'
 */
 batalAntrean.url = (options?: RouteQueryOptions) => {
@@ -264,7 +264,7 @@ batalAntrean.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:929
+* @see app/Http/Controllers/Pcare/MobileJknController.php:944
 * @route '/api/mobilejkn/antrean/batal'
 */
 batalAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -274,7 +274,7 @@ batalAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 const cekSrk2b6f5e715de77ff7ac155365dabd92dc = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -289,7 +289,7 @@ cekSrk2b6f5e715de77ff7ac155365dabd92dc.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 cekSrk2b6f5e715de77ff7ac155365dabd92dc.url = (options?: RouteQueryOptions) => {
@@ -298,7 +298,7 @@ cekSrk2b6f5e715de77ff7ac155365dabd92dc.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check'
 */
 cekSrk2b6f5e715de77ff7ac155365dabd92dc.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -308,7 +308,7 @@ cekSrk2b6f5e715de77ff7ac155365dabd92dc.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check/test'
 */
 const cekSrkb4776f0258f485d7e7bbcc3a371dcbb5 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -323,7 +323,7 @@ cekSrkb4776f0258f485d7e7bbcc3a371dcbb5.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check/test'
 */
 cekSrkb4776f0258f485d7e7bbcc3a371dcbb5.url = (options?: RouteQueryOptions) => {
@@ -332,7 +332,7 @@ cekSrkb4776f0258f485d7e7bbcc3a371dcbb5.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::cekSrk
-* @see app/Http/Controllers/Pcare/MobileJknController.php:400
+* @see app/Http/Controllers/Pcare/MobileJknController.php:415
 * @route '/api/mobilejkn/srk/check/test'
 */
 cekSrkb4776f0258f485d7e7bbcc3a371dcbb5.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

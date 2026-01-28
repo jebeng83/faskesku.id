@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::publicMethod
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/public-store'
 */
 export const publicMethod = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ publicMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::publicMethod
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/public-store'
 */
 publicMethod.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ publicMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::publicMethod
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/public-store'
 */
 publicMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ publicMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::alt
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/store'
 */
 export const alt = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ alt.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::alt
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/store'
 */
 alt.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ alt.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::alt
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai/store'
 */
 alt.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

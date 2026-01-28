@@ -6,6 +6,7 @@ import QueueController from './QueueController'
 import Antrian from './Antrian'
 import PermintaanLabController from './PermintaanLabController'
 import MenuController from './MenuController'
+import SDKI from './SDKI'
 import Odontogram from './Odontogram'
 import WhatsApp from './WhatsApp'
 import Alergi from './Alergi'
@@ -19,6 +20,8 @@ import Kepegawaian from './Kepegawaian'
 import SatuSehat from './SatuSehat'
 import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
+import BangsalController from './BangsalController'
+import KamarController from './KamarController'
 import Akutansi from './Akutansi'
 import AuthController from './AuthController'
 import SuratController from './SuratController'
@@ -26,6 +29,7 @@ import PatientController from './PatientController'
 import Pasien from './Pasien'
 import RegistrationController from './RegistrationController'
 import SkriningVisualController from './SkriningVisualController'
+import TriaseUgdController from './TriaseUgdController'
 import EmployeeController from './EmployeeController'
 import DoctorController from './DoctorController'
 import SpesialisController from './SpesialisController'
@@ -34,6 +38,7 @@ import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
 import RawatInapController from './RawatInapController'
+import IGD from './IGD'
 import IGDController from './IGDController'
 import KamarOperasiController from './KamarOperasiController'
 import LaboratoriumController from './LaboratoriumController'
@@ -53,6 +58,7 @@ const Controllers = {
     Antrian: Object.assign(Antrian, Antrian),
     PermintaanLabController: Object.assign(PermintaanLabController, PermintaanLabController),
     MenuController: Object.assign(MenuController, MenuController),
+    SDKI: Object.assign(SDKI, SDKI),
     Odontogram: Object.assign(Odontogram, Odontogram),
     WhatsApp: Object.assign(WhatsApp, WhatsApp),
     Alergi: Object.assign(Alergi, Alergi),
@@ -66,6 +72,8 @@ const Controllers = {
     SatuSehat: Object.assign(SatuSehat, SatuSehat),
     JadwalController: Object.assign(JadwalController, JadwalController),
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
+    BangsalController: Object.assign(BangsalController, BangsalController),
+    KamarController: Object.assign(KamarController, KamarController),
     Akutansi: Object.assign(Akutansi, Akutansi),
     AuthController: Object.assign(AuthController, AuthController),
     SuratController: Object.assign(SuratController, SuratController),
@@ -73,6 +81,7 @@ const Controllers = {
     Pasien: Object.assign(Pasien, Pasien),
     RegistrationController: Object.assign(RegistrationController, RegistrationController),
     SkriningVisualController: Object.assign(SkriningVisualController, SkriningVisualController),
+    TriaseUgdController: Object.assign(TriaseUgdController, TriaseUgdController),
     EmployeeController: Object.assign(EmployeeController, EmployeeController),
     DoctorController: Object.assign(DoctorController, DoctorController),
     SpesialisController: Object.assign(SpesialisController, SpesialisController),
@@ -81,6 +90,7 @@ const Controllers = {
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),
+    IGD: Object.assign(IGD, IGD),
     IGDController: Object.assign(IGDController, IGDController),
     KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),
     LaboratoriumController: Object.assign(LaboratoriumController, LaboratoriumController),

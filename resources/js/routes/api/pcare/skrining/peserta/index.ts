@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
-* @see routes/api.php:549
+* @see routes/api.php:593
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}'
 */
 export const defaultMethod = (args: { nomorPeserta: string | number } | [nomorPeserta: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ defaultMethod.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:549
+* @see routes/api.php:593
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}'
 */
 defaultMethod.url = (args: { nomorPeserta: string | number } | [nomorPeserta: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -40,7 +40,7 @@ defaultMethod.url = (args: { nomorPeserta: string | number } | [nomorPeserta: st
 }
 
 /**
-* @see routes/api.php:549
+* @see routes/api.php:593
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}'
 */
 defaultMethod.get = (args: { nomorPeserta: string | number } | [nomorPeserta: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,7 +49,7 @@ defaultMethod.get = (args: { nomorPeserta: string | number } | [nomorPeserta: st
 })
 
 /**
-* @see routes/api.php:549
+* @see routes/api.php:593
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}'
 */
 defaultMethod.head = (args: { nomorPeserta: string | number } | [nomorPeserta: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
