@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../
 import storeE72b01 from './store'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1161
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1169
 * @route '/api/aturan-pakai'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

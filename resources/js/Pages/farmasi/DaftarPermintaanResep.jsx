@@ -331,6 +331,30 @@ const DaftarPermintaanResep = () => {
         }
     };
 
+    useEffect(() => {
+        handleSearch();
+    }, [
+        filters.jenis,
+        filters.start_date,
+        filters.end_date,
+        filters.no_rawat,
+        filters.no_rkm_medis,
+        filters.dokter,
+        filters.poli,
+        filters.status_perawatan,
+        filters.kd_bangsal,
+        filters.kd_depo,
+        filters.page,
+        filters.limit,
+    ]);
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            handleSearch();
+        }, 400);
+        return () => clearTimeout(t);
+    }, [filters.q]);
+
     const openDetail = async (noResep, rowContext = {}) => {
         try {
             const resp = await fetch(
@@ -1113,6 +1137,7 @@ const DaftarPermintaanResep = () => {
                         kode_brng: it.kode_brng,
                         embalase: Number(it.embalase || 0),
                         tuslah: Number(it.tuslah || 0),
+                        jml: Number(it.jml || 0),
                     });
                 }
                 return payload;
@@ -1296,6 +1321,22 @@ const DaftarPermintaanResep = () => {
             const item = { ...list[index] };
             const num = Number(value ?? 0);
             item[key] = Number.isFinite(num) && num >= 0 ? num : 0;
+            list[index] = item;
+            return { ...prev, detail_obat: list };
+        });
+    };
+
+    // Edit jumlah per item non-racikan
+    const updateNonRacikanJumlah = (index, key, value) => {
+        setSelectedResep((prev) => {
+            if (!prev) return prev;
+            const list = Array.isArray(prev.detail_obat)
+                ? [...prev.detail_obat]
+                : [];
+            if (!list[index]) return prev;
+            const item = { ...list[index] };
+            const num = Number(value ?? 0);
+            item[key] = Number.isFinite(num) && num >= 0.1 ? num : 0.1;
             list[index] = item;
             return { ...prev, detail_obat: list };
         });
@@ -2176,13 +2217,30 @@ const DaftarPermintaanResep = () => {
                                                                     "-"}
                                                             </td>
                                                             <td className="border px-3 py-2 text-right">
-                                                                {formatRupiah(
-                                                                    d.tarif || 0
-                                                                )}
+                        {formatRupiah(
+                            d.tarif || 0
+                        )}
                                                             </td>
-                                                            <td className="border px-3 py-2 text-right">
-                                                                {d.jml}
-                                                            </td>
+                    <td className="border px-3 py-2 text-right">
+                        <Input
+                            type="number"
+                            min={0.1}
+                            step="0.1"
+                            value={
+                                typeof d.jml === "number"
+                                    ? d.jml
+                                    : Number(d.jml || 0)
+                            }
+                            onChange={(e) =>
+                                updateNonRacikanJumlah(
+                                    idx,
+                                    "jml",
+                                    e.target.value
+                                )
+                            }
+                            className="w-28 text-right"
+                        />
+                    </td>
                                                             <td className="border px-3 py-2">
                                                                 {d.aturan_pakai ||
                                                                     "-"}
