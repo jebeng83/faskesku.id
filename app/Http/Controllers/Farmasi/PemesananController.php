@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Farmasi;
 
 use App\Models\Farmasi\Pemesanan as HeaderPemesanan;
 use App\Models\Farmasi\DetailPesan;
+use App\Models\Farmasi\DataBatch;
+use App\Models\Farmasi\SetHargaObat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PemesananController extends BaseInventoryController
 {
@@ -216,6 +219,141 @@ class PemesananController extends BaseInventoryController
                     'jumlah2' => $it['jumlah2'] ?? $it['jumlah'],
                     'kadaluarsa' => $kadaluarsa,
                 ]);
+
+                $qty = (float)($it['jumlah2'] ?? $it['jumlah']);
+                $nf = $noFaktur;
+
+                // Adjust Stock
+                $beforeRow = DB::table('gudangbarang')
+                    ->where([
+                        'kode_brng' => $it['kode_brng'],
+                        'kd_bangsal' => $data['kd_bangsal'],
+                        'no_batch' => $nb,
+                        'no_faktur' => $nf,
+                    ])
+                    ->first();
+                $stokSebelum = (float)($beforeRow->stok ?? 0);
+
+                $this->adjustStockPlus($it['kode_brng'], $data['kd_bangsal'], $qty, $nb, $nf);
+
+                $afterRow = DB::table('gudangbarang')
+                    ->where([
+                        'kode_brng' => $it['kode_brng'],
+                        'kd_bangsal' => $data['kd_bangsal'],
+                        'no_batch' => $nb,
+                        'no_faktur' => $nf,
+                    ])
+                    ->first();
+                $stokSesudah = (float)($afterRow->stok ?? 0);
+
+                // Data Batch
+                if ($nb) {
+                    $exists = DB::table('data_batch')->where(['kode_brng' => $it['kode_brng'], 'no_batch' => $nb, 'no_faktur' => $nf])->exists();
+                    if (!$exists) {
+                        DataBatch::create([
+                            'kode_brng' => $it['kode_brng'],
+                            'no_batch' => $nb,
+                            'no_faktur' => $nf,
+                            'h_beli' => (float)$it['harga'],
+                            'tgl_kadaluarsa' => $kadaluarsa,
+                            'sisa' => $qty,
+                        ]);
+                    } else {
+                        $this->adjustBatchSisaDelta($it['kode_brng'], $nb, $nf, $qty);
+                    }
+                }
+
+                // Riwayat Transaksi Detail
+                if (Schema::hasTable('riwayat_transaksi_gudangbarang')) {
+                    if ($beforeRow) {
+                        \App\Models\RiwayatTransaksiGudangBarang::catatUpdate(
+                            $it['kode_brng'],
+                            $data['kd_bangsal'],
+                            $nb,
+                            $nf,
+                            $stokSebelum,
+                            $stokSesudah,
+                            'pemesanan',
+                            'Pemesanan (Penerimaan) ' . ($noFaktur ?? ''),
+                            (array)$beforeRow,
+                            (array)$afterRow
+                        );
+                    } else {
+                        \App\Models\RiwayatTransaksiGudangBarang::catatInsert(
+                            $it['kode_brng'],
+                            $data['kd_bangsal'],
+                            $nb,
+                            $nf,
+                            $stokSesudah,
+                            'pemesanan',
+                            'Pemesanan (Penerimaan) ' . ($noFaktur ?? ''),
+                            (array)$afterRow
+                        );
+                    }
+                }
+
+                // Riwayat Barang Medis
+                $this->recordRiwayat($it['kode_brng'], $data['kd_bangsal'], $qty, 0, 'Penerimaan', $nb, $nf, 'Pemesanan (Penerimaan) ' . $noFaktur, $data['nip']);
+            }
+
+            // Price Updates (Sync with databarang if needed)
+            $cfg = DB::table('set_harga_obat')->select('setharga', 'hargadasar', 'ppn')->first();
+            foreach ($data['items'] as $it) {
+                $hargaBeliBaru = (float) $it['harga'];
+                $besardis = (float) ($it['besardis'] ?? 0);
+                $disPercent = (float) ($it['dis'] ?? 0);
+                $hasDiscount = ($besardis > 0) || ($disPercent > 0);
+                $hargaDasarField = $hasDiscount ? max($hargaBeliBaru - $besardis, 0) : $hargaBeliBaru;
+                $useDiskon = ($cfg && isset($cfg->hargadasar) && $cfg->hargadasar === 'Harga Diskon');
+                $baseForSale = $useDiskon ? $hargaDasarField : $hargaBeliBaru;
+                $ppnMult = ($cfg && isset($cfg->ppn) && $cfg->ppn === 'Yes') ? 1.11 : 1.0;
+
+                $p = null;
+                if ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Jenis') {
+                    $kdjns = DB::table('databarang')->where('kode_brng', $it['kode_brng'])->value('kdjns');
+                    if ($kdjns) {
+                        $p = DB::table('setpenjualan')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->where('kdjns', $kdjns)->first();
+                    }
+                } elseif ($cfg && isset($cfg->setharga) && $cfg->setharga === 'Per Barang') {
+                    $p = DB::table('setpenjualanperbarang')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->where('kode_brng', $it['kode_brng'])->first();
+                }
+                if (!$p) {
+                    try {
+                        $p = DB::table('setpenjualanumum')->select('ralan', 'kelas1', 'kelas2', 'kelas3', 'utama', 'vip', 'vvip', 'beliluar', 'jualbebas', 'karyawan')->first();
+                    } catch (\Throwable $e) { $p = null; }
+                }
+                if (!$p) {
+                    $p = (object) [
+                        'ralan' => 20.0, 'kelas1' => 20.0, 'kelas2' => 20.0, 'kelas3' => 20.0,
+                        'utama' => 20.0, 'vip' => 20.0, 'vvip' => 20.0, 'beliluar' => 20.0,
+                        'jualbebas' => 20.0, 'karyawan' => 20.0
+                    ];
+                }
+
+                $apply = function (float $b, float $percent) use ($ppnMult): float {
+                    $harga = $b * (1.0 + ($percent / 100.0));
+                    $harga *= $ppnMult;
+                    return round($harga, 2);
+                };
+
+                $updates = [
+                    'h_beli' => $hargaBeliBaru,
+                    'dasar' => $hargaDasarField,
+                    'ralan' => $apply($baseForSale, (float)($p->ralan ?? 0)),
+                    'kelas1' => $apply($baseForSale, (float)($p->kelas1 ?? 0)),
+                    'kelas2' => $apply($baseForSale, (float)($p->kelas2 ?? 0)),
+                    'kelas3' => $apply($baseForSale, (float)($p->kelas3 ?? 0)),
+                    'utama' => $apply($baseForSale, (float)($p->utama ?? 0)),
+                    'vip' => $apply($baseForSale, (float)($p->vip ?? 0)),
+                    'vvip' => $apply($baseForSale, (float)($p->vvip ?? 0)),
+                    'beliluar' => $apply($baseForSale, (float)($p->beliluar ?? 0)),
+                    'jualbebas' => $apply($baseForSale, (float)($p->jualbebas ?? 0)),
+                    'karyawan' => $apply($baseForSale, (float)($p->karyawan ?? 0)),
+                ];
+
+                DB::table('databarang')
+                    ->where('kode_brng', $it['kode_brng'])
+                    ->update($updates);
             }
 
             $akun = \App\Models\Farmasi\SetAkun::query()->first();

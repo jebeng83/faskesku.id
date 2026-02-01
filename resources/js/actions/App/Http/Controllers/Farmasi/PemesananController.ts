@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @see app/Http/Controllers/Farmasi/PemesananController.php:374
 * @route '/api/pemesanan/generate-no-order'
 */
 export const generateNoOrder = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ generateNoOrder.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @see app/Http/Controllers/Farmasi/PemesananController.php:374
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ generateNoOrder.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @see app/Http/Controllers/Farmasi/PemesananController.php:374
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ generateNoOrder.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::generateNoOrder
-* @see app/Http/Controllers/Farmasi/PemesananController.php:236
+* @see app/Http/Controllers/Farmasi/PemesananController.php:374
 * @route '/api/pemesanan/generate-no-order'
 */
 generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ generateNoOrder.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @see app/Http/Controllers/Farmasi/PemesananController.php:148
 * @route '/api/pemesanan/store'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @see app/Http/Controllers/Farmasi/PemesananController.php:148
 * @route '/api/pemesanan/store'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::store
-* @see app/Http/Controllers/Farmasi/PemesananController.php:145
+* @see app/Http/Controllers/Farmasi/PemesananController.php:148
 * @route '/api/pemesanan/store'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 const listHutang8c28e2c51c4dba8872baf17b38a0c0a4 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ listHutang8c28e2c51c4dba8872baf17b38a0c0a4.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ listHutang8c28e2c51c4dba8872baf17b38a0c0a4.url = (options?: RouteQueryOptions) =
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 listHutang8c28e2c51c4dba8872baf17b38a0c0a4.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ listHutang8c28e2c51c4dba8872baf17b38a0c0a4.get = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 listHutang8c28e2c51c4dba8872baf17b38a0c0a4.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -123,7 +123,7 @@ listHutang8c28e2c51c4dba8872baf17b38a0c0a4.head = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 const listHutang4aecbaa2a017b79537893135987e0a6a = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,7 +138,7 @@ listHutang4aecbaa2a017b79537893135987e0a6a.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 listHutang4aecbaa2a017b79537893135987e0a6a.url = (options?: RouteQueryOptions) => {
@@ -147,7 +147,7 @@ listHutang4aecbaa2a017b79537893135987e0a6a.url = (options?: RouteQueryOptions) =
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 listHutang4aecbaa2a017b79537893135987e0a6a.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -157,7 +157,7 @@ listHutang4aecbaa2a017b79537893135987e0a6a.get = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::listHutang
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 listHutang4aecbaa2a017b79537893135987e0a6a.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -172,7 +172,7 @@ export const listHutang = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stagePelunasan
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 export const stagePelunasan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ stagePelunasan.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stagePelunasan
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 stagePelunasan.url = (options?: RouteQueryOptions) => {
@@ -196,7 +196,7 @@ stagePelunasan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stagePelunasan
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 stagePelunasan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -206,7 +206,7 @@ stagePelunasan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 export const markPaid = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -221,7 +221,7 @@ markPaid.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 markPaid.url = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -248,7 +248,7 @@ markPaid.url = (args: { no_faktur: string | number } | [no_faktur: string | numb
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 markPaid.patch = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({

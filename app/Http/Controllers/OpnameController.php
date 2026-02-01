@@ -53,7 +53,7 @@ class OpnameController extends Controller
         try {
             $kdBangsal = $request->input('kd_bangsal');
             $search = $request->input('search');
-            $aggregate = filter_var($request->input('aggregate', false), FILTER_VALIDATE_BOOLEAN);
+            $batchOn = strtolower(env('AKTIFKANBATCHOBAT', 'Yes')) === 'yes';
 
             if (! $kdBangsal) {
                 return response()->json([
@@ -62,39 +62,47 @@ class OpnameController extends Controller
                 ], 400);
             }
 
-            $query = DB::connection(config('database.default'))
-                ->table('gudangbarang')
+            $query = DB::table('gudangbarang')
                 ->join('databarang', 'gudangbarang.kode_brng', '=', 'databarang.kode_brng')
-                ->join('jenis', 'databarang.kdjns', '=', 'jenis.kdjns')
-                ->join('kategori_barang', 'databarang.kode_kategori', '=', 'kategori_barang.kode')
-                ->join('golongan_barang', 'databarang.kode_golongan', '=', 'golongan_barang.kode')
+                ->leftJoin('jenis', 'databarang.kdjns', '=', 'jenis.kdjns')
                 ->leftJoin('kodesatuan', 'databarang.kode_sat', '=', 'kodesatuan.kode_sat')
-                ->where('gudangbarang.kd_bangsal', $kdBangsal)
-                ->where('gudangbarang.stok', '>', 0);
+                ->where('gudangbarang.kd_bangsal', $kdBangsal);
 
-            if ($aggregate) {
-                $query->select(
-                    'gudangbarang.kode_brng',
-                    'databarang.nama_brng',
-                    'jenis.nama as jenis',
-                    'kodesatuan.satuan',
-                    DB::raw('SUM(gudangbarang.stok) as stok'),
-                    'databarang.h_beli as harga'
-                )->groupBy('gudangbarang.kode_brng', 'databarang.nama_brng', 'jenis.nama', 'kodesatuan.satuan', 'databarang.h_beli');
+            $selects = [
+                'gudangbarang.kode_brng',
+                'databarang.nama_brng',
+                'jenis.nama as jenis',
+                'kodesatuan.satuan',
+                DB::raw('SUM(gudangbarang.stok) as stok'),
+                'databarang.h_beli as harga'
+            ];
+
+            $groups = [
+                'gudangbarang.kode_brng',
+                'databarang.nama_brng',
+                'jenis.nama',
+                'kodesatuan.satuan',
+                'databarang.h_beli'
+            ];
+
+            if ($batchOn) {
+                $selects[] = 'gudangbarang.no_batch';
+                $groups[] = 'gudangbarang.no_batch';
             } else {
-                $query->select(
-                    'gudangbarang.kode_brng',
-                    'databarang.nama_brng',
-                    'jenis.nama as jenis',
-                    'kodesatuan.satuan',
-                    'gudangbarang.stok',
-                    'databarang.h_beli as harga',
-                    'gudangbarang.no_batch',
-                    'gudangbarang.no_faktur'
-                );
+                $selects[] = DB::raw("'' as no_batch");
             }
 
-            // Tambahkan filter pencarian jika ada
+            // no_faktur cannot be reliably aggregated for opname view, set to empty
+            $selects[] = DB::raw("'' as no_faktur");
+
+            $query->select($selects)->groupBy($groups);
+
+            // Hide items with total stock 0 and no search term
+            if (!$search) {
+                $query->having('stok', '>', 0);
+            }
+
+            // Filter pencarian
             if ($search && strlen($search) >= 2) {
                 $query->where(function ($q) use ($search) {
                     $q->where('databarang.nama_brng', 'LIKE', '%'.$search.'%')
@@ -103,7 +111,7 @@ class OpnameController extends Controller
             }
 
             $dataBarang = $query->orderBy('databarang.nama_brng')
-                ->limit(50) // Batasi hasil untuk performa
+                ->limit(50)
                 ->get();
 
             return response()->json([
@@ -152,40 +160,46 @@ class OpnameController extends Controller
             $conn = DB::connection(config('database.default'));
             $conn->beginTransaction();
 
+            $batchOn = strtolower(env('AKTIFKANBATCHOBAT', 'Yes')) === 'yes';
+
             foreach ($request->items as $item) {
-                // Debug: Log each item data
+                // Log each item data
                 Log::info('Processing item: '.json_encode($item));
 
-                // Normalisasi batch/faktur ke string kosong untuk kolom NOT NULL
+                // Normalisasi batch/faktur
                 $noBatch = isset($item['no_batch']) && $item['no_batch'] !== null ? (string) $item['no_batch'] : '';
                 $noFaktur = isset($item['no_faktur']) && $item['no_faktur'] !== null ? (string) $item['no_faktur'] : '';
 
-                // Ambil stok sistem dari gudangbarang dengan memperhatikan batch/faktur (null vs '')
-                $gudangBarang = GudangBarang::where('kode_brng', $item['kode_brng'])
-                    ->where('kd_bangsal', $request->kd_bangsal)
-                    ->where(function ($q) use ($noBatch) {
+                // Ambil TOTAL stok sistem untuk item ini di lokasi ini (+ No Batch jika batching aktif)
+                // Ini penting karena UI sudah melakukan agregasi
+                $queryTotal = DB::table('gudangbarang')
+                    ->where('kode_brng', $item['kode_brng'])
+                    ->where('kd_bangsal', $request->kd_bangsal);
+
+                if ($batchOn) {
+                    $queryTotal->where(function ($q) use ($noBatch) {
                         if ($noBatch === '') {
                             $q->whereNull('no_batch')->orWhere('no_batch', '');
                         } else {
                             $q->where('no_batch', $noBatch);
                         }
-                    })
-                    ->where(function ($q) use ($noFaktur) {
-                        if ($noFaktur === '') {
-                            $q->whereNull('no_faktur')->orWhere('no_faktur', '');
-                        } else {
-                            $q->where('no_faktur', $noFaktur);
-                        }
-                    })
-                    ->first();
+                    });
+                }
 
-                $stokSistem = $gudangBarang ? $gudangBarang->stok : 0;
-                $real = $item['real'];
+                $stokSistem = (double) $queryTotal->sum('stok');
+                
+                // Simpan row perwakilan untuk audit trail atau backup info jika diperlukan
+                $beforeRow = (array) $queryTotal->first(); 
+                
+                // Kosongkan stok pada semua faktur dalam grup ini untuk melakukan konsolidasi hasil opname
+                $queryTotal->update(['stok' => 0]); 
+
+                $real = (double) $item['real'];
                 $selisih = $real - $stokSistem;
                 $lebih = $selisih > 0 ? $selisih : 0;
                 $hilang = $selisih < 0 ? abs($selisih) : 0;
-                $nominalHilang = $hilang * $item['h_beli'];
-                $nominalLebih = $lebih * $item['h_beli'];
+                $nominalHilang = $hilang * (double) $item['h_beli'];
+                $nominalLebih = $lebih * (double) $item['h_beli'];
 
                 // Prepare data for insert
                 $opnameData = [
@@ -242,30 +256,28 @@ class OpnameController extends Controller
                 );
 
                 // Catat audit trail
-                if ($gudangBarang && $gudangBarang->exists) {
-                    // Update existing record
+                if ($beforeRow) {
                     RiwayatTransaksiGudangBarang::catatUpdate(
                         $item['kode_brng'],
                         $request->kd_bangsal,
-                        $noBatch ?? '',
-                        $noFaktur ?? '',
+                        $noBatch,
+                        $noFaktur,
                         $stokSistem,
                         $real,
                         'opname',
-                        'Stok opname: '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
-                        $gudangBarang->toArray(),
+                        'Stok opname (Aggregated): '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
+                        $beforeRow,
                         $gudangBarangUpdated->toArray()
                     );
                 } else {
-                    // Insert new record
                     RiwayatTransaksiGudangBarang::catatInsert(
                         $item['kode_brng'],
                         $request->kd_bangsal,
-                        $noBatch ?? '',
-                        $noFaktur ?? '',
+                        $noBatch,
+                        $noFaktur,
                         $real,
                         'opname',
-                        'Stok opname: '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
+                        'Stok opname (New Record): '.($request->keterangan ?? 'Opname tanggal '.$request->tanggal),
                         $gudangBarangUpdated->toArray()
                     );
                 }
