@@ -55,7 +55,7 @@ export default function SirkulasiObat() {
         if (controllerRef.current) {
             try {
                 controllerRef.current.abort();
-            } catch {}
+            } catch { }
         }
         const ac = new AbortController();
         controllerRef.current = ac;
@@ -95,7 +95,7 @@ export default function SirkulasiObat() {
     useEffect(() => {
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [jenis, kategori, golongan, lokasi, batchOn, tglAwal, tglAkhir]);
 
     const triggerSearch = () => {
         fetchData();

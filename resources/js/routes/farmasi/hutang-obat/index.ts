@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::data
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ data.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::data
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 data.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ data.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::data
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::data
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/farmasi/hutang-obat/data'
 */
 data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::index
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::index
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::index
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::index
-* @see app/Http/Controllers/Farmasi/PemesananController.php:12
+* @see app/Http/Controllers/Farmasi/PemesananController.php:15
 * @route '/api/farmasi/hutang'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stage
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 export const stage = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ stage.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stage
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 stage.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ stage.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::stage
-* @see app/Http/Controllers/Farmasi/PemesananController.php:76
+* @see app/Http/Controllers/Farmasi/PemesananController.php:79
 * @route '/api/farmasi/hutang/stage'
 */
 stage.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ stage.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 export const markPaid = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -94,7 +94,7 @@ markPaid.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 markPaid.url = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ markPaid.url = (args: { no_faktur: string | number } | [no_faktur: string | numb
 
 /**
 * @see \App\Http\Controllers\Farmasi\PemesananController::markPaid
-* @see app/Http/Controllers/Farmasi/PemesananController.php:129
+* @see app/Http/Controllers/Farmasi/PemesananController.php:132
 * @route '/api/farmasi/hutang/{no_faktur}/mark-paid'
 */
 markPaid.patch = (args: { no_faktur: string | number } | [no_faktur: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
