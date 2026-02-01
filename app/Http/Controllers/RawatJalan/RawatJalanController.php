@@ -2164,4 +2164,34 @@ class RawatJalanController extends Controller
 
         return response()->json(['ok' => (bool) $row, 'row' => $row ?: null]);
     }
+
+    /**
+     * Cari diagnosa dari tabel penyakit (lokal)
+     */
+    public function searchDiagnosaPenyakit(Request $request)
+    {
+        $keyword = $request->query('q', '');
+        $limit = $request->query('limit', 50);
+
+        $query = DB::table('penyakit')
+            ->select('kd_penyakit as kode', 'nm_penyakit as nama');
+
+        if ($keyword !== '') {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('kd_penyakit', 'like', "%{$keyword}%")
+                    ->orWhere('nm_penyakit', 'like', "%{$keyword}%");
+            });
+        }
+
+        $results = $query->limit($limit)->get();
+
+        // Return dalam format yang kompatibel dengan SearchableSelect
+        return response()->json([
+            'success' => true,
+            'data' => $results,
+            'response' => [
+                'list' => $results,
+            ],
+        ]);
+    }
 }

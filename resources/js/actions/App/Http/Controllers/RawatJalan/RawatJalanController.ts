@@ -78,6 +78,50 @@ storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
+*/
+export const searchDiagnosaPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDiagnosaPenyakit.url(options),
+    method: 'get',
+})
+
+searchDiagnosaPenyakit.definition = {
+    methods: ["get","head"],
+    url: '/api/rawat-jalan/penyakit/search',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
+*/
+searchDiagnosaPenyakit.url = (options?: RouteQueryOptions) => {
+    return searchDiagnosaPenyakit.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
+*/
+searchDiagnosaPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDiagnosaPenyakit.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
+*/
+searchDiagnosaPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchDiagnosaPenyakit.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::verifySuratSakit
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1590
 * @route '/rawat-jalan/surat-sakit/{no_rawat}/verify'
@@ -1733,6 +1777,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, verifySuratSakit, nextNoSuratSakit, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
+const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, verifySuratSakit, nextNoSuratSakit, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
 
 export default RawatJalanController
