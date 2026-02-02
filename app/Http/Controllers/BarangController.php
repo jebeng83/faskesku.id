@@ -27,8 +27,13 @@ class BarangController extends Controller
                     'nama_brng',
                     'kode_sat',
                     'h_beli',
+                    'ralan',
+                    'beliluar',
+                    'jualbebas',
+                    'karyawan',
                     'stokminimal',
-                    'letak_barang'
+                    'letak_barang',
+                    'expire'
                 )
                 ->where(function ($q) use ($query) {
                     $q->where('nama_brng', 'LIKE', '%'.$query.'%')
@@ -63,10 +68,12 @@ class BarangController extends Controller
 
                         $item->stok = (float) ($qStok->sum('stok') ?? 0);
                     }
+                    $item->id = $item->kode_brng;
                 }
             } else {
                 foreach ($barang as $item) {
                     $item->stok = $item->stokminimal;
+                    $item->id = $item->kode_brng;
                 }
             }
 

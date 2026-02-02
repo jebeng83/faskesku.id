@@ -1545,9 +1545,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/hutang-obat/data', [\App\Http\Controllers\Farmasi\PemesananController::class, 'listHutang'])
             ->name('hutang-obat.data')->middleware('permission:farmasi.hutang-obat.data');
 
-        Route::get('/penjualan-obat', function () {
-            return Inertia::render('farmasi/PenjualanObat');
-        })->name('penjualan-obat')->middleware('permission:farmasi.penjualan-obat');
+        Route::get('/penjualan-obat', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'index'])
+            ->name('penjualan-obat')->middleware('permission:farmasi.penjualan-obat');
+        Route::post('/penjualan/simpan', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'store'])
+            ->name('penjualan.simpan')->middleware('permission:farmasi.penjualan-obat');
+        Route::get('/penjualan/nota', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'generateNota'])
+            ->name('penjualan.nota')->middleware('permission:farmasi.penjualan-obat');
+        Route::get('/penjualan/riwayat', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'listRiwayat'])
+            ->name('penjualan.riwayat')->middleware('permission:farmasi.penjualan-obat');
+        Route::get('/penjualan/print/{nota_jual}', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'print'])
+            ->name('penjualan.print')->middleware('permission:farmasi.penjualan-obat');
 
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');
