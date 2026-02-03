@@ -813,11 +813,9 @@ class MobileJknController extends Controller
             // Biarkan null agar BpjsTraits generate otomatis atau kita set eksplisit
             $timestampOverride = (string) floor($now);
 
-            // Waktu payload body konversi ke WIB (UTC+7)
-            // Validasi BPJS untuk field 'waktu' seringkali mengharapkan waktu lokal (WIB)
-            // Jika dikirim UTC, akan dianggap "7 jam yang lalu" (expired/tidak valid)
-            $waktuWib = $now + (7 * 3600);
-            $waktuPayload = (int) round($waktuWib * 1000);
+            // Waktu payload body gunakan UTC (sama dengan X-Timestamp)
+            // Standar epoch time adalah UTC. Mengirim WIB (UTC+7) akan dianggap masa depan oleh server.
+            $waktuPayload = (int) round($now * 1000);
 
             $payload = [
                 'tanggalperiksa' => $tanggalPeriksa,
