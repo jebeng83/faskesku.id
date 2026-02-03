@@ -747,6 +747,38 @@ class MobileJknController extends Controller
             $status = (int) $request->input('status');
             $tanggalPeriksa = date('Y-m-d');
 
+            // Cek No Rawat terlebih dahulu
+            $reg = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->where('kd_poli', $kdPoli)
+                ->where('tgl_registrasi', $tanggalPeriksa)
+                ->orderByDesc('jam_reg')
+                ->first();
+            $noRawat = $reg?->no_rawat ?? null;
+
+            // Cek apakah sudah pernah panggil antrian sukses untuk no_rawat ini
+            if ($noRawat && Schema::hasTable('pcare_bpjs_log')) {
+                $alreadyCalled = DB::table('pcare_bpjs_log')
+                    ->where('no_rawat', $noRawat)
+                    ->where('endpoint', 'Panggil Antrian')
+                    ->where('status', 'success')
+                    ->exists();
+                
+                if ($alreadyCalled) {
+                     \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean skipped: already called successfully', [
+                        'no_rawat' => $noRawat
+                    ]);
+                    
+                    return response()->json([
+                        'metadata' => [
+                            'code' => 200,
+                            'message' => 'OK (Skipped - Already Processed)',
+                        ],
+                        'response' => null
+                    ], 200);
+                }
+            }
+
             // Early log: record incoming request even if it fails early (patient/mapping not found)
             \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean request received', [
                 'no_rkm_medis' => $noRkmMedis,
@@ -853,13 +885,7 @@ class MobileJknController extends Controller
             $body = $response->body();
             $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
 
-            $reg = DB::table('reg_periksa')
-                ->where('no_rkm_medis', $noRkmMedis)
-                ->where('kd_poli', $kdPoli)
-                ->where('tgl_registrasi', $tanggalPeriksa)
-                ->orderByDesc('jam_reg')
-                ->first();
-            $noRawat = $reg?->no_rawat ?? null;
+            // no_rawat sudah diambil di awal fungsi
             $durationMs = (int) round((microtime(true) - $start) * 1000);
             $maskedCard = '';
             try {
