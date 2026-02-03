@@ -63,6 +63,21 @@ const REFERENSI_CONFIG = {
             });
         },
     },
+    penyakit: {
+        supportsSearch: true,
+        defaultParams: { q: "", limit: 50 },
+        buildUrl: ({ q = "", limit = 50 } = {}) => {
+            const params = new URLSearchParams({ q, limit });
+            return `/api/rawat-jalan/penyakit/search?${params.toString()}`;
+        },
+        parse: (json) => {
+            const list = json?.response?.list || json?.data || [];
+            return list.map((it) => ({
+                value: it?.kode || "",
+                label: `${it?.kode ?? ""} — ${it?.nama ?? ""}`.trim(),
+            }));
+        },
+    },
     dokter: {
         supportsSearch: false,
         defaultParams: { start: 0, limit: 200 },
@@ -321,9 +336,8 @@ const REFERENSI_CONFIG = {
             const list = json?.list || json?.data || [];
             return list.map((it) => ({
                 value: it?.kd_kamar || "",
-                label: `${it?.kd_kamar ?? ""}${
-                    it?.nm_bangsal ? " — Bangsal: " + it.nm_bangsal : ""
-                }`.trim(),
+                label: `${it?.kd_kamar ?? ""}${it?.nm_bangsal ? " — Bangsal: " + it.nm_bangsal : ""
+                    }`.trim(),
             }));
         },
     },
@@ -340,13 +354,11 @@ const REFERENSI_CONFIG = {
             const items = Array.isArray(json?.items) ? json.items : [];
             return items.map((it) => ({
                 value: it?.kd_rek || "",
-                label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
-                    it?.tipe || it?.balance
-                        ? ` [${it?.tipe ?? "-"}${
-                              it?.balance ? "/" + it.balance : ""
-                          }]`
-                        : ""
-                }`.trim(),
+                label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${it?.tipe || it?.balance
+                    ? ` [${it?.tipe ?? "-"}${it?.balance ? "/" + it.balance : ""
+                    }]`
+                    : ""
+                    }`.trim(),
                 kd_rek: it?.kd_rek || "",
                 nm_rek: it?.nm_rek || "",
                 tipe: it?.tipe || "",
@@ -369,13 +381,11 @@ const REFERENSI_CONFIG = {
                 .filter((it) => String(it?.balance || "").toUpperCase() === "D")
                 .map((it) => ({
                     value: it?.kd_rek || "",
-                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
-                        it?.tipe || it?.balance
-                            ? ` [${it?.tipe ?? "-"}${
-                                  it?.balance ? "/" + it.balance : ""
-                              }]`
-                            : ""
-                    }`.trim(),
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${it?.tipe || it?.balance
+                        ? ` [${it?.tipe ?? "-"}${it?.balance ? "/" + it.balance : ""
+                        }]`
+                        : ""
+                        }`.trim(),
                     kd_rek: it?.kd_rek || "",
                     nm_rek: it?.nm_rek || "",
                     tipe: it?.tipe || "",
@@ -398,13 +408,11 @@ const REFERENSI_CONFIG = {
                 .filter((it) => String(it?.balance || "").toUpperCase() === "K")
                 .map((it) => ({
                     value: it?.kd_rek || "",
-                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
-                        it?.tipe || it?.balance
-                            ? ` [${it?.tipe ?? "-"}${
-                                  it?.balance ? "/" + it.balance : ""
-                              }]`
-                            : ""
-                    }`.trim(),
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${it?.tipe || it?.balance
+                        ? ` [${it?.tipe ?? "-"}${it?.balance ? "/" + it.balance : ""
+                        }]`
+                        : ""
+                        }`.trim(),
                     kd_rek: it?.kd_rek || "",
                     nm_rek: it?.nm_rek || "",
                     tipe: it?.tipe || "",
@@ -427,13 +435,11 @@ const REFERENSI_CONFIG = {
                 .filter((it) => String(it?.tipe || "").toUpperCase() === "R")
                 .map((it) => ({
                     value: it?.kd_rek || "",
-                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
-                        it?.tipe || it?.balance
-                            ? ` [${it?.tipe ?? "-"}${
-                                  it?.balance ? "/" + it.balance : ""
-                              }]`
-                            : ""
-                    }`.trim(),
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${it?.tipe || it?.balance
+                        ? ` [${it?.tipe ?? "-"}${it?.balance ? "/" + it.balance : ""
+                        }]`
+                        : ""
+                        }`.trim(),
                     kd_rek: it?.kd_rek || "",
                     nm_rek: it?.nm_rek || "",
                     tipe: it?.tipe || "",
@@ -456,13 +462,11 @@ const REFERENSI_CONFIG = {
                 .filter((it) => String(it?.tipe || "").toUpperCase() === "N")
                 .map((it) => ({
                     value: it?.kd_rek || "",
-                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${
-                        it?.tipe || it?.balance
-                            ? ` [${it?.tipe ?? "-"}${
-                                  it?.balance ? "/" + it.balance : ""
-                              }]`
-                            : ""
-                    }`.trim(),
+                    label: `${it?.kd_rek ?? ""} — ${it?.nm_rek ?? ""}${it?.tipe || it?.balance
+                        ? ` [${it?.tipe ?? "-"}${it?.balance ? "/" + it.balance : ""
+                        }]`
+                        : ""
+                        }`.trim(),
                     kd_rek: it?.kd_rek || "",
                     nm_rek: it?.nm_rek || "",
                     tipe: it?.tipe || "",
@@ -493,9 +497,8 @@ const REFERENSI_CONFIG = {
                     typeof it?.ppn === "number" ? it.ppn : Number(it?.ppn) || 0;
                 return {
                     value: kd_rek,
-                    label: `${nama_bayar} — ${kd_rek}${
-                        nm_rek ? " — " + nm_rek : ""
-                    }`.trim(),
+                    label: `${nama_bayar} — ${kd_rek}${nm_rek ? " — " + nm_rek : ""
+                        }`.trim(),
                     kd_rek,
                     nm_rek,
                     nama_bayar,
@@ -526,9 +529,8 @@ const REFERENSI_CONFIG = {
                 const png_jawab = it?.png_jawab || "";
                 return {
                     value: kd_rek,
-                    label: `${nama_bayar} — ${kd_rek}${
-                        nm_rek ? " — " + nm_rek : ""
-                    }${png_jawab ? " — PJ: " + png_jawab : ""}`.trim(),
+                    label: `${nama_bayar} — ${kd_rek}${nm_rek ? " — " + nm_rek : ""
+                        }${png_jawab ? " — PJ: " + png_jawab : ""}`.trim(),
                     kd_rek,
                     nm_rek,
                     nama_bayar,
@@ -786,8 +788,8 @@ const SearchableSelect = ({
                 typeof value === "string"
                     ? value
                     : value != null
-                    ? String(value)
-                    : "";
+                        ? String(value)
+                        : "";
             return raw || placeholder;
         }
         const labelRaw =
@@ -805,7 +807,7 @@ const SearchableSelect = ({
         if (typeof onSelect === "function") {
             try {
                 onSelect(option);
-            } catch (_) {}
+            } catch (_) { }
         }
         setIsOpen(false);
         setSearchTerm("");
@@ -887,7 +889,7 @@ const SearchableSelect = ({
                         }
                         try {
                             if (abortRef.current) {
-                                try { abortRef.current.abort(); } catch {}
+                                try { abortRef.current.abort(); } catch { }
                             }
                             const controller = new AbortController();
                             abortRef.current = controller;
@@ -925,13 +927,13 @@ const SearchableSelect = ({
             window.removeEventListener("scroll", updatePosition, true);
             window.removeEventListener("resize", updatePosition);
             if (abortRef.current) {
-                try { abortRef.current.abort(); } catch {}
+                try { abortRef.current.abort(); } catch { }
                 abortRef.current = null;
             }
             if (!isOpen && portalElRef.current) {
                 try {
                     document.body.removeChild(portalElRef.current);
-                } catch {}
+                } catch { }
                 portalElRef.current = null;
             }
         };
@@ -963,7 +965,7 @@ const SearchableSelect = ({
                     return;
                 }
                 if (abortRef.current) {
-                    try { abortRef.current.abort(); } catch {}
+                    try { abortRef.current.abort(); } catch { }
                 }
                 const controller = new AbortController();
                 abortRef.current = controller;
@@ -1039,11 +1041,10 @@ const SearchableSelect = ({
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full px-3 py-2 text-sm text-left border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center ${
-                    error
-                        ? "border-red-500"
-                        : "border-gray-300 dark:border-gray-600"
-                } ${className}`}
+                className={`w-full px-3 py-2 text-sm text-left border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center ${error
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-gray-600"
+                    } ${className}`}
             >
                 <span
                     className={
@@ -1053,9 +1054,8 @@ const SearchableSelect = ({
                     {getSelectedDisplay()}
                 </span>
                 <svg
-                    className={`w-5 h-5 transition-transform duration-200 ${
-                        isOpen ? "transform rotate-180" : ""
-                    }`}
+                    className={`w-5 h-5 transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""
+                        }`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1130,9 +1130,8 @@ const SearchableSelect = ({
                                             key={index}
                                             type="button"
                                             onClick={() => handleSelect(option)}
-                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                                                isSelected ? selectedHover : unselectedHover
-                                            } ${isSelected ? selectedClasses : unselectedClasses}`}
+                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${isSelected ? selectedHover : unselectedHover
+                                                } ${isSelected ? selectedClasses : unselectedClasses}`}
                                         >
                                             <div className="flex flex-col">
                                                 <div>{optionDisplay}</div>
@@ -1147,10 +1146,10 @@ const SearchableSelect = ({
                                     );
                                 })
                             ) : useRemote &&
-                              cfg?.supportsSearch &&
-                              (cfg?.minChars ?? 0) > 0 &&
-                              (searchTerm ?? "").length <
-                                  (cfg?.minChars ?? 0) ? (
+                                cfg?.supportsSearch &&
+                                (cfg?.minChars ?? 0) > 0 &&
+                                (searchTerm ?? "").length <
+                                (cfg?.minChars ?? 0) ? (
                                 <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                                     {`Ketik minimal ${cfg.minChars} karakter untuk mencari`}
                                 </div>

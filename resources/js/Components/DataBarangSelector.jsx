@@ -41,7 +41,14 @@ export default function DataBarangSelector({ value, onChange, className = '' }) 
       .then((json) => {
         if (!active) return;
         const list = Array.isArray(json.data) ? json.data : [];
-        setItems(list.map((it) => ({ kode_brng: it.kode_brng, nama_brng: it.nama_brng })));
+        const map = new Map();
+        for (const it of list) {
+          const k = it.kode_brng;
+          if (k && !map.has(k)) {
+            map.set(k, { kode_brng: it.kode_brng, nama_brng: it.nama_brng });
+          }
+        }
+        setItems(Array.from(map.values()));
       })
       .catch(() => setItems([]))
       .finally(() => active && setLoading(false));

@@ -78,90 +78,46 @@ storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
-* @route '/surat-sehat'
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
 */
-export const publicSuratSehat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: publicSuratSehat.url(options),
+export const searchDiagnosaPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDiagnosaPenyakit.url(options),
     method: 'get',
 })
 
-publicSuratSehat.definition = {
+searchDiagnosaPenyakit.definition = {
     methods: ["get","head"],
-    url: '/surat-sehat',
+    url: '/api/rawat-jalan/penyakit/search',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
-* @route '/surat-sehat'
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
 */
-publicSuratSehat.url = (options?: RouteQueryOptions) => {
-    return publicSuratSehat.definition.url + queryParams(options)
+searchDiagnosaPenyakit.url = (options?: RouteQueryOptions) => {
+    return searchDiagnosaPenyakit.definition.url + queryParams(options)
 }
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
-* @route '/surat-sehat'
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
 */
-publicSuratSehat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: publicSuratSehat.url(options),
+searchDiagnosaPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: searchDiagnosaPenyakit.url(options),
     method: 'get',
 })
 
 /**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
-* @route '/surat-sehat'
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @route '/api/rawat-jalan/penyakit/search'
 */
-publicSuratSehat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: publicSuratSehat.url(options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
-* @route '/surat-sakit'
-*/
-export const publicSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: publicSuratSakit.url(options),
-    method: 'get',
-})
-
-publicSuratSakit.definition = {
-    methods: ["get","head"],
-    url: '/surat-sakit',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
-* @route '/surat-sakit'
-*/
-publicSuratSakit.url = (options?: RouteQueryOptions) => {
-    return publicSuratSakit.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
-* @route '/surat-sakit'
-*/
-publicSuratSakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: publicSuratSakit.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
-* @route '/surat-sakit'
-*/
-publicSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: publicSuratSakit.url(options),
+searchDiagnosaPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: searchDiagnosaPenyakit.url(options),
     method: 'head',
 })
 
@@ -1953,6 +1909,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, publicSuratSehat, publicSuratSakit, verifySuratSakit, nextNoSuratSakit, checkDuplicateSuratSakit, nextNoSuratSehat, checkDuplicateSuratSehat, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
+const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, verifySuratSakit, nextNoSuratSakit, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
 
 export default RawatJalanController

@@ -399,7 +399,9 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             }
           }
         } else {
-          const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
+          const baseMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
+          const hint = pcareRes && pcareRes.status === 412 ? 'Kemungkinan mapping kd_poli PCare belum valid atau header/authentikasi tidak sesuai.' : '';
+          const errMsg = hint ? `${baseMsg} — ${hint}` : baseMsg;
           setError(errMsg);
           setShowBridging(false);
           try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
