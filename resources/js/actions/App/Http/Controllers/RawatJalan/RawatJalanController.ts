@@ -79,7 +79,7 @@ storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2712
 * @route '/api/rawat-jalan/penyakit/search'
 */
 export const searchDiagnosaPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ searchDiagnosaPenyakit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2712
 * @route '/api/rawat-jalan/penyakit/search'
 */
 searchDiagnosaPenyakit.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ searchDiagnosaPenyakit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2712
 * @route '/api/rawat-jalan/penyakit/search'
 */
 searchDiagnosaPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,11 +113,99 @@ searchDiagnosaPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::searchDiagnosaPenyakit
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2171
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2712
 * @route '/api/rawat-jalan/penyakit/search'
 */
 searchDiagnosaPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: searchDiagnosaPenyakit.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
+* @route '/surat-sehat'
+*/
+export const publicSuratSehat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: publicSuratSehat.url(options),
+    method: 'get',
+})
+
+publicSuratSehat.definition = {
+    methods: ["get","head"],
+    url: '/surat-sehat',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
+* @route '/surat-sehat'
+*/
+publicSuratSehat.url = (options?: RouteQueryOptions) => {
+    return publicSuratSehat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
+* @route '/surat-sehat'
+*/
+publicSuratSehat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: publicSuratSehat.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSehat
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1231
+* @route '/surat-sehat'
+*/
+publicSuratSehat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: publicSuratSehat.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
+* @route '/surat-sakit'
+*/
+export const publicSuratSakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: publicSuratSakit.url(options),
+    method: 'get',
+})
+
+publicSuratSakit.definition = {
+    methods: ["get","head"],
+    url: '/surat-sakit',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
+* @route '/surat-sakit'
+*/
+publicSuratSakit.url = (options?: RouteQueryOptions) => {
+    return publicSuratSakit.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
+* @route '/surat-sakit'
+*/
+publicSuratSakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: publicSuratSakit.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::publicSuratSakit
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1355
+* @route '/surat-sakit'
+*/
+publicSuratSakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: publicSuratSakit.url(options),
     method: 'head',
 })
 
@@ -1909,6 +1997,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, verifySuratSakit, nextNoSuratSakit, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
+const RawatJalanController = { getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, publicSuratSehat, publicSuratSakit, verifySuratSakit, nextNoSuratSakit, checkDuplicateSuratSakit, nextNoSuratSehat, checkDuplicateSuratSehat, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, storePemeriksaanRalan, deletePemeriksaanRalan, updatePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, create, store, show, edit, update, destroy }
 
 export default RawatJalanController
