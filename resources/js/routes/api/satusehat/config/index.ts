@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
 * @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599

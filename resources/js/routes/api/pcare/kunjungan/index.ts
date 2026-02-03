@@ -251,8 +251,4 @@ const kunjungan = {
     nokunjungan: Object.assign(nokunjungan, nokunjungan),
 }
 
-export default kunjunganObject.assign(preview, preview),
-    nokunjungan: Object.assign(nokunjungan, nokunjungan),
-}
-
 export default kunjungan
