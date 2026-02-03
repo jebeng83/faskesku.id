@@ -309,6 +309,22 @@ class MobileJknController extends Controller
                 if (is_array($meta)) {
                     $code = (int) ($meta['code'] ?? 200);
                     $httpStatus = $code === 200 ? 200 : 400;
+                    
+                    // Fallback: Jika BPJS tidak mengembalikan data antrean (misal hanya sukses),
+                    // suntikkan data yang kita kirim agar frontend tetap bisa menampilkan nomor antrean.
+                    if (!isset($parsed['response']) || !is_array($parsed['response'])) {
+                         // Jika response null/string, inisialisasi array
+                         $parsed['response'] = is_array($parsed['response'] ?? null) ? $parsed['response'] : [];
+                    }
+                    // Pastikan nomorantrean ada
+                    if (empty($parsed['response']['nomorantrean'])) {
+                         $parsed['response']['nomorantrean'] = $nomorAntrean;
+                    }
+                    // Pastikan angkaantrean ada
+                    if (empty($parsed['response']['angkaantrean'])) {
+                         $parsed['response']['angkaantrean'] = $angkaAntrean;
+                    }
+
                     Log::info('MobileJKN addAntrean response (normalized)', [
                         'metadata' => $meta,
                         'http_status' => $httpStatus,
@@ -790,15 +806,25 @@ class MobileJknController extends Controller
                 ], 400);
             }
 
-            $waktuMs = (int) round(microtime(true) * 1000);
-            $timestampOverride = (string) floor($waktuMs / 1000);
+            // Waktu sekarang (UTC)
+            $now = microtime(true);
+            
+            // Header X-Timestamp tetap gunakan UTC (standar signature BPJS)
+            // Biarkan null agar BpjsTraits generate otomatis atau kita set eksplisit
+            $timestampOverride = (string) floor($now);
+
+            // Waktu payload body konversi ke WIB (UTC+7)
+            // Validasi BPJS untuk field 'waktu' seringkali mengharapkan waktu lokal (WIB)
+            // Jika dikirim UTC, akan dianggap "7 jam yang lalu" (expired/tidak valid)
+            $waktuWib = $now + (7 * 3600);
+            $waktuPayload = (int) round($waktuWib * 1000);
 
             $payload = [
                 'tanggalperiksa' => $tanggalPeriksa,
                 'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
                 'nomorkartu' => (string) ($pasien->no_peserta ?? ''),
                 'status' => $status,
-                'waktu' => $waktuMs,
+                'waktu' => $waktuPayload,
             ];
 
             // Logging terstruktur sebelum request
@@ -808,7 +834,8 @@ class MobileJknController extends Controller
                 'kd_poli_pcare' => $mapPoli->kd_poli_pcare ?? null,
                 'tanggalperiksa' => $tanggalPeriksa,
                 'status' => $status,
-                'waktu_ms' => $waktuMs,
+                'waktu_ms' => $waktuPayload,
+                'waktu_utc' => (int)($now * 1000), // Log pembanding
             ]);
 
             // Debug payload yang akan dikirim ke Mobile JKN
@@ -847,7 +874,7 @@ class MobileJknController extends Controller
                 'tanggalperiksa' => $tanggalPeriksa,
                 'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
                 'status' => $status,
-                'waktu' => $waktuMs,
+                'waktu' => $waktuPayload,
                 'nomorkartu_masked' => $maskedCard,
             ];
             $meta = is_array($parsed) ? ($parsed['metadata'] ?? ($parsed['metaData'] ?? [])) : [];
