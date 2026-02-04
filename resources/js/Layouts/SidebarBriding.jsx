@@ -49,6 +49,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       pcareMapDokter: safeRoute("pcare.mapping.dokter", "/pcare/mapping/dokter"),
       pcareMapPoli: safeRoute("pcare.mapping.poli", "/pcare/mapping/poli"),
       pcareMapObat: safeRoute("pcare.mapping.obat", "/pcare/mapping/obat"),
+      pcareDataKunjungan: safeRoute("pcare.data-kunjungan", "/pcare/data-kunjungan"),
+      pcareFormPendaftaran: safeRoute("pcare.form-pendaftaran", "/pcare/form-pendaftaran"),
       jadwalDokter: safeRoute("jadwal.index", "/jadwal"),
       ssOrg: safeRoute("satusehat.prerequisites.organization", "/satusehat/prerequisites/organization"),
       ssLoc: safeRoute("satusehat.prerequisites.location", "/satusehat/prerequisites/location"),
@@ -72,6 +74,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       { href: paths.pcareMapDokter, label: "Mapping Dokter PCare", icon: Stethoscope, permission: "pcare.mapping-dokter" },
       { href: paths.pcareMapPoli, label: "Mapping Poli PCare", icon: NotebookTabs, permission: "pcare.mapping-poli" },
       { href: paths.pcareMapObat, label: "Mapping Obat PCare", icon: Pill, permission: "pcare.mapping-obat" },
+      { href: paths.pcareDataKunjungan, label: "Data Kunjungan", icon: NotebookTabs, permission: "pcare.index" },
+      { href: paths.pcareFormPendaftaran, label: "Form Pendaftaran", icon: NotebookTabs, permission: "pcare.index" },
       { href: paths.jadwalDokter, label: "Jadwal Dokter", icon: CalendarDays, permission: "jadwal.index" },
     ].filter((l) => !l.permission || can(l.permission)),
     [paths, permissions]

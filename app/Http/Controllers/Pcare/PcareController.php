@@ -1828,16 +1828,33 @@ class PcareController extends Controller
                 return response()->json(['data' => []]);
             }
             $q = DB::table('pcare_pendaftaran as p')->select([
-                'p.no_rawat',
-                'p.tglDaftar',
-                'p.no_rkm_medis',
-                'p.nm_pasien',
-                'p.kdPoli',
-                'p.nmPoli',
-                'p.status',
-                'p.noUrut',
-            ]);
-            $hasReg = Schema::hasTable('reg_periksa');
+                    'p.no_rawat',
+                    'p.tglDaftar',
+                    'p.no_rkm_medis',
+                    'p.nm_pasien',
+                    'p.kdPoli',
+                    'p.nmPoli',
+                    'p.status',
+                    'p.noUrut',
+                ]);
+
+                // Join dengan tabel pcare_rujuk_subspesialis jika ada
+                if (Schema::hasTable('pcare_rujuk_subspesialis')) {
+                    $q->leftJoin('pcare_rujuk_subspesialis as prs', 'prs.no_rawat', '=', 'p.no_rawat');
+                    $q->addSelect([
+                        'prs.noKunjungan as rujukan_noKunjungan',
+                        'prs.nmPPK as rujukan_nmPPK',
+                        'prs.nmSubSpesialis as rujukan_nmSubSpesialis',
+                        'prs.tglEstRujuk as rujukan_tglEstRujuk'
+                    ]);
+                } else {
+                    $q->addSelect(DB::raw('"" as rujukan_noKunjungan'));
+                    $q->addSelect(DB::raw('"" as rujukan_nmPPK'));
+                    $q->addSelect(DB::raw('"" as rujukan_nmSubSpesialis'));
+                    $q->addSelect(DB::raw('"" as rujukan_tglEstRujuk'));
+                }
+
+                $hasReg = Schema::hasTable('reg_periksa');
             if ($hasReg) {
                 $q = $q->leftJoin('reg_periksa as r', 'r.no_rawat', '=', 'p.no_rawat');
                 if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
@@ -1880,12 +1897,18 @@ class PcareController extends Controller
                     'kdPoli' => (string) ($r->kdPoli ?? ''),
                     'nmPoli' => (string) ($r->nmPoli ?? ''),
                     'noUrut' => $nu,
-                    'dokter' => '',
-                    'status' => (string) ($r->status ?? ''),
-                ];
-            }
+                        'dokter' => '',
+                        'status' => (string) ($r->status ?? ''),
+                        'rujukan' => [
+                            'noKunjungan' => (string) ($r->rujukan_noKunjungan ?? ''),
+                            'nmPPK' => (string) ($r->rujukan_nmPPK ?? ''),
+                            'nmSubSpesialis' => (string) ($r->rujukan_nmSubSpesialis ?? ''),
+                            'tglEstRujuk' => (string) ($r->rujukan_tglEstRujuk ?? ''),
+                        ],
+                    ];
+                }
 
-            return response()->json(['data' => $out]);
+                return response()->json(['data' => $out]);
         } catch (\Throwable $e) {
             try {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->error('pendaftaranList error', [

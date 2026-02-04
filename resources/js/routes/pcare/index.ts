@@ -137,13 +137,95 @@ dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
     method: 'head',
 })
 
+/**
+* @see routes/web.php:2272
+* @route '/pcare/data-kunjungan'
+*/
+export const dataKunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataKunjungan.url(options),
+    method: 'get',
+})
+
+dataKunjungan.definition = {
+    methods: ["get","head"],
+    url: '/pcare/data-kunjungan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:2272
+* @route '/pcare/data-kunjungan'
+*/
+dataKunjungan.url = (options?: RouteQueryOptions) => {
+    return dataKunjungan.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:2272
+* @route '/pcare/data-kunjungan'
+*/
+dataKunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dataKunjungan.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:2272
+* @route '/pcare/data-kunjungan'
+*/
+dataKunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dataKunjungan.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:2371
+* @route '/pcare/form-pendaftaran'
+*/
+export const formPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: formPendaftaran.url(options),
+    method: 'get',
+})
+
+formPendaftaran.definition = {
+    methods: ["get","head"],
+    url: '/pcare/form-pendaftaran',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:2371
+* @route '/pcare/form-pendaftaran'
+*/
+formPendaftaran.url = (options?: RouteQueryOptions) => {
+    return formPendaftaran.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:2371
+* @route '/pcare/form-pendaftaran'
+*/
+formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: formPendaftaran.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:2371
+* @route '/pcare/form-pendaftaran'
+*/
+formPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: formPendaftaran.url(options),
+    method: 'head',
+})
+
 const pcare = {
     index: Object.assign(index, index),
     mapping: Object.assign(mapping, mapping),
     monitoring: Object.assign(monitoring, monitoringBb077c),
     dataPendaftaran: Object.assign(dataPendaftaran, dataPendaftaran),
+    dataKunjungan: Object.assign(dataKunjungan, dataKunjungan),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
+    formPendaftaran: Object.assign(formPendaftaran, formPendaftaran),
     kelompok: Object.assign(kelompok, kelompok),
     diagnosa: Object.assign(diagnosa, diagnosa),
     dokter: Object.assign(dokter, dokter),

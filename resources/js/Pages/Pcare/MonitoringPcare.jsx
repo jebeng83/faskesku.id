@@ -344,6 +344,7 @@ export default function MonitoringPcare() {
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">Poli</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">Nama Poli</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">No Urut</th>
+                    <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 hidden md:table-cell">Rujukan</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Status</th>
                     <th className="sticky top-0 z-10 px-3 py-2 text-left font-medium bg-gradient-to-r from-gray-50/80 via-gray-100/80 to-gray-50/80 dark:from-gray-800/80 dark:via-gray-800/80 dark:to-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">Aksi</th>
                   </tr>
@@ -358,6 +359,18 @@ export default function MonitoringPcare() {
                       <td className="p-2 hidden md:table-cell">{r.kdPoli || ''}</td>
                       <td className="p-2 hidden md:table-cell">{r.nmPoli || ''}</td>
                       <td className="p-2 hidden md:table-cell">{r.noUrut || ''}</td>
+                      <td className="p-2 hidden md:table-cell">
+                        {r.rujukan && (r.rujukan.nmSubSpesialis || r.rujukan.nmPPK) ? (
+                          <div className="text-xs">
+                            {r.rujukan.noKunjungan && <div className="font-semibold text-indigo-600 dark:text-indigo-400">{r.rujukan.noKunjungan}</div>}
+                            {r.rujukan.nmSubSpesialis && <div>{r.rujukan.nmSubSpesialis}</div>}
+                            {r.rujukan.nmPPK && <div className="text-slate-500 dark:text-slate-400">{r.rujukan.nmPPK}</div>}
+                            {r.rujukan.tglEstRujuk && <div className="text-slate-500 dark:text-slate-400 italic">{fmtDate(r.rujukan.tglEstRujuk)}</div>}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-600">-</span>
+                        )}
+                      </td>
                       <td className="p-2"><span className={statusClass(r.status)}>{r.status || ''}</span></td>
                       <td className="p-2">
                         <button onClick={() => resend(r.no_rawat)} disabled={r.status === 'Terkirim' || resendingNo === r.no_rawat} className="inline-flex items-center gap-2 border rounded px-2 py-1 disabled:opacity-50 w-full sm:w-auto">

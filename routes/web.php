@@ -2269,6 +2269,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MonitoringPcare');
         })->name('data-pendaftaran');
 
+        Route::get('/data-kunjungan', function () {
+            return Inertia::render('Pcare/MonitoringPcare');
+        })->name('data-kunjungan');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -2363,6 +2367,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/data-peserta-by-nik', function () {
             return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
         })->name('layanan.cek-peserta-nik');
+
+        Route::get('/form-pendaftaran', function () {
+            return Inertia::render('Pcare/LayananPcare/LayananPcare');
+        })->name('form-pendaftaran');
 
         // Layanan PCare: Form terpadu (3 card: Peserta+SOAP, Kunjungan, Rujukan)
         Route::get('/layanan', function () {
