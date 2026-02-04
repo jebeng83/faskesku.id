@@ -2273,6 +2273,8 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MonitoringPcare');
         })->name('data-kunjungan');
 
+        Route::get('/cetak-rujukan/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'cetakRujukan'])->name('cetak-rujukan')->where('no_rawat', '.*');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');

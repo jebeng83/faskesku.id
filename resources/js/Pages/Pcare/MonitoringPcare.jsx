@@ -372,13 +372,24 @@ export default function MonitoringPcare() {
                         )}
                       </td>
                       <td className="p-2"><span className={statusClass(r.status)}>{r.status || ''}</span></td>
-                      <td className="p-2">
-                        <button onClick={() => resend(r.no_rawat)} disabled={r.status === 'Terkirim' || resendingNo === r.no_rawat} className="inline-flex items-center gap-2 border rounded px-2 py-1 disabled:opacity-50 w-full sm:w-auto">
+                      <td className="p-2 flex flex-col gap-2 sm:flex-row">
+                        <button onClick={() => resend(r.no_rawat)} disabled={r.status === 'Terkirim' || resendingNo === r.no_rawat} className="inline-flex items-center gap-2 border rounded px-2 py-1 disabled:opacity-50 w-full sm:w-auto text-xs justify-center">
                           {resendingNo === r.no_rawat ? (
                             <span className="inline-block w-3 h-3 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
                           ) : null}
                           <span>Kirim Ulang</span>
                         </button>
+                        {r.rujukan && (r.rujukan.nmSubSpesialis || r.rujukan.nmPPK) && (
+                          <a
+                            href={`/pcare/cetak-rujukan/${r.no_rawat}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 border rounded px-2 py-1 text-xs w-full sm:w-auto justify-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+                            <span>Cetak Rujukan</span>
+                          </a>
+                        )}
                       </td>
                     </motion.tr>
                   ))}

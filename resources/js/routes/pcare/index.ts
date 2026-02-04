@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import mapping from './mapping'
 import monitoringBb077c from './monitoring'
 import referensi from './referensi'
@@ -178,7 +178,69 @@ dataKunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:2371
+* @see \App\Http\Controllers\Pcare\PcareController::cetakRujukan
+* @see app/Http/Controllers/Pcare/PcareController.php:49
+* @route '/pcare/cetak-rujukan/{no_rawat}'
+*/
+export const cetakRujukan = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cetakRujukan.url(args, options),
+    method: 'get',
+})
+
+cetakRujukan.definition = {
+    methods: ["get","head"],
+    url: '/pcare/cetak-rujukan/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::cetakRujukan
+* @see app/Http/Controllers/Pcare/PcareController.php:49
+* @route '/pcare/cetak-rujukan/{no_rawat}'
+*/
+cetakRujukan.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return cetakRujukan.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::cetakRujukan
+* @see app/Http/Controllers/Pcare/PcareController.php:49
+* @route '/pcare/cetak-rujukan/{no_rawat}'
+*/
+cetakRujukan.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cetakRujukan.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::cetakRujukan
+* @see app/Http/Controllers/Pcare/PcareController.php:49
+* @route '/pcare/cetak-rujukan/{no_rawat}'
+*/
+cetakRujukan.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cetakRujukan.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:2373
 * @route '/pcare/form-pendaftaran'
 */
 export const formPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,7 +254,7 @@ formPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2371
+* @see routes/web.php:2373
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -200,7 +262,7 @@ formPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2371
+* @see routes/web.php:2373
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -209,7 +271,7 @@ formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:2371
+* @see routes/web.php:2373
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -223,6 +285,7 @@ const pcare = {
     monitoring: Object.assign(monitoring, monitoringBb077c),
     dataPendaftaran: Object.assign(dataPendaftaran, dataPendaftaran),
     dataKunjungan: Object.assign(dataKunjungan, dataKunjungan),
+    cetakRujukan: Object.assign(cetakRujukan, cetakRujukan),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
     formPendaftaran: Object.assign(formPendaftaran, formPendaftaran),
