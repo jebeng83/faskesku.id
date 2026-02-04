@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::update
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:755
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:763
 * @route '/api/pcare/kunjungan'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -50,7 +50,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::update
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:755
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:763
 * @route '/api/pcare/kunjungan'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::update
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:755
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:763
 * @route '/api/pcare/kunjungan'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -69,7 +69,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::destroy
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1613
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1621
 * @route '/api/pcare/kunjungan/{noKunjungan}'
 */
 export const destroy = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -84,7 +84,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::destroy
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1613
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1621
 * @route '/api/pcare/kunjungan/{noKunjungan}'
 */
 destroy.url = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ destroy.url = (args: { noKunjungan: string | number } | [noKunjungan: string | n
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::destroy
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1613
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1621
 * @route '/api/pcare/kunjungan/{noKunjungan}'
 */
 destroy.delete = (args: { noKunjungan: string | number } | [noKunjungan: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -121,7 +121,7 @@ destroy.delete = (args: { noKunjungan: string | number } | [noKunjungan: string 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1916
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1924
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 export const preview = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -136,7 +136,7 @@ preview.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1916
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1924
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -163,7 +163,7 @@ preview.url = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1916
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1924
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -173,7 +173,7 @@ preview.get = (args: { no_rawat: string | number } | [no_rawat: string | number 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1916
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1924
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
 */
 preview.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -183,7 +183,7 @@ preview.head = (args: { no_rawat: string | number } | [no_rawat: string | number
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::getNoKunjungan
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1794
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1802
 * @route '/api/pcare/kunjungan/nokunjungan/{no_rawat}'
 */
 export const getNoKunjungan = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -198,7 +198,7 @@ getNoKunjungan.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::getNoKunjungan
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1794
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1802
 * @route '/api/pcare/kunjungan/nokunjungan/{no_rawat}'
 */
 getNoKunjungan.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -225,7 +225,7 @@ getNoKunjungan.url = (args: { no_rawat: string | number } | [no_rawat: string | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::getNoKunjungan
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1794
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1802
 * @route '/api/pcare/kunjungan/nokunjungan/{no_rawat}'
 */
 getNoKunjungan.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -235,7 +235,7 @@ getNoKunjungan.get = (args: { no_rawat: string | number } | [no_rawat: string | 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::getNoKunjungan
-* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1794
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1802
 * @route '/api/pcare/kunjungan/nokunjungan/{no_rawat}'
 */
 getNoKunjungan.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

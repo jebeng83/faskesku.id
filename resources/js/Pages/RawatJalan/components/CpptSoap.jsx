@@ -1082,6 +1082,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const saJson = await saRes.json();
             const saList = saJson?.response?.list || [];
             setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ''} — ${row.nmSarana || ''}` })));
+
+            // Auto-select '1' (REKAM MEDIK) as default, or fallback to '3' (Rumah Sakit)
+            const defaultSarana = saList.find((r) => String(r.kdSarana) === '1') || saList.find((r) => String(r.kdSarana) === '3');
+            if (defaultSarana) {
+                setRujukForm((prev) => (prev.kdSarana ? prev : { ...prev, kdSarana: defaultSarana.kdSarana }));
+            }
         } catch {
             setSaranaOptions([]);
         }
@@ -1095,6 +1101,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setKunjunganResult(null);
         setSelectedSpesialis('');
         setSubSpesialisOptions([]);
+        setRujukForm({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
     };
 
     const toggleKunjungan = async (checked) => {
@@ -2659,120 +2666,122 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </div>
 
                             {/* 2. Kunjungan PCare */}
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3 md:p-4">
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3">
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Kunjungan PCare</h4>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                         {/* Form Kunjungan PCare */}
                                         {kunjunganPreview && (
-                                            <div className="space-y-4 md:space-y-5">
+                                            <div className="space-y-3">
                                                 {/* 1 baris: No Kartu BPJS, Tanggal Daftar, KD Poli, KD Dokter */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">No Kartu BPJS</label>
-                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">No Kartu BPJS</label>
+                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Daftar</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Tanggal Daftar</label>
+                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Poli (PCare)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">KD Poli (PCare)</label>
                                                         <SearchableSelect
                                                             options={poliOptions}
                                                             value={kunjunganPreview.kdPoli ?? ''}
                                                             onChange={(val) => updateKunjunganField('kdPoli', val)}
                                                             placeholder="Pilih Poli"
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Dokter (PCare)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">KD Dokter (PCare)</label>
                                                         <SearchableSelect
                                                             options={dokterOptions}
                                                             value={kunjunganPreview.kdDokter ?? ''}
                                                             onChange={(val) => updateKunjunganField('kdDokter', val)}
                                                             placeholder="Pilih Dokter"
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Keluhan, Anamnesa */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Keluhan</label>
-                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                        <label className="block text-xs font-bold mb-0.5">Keluhan</label>
+                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Anamnesa</label>
-                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                        <label className="block text-xs font-bold mb-0.5">Anamnesa</label>
+                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Sistole, Diastole, Berat, Tinggi */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Sistole</label>
-                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Sistole</label>
+                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Diastole</label>
-                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Diastole</label>
+                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Berat Badan (kg)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Berat Badan (kg)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Tinggi Badan (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Tinggi Badan (cm)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Resp Rate, Heart Rate, Lingkar Perut, Suhu */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Resp Rate</label>
-                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Resp Rate</label>
+                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Heart Rate</label>
-                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Heart Rate</label>
+                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Lingkar Perut (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Lingkar Perut (cm)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Suhu</label>
-                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Suhu</label>
+                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Tanggal Pulang, Poli Rujuk Internal, Terapi Non Obat, BMHP */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Pulang</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Tanggal Pulang</label>
+                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Poli Rujuk Internal (kdPoliRujukInternal)</label>
-                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Poli Rujuk Internal (kdPoliRujukInternal)</label>
+                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Terapi Non Obat</label>
-                                                        <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">Terapi Non Obat</label>
+                                                        <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">BMHP</label>
-                                                        <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                        <label className="block text-xs font-bold mb-0.5">BMHP</label>
+                                                        <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Status Pulang, Diagnosa Utama, Diagnosa 2, Diagnosa 3 */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Status Pulang (kdStatusPulang)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Status Pulang (kdStatusPulang)</label>
                                                         <SearchableSelect
                                                             source="statuspulang"
                                                             value={kunjunganPreview.kdStatusPulang ?? ''}
@@ -2790,10 +2799,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                             placeholder="Pilih Status Pulang"
                                                             searchPlaceholder="Cari status pulang…"
                                                             sourceParams={{ rawatInap: false }}
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa Utama (kdDiag1)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa Utama (kdDiag1)</label>
                                                         <SearchableSelect
                                                             source="diagnosa"
                                                             value={kunjunganPreview.kdDiag1 ?? ''}
@@ -2826,37 +2836,37 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                             }}
                                                             placeholder="Pilih Diagnosa Utama"
                                                             searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 2 (kdDiag2)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa 2 (kdDiag2)</label>
                                                         <SearchableSelect
                                                             source="diagnosa"
                                                             value={kunjunganPreview.kdDiag2 ?? ''}
                                                             onChange={(val) => updateKunjunganField('kdDiag2', val)}
                                                             placeholder="Pilih Diagnosa 2 (opsional)"
                                                             searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 3 (kdDiag3)</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa 3 (kdDiag3)</label>
                                                         <SearchableSelect
                                                             source="diagnosa"
                                                             value={kunjunganPreview.kdDiag3 ?? ''}
                                                             onChange={(val) => updateKunjunganField('kdDiag3', val)}
                                                             placeholder="Pilih Diagnosa 3 (opsional)"
                                                             searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
+                                                            className="text-xs"
                                                         />
                                                     </div>
                                                 </div>
 
                                                 {/* 1 baris: Alergi Makan, Alergi Udara, Alergi Obat, KD Prognosa, KD Sadar */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Makan</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Alergi Makan</label>
                                                     <SearchableSelect
                                                         source="alergi"
                                                         value={kunjunganPreview.alergiMakan ?? '00'}
@@ -2872,10 +2882,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         searchPlaceholder="Cari alergi (makanan)…"
                                                         sourceParams={{ jenis: '01' }}
                                                         defaultDisplay="Tidak Ada"
+                                                        className="text-xs"
                                                     />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Udara</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Alergi Udara</label>
                                                     <SearchableSelect
                                                         source="alergi"
                                                         value={kunjunganPreview.alergiUdara ?? '00'}
@@ -2891,10 +2902,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         searchPlaceholder="Cari alergi (udara)…"
                                                         sourceParams={{ jenis: '02' }}
                                                         defaultDisplay="Tidak Ada"
+                                                        className="text-xs"
                                                     />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Obat</label>
+                                                        <label className="block text-xs font-bold mb-0.5">Alergi Obat</label>
                                                     <SearchableSelect
                                                         source="alergi"
                                                         value={kunjunganPreview.alergiObat ?? '00'}
@@ -2910,10 +2922,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         searchPlaceholder="Cari alergi (obat)…"
                                                         sourceParams={{ jenis: '03' }}
                                                         defaultDisplay="Tidak Ada"
+                                                        className="text-xs"
                                                     />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Prognosa</label>
+                                                        <label className="block text-xs font-bold mb-0.5">KD Prognosa</label>
                                                     <SearchableSelect
                                                         source="prognosa"
                                                         value={kunjunganPreview.kdPrognosa ?? '02'}
@@ -2928,10 +2941,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         placeholder="Pilih Prognosa"
                                                         searchPlaceholder="Cari prognosa…"
                                                         defaultDisplay="Bonam (Baik)"
+                                                        className="text-xs"
                                                     />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Sadar</label>
+                                                        <label className="block text-xs font-bold mb-0.5">KD Sadar</label>
                                                     <SearchableSelect
                                                         source="kesadaran"
                                                         value={kunjunganPreview.kdSadar ?? '01'}
@@ -2946,14 +2960,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                         placeholder="Pilih Kesadaran"
                                                         searchPlaceholder="Cari kesadaran…"
                                                         defaultDisplay="Compos mentis"
+                                                        className="text-xs"
                                                     />
                                                     </div>
                                                 </div>
 
                                                 {/* Terapi Obat - tidak diminta satu baris, tetap terpisah */}
                                                 <div>
-                                                    <label className="block text-xs font-medium mb-1">Terapi Obat</label>
-                                                <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    <label className="block text-xs font-bold mb-0.5">Terapi Obat</label>
+                                                <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs"></textarea>
                                                 <div className="mt-2 flex justify-end">
                                                     <button
                                                         type="button"
@@ -3018,13 +3033,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 {rujukanActive && (
                                     <div className="space-y-3 text-sm">
                                         {/* Baris 1: Tanggal Estimasi Rujuk, Spesialis, Sub Spesialis */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Tanggal Estimasi Rujuk</label>
-                                                <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                <label className="block text-xs font-bold mb-0.5">Tanggal Estimasi Rujuk</label>
+                                                <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Spesialis</label>
+                                                <label className="block text-xs font-bold mb-0.5">Spesialis</label>
                                                 <SearchableSelect
                                                     options={spesialisOptions}
                                                     value={selectedSpesialis}
@@ -3033,10 +3048,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari spesialis…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Sub Spesialis (kdSubSpesialis1)</label>
+                                                <label className="block text-xs font-bold mb-0.5">Sub Spesialis (kdSubSpesialis1)</label>
                                                 <SearchableSelect
                                                     options={subSpesialisOptions}
                                                     value={rujukForm.kdSubSpesialis1}
@@ -3045,14 +3061,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari sub spesialis…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Baris 2: Sarana 1 kolom dan PPK Rujukan 3 kolom (rasio 1:3) */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-start">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-start">
                                             <div className="md:col-span-1">
-                                                <label className="block text-xs font-medium mb-1">Sarana (kdSarana)</label>
+                                                <label className="block text-xs font-bold mb-0.5">Sarana (kdSarana)</label>
                                                 <SearchableSelect
                                                     options={saranaOptions}
                                                     value={rujukForm.kdSarana}
@@ -3061,10 +3078,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari sarana…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                             <div className="md:col-span-3">
-                                                <label className="block text-xs font-medium mb-1">PPK Rujukan (kdppk)</label>
+                                                <label className="block text-xs font-bold mb-0.5">PPK Rujukan (kdppk)</label>
                                                 <SearchableSelect
                                                     options={providerOptions}
                                                     value={rujukForm.kdppk}
@@ -3073,6 +3091,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari PPK…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                                 {/* Detail PPK Rujukan lengkap: Jadwal per hari, Alamat, Telp, Jarak, Statistik */}
                                                 {(() => {

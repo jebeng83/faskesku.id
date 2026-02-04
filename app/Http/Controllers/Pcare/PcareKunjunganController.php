@@ -82,19 +82,27 @@ class PcareKunjunganController extends Controller
             }
         } catch (\Throwable $e) {}
 
-        // Sanitasi rujukan: hapus key rujukLanjut bila null/empty untuk menghindari JValue error di server PCare
+        // Sanitasi Lingkar Perut: Pastikan dikirim sebagai string, dan jangan null.
+        // Jika 0, kirim "0".
+        try {
+            if (isset($payload['lingkarPerut'])) {
+                $payload['lingkarPerut'] = (string) $payload['lingkarPerut'];
+            } else {
+                // Jika tidak ada, default ke "0" karena sepertinya required
+                $payload['lingkarPerut'] = "0";
+            }
+        } catch (\Throwable $e) {}
+
+        // Sanitasi rujukan: pastikan struktur sesuai
         try {
             if (array_key_exists('rujukLanjut', $payload)) {
                 $rl = $payload['rujukLanjut'];
                 if ($rl === null || $rl === '' || (is_array($rl) && empty($rl))) {
                     unset($payload['rujukLanjut']);
                 } elseif (is_array($rl)) {
-                    // Buang field null di dalam rujukLanjut (khusus, subSpesialis kosong, dsb.)
-                    if (array_key_exists('khusus', $rl) && ($rl['khusus'] === null || $rl['khusus'] === '')) {
-                        unset($rl['khusus']);
-                    }
-                    if (array_key_exists('subSpesialis', $rl) && (is_null($rl['subSpesialis']) || (is_array($rl['subSpesialis']) && empty($rl['subSpesialis'])))) {
-                        unset($rl['subSpesialis']);
+                    // Pastikan khusus ada (null) jika tidak ada
+                    if (!array_key_exists('khusus', $rl)) {
+                        $payload['rujukLanjut']['khusus'] = null;
                     }
                     // Normalisasi tanggal estimasi rujuk bila ada: dd-mm-YYYY
                     if (! empty($rl['tglEstRujuk']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $rl['tglEstRujuk'])) {
@@ -878,14 +886,14 @@ class PcareKunjunganController extends Controller
 
         // Pastikan format data sesuai katalog BPJS
         // sistole, diastole, beratBadan, tinggiBadan, respRate, heartRate, lingkarPerut harus integer atau float
-        $numericFields = ['sistole', 'diastole', 'beratBadan', 'tinggiBadan', 'respRate', 'heartRate', 'lingkarPerut'];
+        $numericFields = ['sistole', 'diastole', 'beratBadan', 'tinggiBadan', 'respRate', 'heartRate'];
         foreach ($numericFields as $field) {
             if (isset($payload[$field])) {
                 // Konversi ke integer untuk sistole, diastole, respRate, heartRate
                 if (in_array($field, ['sistole', 'diastole', 'respRate', 'heartRate'])) {
                     $payload[$field] = (int) $payload[$field];
                 } else {
-                    // Untuk beratBadan, tinggiBadan, lingkarPerut bisa float
+                    // Untuk beratBadan, tinggiBadan bisa float
                     $payload[$field] = is_numeric($payload[$field]) ? (float) $payload[$field] : 0;
                 }
             }
