@@ -750,7 +750,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
             {/* Main Action Area Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 {/* Left Card: Search & Available Actions */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-[600px]">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-[420px]">
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-800 rounded-t-xl">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
                             <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -780,7 +780,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                             {filteredPerawatan.length > 0 ? (
                                 <div className="space-y-2">
-                                    {filteredPerawatan.map(item => {
+                                    {filteredPerawatan.slice(0, 4).map(item => {
                                         const isSelected = selectedTindakan.some(selected => selected.kd_jenis_prw === item.kd_jenis_prw);
                                         return (
                                             <div
@@ -837,7 +837,7 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
                 </div>
 
                 {/* Right Card: Selected Actions */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-[600px]">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-[420px]">
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-green-50 to-white dark:from-gray-800 dark:to-gray-800 rounded-t-xl">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">

@@ -54,6 +54,23 @@ export default function Resep({
     const [penyerahanLoading, setPenyerahanLoading] = useState({});
     const [activeTab, setActiveTab] = useState("resep"); // "resep" or "resep-racikan"
 
+    const formatAturanPakai = (t) => {
+        const s = (t || "").toString().trim();
+        return s || "-";
+    };
+
+    const [aturanOptions, setAturanOptions] = useState([]);
+    const [searchAturan, setSearchAturan] = useState({});
+    const [loadingAturan, setLoadingAturan] = useState(false);
+    const [showDropdownAturan, setShowDropdownAturan] = useState({});
+
+    const [racikanGroups, setRacikanGroups] = useState([]);
+    const [activeRacikId, setActiveRacikId] = useState(null);
+    const [metodeRacikOptions, setMetodeRacikOptions] = useState([]);
+    const [racikSearchObat, setRacikSearchObat] = useState({});
+    const [racikDropdownObat, setRacikDropdownObat] = useState({});
+    const [isSubmittingRacikan, setIsSubmittingRacikan] = useState(false);
+
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
         if (!kdPoli) {
@@ -104,6 +121,57 @@ export default function Resep({
             console.warn("Error getting stok info:", error?.message || error);
             return null;
         }
+    };
+
+    const getDetailObat = async (kodeBrng) => {
+        try {
+            const response = await axios.get(`/api/obat/${encodeURIComponent(kodeBrng)}`, {
+                params: { kd_poli: kdPoli || undefined },
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
+            if (response?.data?.success) return response.data.data;
+            return null;
+        } catch (_) {
+            return null;
+        }
+    };
+
+    const fetchAturan = async (search = "") => {
+        setLoadingAturan(true);
+        try {
+            const response = await axios.get("/api/aturan-pakai", {
+                params: { search, limit: 20 },
+                withCredentials: true,
+                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+            });
+            if (response?.data?.success) setAturanOptions(response.data.data || []);
+            else setAturanOptions([]);
+        } catch (_) {
+            setAturanOptions([]);
+        } finally {
+            setLoadingAturan(false);
+        }
+    };
+
+    const fetchMetodeRacik = async () => {
+        try {
+            const response = await axios.get('/farmasi/metode-racik', {
+                params: { perPage: 200, q: '' },
+                withCredentials: true,
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const items = response?.data?.props?.items?.data || [];
+            const opts = items.map((it) => ({ kd_racik: it.kd_racik, nm_racik: it.nm_racik }));
+            if (opts.length > 0) { setMetodeRacikOptions(opts); return; }
+        } catch (_) { }
+        setMetodeRacikOptions([
+            { kd_racik: 'R01', nm_racik: 'Puyer' },
+            { kd_racik: 'R02', nm_racik: 'Sirup' },
+            { kd_racik: 'R03', nm_racik: 'Salep' },
+            { kd_racik: 'R04', nm_racik: 'Kapsul' },
+            { kd_racik: 'R06', nm_racik: 'Injeksi' },
+        ]);
     };
 
     // Fetch dokter dari API
@@ -331,6 +399,8 @@ export default function Resep({
         const handleClickOutside = (event) => {
             if (!event.target.closest(".dropdown-container")) {
                 setShowDropdown({});
+                setShowDropdownAturan({});
+                setRacikDropdownObat({});
             }
         };
 
@@ -339,6 +409,46 @@ export default function Resep({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const activeSearchTerms = Object.values(searchAturan).filter((term) => term && term.length > 0);
+            if (activeSearchTerms.length > 0) {
+                const latestSearch = activeSearchTerms[activeSearchTerms.length - 1];
+                if (latestSearch.length >= 2) fetchAturan(latestSearch);
+                else if (latestSearch.length === 0) fetchAturan();
+            } else {
+                fetchAturan();
+            }
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchAturan]);
+
+    useEffect(() => { fetchMetodeRacik(); }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const activeTerms = Object.values(racikSearchObat).filter((term) => term && term.length > 0);
+            if (activeTerms.length > 0) {
+                const latest = activeTerms[activeTerms.length - 1];
+                if (latest.length >= 2) {
+                    fetchObat(latest);
+                } else if (latest.length === 0) {
+                    fetchObat();
+                }
+            } else {
+                fetchObat();
+            }
+        }, 300);
+        return () => clearTimeout(timeoutId);
+    }, [racikSearchObat]);
+
+    useEffect(() => {
+        const hasActiveDropdown = Object.values(racikDropdownObat).some((v) => v);
+        if (hasActiveDropdown && obatOptions.length === 0) {
+            fetchObat();
+        }
+    }, [racikDropdownObat]);
 
     const addItem = () => {
         setItems((prev) => [
@@ -392,6 +502,166 @@ export default function Resep({
             )
         );
         setShowDropdown((prev) => ({ ...prev, [itemId]: false }));
+    };
+
+    const addRacikanGroup = () => {
+        const newId = Date.now();
+        setRacikanGroups((prev) => [
+            ...prev,
+            { id: newId, no_racik: (prev.length + 1), nama_racik: '', kd_racik: '', jml_dr: 0, aturan_pakai: '', keterangan: '', items: [] }
+        ]);
+        setActiveRacikId(newId);
+    };
+
+    const removeRacikanGroup = (id) => {
+        setRacikanGroups((prev) => prev.filter((g) => g.id !== id).map((g, idx) => ({ ...g, no_racik: idx + 1 })));
+        if (activeRacikId === id) setActiveRacikId(null);
+    };
+
+    const updateRacikanGroup = (id, key, value) => {
+        setRacikanGroups((prev) => prev.map((g) => (g.id === id ? { ...g, [key]: value } : g)));
+        if (key === 'jml_dr') {
+            setRacikanGroups((prev) => prev.map((g) => {
+                if (g.id !== id) return g;
+                const updatedItems = (g.items || []).map((it) => {
+                    const kapasitas = parseFloat(it.kapasitas || 0) || 0;
+                    const p1 = parseFloat(it.p1 || 0) || 0;
+                    const p2 = parseFloat(it.p2 || 0) || 0;
+                    const kandungan = parseFloat(it.kandungan || 0) || 0;
+                    let jml = 0;
+                    if (kapasitas > 0 && kandungan > 0) {
+                        jml = ((Number(value) || 0) * kandungan) / kapasitas;
+                    } else if (p1 > 0 && p2 > 0) {
+                        jml = (Number(value) || 0) * (p1 / p2);
+                    }
+                    return { ...it, jml: jml };
+                });
+                return { ...g, items: updatedItems };
+            }));
+        }
+    };
+
+    const addRacikanItem = (groupId) => {
+        setRacikanGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, items: [...(g.items || []), { id: Date.now(), kode_brng: '', nama_brng: '', satuan: '', kapasitas: 0, stok: 0, p1: 1, p2: 1, kandungan: 0, jml: 0 }] } : g)));
+    };
+
+    const removeRacikanItem = (groupId, itemId) => {
+        setRacikanGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, items: (g.items || []).filter((it) => it.id !== itemId) } : g)));
+    };
+
+    const updateRacikanItem = (groupId, itemId, key, value) => {
+        setRacikanGroups((prev) => prev.map((g) => {
+            if (g.id !== groupId) return g;
+            const updated = (g.items || []).map((it) => (it.id === itemId ? { ...it, [key]: value } : it));
+            return { ...g, items: updated };
+        }));
+        if (['p1', 'p2', 'kandungan'].includes(key)) {
+            setRacikanGroups((prev) => prev.map((g) => {
+                if (g.id !== groupId) return g;
+                const updated = (g.items || []).map((it) => {
+                    if (it.id !== itemId) return it;
+                    const kapasitas = parseFloat(it.kapasitas || 0) || 0;
+                    const p1 = parseFloat(key === 'p1' ? value : it.p1 || 0) || 0;
+                    const p2 = parseFloat(key === 'p2' ? value : it.p2 || 0) || 0;
+                    const kandungan = parseFloat(key === 'kandungan' ? value : it.kandungan || 0) || 0;
+                    let jml = 0;
+                    let nextKandungan = kandungan;
+                    if (kapasitas > 0 && kandungan > 0) {
+                        jml = ((Number(g.jml_dr) || 0) * kandungan) / kapasitas;
+                    } else if (p1 > 0 && p2 > 0) {
+                        jml = (Number(g.jml_dr) || 0) * (p1 / p2);
+                        if (kapasitas > 0 && (!nextKandungan || nextKandungan === 0)) {
+                            nextKandungan = kapasitas * (p1 / p2);
+                        }
+                    }
+                    return { ...it, jml: jml, kandungan: nextKandungan };
+                });
+                return { ...g, items: updated };
+            }));
+        }
+    };
+
+    const selectRacikanObat = async (groupId, itemId, obat) => {
+        const detail = await getDetailObat(obat.kode_brng);
+        const kapasitas = detail?.kapasitas ?? obat.kapasitas ?? 0;
+        const satuan = detail?.kode_satbesar ?? obat.kode_satbesar ?? '';
+        const stok = detail?.total_stok ?? obat.total_stok ?? 0;
+        setRacikanGroups((prev) => prev.map((g) => {
+            if (g.id !== groupId) return g;
+            const jmlDr = Number(g.jml_dr) || 0;
+            const updated = (g.items || []).map((it) => {
+                if (it.id !== itemId) return it;
+                const p1 = parseFloat(it.p1 || 0) || 0;
+                const p2 = parseFloat(it.p2 || 0) || 0;
+                let kandungan = parseFloat(it.kandungan || 0) || 0;
+                let jml = 0;
+                if (kapasitas > 0 && kandungan > 0) {
+                    jml = (jmlDr * kandungan) / kapasitas;
+                } else if (p1 > 0 && p2 > 0) {
+                    jml = jmlDr * (p1 / p2);
+                    if (kapasitas > 0 && (!kandungan || kandungan === 0)) {
+                        kandungan = kapasitas * (p1 / p2);
+                    }
+                }
+                return { ...it, kode_brng: obat.kode_brng, nama_brng: obat.nama_brng, kapasitas, satuan, stok, kandungan, jml };
+            });
+            return { ...g, items: updated };
+        }));
+        setRacikDropdownObat((prev) => ({ ...prev, [itemId]: false }));
+    };
+
+    const validateRacikan = () => {
+        if (racikanGroups.length === 0) return false;
+        for (const g of racikanGroups) {
+            if (!g.nama_racik || !g.kd_racik || !g.jml_dr || (g.items || []).length === 0) return false;
+            for (const it of g.items || []) {
+                if (!it.kode_brng || (Number(it.jml) || 0) <= 0) return false;
+            }
+        }
+        return true;
+    };
+
+    const handleSubmitRacikan = async () => {
+        const isValid = validateRacikan();
+        if (!isValid) { alert('Lengkapi racikan terlebih dahulu'); return; }
+        setIsSubmittingRacikan(true);
+        try {
+            const payload = {
+                no_rawat: noRawat,
+                kd_poli: kdPoli,
+                kd_dokter: selectedDokter,
+                groups: racikanGroups.map((g) => ({
+                    no_racik: g.no_racik,
+                    nama_racik: g.nama_racik,
+                    kd_racik: g.kd_racik,
+                    jml_dr: Number(g.jml_dr) || 0,
+                    aturan_pakai: g.aturan_pakai || "",
+                    keterangan: g.keterangan || "",
+                    items: (g.items || []).map((it) => ({
+                        kode_brng: it.kode_brng,
+                        p1: Number(it.p1) || 0,
+                        p2: Number(it.p2) || 0,
+                        kandungan: Number(it.kandungan) || 0,
+                        jml: Number(it.jml) || 0,
+                    })),
+                })),
+            };
+            const response = await axios.post('/api/resep/racikan', payload);
+            if (response?.data?.success) {
+                const noResepBaru = response.data.data.no_resep;
+                setRacikanGroups([]);
+                setActiveRacikId(null);
+                await fetchSavedResep(noResepBaru);
+                await fetchRiwayatResep();
+            } else {
+                alert("Gagal menyimpan racikan");
+            }
+        } catch (error) {
+            const msg = error?.response?.data?.message || "Terjadi kesalahan saat menyimpan racikan";
+            alert(msg);
+        } finally {
+            setIsSubmittingRacikan(false);
+        }
     };
 
     // Fungsi untuk mengambil data resep yang sudah disimpan
@@ -1045,21 +1315,47 @@ export default function Resep({
                                 </div>
 
                                 {/* Aturan Pakai */}
-                                <div className="col-span-4">
+                                <div className="col-span-4 relative dropdown-container">
                                     <input
                                         type="text"
                                         value={item.aturanPakai}
-                                        onChange={(e) =>
-                                            updateItem(
-                                                item.id,
-                                                "aturanPakai",
-                                                e.target.value
-                                            )
-                                        }
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            updateItem(item.id, "aturanPakai", val);
+                                            setSearchAturan((prev) => ({ ...prev, [item.id]: val }));
+                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true }));
+                                        }}
+                                        onFocus={() => {
+                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true }));
+                                            if (!searchAturan[item.id]) fetchAturan();
+                                        }}
                                         className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
                                         placeholder="Aturan Pakai"
                                         required
                                     />
+
+                                    {showDropdownAturan[item.id] && (
+                                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                            {loadingAturan ? (
+                                                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Memuat…</div>
+                                            ) : (aturanOptions || []).length > 0 ? (
+                                                (aturanOptions || []).map((opt, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        onClick={() => {
+                                                            updateItem(item.id, "aturanPakai", opt.aturan || "");
+                                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: false }));
+                                                        }}
+                                                        className="px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                                                    >
+                                                        <div className="text-sm text-gray-900 dark:text-white">{opt.aturan}</div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">Tidak ada data</div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
@@ -1153,11 +1449,141 @@ export default function Resep({
             )}
 
             {activeTab === "resep-racikan" && (
-                <div className="p-4 md:p-6">
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Formulir Resep Racikan akan ditampilkan di sini.
-                    </p>
-                </div>
+                <form onSubmit={async (e) => { e.preventDefault(); await handleSubmitRacikan(); }} className="space-y-6 p-4 md:p-6">
+                    <div className="flex items-center justify-between">
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">Resep Racikan</h4>
+                        <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => addRacikanGroup()} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600">Tambah Racikan</button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-12 gap-2">
+                            <div className="col-span-3 text-xs">Nama Racikan</div>
+                            <div className="col-span-3 text-xs">Metode</div>
+                            <div className="col-span-2 text-xs">Jumlah Dosis</div>
+                            <div className="col-span-3 text-xs">Aturan Pakai</div>
+                            <div className="col-span-1"></div>
+                        </div>
+                        {racikanGroups.length === 0 ? (
+                            <div className="text-sm text-gray-600 dark:text-gray-400">Belum ada racikan. Tambahkan racikan.</div>
+                        ) : (
+                            racikanGroups.map((grp) => (
+                                <div key={grp.id} className={`grid grid-cols-12 gap-2 items-center ${activeRacikId === grp.id ? 'bg-gray-50 dark:bg-gray-800' : ''} p-2 rounded`}>
+                                    <div className="col-span-3">
+                                        <input type="text" value={grp.nama_racik} onChange={(e) => updateRacikanGroup(grp.id, 'nama_racik', e.target.value)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Nama racikan" />
+                                    </div>
+                                    <div className="col-span-3">
+                                        <select value={grp.kd_racik} onChange={(e) => updateRacikanGroup(grp.id, 'kd_racik', e.target.value)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                            <option value="">Pilih metode</option>
+                                            {metodeRacikOptions.map((opt) => (
+                                                <option key={opt.kd_racik} value={opt.kd_racik}>{opt.nm_racik}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <input type="number" min="0" value={grp.jml_dr || ''} onChange={(e) => updateRacikanGroup(grp.id, 'jml_dr', parseInt(e.target.value) || '')} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Jml dosis" />
+                                    </div>
+                                    <div className="col-span-3 relative dropdown-container">
+                                        <input type="text" value={grp.aturan_pakai || ''} onChange={(e) => { updateRacikanGroup(grp.id, 'aturan_pakai', e.target.value); setSearchAturan((prev) => ({ ...prev, ['grp-' + grp.id]: e.target.value })); setShowDropdownAturan((prev) => ({ ...prev, ['grp-' + grp.id]: true })); }} onFocus={() => { setShowDropdownAturan((prev) => ({ ...prev, ['grp-' + grp.id]: true })); if (!searchAturan['grp-' + grp.id]) fetchAturan(); }} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Aturan Pakai" />
+                                        {showDropdownAturan['grp-' + grp.id] && (
+                                            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                {loadingAturan ? (
+                                                    <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Memuat…</div>
+                                                ) : (aturanOptions || []).length > 0 ? (
+                                                    (aturanOptions || []).map((opt, idx) => (
+                                                        <div key={idx} onClick={() => { updateRacikanGroup(grp.id, 'aturan_pakai', opt.aturan || ''); setShowDropdownAturan((prev) => ({ ...prev, ['grp-' + grp.id]: false })); }} className="px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                                                            <div className="text-sm text-gray-900 dark:text-white">{opt.aturan}</div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">Tidak ada data</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="col-span-1 flex justify-end">
+                                        <button type="button" onClick={() => removeRacikanGroup(grp.id)} className="inline-flex items-center justify-center w-8 h-8 rounded bg-red-500 text-white">−</button>
+                                    </div>
+                                    <div className="col-span-12">
+                                        <input type="text" value={grp.keterangan || ''} onChange={(e) => updateRacikanGroup(grp.id, 'keterangan', e.target.value)} className="w-full py-2.5 px-3 rounded-lg border-2 border-dashed border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Keterangan (opsional)" />
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {activeRacikId && (
+                        <div className="border rounded-lg">
+                            <div className="px-3 py-2 flex items-center justify-between">
+                                <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">Bahan Racikan</div>
+                                <button type="button" onClick={() => addRacikanItem(activeRacikId)} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600">Tambah Bahan</button>
+                            </div>
+                            <div className="p-3 space-y-2">
+                                <div className="grid grid-cols-12 gap-2">
+                                    <div className="col-span-4 text-[11px]">Nama Bahan</div>
+                                    <div className="col-span-1 text-[11px]">P1</div>
+                                    <div className="col-span-1 text-[11px]">P2</div>
+                                    <div className="col-span-2 text-[11px]">Kandungan (mg)</div>
+                                    <div className="col-span-1 text-[11px]">Kapasitas</div>
+                                    <div className="col-span-1 text-[11px]">Jml</div>
+                                    <div className="col-span-1 text-[11px]">Satuan</div>
+                                    <div className="col-span-1"></div>
+                                </div>
+                                {(racikanGroups.find((g) => g.id === activeRacikId)?.items || []).map((it) => (
+                                    <div key={it.id} className="grid grid-cols-12 gap-2 items-start">
+                                        <div className="col-span-4 relative dropdown-container">
+                                            <input type="text" value={it.nama_brng || ''} onChange={(e) => { updateRacikanItem(activeRacikId, it.id, 'nama_brng', e.target.value); setRacikSearchObat((prev) => ({ ...prev, [it.id]: e.target.value })); setRacikDropdownObat((prev) => ({ ...prev, [it.id]: true })); }} onFocus={() => { setRacikDropdownObat((prev) => ({ ...prev, [it.id]: true })); if (!racikSearchObat[it.id] && kdPoli) fetchObat(); }} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Pilih Bahan" />
+                                            {racikDropdownObat[it.id] && (
+                                                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                    {(obatOptions || [])
+                                                        .filter((obat) => {
+                                                            const term = (racikSearchObat[it.id] || '').toLowerCase();
+                                                            if (!term) return true;
+                                                            const nama = (obat.nama_brng || '').toLowerCase();
+                                                            const kode = (obat.kode_brng || '').toLowerCase();
+                                                            return nama.includes(term) || kode.includes(term);
+                                                        })
+                                                        .map((obat, idx) => (
+                                                            <div key={idx} onClick={() => selectRacikanObat(activeRacikId, it.id, obat)} className="px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                                                                <div className="text-sm text-gray-900 dark:text-white">{obat.nama_brng}</div>
+                                                                <div className="text-xs text-gray-500 dark:text-gray-400">{obat.kode_brng}</div>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input type="number" value={it.p1 || 0} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'p1', parseFloat(e.target.value) || 0)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input type="number" value={it.p2 || 0} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'p2', parseFloat(e.target.value) || 0)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input type="number" value={it.kandungan || 0} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'kandungan', parseFloat(e.target.value) || 0)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input type="number" value={it.kapasitas || 0} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'kapasitas', parseFloat(e.target.value) || 0)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input type="number" value={it.jml || 0} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'jml', parseFloat(e.target.value) || 0)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <input type="text" value={it.satuan || ''} onChange={(e) => updateRacikanItem(activeRacikId, it.id, 'satuan', e.target.value)} className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                        </div>
+                                        <div className="col-span-1 flex justify-end">
+                                            <button type="button" onClick={() => removeRacikanItem(activeRacikId, it.id)} className="inline-flex items-center justify-center w-8 h-8 rounded bg-red-500 text-white">−</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2">
+                        <button type="submit" disabled={isSubmittingRacikan || racikanGroups.length === 0} className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">{isSubmittingRacikan ? 'Menyimpan…' : 'Simpan Racikan'}</button>
+                    </div>
+                </form>
             )}
 
             {/* Kontrol tampil/sembunyi Riwayat Resep */}
@@ -1522,9 +1948,7 @@ export default function Resep({
                                                                             </div>
                                                                         </td>
                                                                         <td className="px-3 py-2 text-sm text-gray-900 dark:text-white">
-                                                                            {
-                                                                                obat.aturan_pakai
-                                                                            }
+                                                                            {formatAturanPakai(obat.aturan_pakai)}
                                                                         </td>
                                                                         <td className="px-3 py-2 text-sm text-gray-900 dark:text-white text-center">
                                                                             {
@@ -1536,6 +1960,59 @@ export default function Resep({
                                                             )}
                                                         </tbody>
                                                     </table>
+                        </div>
+                    </div>
+                                        )}
+                                        {Array.isArray(resep.racikan) && resep.racikan.length > 0 && (
+                                            <div className="mt-3">
+                                                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Detail Racikan</h5>
+                                                <div className="space-y-3">
+                                                    {resep.racikan.map((grp, gidx) => (
+                                                        <div key={gidx} className="border border-gray-200 dark:border-gray-600 rounded-md">
+                                                            <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 flex items-center justify-between">
+                                                                <div className="text-xs">
+                                                                    <div className="font-semibold text-gray-800 dark:text-gray-200">{grp.nama_racik ? grp.nama_racik : `Racikan #${grp.no_racik}`}</div>
+                                                                    <div className="text-gray-600 dark:text-gray-400">Metode: {grp.metode || grp.kd_racik || '-'} • Jumlah dosis: {grp.jml_dr}</div>
+                                                                    {grp.aturan_pakai && (<div className="text-gray-600 dark:text-gray-400">Aturan pakai: {formatAturanPakai(grp.aturan_pakai)}</div>)}
+                                                                    {grp.keterangan && (<div className="text-gray-600 dark:text-gray-400">Keterangan: {grp.keterangan}</div>)}
+                                                                </div>
+                                                            </div>
+                                                            <div className="overflow-x-auto p-3">
+                                                                <table className="min-w-full border border-gray-200 dark:border-gray-600 text-xs">
+                                                                    <thead className="bg-gray-100 dark:bg-gray-700">
+                                                                        <tr>
+                                                                            <th className="px-3 py-2 text-left">Kode</th>
+                                                                            <th className="px-3 py-2 text-left">Nama</th>
+                                                                            <th className="px-3 py-2 text-center">Jml</th>
+                                                                            <th className="px-3 py-2 text-center">Kandungan</th>
+                                                                            <th className="px-3 py-2 text-left">Satuan</th>
+                                                                            <th className="px-3 py-2 text-right">Tarif</th>
+                                                                            <th className="px-3 py-2 text-right">Subtotal</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {(grp.details || []).map((d, didx) => (
+                                                                            <tr key={didx} className="border-t border-gray-200 dark:border-gray-600">
+                                                                                <td className="px-3 py-2">{d.kode_brng}</td>
+                                                                                <td className="px-3 py-2">{d.nama_brng}</td>
+                                                                                <td className="px-3 py-2 text-center">{d.jml}</td>
+                                                                                <td className="px-3 py-2 text-center">{d.kandungan}</td>
+                                                                                <td className="px-3 py-2">{d.satuan}</td>
+                                                                                <td className="px-3 py-2 text-right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(d.tarif || 0)}</td>
+                                                                                <td className="px-3 py-2 text-right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(d.subtotal || 0)}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                    <tfoot className="bg-gray-100 dark:bg-gray-700">
+                                                                        <tr>
+                                                                            <td colSpan="6" className="px-3 py-2 text-right font-semibold">Subtotal Racikan:</td>
+                                                                            <td className="px-3 py-2 text-right font-semibold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format((grp.details || []).reduce((s, i) => s + (i.subtotal || 0), 0))}</td>
+                                                                        </tr>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         )}
@@ -1768,7 +2245,7 @@ export default function Resep({
                                                         {item.nama_brng || "-"}
                                                     </td>
                                                     <td className="border border-gray-300 px-3 py-2">
-                                                        {item.aturan_pakai}
+                                                        {formatAturanPakai(item.aturan_pakai)}
                                                     </td>
                                                     <td className="border border-gray-300 px-3 py-2 text-center">
                                                         {item.jml} {item.satuan}
@@ -1829,8 +2306,8 @@ export default function Resep({
                                 </tfoot>
                             </table>
                         </div>
+                        </div>
                     </div>
-                </div>
             )}
 
             {/* Copy Resep Modal */}

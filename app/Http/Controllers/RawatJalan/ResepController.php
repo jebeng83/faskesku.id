@@ -182,6 +182,449 @@ class ResepController extends Controller
         }
     }
 
+    public function storeRacikan(Request $request): JsonResponse
+    {
+        $request->validate([
+            'no_rawat' => 'required|string',
+            'kd_poli' => 'required|string',
+            'kd_dokter' => 'required|string',
+            'groups' => 'required|array|min:1',
+            'groups.*.no_racik' => 'required',
+            'groups.*.nama_racik' => 'nullable|string|max:100',
+            'groups.*.kd_racik' => 'required|string|max:3',
+            'groups.*.jml_dr' => 'required|numeric|min:1',
+            'groups.*.aturan_pakai' => 'nullable|string|max:150',
+            'groups.*.keterangan' => 'nullable|string|max:50',
+            'groups.*.items' => 'required|array|min:1',
+            'groups.*.items.*.kode_brng' => 'required|string',
+            'groups.*.items.*.p1' => 'nullable|numeric|min:0',
+            'groups.*.items.*.p2' => 'nullable|numeric|min:0',
+            'groups.*.items.*.kandungan' => 'nullable|numeric|min:0',
+            'groups.*.items.*.jml' => 'required|numeric|min:0.0001',
+        ]);
+
+        $dokter = \App\Models\Dokter::where('kd_dokter', $request->kd_dokter)
+            ->where('status', '1')
+            ->first();
+
+        if (! $dokter) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dokter tidak ditemukan atau tidak aktif',
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
+            if (empty($bangsalList)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada depo yang terkait dengan poli ini',
+                ], 400);
+            }
+
+            foreach ($request->groups as $grp) {
+                foreach ($grp['items'] as $it) {
+                    $databarang = Databarang::where('kode_brng', $it['kode_brng'])->first();
+                    if (! $databarang) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat dengan kode {$it['kode_brng']} tidak ditemukan",
+                        ], 400);
+                    }
+                    if ($databarang->status != '1') {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat {$databarang->nama_brng} tidak aktif",
+                        ], 400);
+                    }
+                    $totalStokTersedia = 0;
+                    $stokPerBangsal = [];
+                    foreach ($bangsalList as $kdBangsal) {
+                        $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($it['kode_brng'], $kdBangsal);
+                        $totalStokTersedia += $stokBangsal;
+                        $stokPerBangsal[$kdBangsal] = $stokBangsal;
+                    }
+                    if ($totalStokTersedia < $it['jml']) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Stok obat {$databarang->nama_brng} tidak mencukupi. Tersedia: {$totalStokTersedia}, Diminta: {$it['jml']}",
+                            'stok_detail' => $stokPerBangsal,
+                        ], 400);
+                    }
+                }
+            }
+
+            $resepObat = ResepObat::createResep([
+                'tgl_perawatan' => '0000-00-00',
+                'jam' => '00:00:00',
+                'no_rawat' => $request->no_rawat,
+                'kd_dokter' => $request->kd_dokter,
+                'tgl_peresepan' => $request->tgl_peresepan ?? Carbon::now()->format('Y-m-d'),
+                'jam_peresepan' => $request->jam_peresepan ?? Carbon::now()->format('H:i:s'),
+                'status' => $request->status ?? 'ralan',
+                'tgl_penyerahan' => '0000-00-00',
+                'jam_penyerahan' => '00:00:00',
+            ]);
+
+            foreach ($request->groups as $grp) {
+                DB::table('resep_dokter_racikan')->insert([
+                    'no_resep' => $resepObat->no_resep,
+                    'no_racik' => $grp['no_racik'],
+                    'nama_racik' => $grp['nama_racik'] ?? '',
+                    'kd_racik' => $grp['kd_racik'],
+                    'jml_dr' => $grp['jml_dr'],
+                    'aturan_pakai' => $grp['aturan_pakai'] ?? '',
+                    'keterangan' => $grp['keterangan'] ?? '',
+                ]);
+
+                foreach ($grp['items'] as $it) {
+                    DB::table('resep_dokter_racikan_detail')->insert([
+                        'no_resep' => $resepObat->no_resep,
+                        'no_racik' => $grp['no_racik'],
+                        'kode_brng' => $it['kode_brng'],
+                        'p1' => $it['p1'] ?? 0,
+                        'p2' => $it['p2'] ?? 0,
+                        'kandungan' => $it['kandungan'] ?? 0,
+                        'jml' => $it['jml'] ?? 0,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'no_resep' => $resepObat->no_resep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function storeCombined(Request $request): JsonResponse
+    {
+        $request->validate([
+            'no_rawat' => 'required|string',
+            'kd_poli' => 'required|string',
+            'kd_dokter' => 'required|string',
+            'items' => 'nullable|array',
+            'items.*.kode_brng' => 'required_with:items|string',
+            'items.*.jml' => 'required_with:items|numeric|min:0.1',
+            'items.*.aturan_pakai' => 'nullable|string|max:150',
+            'groups' => 'nullable|array',
+            'groups.*.no_racik' => 'required_with:groups',
+            'groups.*.nama_racik' => 'nullable|string|max:100',
+            'groups.*.kd_racik' => 'required_with:groups|string|max:3',
+            'groups.*.jml_dr' => 'required_with:groups|numeric|min:1',
+            'groups.*.aturan_pakai' => 'nullable|string|max:150',
+            'groups.*.keterangan' => 'nullable|string|max:50',
+            'groups.*.items' => 'required_with:groups|array|min:1',
+            'groups.*.items.*.kode_brng' => 'required_with:groups|string',
+            'groups.*.items.*.p1' => 'nullable|numeric|min:0',
+            'groups.*.items.*.p2' => 'nullable|numeric|min:0',
+            'groups.*.items.*.kandungan' => 'nullable|numeric|min:0',
+            'groups.*.items.*.jml' => 'required_with:groups|numeric|min:0.0001',
+        ]);
+
+        $dokter = \App\Models\Dokter::where('kd_dokter', $request->kd_dokter)
+            ->where('status', '1')
+            ->first();
+
+        if (! $dokter) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dokter tidak ditemukan atau tidak aktif',
+            ], 400);
+        }
+
+        $items = is_array($request->items) ? $request->items : [];
+        $groups = is_array($request->groups) ? $request->groups : [];
+
+        if (count($items) === 0 && count($groups) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada item non-racikan atau racikan untuk disimpan',
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
+            if (empty($bangsalList)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada depo yang terkait dengan poli ini',
+                ], 400);
+            }
+
+            foreach ($items as $obat) {
+                $databarang = Databarang::where('kode_brng', $obat['kode_brng'])->first();
+                if (! $databarang) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Obat dengan kode {$obat['kode_brng']} tidak ditemukan",
+                    ], 400);
+                }
+                if ($databarang->status != '1') {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Obat {$databarang->nama_brng} tidak aktif",
+                    ], 400);
+                }
+                $totalStokTersedia = 0;
+                foreach ($bangsalList as $kdBangsal) {
+                    $totalStokTersedia += Gudangbarang::getTotalStokByBarangBangsal($obat['kode_brng'], $kdBangsal);
+                }
+                if ($totalStokTersedia < $obat['jml']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stok obat {$databarang->nama_brng} tidak mencukupi. Tersedia: {$totalStokTersedia}, Diminta: {$obat['jml']}",
+                    ], 400);
+                }
+                if ($obat['jml'] <= 0) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Jumlah obat {$databarang->nama_brng} harus lebih dari 0",
+                    ], 400);
+                }
+            }
+
+            foreach ($groups as $grp) {
+                foreach (($grp['items'] ?? []) as $it) {
+                    $databarang = Databarang::where('kode_brng', $it['kode_brng'])->first();
+                    if (! $databarang) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat dengan kode {$it['kode_brng']} tidak ditemukan",
+                        ], 400);
+                    }
+                    if ($databarang->status != '1') {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat {$databarang->nama_brng} tidak aktif",
+                        ], 400);
+                    }
+                    $totalStokTersedia = 0;
+                    foreach ($bangsalList as $kdBangsal) {
+                        $totalStokTersedia += Gudangbarang::getTotalStokByBarangBangsal($it['kode_brng'], $kdBangsal);
+                    }
+                    if ($totalStokTersedia < $it['jml']) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Stok obat {$databarang->nama_brng} tidak mencukupi. Tersedia: {$totalStokTersedia}, Diminta: {$it['jml']}",
+                        ], 400);
+                    }
+                }
+            }
+
+            $resepObat = ResepObat::createResep([
+                'tgl_perawatan' => '0000-00-00',
+                'jam' => '00:00:00',
+                'no_rawat' => $request->no_rawat,
+                'kd_dokter' => $request->kd_dokter,
+                'tgl_peresepan' => $request->tgl_peresepan ?? Carbon::now()->format('Y-m-d'),
+                'jam_peresepan' => $request->jam_peresepan ?? Carbon::now()->format('H:i:s'),
+                'status' => $request->status ?? 'ralan',
+                'tgl_penyerahan' => '0000-00-00',
+                'jam_penyerahan' => '00:00:00',
+            ]);
+
+            if (count($items) > 0) {
+                ResepDokter::saveResepDetail($resepObat->no_resep, $items);
+            }
+
+            foreach ($groups as $grp) {
+                DB::table('resep_dokter_racikan')->insert([
+                    'no_resep' => $resepObat->no_resep,
+                    'no_racik' => $grp['no_racik'],
+                    'nama_racik' => $grp['nama_racik'] ?? '',
+                    'kd_racik' => $grp['kd_racik'],
+                    'jml_dr' => $grp['jml_dr'],
+                    'aturan_pakai' => $grp['aturan_pakai'] ?? '',
+                    'keterangan' => $grp['keterangan'] ?? '',
+                ]);
+                foreach (($grp['items'] ?? []) as $it) {
+                    DB::table('resep_dokter_racikan_detail')->insert([
+                        'no_resep' => $resepObat->no_resep,
+                        'no_racik' => $grp['no_racik'],
+                        'kode_brng' => $it['kode_brng'],
+                        'p1' => $it['p1'] ?? 0,
+                        'p2' => $it['p2'] ?? 0,
+                        'kandungan' => $it['kandungan'] ?? 0,
+                        'jml' => $it['jml'] ?? 0,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            try {
+                $composer = app()->make('App\\Services\\Akutansi\\TampJurnalComposerResepRalan');
+                $composer->composeForNoResep($resepObat->no_resep);
+                $postingService = new JurnalPostingService;
+                $postingService->post();
+            } catch (\Throwable $e) {
+                Log::error('Gagal posting jurnal resep ralan: '.$e->getMessage(), [
+                    'no_resep' => $resepObat->no_resep,
+                    'no_rawat' => $request->no_rawat,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'no_resep' => $resepObat->no_resep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function appendRacikan(Request $request, string $noResep): JsonResponse
+    {
+        $request->validate([
+            'groups' => 'required|array|min:1',
+            'groups.*.no_racik' => 'required',
+            'groups.*.nama_racik' => 'nullable|string|max:100',
+            'groups.*.kd_racik' => 'required|string|max:3',
+            'groups.*.jml_dr' => 'required|numeric|min:1',
+            'groups.*.aturan_pakai' => 'nullable|string|max:150',
+            'groups.*.keterangan' => 'nullable|string|max:50',
+            'groups.*.items' => 'required|array|min:1',
+            'groups.*.items.*.kode_brng' => 'required|string',
+            'groups.*.items.*.p1' => 'nullable|numeric|min:0',
+            'groups.*.items.*.p2' => 'nullable|numeric|min:0',
+            'groups.*.items.*.kandungan' => 'nullable|numeric|min:0',
+            'groups.*.items.*.jml' => 'required|numeric|min:0.0001',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $resep = ResepObat::where('no_resep', $noResep)->first();
+            if (! $resep) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resep tidak ditemukan',
+                ], 404);
+            }
+
+            $reg = DB::table('reg_periksa')->where('no_rawat', $resep->no_rawat)->select('kd_poli')->first();
+            if (! $reg || empty($reg->kd_poli)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Poli untuk no_rawat tidak ditemukan',
+                ], 400);
+            }
+
+            $bangsalList = SetDepoRalan::getBangsalByPoli($reg->kd_poli);
+            if (empty($bangsalList)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada depo yang terkait dengan poli ini',
+                ], 400);
+            }
+
+            foreach ($request->groups as $grp) {
+                foreach ($grp['items'] as $it) {
+                    $databarang = Databarang::where('kode_brng', $it['kode_brng'])->first();
+                    if (! $databarang) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat dengan kode {$it['kode_brng']} tidak ditemukan",
+                        ], 400);
+                    }
+                    if ($databarang->status != '1') {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Obat {$databarang->nama_brng} tidak aktif",
+                        ], 400);
+                    }
+                    $totalStokTersedia = 0;
+                    foreach ($bangsalList as $kdBangsal) {
+                        $totalStokTersedia += Gudangbarang::getTotalStokByBarangBangsal($it['kode_brng'], $kdBangsal);
+                    }
+                    if ($totalStokTersedia < $it['jml']) {
+                        DB::rollBack();
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Stok obat {$databarang->nama_brng} tidak mencukupi. Tersedia: {$totalStokTersedia}, Diminta: {$it['jml']}",
+                        ], 400);
+                    }
+                }
+            }
+
+            foreach ($request->groups as $grp) {
+                DB::table('resep_dokter_racikan')->insert([
+                    'no_resep' => $resep->no_resep,
+                    'no_racik' => $grp['no_racik'],
+                    'nama_racik' => $grp['nama_racik'] ?? '',
+                    'kd_racik' => $grp['kd_racik'],
+                    'jml_dr' => $grp['jml_dr'],
+                    'aturan_pakai' => $grp['aturan_pakai'] ?? '',
+                    'keterangan' => $grp['keterangan'] ?? '',
+                ]);
+                foreach ($grp['items'] as $it) {
+                    DB::table('resep_dokter_racikan_detail')->insert([
+                        'no_resep' => $resep->no_resep,
+                        'no_racik' => $grp['no_racik'],
+                        'kode_brng' => $it['kode_brng'],
+                        'p1' => $it['p1'] ?? 0,
+                        'p2' => $it['p2'] ?? 0,
+                        'kandungan' => $it['kandungan'] ?? 0,
+                        'jml' => $it['jml'] ?? 0,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'no_resep' => $resep->no_resep,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Event validasi resep: menyimpan tgl/jam validasi tanpa mengurangi stok.
      * Validasi dilakukan sebelum penyerahan untuk menandai bahwa resep sudah divalidasi.
@@ -275,9 +718,11 @@ class ResepController extends Controller
                 ], 400);
             }
 
-            // Ambil detail obat
             $details = ResepDokter::where('no_resep', $noResep)->get(['kode_brng', 'jml', 'aturan_pakai']);
-            if ($details->isEmpty()) {
+            $racikanExists = DB::table('resep_dokter_racikan_detail')
+                ->where('no_resep', $noResep)
+                ->exists();
+            if ($details->isEmpty() && ! $racikanExists) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Detail resep kosong',
@@ -292,6 +737,11 @@ class ResepController extends Controller
                 'embalase_tuslah.non_racikan.*.embalase' => 'nullable|numeric|min:0',
                 'embalase_tuslah.non_racikan.*.tuslah' => 'nullable|numeric|min:0',
                 'embalase_tuslah.non_racikan.*.jml' => 'nullable|numeric|min:0.1',
+                'embalase_tuslah.racikan' => 'nullable|array',
+                'embalase_tuslah.racikan.*.kode_brng' => 'required_with:embalase_tuslah.racikan|string',
+                'embalase_tuslah.racikan.*.embalase' => 'nullable|numeric|min:0',
+                'embalase_tuslah.racikan.*.tuslah' => 'nullable|numeric|min:0',
+                'embalase_tuslah.racikan.*.jml' => 'nullable|numeric|min:0.1',
             ]);
 
             // Ambil default Embalase/Tuslah jika tidak dikirimkan dari client
@@ -308,6 +758,8 @@ class ResepController extends Controller
             $payload = $request->input('embalase_tuslah', []);
             $nonRacikanCharges = [];
             $overrideJumlah = [];
+            $racikanCharges = [];
+            $overrideJumlahRacikan = [];
             if (! empty($payload['non_racikan']) && is_array($payload['non_racikan'])) {
                 foreach ($payload['non_racikan'] as $r) {
                     $kode = $r['kode_brng'] ?? null;
@@ -318,6 +770,20 @@ class ResepController extends Controller
                         ];
                         if (isset($r['jml'])) {
                             $overrideJumlah[$kode] = (float) $r['jml'];
+                        }
+                    }
+                }
+            }
+            if (! empty($payload['racikan']) && is_array($payload['racikan'])) {
+                foreach ($payload['racikan'] as $r) {
+                    $kode = $r['kode_brng'] ?? null;
+                    if ($kode) {
+                        $racikanCharges[$kode] = [
+                            'embalase' => (float) ($r['embalase'] ?? $defaultEmbalase),
+                            'tuslah' => (float) ($r['tuslah'] ?? $defaultTuslah),
+                        ];
+                        if (isset($r['jml'])) {
+                            $overrideJumlahRacikan[$kode] = (float) $r['jml'];
                         }
                     }
                 }
@@ -470,6 +936,134 @@ class ResepController extends Controller
                         'no_rawat' => $resep->no_rawat,
                         'kode_brng' => $det->kode_brng,
                         'aturan' => $aturan,
+                    ]);
+                }
+            }
+
+            $racikanGroups = DB::table('resep_dokter_racikan')
+                ->where('no_resep', $noResep)
+                ->select('no_racik', 'aturan_pakai')
+                ->get()
+                ->keyBy('no_racik');
+
+            $racikanDetails = DB::table('resep_dokter_racikan_detail')
+                ->where('no_resep', $noResep)
+                ->select('no_racik', 'kode_brng', 'jml')
+                ->get();
+
+            foreach ($racikanDetails as $rdet) {
+                $jumlahR = isset($overrideJumlahRacikan[$rdet->kode_brng])
+                    ? max((float) $overrideJumlahRacikan[$rdet->kode_brng], 0.1)
+                    : (float) $rdet->jml;
+                $bangsalList = SetDepoRalan::getBangsalByPoli($reg->kd_poli);
+                $totalStokR = 0;
+                foreach ($bangsalList as $kdBangsal) {
+                    $totalStokR += Gudangbarang::getTotalStokByBarangBangsal($rdet->kode_brng, $kdBangsal);
+                }
+                if ($totalStokR < $jumlahR) {
+                    DB::rollBack();
+                    $barang = Databarang::where('kode_brng', $rdet->kode_brng)->first();
+                    $nama = $barang ? $barang->nama_brng : $rdet->kode_brng;
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Stok obat $nama tidak mencukupi untuk penyerahan racikan. Tersedia: $totalStokR, Diminta: $jumlahR",
+                    ], 400);
+                }
+
+                $updatedBatchesR = $this->updateStokObat($rdet->kode_brng, $jumlahR, $reg->kd_poli);
+                $barangInfoR = Databarang::where('kode_brng', $rdet->kode_brng)->first();
+                $biayaObatR = (float) ($barangInfoR->ralan ?? 0);
+                $hargaBeliR = (float) ($barangInfoR->h_beli ?? 0);
+                $aturanR = trim((string) ($racikanGroups[$rdet->no_racik]->aturan_pakai ?? ''));
+                $embalaseTuslahR = $racikanCharges[$rdet->kode_brng] ?? [
+                    'embalase' => $defaultEmbalase,
+                    'tuslah' => $defaultTuslah,
+                ];
+                $chargesAssignedR = false;
+                foreach ($updatedBatchesR as $batch) {
+                    $jmlKecilR = (float) ($batch['stok_diambil'] ?? 0);
+                    $embalaseR = $chargesAssignedR ? 0.0 : (float) ($embalaseTuslahR['embalase'] ?? 0);
+                    $tuslahR = $chargesAssignedR ? 0.0 : (float) ($embalaseTuslahR['tuslah'] ?? 0);
+                    $totalR = round($embalaseR + $tuslahR + ($biayaObatR * $jmlKecilR), 2);
+
+                    DB::table('detail_pemberian_obat')->insert([
+                        'tgl_perawatan' => $nowDate,
+                        'jam' => $nowTime,
+                        'no_rawat' => $resep->no_rawat,
+                        'kode_brng' => $rdet->kode_brng,
+                        'h_beli' => $hargaBeliR,
+                        'biaya_obat' => $biayaObatR,
+                        'jml' => $jmlKecilR,
+                        'embalase' => $embalaseR,
+                        'tuslah' => $tuslahR,
+                        'total' => $totalR,
+                        'status' => $jenisStatus,
+                        'kd_bangsal' => $batch['kd_bangsal'] ?? '',
+                        'no_batch' => $batch['no_batch'] ?? '',
+                        'no_faktur' => $batch['no_faktur'] ?? '',
+                    ]);
+
+                    try {
+                        RiwayatTransaksiGudangBarang::catatUpdate(
+                            $rdet->kode_brng,
+                            $batch['kd_bangsal'] ?? '',
+                            $batch['no_batch'] ?? '',
+                            $batch['no_faktur'] ?? '',
+                            $batch['stok_sebelum'] ?? null,
+                            $batch['stok_sesudah'] ?? null,
+                            'rawat_jalan',
+                            'penyerahan_obat_racikan',
+                            [
+                                'no_resep' => $noResep,
+                                'no_rawat' => $resep->no_rawat,
+                                'stok_diambil' => $jmlKecilR,
+                                'status' => $jenisStatus,
+                            ],
+                            [
+                                'no_resep' => $noResep,
+                                'no_rawat' => $resep->no_rawat,
+                                'stok_diambil' => $jmlKecilR,
+                                'status' => $jenisStatus,
+                            ]
+                        );
+                    } catch (\Throwable $th) {
+                        Log::warning('Gagal mencatat riwayat transaksi gudang racikan', [
+                            'error' => $th->getMessage(),
+                            'kode_brng' => $rdet->kode_brng,
+                            'batch' => $batch,
+                            'no_resep' => $noResep,
+                        ]);
+                    }
+
+                    try {
+                        DB::table('data_batch')
+                            ->where('no_batch', $batch['no_batch'] ?? '')
+                            ->where('kode_brng', $rdet->kode_brng)
+                            ->where('no_faktur', $batch['no_faktur'] ?? '')
+                            ->decrement('sisa', $jmlKecilR);
+                    } catch (\Throwable $th) {
+                        Log::warning('Gagal memperbarui data_batch.sisa racikan', [
+                            'error' => $th->getMessage(),
+                            'kode_brng' => $rdet->kode_brng,
+                            'no_batch' => $batch['no_batch'] ?? null,
+                            'no_faktur' => $batch['no_faktur'] ?? null,
+                            'pengurangan' => $jmlKecilR,
+                            'no_resep' => $noResep,
+                        ]);
+                    }
+
+                    if (! $chargesAssignedR && ($embalaseR > 0 || $tuslahR > 0)) {
+                        $chargesAssignedR = true;
+                    }
+                }
+
+                if ($aturanR !== '') {
+                    DB::table('aturan_pakai')->insert([
+                        'tgl_perawatan' => $nowDate,
+                        'jam' => $nowTime,
+                        'no_rawat' => $resep->no_rawat,
+                        'kode_brng' => $rdet->kode_brng,
+                        'aturan' => $aturanR,
                     ]);
                 }
             }

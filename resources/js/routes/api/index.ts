@@ -49,6 +49,7 @@ import akutansi from './akutansi'
 import paymentPoint from './payment-point'
 import antrianPoli2d4a79 from './antrian-poli'
 import menu from './menu'
+import racikanTemplate from './racikan-template'
 import tarifTindakan from './tarif-tindakan'
 /**
 * @see \App\Http\Controllers\PermintaanLabController::regPeriksa
@@ -275,6 +276,7 @@ const api = {
     paymentPoint: Object.assign(paymentPoint, paymentPoint),
     antrianPoli: Object.assign(antrianPoli, antrianPoli2d4a79),
     menu: Object.assign(menu, menu),
+    racikanTemplate: Object.assign(racikanTemplate, racikanTemplate),
     tarifTindakan: Object.assign(tarifTindakan, tarifTindakan),
 }
 

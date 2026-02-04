@@ -168,6 +168,9 @@ class PermissionSeeder extends Seeder
             // Set Harga Obat page & actions
             'farmasi.set-harga-obat',
             'farmasi.set-harga-obat.update',
+            // Set Lokasi Farmasi
+            'farmasi.set-lokasi',
+            'farmasi.set-lokasi.update',
             // Set Penjualan per Jenis
             'farmasi.set-penjualan.show',
             'farmasi.set-penjualan.store',

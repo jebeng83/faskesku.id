@@ -73,7 +73,22 @@ class Wilayah extends Model
             ->orderBy('nama');
 
         if ($filter) {
-            $query->where('nama', 'LIKE', '%'.$filter.'%');
+            $tokens = preg_split('/\s+/', trim($filter));
+            foreach ($tokens as $token) {
+                if ($token === '') { continue; }
+                $like = '%'.$token.'%';
+                $query->where(function ($q) use ($like) {
+                    $q->where('nama', 'LIKE', $like)
+                        ->orWhereRaw(
+                            "EXISTS (SELECT 1 FROM wilayah d WHERE d.kode = LEFT(wilayah.kode, 8) AND d.nama LIKE ?)",
+                            [$like]
+                        )
+                        ->orWhereRaw(
+                            "EXISTS (SELECT 1 FROM wilayah r WHERE r.kode = LEFT(wilayah.kode, 5) AND r.nama LIKE ?)",
+                            [$like]
+                        );
+                });
+            }
         }
 
         return $query->limit($limit)->get();
@@ -85,11 +100,6 @@ class Wilayah extends Model
     public static function searchByName($name, $level = null)
     {
         $query = self::query();
-
-        // If name is provided, search by name
-        if ($name) {
-            $query->where('nama', 'LIKE', '%'.$name.'%');
-        }
 
         if ($level) {
             switch ($level) {
@@ -108,7 +118,30 @@ class Wilayah extends Model
             }
         }
 
-        return $query->orderBy('nama')->limit(100)->get(); // Limit to 100 results for performance
+        if ($name) {
+            if ($level === 'village') {
+                $tokens = preg_split('/\s+/', trim($name));
+                foreach ($tokens as $token) {
+                    if ($token === '') { continue; }
+                    $like = '%'.$token.'%';
+                    $query->where(function ($q) use ($like) {
+                        $q->where('nama', 'LIKE', $like)
+                            ->orWhereRaw(
+                                "EXISTS (SELECT 1 FROM wilayah d WHERE d.kode = LEFT(wilayah.kode, 8) AND d.nama LIKE ?)",
+                                [$like]
+                            )
+                            ->orWhereRaw(
+                                "EXISTS (SELECT 1 FROM wilayah r WHERE r.kode = LEFT(wilayah.kode, 5) AND r.nama LIKE ?)",
+                                [$like]
+                            );
+                    });
+                }
+            } else {
+                $query->where('nama', 'LIKE', '%'.$name.'%');
+            }
+        }
+
+        return $query->orderBy('nama')->limit(100)->get();
     }
 
     /**
