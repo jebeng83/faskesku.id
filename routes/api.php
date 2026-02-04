@@ -377,6 +377,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     // API routes untuk diagnosa pasien (Rawat Jalan)
     Route::get('/rawat-jalan/diagnosa', [RawatJalanController::class, 'getDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.index');
     Route::post('/rawat-jalan/diagnosa', [RawatJalanController::class, 'storeDiagnosaPasien'])->name('api.rawat-jalan.diagnosa.store');
+    Route::get('/rawat-jalan/penyakit/search', [RawatJalanController::class, 'searchDiagnosaPenyakit'])->name('api.rawat-jalan.penyakit.search');
 
     // API routes untuk dokter
     Route::get('/dokter', [DokterController::class, 'index'])->name('api.dokter.index');

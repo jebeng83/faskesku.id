@@ -30,8 +30,8 @@ trait BpjsTraits
             'user_key' => (string) (($row?->userkey_pcare ?? '') !== '' ? ($row?->userkey_pcare ?? '') : (config('bpjs.pcare.user_key') ?? '')),
             'user' => $row?->user_pcare ?? config('bpjs.pcare.user'),
             'pass' => $row?->pass_pcare ?? config('bpjs.pcare.pass'),
-            // kode_ppk diutamakan dari config; jika null, fallback ke tabel 'setting'
-            'kode_ppk' => config('bpjs.pcare.kode_ppk') ?: ($setting->kode_ppk ?? null),
+            // kode_ppk diutamakan dari tabel 'setting'; jika null, fallback ke config/env
+            'kode_ppk' => ($setting->kode_ppk ?? null) ?: config('bpjs.pcare.kode_ppk'),
             'app_code' => config('bpjs.pcare.app_code'),
         ];
     }

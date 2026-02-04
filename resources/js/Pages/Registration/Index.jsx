@@ -1152,95 +1152,83 @@ export default function Registration({
             }
 
             if (response.data.success === true || response.data.success === 'true' || response.data.success === 1) {
-                alert(response.data.message || (isEditMode ? 'Registrasi berhasil diperbarui!' : 'Registrasi berhasil!'));
+                let mainMessage = response.data.message || (isEditMode ? 'Registrasi berhasil diperbarui!' : 'Registrasi berhasil!');
+                let showMainAlert = true;
+
                 // Simpan tanggal registrasi yang baru dibuat untuk filter
                 const newRegDate = response.data.data?.tgl_registrasi || formData.tgl_registrasi || todayDateString();
                 
                 // Setelah registrasi lokal berhasil, kirim antrean ke Mobile JKN hanya jika jenis bayar diizinkan (BPJ/PBI/NON)
-                try {
-                    if (!isJenisBayarAllowedForAntrean(formData.kd_pj)) {
-                        // Jenis bayar selain BPJ/PBI: hanya simpan lokal, tidak kirim antrean dan tidak tampilkan popup
+                // Cek hasil BPJS dari backend (jika ada) - tidak perlu call ulang ke /api/mobilejkn/antrean/add
+                if (response.data.bpjs) {
+                    const bpjs = response.data.bpjs;
+                    const mjResData = bpjs.response || {};
+                    const httpStatus = bpjs.http_status || 200;
+                    
+                    // Jika status selain 200, tampilkan popup respon BPJS
+                    if (httpStatus !== 200) {
+                        // Tetap tampilkan alert utama dulu karena registrasi lokal sukses
+                        alert(mainMessage);
+                        showMainAlert = false;
+
+                        openBpjsPopup({
+                            status: httpStatus,
+                            message: bpjs.meta_message || "BPJS Mobile JKN mengembalikan status selain 200",
+                            data: mjResData,
+                            raw: JSON.stringify(mjResData, null, 2),
+                        });
                     } else {
-                        const reg = response.data.data || {};
-                        const mjRes = await axios.post(
-                            "/api/mobilejkn/antrean/add",
-                            {
-                                no_rkm_medis: selectedPatient.no_rkm_medis,
-                                kd_poli: formData.kd_poli,
-                                kd_dokter: formData.kd_dokter,
-                                tanggalperiksa: reg.tgl_registrasi,
-                                no_reg: reg.no_reg,
-                            }
-                        );
-                        // Jika status selain 200, tampilkan popup respon BPJS
-                        if (mjRes?.status !== 200) {
-                            openBpjsPopup({
-                                status: mjRes?.status,
-                                message:
-                                    mjRes?.data?.metaData?.message ||
-                                    mjRes?.data?.metadata?.message ||
-                                    "BPJS Mobile JKN mengembalikan status selain 200",
-                                data: mjRes?.data ?? null,
-                                raw:
-                                    typeof mjRes?.data === "string"
-                                        ? mjRes.data
-                                        : JSON.stringify(
-                                              mjRes?.data ?? {},
-                                              null,
-                                              2
-                                          ),
-                            });
-                        } else {
-                            // Status HTTP 200, tetapi perlu cek metaData.code dan pesan kegagalan pada body
-                            const meta =
-                                mjRes?.data?.metaData ??
-                                mjRes?.data?.metadata ??
-                                {};
-                            const codeNum = Number(meta?.code ?? 200);
-                            const msgStr = String(meta?.message ?? "").trim();
-                            const looksLikeFailure =
-                                codeNum !== 200 ||
-                                /skrining kesehatan|gagal|tidak/i.test(msgStr);
-                            if (looksLikeFailure) {
-                                openBpjsPopup({
-                                    status: 200,
-                                    message:
-                                        msgStr ||
-                                        "Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200",
-                                    data: mjRes?.data ?? null,
-                                    raw:
-                                        typeof mjRes?.data === "string"
-                                            ? mjRes.data
-                                            : JSON.stringify(
-                                                  mjRes?.data ?? {},
-                                                  null,
-                                                  2
-                                              ),
-                                });
-                            }
-                        }
+                         // Status HTTP 200, cek metadata code
+                         const meta = mjResData.metadata || mjResData.metaData || {};
+                         const codeNum = Number(meta.code || 200);
+                         const msgStr = String(meta.message || "").trim();
+                         const looksLikeFailure = codeNum !== 200 || /skrining kesehatan|gagal|tidak/i.test(msgStr);
+                         
+                         if (looksLikeFailure) {
+                             // Tetap tampilkan alert utama dulu karena registrasi lokal sukses
+                             alert(mainMessage);
+                             showMainAlert = false;
+
+                             openBpjsPopup({
+                                 status: 200,
+                                 message: msgStr || "Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200",
+                                 data: mjResData,
+                                 raw: JSON.stringify(mjResData, null, 2),
+                             });
+                         } else {
+                             // SUCCESS: Gabungkan pesan sukses BPJS ke alert utama
+                             const antrean = mjResData.response?.antrean || mjResData.response || {};
+                             const noAntrean = antrean.nomorantrean || antrean.noantrean || '-';
+                             const angkaAntrean = antrean.angkaantrean || '-';
+                             const estimasi = antrean.estimasi || antrean.estimasidilayani || '';
+                             
+                             let bpjsMsg = `\n\nAmbil antrean JKN berhasil.\nNo Antrean: ${noAntrean}`;
+                             if (estimasi) {
+                                 // Format estimasi dari timestamp jika perlu, atau tampilkan raw jika sudah format jam
+                                 // Asumsi estimasi adalah timestamp milidetik
+                                 let jamEstimasi = '';
+                                 try {
+                                     const estDate = new Date(Number(estimasi));
+                                     if (!isNaN(estDate.getTime())) {
+                                          jamEstimasi = estDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                                     } else {
+                                         jamEstimasi = String(estimasi);
+                                     }
+                                 } catch (_) {
+                                     jamEstimasi = String(estimasi);
+                                 }
+                                 if (jamEstimasi) bpjsMsg += `\nEstimasi: ${jamEstimasi}`;
+                             }
+                             
+                             mainMessage += bpjsMsg;
+                             
+                             // Jangan panggil openBpjsPopup untuk sukses, cukup alert gabungan
+                         }
                     }
-                } catch (err) {
-                    // Tampilkan popup respon BPJS dengan detail error
-                    openBpjsPopup({
-                        status: err?.response?.status ?? null,
-                        message:
-                            err?.response?.data?.metaData?.message ||
-                            err?.response?.data?.metadata?.message ||
-                            err?.message ||
-                            "Gagal mengirim antrean ke Mobile JKN",
-                        data: err?.response?.data ?? null,
-                        raw:
-                            typeof err?.response?.data === "string"
-                                ? err.response.data
-                                : JSON.stringify(
-                                      err?.response?.data ?? {
-                                          error: err?.message,
-                                      },
-                                      null,
-                                      2
-                                  ),
-                    });
+                }
+
+                if (showMainAlert) {
+                    alert(mainMessage);
                 }
 
                 // Reset form dan modal terlebih dahulu

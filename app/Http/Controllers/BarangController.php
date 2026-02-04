@@ -19,14 +19,21 @@ class BarangController extends Controller
                 ]);
             }
 
+            $kdBangsal = $request->query('kd_bangsal', '');
+
             $barang = DB::table('databarang')
                 ->select(
                     'kode_brng',
                     'nama_brng',
                     'kode_sat',
                     'h_beli',
+                    'ralan',
+                    'beliluar',
+                    'jualbebas',
+                    'karyawan',
                     'stokminimal',
-                    'letak_barang'
+                    'letak_barang',
+                    'expire'
                 )
                 ->where(function ($q) use ($query) {
                     $q->where('nama_brng', 'LIKE', '%'.$query.'%')
@@ -35,6 +42,40 @@ class BarangController extends Controller
                 ->orderBy('nama_brng')
                 ->limit(20)
                 ->get();
+
+            if ($kdBangsal) {
+                $batchOn = strtolower(env('AKTIFKANBATCHOBAT', 'Yes')) === 'yes';
+                foreach ($barang as $item) {
+                    $last = DB::table('riwayat_barang_medis')
+                        ->where('kode_brng', $item->kode_brng)
+                        ->where('kd_bangsal', $kdBangsal)
+                        ->orderBy('tanggal', 'desc')
+                        ->orderBy('jam', 'desc')
+                        ->first();
+
+                    if ($last) {
+                        $item->stok = (float) ($last->stok_akhir ?? 0);
+                    } else {
+                        $qStok = DB::table('gudangbarang')
+                            ->where('kode_brng', $item->kode_brng)
+                            ->where('kd_bangsal', $kdBangsal);
+
+                        if ($batchOn) {
+                            $qStok->where('no_batch', '<>', '')->where('no_faktur', '<>', '');
+                        } else {
+                            $qStok->where('no_batch', '=', '')->where('no_faktur', '=', '');
+                        }
+
+                        $item->stok = (float) ($qStok->sum('stok') ?? 0);
+                    }
+                    $item->id = $item->kode_brng;
+                }
+            } else {
+                foreach ($barang as $item) {
+                    $item->stok = $item->stokminimal;
+                    $item->id = $item->kode_brng;
+                }
+            }
 
             return response()->json([
                 'success' => true,

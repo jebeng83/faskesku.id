@@ -2233,8 +2233,18 @@ class PcareController extends Controller
         if ($kdPoliRs !== '') {
             $mapPoli = DB::table('maping_poliklinik_pcare')->where('kd_poli_rs', $kdPoliRs)->first();
         }
-        $kdPoli = $mapPoli?->kd_poli_pcare ?: $kdPoliRs ?: '';
+
+        // Gunakan kd_poli_pcare dari pemetaan. Jangan fallback ke kdPoliRs karena BPJS akan menolak kode lokal (error 412).
+        $kdPoli = $mapPoli?->kd_poli_pcare ?? '';
         $nmPoli = $mapPoli?->nm_poli_pcare ?: (DB::table('poliklinik')->where('kd_poli', $kdPoliRs)->value('nm_poli') ?: '');
+
+        // Jika tidak ada pemetaan, BPJS akan menolak request. Kita beri tahu user via log/response.
+        if ($kdPoli === '') {
+            \Illuminate\Support\Facades\Log::channel('bpjs')->warning('Pemetaan poliklinik PCare tidak ditemukan', [
+                'no_rawat' => $noRawat,
+                'kd_poli_rs' => $kdPoliRs,
+            ]);
+        }
 
         // Konfigurasi provider
         $cfg = $this->pcareConfig();
@@ -2503,29 +2513,31 @@ class PcareController extends Controller
             $tglDb = date('Y-m-d');
         }
 
-        DB::table('pcare_pendaftaran')->insert([
-            'no_rawat' => $noRawat,
-            'tglDaftar' => $tglDb,
-            'no_rkm_medis' => (string) ($reg->no_rkm_medis ?? ''),
-            'nm_pasien' => (string) ($pasien->nm_pasien ?? ''),
-            'kdProviderPeserta' => $kdProviderPeserta,
-            'noKartu' => $noKartu,
-            'kdPoli' => $kdPoli,
-            'nmPoli' => $nmPoli,
-            'keluhan' => (string) ($keluhan ?? ''),
-            'kunjSakit' => $kunjStr,
-            'sistole' => (string) $sistole,
-            'diastole' => (string) $diastole,
-            'beratBadan' => (string) $beratBadan,
-            'tinggiBadan' => (string) $tinggiBadan,
-            'respRate' => (string) $respRate,
-            'lingkar_perut' => (string) $lingkarPerut,
-            'heartRate' => (string) $heartRate,
-            'rujukBalik' => '0',
-            'kdTkp' => $kdTkpStr,
-            'noUrut' => $noUrut,
-            'status' => $success ? 'Terkirim' : 'Gagal',
-        ]);
+        DB::table('pcare_pendaftaran')->updateOrInsert(
+            ['no_rawat' => $noRawat],
+            [
+                'tglDaftar' => $tglDb,
+                'no_rkm_medis' => (string) ($reg->no_rkm_medis ?? ''),
+                'nm_pasien' => (string) ($pasien->nm_pasien ?? ''),
+                'kdProviderPeserta' => $kdProviderPeserta,
+                'noKartu' => $noKartu,
+                'kdPoli' => $kdPoli,
+                'nmPoli' => $nmPoli,
+                'keluhan' => (string) ($keluhan ?? ''),
+                'kunjSakit' => $kunjStr,
+                'sistole' => (string) $sistole,
+                'diastole' => (string) $diastole,
+                'beratBadan' => (string) $beratBadan,
+                'tinggiBadan' => (string) $tinggiBadan,
+                'respRate' => (string) $respRate,
+                'lingkar_perut' => (string) $lingkarPerut,
+                'heartRate' => (string) $heartRate,
+                'rujukBalik' => '0',
+                'kdTkp' => $kdTkpStr,
+                'noUrut' => $noUrut,
+                'status' => $success ? 'Terkirim' : 'Gagal',
+            ]
+        );
     }
 
     /**

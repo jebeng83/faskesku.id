@@ -52,6 +52,7 @@ export default function RiwayatBarangMedis() {
     const [from, setFrom] = useState(getMonthStartString());
     const [to, setTo] = useState(getMonthEndString());
     const [kodeBrng, setKodeBrng] = useState("");
+    const [kdBangsal, setKdBangsal] = useState("");
     const [posisi, setPosisi] = useState("");
     const [statusRiwayat, setStatusRiwayat] = useState("");
     const [items, setItems] = useState([]);
@@ -71,7 +72,7 @@ export default function RiwayatBarangMedis() {
         if (controllerRef.current) {
             try {
                 controllerRef.current.abort();
-            } catch {}
+            } catch { }
         }
         const ac = new AbortController();
         controllerRef.current = ac;
@@ -84,6 +85,7 @@ export default function RiwayatBarangMedis() {
                         from,
                         to,
                         kode_brng: kodeBrng.trim(),
+                        kd_bangsal: kdBangsal.trim(),
                         posisi: posisi.trim(),
                         status: statusRiwayat.trim(),
                         page,
@@ -127,6 +129,11 @@ export default function RiwayatBarangMedis() {
         fetchData({ page: 1 });
     }, [kodeBrng]);
 
+    useEffect(() => {
+        setPage(1);
+        fetchData({ page: 1 });
+    }, [kdBangsal]);
+
     const triggerSearch = () => {
         setPage(1);
         fetchData({ page: 1 });
@@ -136,6 +143,7 @@ export default function RiwayatBarangMedis() {
         setFrom(getMonthStartString());
         setTo(getMonthEndString());
         setKodeBrng("");
+        setKdBangsal("");
         setPosisi("");
         setStatusRiwayat("");
         setPage(1);
@@ -215,8 +223,8 @@ export default function RiwayatBarangMedis() {
                                             typeof opt === "string"
                                                 ? opt
                                                 : opt?.kode_brng ??
-                                                  opt?.value ??
-                                                  "";
+                                                opt?.value ??
+                                                "";
                                         setPage(1);
                                         // Kirim nilai terpilih langsung sebagai override agar tidak terpengaruh delay setState
                                         fetchData({
@@ -228,6 +236,32 @@ export default function RiwayatBarangMedis() {
                                     searchPlaceholder="Cari nama/kode barang"
                                     className="w-full"
                                     defaultDisplay={kodeBrng || null}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                    Lokasi
+                                </label>
+                                <SearchableSelect
+                                    source="bangsal"
+                                    value={kdBangsal}
+                                    onChange={(val) => setKdBangsal(val)}
+                                    onSelect={(opt) => {
+                                        const selectedBangsal =
+                                            typeof opt === "string"
+                                                ? opt
+                                                : opt?.kd_bangsal ??
+                                                opt?.value ??
+                                                "";
+                                        setPage(1);
+                                        fetchData({
+                                            page: 1,
+                                            kd_bangsal: selectedBangsal,
+                                        });
+                                    }}
+                                    placeholder="Semua Lokasi"
+                                    className="w-full"
+                                    defaultDisplay={kdBangsal || null}
                                 />
                             </div>
                             <div className="flex items-end gap-2">

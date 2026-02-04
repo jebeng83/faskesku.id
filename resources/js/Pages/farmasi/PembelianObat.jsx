@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import { Head, usePage } from "@inertiajs/react";
 import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
 import { toast } from "@/tools/toast";
@@ -100,81 +101,49 @@ export default function PembelianObat() {
     const fetchDropdownData = async () => {
         try {
             // Fetch suppliers
-            const suppliersResponse = await fetch("/api/pembelian/supplier");
-            if (suppliersResponse.ok) {
-                const suppliersResult = await suppliersResponse.json();
-                if (suppliersResult.success) {
-                    setSuppliers(suppliersResult.data);
-                } else {
-                    console.error(
-                        "Failed to fetch suppliers:",
-                        suppliersResult.message
-                    );
-                }
+            const suppliersResponse = await axios.get("/api/pembelian/supplier");
+            if (suppliersResponse.data.success) {
+                setSuppliers(suppliersResponse.data.data);
             } else {
                 console.error(
-                    "Suppliers API request failed:",
-                    suppliersResponse.status
+                    "Failed to fetch suppliers:",
+                    suppliersResponse.data.message
                 );
             }
 
             // Fetch pegawai
             const timestamp = new Date().getTime();
-            const pegawaiResponse = await fetch(
+            const pegawaiResponse = await axios.get(
                 `/api/pembelian/petugas?t=${timestamp}`
             );
-            if (pegawaiResponse.ok) {
-                const pegawaiResult = await pegawaiResponse.json();
-                if (pegawaiResult.success) {
-                    setPegawai(pegawaiResult.data);
-                } else {
-                    console.error(
-                        "Failed to fetch pegawai:",
-                        pegawaiResult.message
-                    );
-                }
+            if (pegawaiResponse.data.success) {
+                setPegawai(pegawaiResponse.data.data);
             } else {
                 console.error(
-                    "Pegawai API request failed:",
-                    pegawaiResponse.status
+                    "Failed to fetch pegawai:",
+                    pegawaiResponse.data.message
                 );
             }
 
             // Fetch bangsal
-            const bangsalResponse = await fetch("/api/pembelian/lokasi");
-            if (bangsalResponse.ok) {
-                const bangsalResult = await bangsalResponse.json();
-                if (bangsalResult.success) {
-                    setBangsal(bangsalResult.data);
-                } else {
-                    console.error(
-                        "Failed to fetch bangsal:",
-                        bangsalResult.message
-                    );
-                }
+            const bangsalResponse = await axios.get("/api/pembelian/lokasi");
+            if (bangsalResponse.data.success) {
+                setBangsal(bangsalResponse.data.data);
             } else {
                 console.error(
-                    "Bangsal API request failed:",
-                    bangsalResponse.status
+                    "Failed to fetch bangsal:",
+                    bangsalResponse.data.message
                 );
             }
 
             // Fetch akun bayar
-            const akunBayarResponse = await fetch("/api/pembelian/akun-bayar");
-            if (akunBayarResponse.ok) {
-                const akunBayarResult = await akunBayarResponse.json();
-                if (akunBayarResult.success) {
-                    setAkunBayar(akunBayarResult.data);
-                } else {
-                    console.error(
-                        "Failed to fetch akun bayar:",
-                        akunBayarResult.message
-                    );
-                }
+            const akunBayarResponse = await axios.get("/api/pembelian/akun-bayar");
+            if (akunBayarResponse.data.success) {
+                setAkunBayar(akunBayarResponse.data.data);
             } else {
                 console.error(
-                    "Akun bayar API request failed:",
-                    akunBayarResponse.status
+                    "Failed to fetch akun bayar:",
+                    akunBayarResponse.data.message
                 );
             }
         } catch (error) {
@@ -197,15 +166,25 @@ export default function PembelianObat() {
         grandTotal: 0,
     });
 
+    const defaultBangsal = useMemo(() => {
+        const ap = bangsal.find(
+            (b) =>
+                String(b?.kd_bangsal || "").toUpperCase() === "AP" ||
+                String(b?.nm_bangsal || "")
+                    .toLowerCase()
+                    .includes("apotek")
+        );
+        return ap || (bangsal.length ? bangsal[0] : null);
+    }, [bangsal]);
+
     // Fungsi untuk generate nomor faktur
     const generateNoFaktur = async () => {
         try {
             // Tambahkan timestamp untuk mencegah caching
             const timestamp = new Date().getTime();
-            const response = await fetch(
+            const response = await axios.get(
                 `/api/pembelian/generate-no-faktur?t=${timestamp}`,
                 {
-                    method: "GET",
                     headers: {
                         "Cache-Control": "no-cache, no-store, must-revalidate",
                         Pragma: "no-cache",
@@ -213,7 +192,7 @@ export default function PembelianObat() {
                     },
                 }
             );
-            const data = await response.json();
+            const data = response.data;
 
             if (data.success) {
                 return data.no_faktur;
@@ -246,10 +225,9 @@ export default function PembelianObat() {
     const generateNoOrder = async () => {
         try {
             const timestamp = new Date().getTime();
-            const response = await fetch(
+            const response = await axios.get(
                 `/api/pemesanan/generate-no-order?t=${timestamp}`,
                 {
-                    method: "GET",
                     headers: {
                         "Cache-Control": "no-cache, no-store, must-revalidate",
                         Pragma: "no-cache",
@@ -257,7 +235,7 @@ export default function PembelianObat() {
                     },
                 }
             );
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 return data.no_order;
             } else {
@@ -275,6 +253,15 @@ export default function PembelianObat() {
             return `PO-${year}${month}${day}-001`;
         }
     };
+
+    useEffect(() => {
+        if (!formData.kd_bangsal && defaultBangsal) {
+            setFormData((prev) => ({
+                ...prev,
+                kd_bangsal: defaultBangsal.kd_bangsal,
+            }));
+        }
+    }, [defaultBangsal, formData.kd_bangsal]);
 
     // Load data saat komponen dimount
     useEffect(() => {
@@ -334,19 +321,13 @@ export default function PembelianObat() {
         }
 
         try {
-            const response = await fetch(
-                `/api/barang/search?q=${encodeURIComponent(term)}`
+            const response = await axios.get(
+                `/api/barang/search?q=${encodeURIComponent(term)}&kd_bangsal=${formData.kd_bangsal}`
             );
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    setSearchResults(result.data);
-                } else {
-                    console.error("Search failed:", result.message);
-                    setSearchResults([]);
-                }
+            if (response.data.success) {
+                setSearchResults(response.data.data);
             } else {
-                console.error("Search request failed:", response.status);
+                console.error("Search failed:", response.data.message);
                 setSearchResults([]);
             }
         } catch (error) {
@@ -500,20 +481,19 @@ export default function PembelianObat() {
         return req.filter(([k]) => !fd[k]).map(([, label]) => label);
     };
 
-    const extractErrorMessage = async (response) => {
-        try {
-            const contentType = response.headers.get("content-type") || "";
-            if (contentType.includes("application/json")) {
-                const data = await response.json();
-                return (
-                    data.message ||
-                    `Server error: ${response.status} ${response.statusText}`
-                );
-            }
-            return `Server error: ${response.status} ${response.statusText}`;
-        } catch {
-            return `Server error: ${response.status} ${response.statusText}`;
+    const extractErrorMessage = (error) => {
+        if (error.response) {
+            // Error dari server (4xx, 5xx)
+            const data = error.response.data;
+            if (typeof data === "string") return data;
+            return data.message || `Server error: ${error.response.status}`;
         }
+        if (error.request) {
+            // Request dikirim tapi tidak ada jawaban
+            return "Tidak ada respon dari server. Silakan cek koneksi internet Anda.";
+        }
+        // Error lainnya (setup request)
+        return error.message || "Terjadi kesalahan yang tidak diketahui";
     };
 
     const resolveKodeSat = (obj) => {
@@ -624,19 +604,12 @@ export default function PembelianObat() {
                     })),
                 };
 
-                const response = await fetch("/api/pemesanan/store", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
-                });
-
-                if (response.ok) {
+                try {
+                    await axios.post("/api/pemesanan/store", payload);
                     toast(successToastFor("pemesanan"), "success");
                     await resetAfterSuccess("pemesanan");
-                } else {
-                    const errorMessage = await extractErrorMessage(response);
+                } catch (error) {
+                    const errorMessage = extractErrorMessage(error);
                     toast(
                         errorToastPrefixFor("pemesanan") + errorMessage,
                         "error"
@@ -692,53 +665,31 @@ export default function PembelianObat() {
                 })),
             };
 
-            const response = await fetch("/api/pembelian/store", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
+            await axios.post("/api/pembelian/store", payload);
+            toast(successToastFor("pembelian"), "success");
 
-            if (response.ok) {
-                toast(successToastFor("pembelian"), "success");
-                try {
-                    const postRes = await fetch(
-                        "/api/akutansi/jurnal/post-staging",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Accept: "application/json",
-                            },
-                            body: JSON.stringify({
-                                no_bukti: formData.no_faktur,
-                                jenis: "U",
-                                keterangan: `Posting otomatis Pembelian Obat no_faktur ${formData.no_faktur}`,
-                            }),
-                        }
-                    );
-                    if (postRes.ok) {
-                        toast(
-                            "Jurnal akutansi berhasil diposting dari tampjurnal",
-                            "success"
-                        );
-                    } else {
-                        const msg = await extractErrorMessage(postRes);
-                        toast("Gagal posting jurnal: " + msg, "error");
+            try {
+                await axios.post(
+                    "/api/akutansi/jurnal/post-staging",
+                    {
+                        no_bukti: formData.no_faktur,
+                        jenis: "U",
+                        keterangan: `Posting otomatis Pembelian Obat no_faktur ${formData.no_faktur}`,
                     }
-                } catch (err) {
-                    console.error("Error posting jurnal pembelian:", err);
-                    toast("Terjadi kesalahan saat posting jurnal", "error");
-                }
-                await resetAfterSuccess("pembelian");
-            } else {
-                const errorMessage = await extractErrorMessage(response);
-                toast(errorToastPrefixFor("pembelian") + errorMessage, "error");
+                );
+                toast(
+                    "Jurnal akutansi berhasil diposting dari tampjurnal",
+                    "success"
+                );
+            } catch (err) {
+                const msg = extractErrorMessage(err);
+                toast("Gagal posting jurnal: " + msg, "error");
             }
+
+            await resetAfterSuccess("pembelian");
         } catch (error) {
-            console.error("Error saving data:", error);
-            toast("Terjadi kesalahan saat menyimpan data", "error");
+            const errorMessage = extractErrorMessage(error);
+            toast(errorToastPrefixFor("pembelian") + errorMessage, "error");
         }
     };
 
@@ -1503,7 +1454,7 @@ export default function PembelianObat() {
                                 {/* Search Results */}
                                 <div className="overflow-y-auto max-h-96">
                                     {searchResults.length === 0 &&
-                                    searchTerm.length >= 2 ? (
+                                        searchTerm.length >= 2 ? (
                                         <div className="text-center py-8 text-gray-500">
                                             Tidak ada barang yang ditemukan
                                         </div>
@@ -1558,10 +1509,9 @@ export default function PembelianObat() {
                                                                     0
                                                                 ).toLocaleString()}
                                                             </div>
-                                                            <div className="text-sm text-gray-500">
-                                                                Stok:{" "}
-                                                                {barang.stokminimal ||
-                                                                    0}
+                                                            <div className="text-sm font-medium text-blue-600">
+                                                                Stok ({formData.kd_bangsal || 'Semua'}):{" "}
+                                                                {barang.stok || 0}
                                                             </div>
                                                         </div>
                                                     </div>
