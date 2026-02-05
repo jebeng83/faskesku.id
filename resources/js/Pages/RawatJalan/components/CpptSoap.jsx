@@ -6,7 +6,7 @@ import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser } from 'lucide-react';
+import { Eraser, Activity, FileText } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -1669,9 +1669,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     useEffect(() => {
         const checkRujukanSubspesialis = async () => {
-            if (!noRawat) { setRujukanBerhasil(false); return; }
-            const shouldCheck = rujukanActive || rujukanBerhasil;
-            if (!shouldCheck) { setRujukanBerhasil(false); setPcareRujukanSubspesialis(null); return; }
+            if (!noRawat) { 
+                setRujukanBerhasil(false); 
+                setPcareRujukanSubspesialis(null);
+                return; 
+            }
+            // Always check if noRawat exists, regardless of rujukanActive state
+            // This ensures we display existing referral data as requested
             try {
                 const url = `/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`;
                 const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -1683,20 +1687,31 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         setPcareRujukanSubspesialis(data);
                         if (data.noKunjungan) { setLastNoKunjungan(data.noKunjungan); }
                     } else {
+                        // Only clear if we are NOT in active referral mode (to avoid clearing form during entry)
+                        // But here we are fetching from server. If server has no data, we should probably reflect that,
+                        // unless we are currently creating one?
+                        // If rujukanActive is true, we might be in the middle of creating one.
+                        // But this fetch is by noRawat (existing data).
+                        if (!rujukanActive) {
+                            setRujukanBerhasil(false);
+                            setPcareRujukanSubspesialis(null);
+                        }
+                    }
+                } else {
+                    if (!rujukanActive) {
                         setRujukanBerhasil(false);
                         setPcareRujukanSubspesialis(null);
                     }
-                } else {
+                }
+            } catch {
+                if (!rujukanActive) {
                     setRujukanBerhasil(false);
                     setPcareRujukanSubspesialis(null);
                 }
-            } catch {
-                setRujukanBerhasil(false);
-                setPcareRujukanSubspesialis(null);
             }
         };
         checkRujukanSubspesialis();
-    }, [noRawat, rujukanActive, rujukanBerhasil]);
+    }, [noRawat, rujukanActive]);
 
     // Monitor perubahan state rujukanBerhasil untuk debugging
     useEffect(() => {
@@ -2636,7 +2651,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full md:max-w-5xl mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                             <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Bridging PCare</h3>
                             <button onClick={closeBridgingModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
@@ -2647,22 +2662,84 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                         <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
                             {/* 1. Pendaftaran PCare */}
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-4 overflow-x-hidden">
-                                <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 mb-2">Pendaftaran PCare</h4>
-                                {pcarePendaftaran ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
-                                        <div><span className="font-medium">No Rawat:</span> {pcarePendaftaran.no_rawat}</div>
-                                        <div><span className="font-medium">No Kartu:</span> {pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</div>
-                                        <div><span className="font-medium">Tgl Daftar:</span> {pcarePendaftaran.tglDaftar || '-'}</div>
-                                        <div><span className="font-medium">Kd Poli:</span> {pcarePendaftaran.kdPoli || '-'}</div>
-                                        <div><span className="font-medium">Keluhan:</span> {pcarePendaftaran.keluhan || '-'}</div>
-                                        <div><span className="font-medium">Sistole/Diastole:</span> {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}</div>
-                                        <div><span className="font-medium">Berat/Tinggi:</span> {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''}kg / ${pcarePendaftaran.tinggiBadan || ''}cm` : '-'}</div>
-                                        <div><span className="font-medium">Resp/HR:</span> {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}</div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
-                                )}
+                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg overflow-hidden">
+                                <div className="px-4 py-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                    <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Pendaftaran PCare</h4>
+                                </div>
+                                <div className="p-4">
+                                    {pcarePendaftaran ? (
+                                        <div className="space-y-4">
+                                            {/* Baris 1: Identitas */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Rawat</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Kartu</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Tgl Daftar</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Kd Poli</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Baris 2: Vital Signs */}
+                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-3 border border-indigo-100 dark:border-indigo-800/50">
+                                                <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                                                    <Activity className="w-3.5 h-3.5" />
+                                                    Tanda Vital
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Tekanan Darah</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">mmHg</span>
+                                                    </div>
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Resp / HR</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">x/menit</span>
+                                                    </div>
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">BB / TB</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''} / ${pcarePendaftaran.tinggiBadan || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">kg / cm</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Baris 3: Keluhan */}
+                                            <div>
+                                                <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Keluhan Utama</span>
+                                                <div className="bg-white dark:bg-gray-800 p-2.5 rounded border border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200 italic">
+                                                    "{pcarePendaftaran.keluhan || '-'}"
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                                            <FileText className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                                            <p className="text-sm">Data pendaftaran belum tersedia.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* 2. Kunjungan PCare */}
@@ -2673,337 +2750,333 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="space-y-2">
                                         {/* Form Kunjungan PCare */}
                                         {kunjunganPreview && (
-                                            <div className="space-y-3">
-                                                {/* 1 baris: No Kartu BPJS, Tanggal Daftar, KD Poli, KD Dokter */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">No Kartu BPJS</label>
-                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Tanggal Daftar</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">KD Poli (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={poliOptions}
-                                                            value={kunjunganPreview.kdPoli ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdPoli', val)}
-                                                            placeholder="Pilih Poli"
-                                                            className="text-xs"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">KD Dokter (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={dokterOptions}
-                                                            value={kunjunganPreview.kdDokter ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDokter', val)}
-                                                            placeholder="Pilih Dokter"
-                                                            className="text-xs"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Keluhan, Anamnesa */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Keluhan</label>
-                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Anamnesa</label>
-                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                            <div className="space-y-4">
+                                                {/* GROUP 1: ADMINISTRASI & DOKTER */}
+                                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-md border border-emerald-200 dark:border-emerald-700">
+                                                    <h5 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-3 uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-700 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .667.333 1 1 1v1m0-1h2" /></svg>
+                                                        Administrasi & Dokter
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">No Kartu BPJS</label>
+                                                            <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Tanggal Daftar</label>
+                                                            <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">KD Poli (PCare)</label>
+                                                            <SearchableSelect
+                                                                options={poliOptions}
+                                                                value={kunjunganPreview.kdPoli ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdPoli', val)}
+                                                                placeholder="Pilih Poli"
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">KD Dokter (PCare)</label>
+                                                            <SearchableSelect
+                                                                options={dokterOptions}
+                                                                value={kunjunganPreview.kdDokter ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDokter', val)}
+                                                                placeholder="Pilih Dokter"
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* 1 baris: Sistole, Diastole, Berat, Tinggi */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Sistole</label>
-                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Diastole</label>
-                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Berat Badan (kg)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Tinggi Badan (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                {/* GROUP 2: KLINIS & VITAL SIGNS */}
+                                                <div className="bg-gray-50 dark:bg-gray-800/20 p-3 rounded-md border border-gray-100 dark:border-gray-700">
+                                                    <h5 className="text-xs font-bold text-gray-800 dark:text-gray-300 mb-3 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                        Klinis & Tanda Vital
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                        <div className="lg:col-span-1 space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Keluhan</label>
+                                                                <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Anamnesa</label>
+                                                                <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3 content-start">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Sistole</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">mmHg</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Diastole</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">mmHg</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Berat (kg)</label>
+                                                                <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Tinggi (cm)</label>
+                                                                <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Resp Rate</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">x/m</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Heart Rate</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">x/m</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Lingkar Perut</label>
+                                                                <div className="relative"><input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">cm</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Suhu</label>
+                                                                <div className="relative"><input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-6" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">°C</span></div>
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <label className="block text-xs font-bold mb-0.5">KD Prognosa</label>
+                                                                <SearchableSelect
+                                                                    source="prognosa"
+                                                                    value={kunjunganPreview.kdPrognosa ?? '02'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('kdPrognosa', val);
+                                                                        if (!val) updateKunjunganField('nmPrognosa', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmPrognosa', label);
+                                                                    }}
+                                                                    placeholder="Pilih Prognosa"
+                                                                    searchPlaceholder="Cari prognosa…"
+                                                                    defaultDisplay="Bonam (Baik)"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <label className="block text-xs font-bold mb-0.5">KD Sadar</label>
+                                                                <SearchableSelect
+                                                                    source="kesadaran"
+                                                                    value={kunjunganPreview.kdSadar ?? '01'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('kdSadar', val);
+                                                                        if (!val) updateKunjunganField('nmSadar', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmSadar', label);
+                                                                    }}
+                                                                    placeholder="Pilih Kesadaran"
+                                                                    searchPlaceholder="Cari kesadaran…"
+                                                                    defaultDisplay="Compos mentis"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* 1 baris: Resp Rate, Heart Rate, Lingkar Perut, Suhu */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Resp Rate</label>
-                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Heart Rate</label>
-                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Lingkar Perut (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Suhu</label>
-                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Tanggal Pulang, Poli Rujuk Internal, Terapi Non Obat, BMHP */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Tanggal Pulang</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Poli Rujuk Internal (kdPoliRujukInternal)</label>
-                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Terapi Non Obat</label>
-                                                        <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">BMHP</label>
-                                                        <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Status Pulang, Diagnosa Utama, Diagnosa 2, Diagnosa 3 */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Status Pulang (kdStatusPulang)</label>
-                                                        <SearchableSelect
-                                                            source="statuspulang"
-                                                            value={kunjunganPreview.kdStatusPulang ?? ''}
-                                                            onChange={(val) => {
-                                                                // Update kode status pulang
-                                                                updateKunjunganField('kdStatusPulang', val);
-                                                                // Jika kode dikosongkan, kosongkan juga nama status pulang
-                                                                if (!val) updateKunjunganField('nmStatusPulang', '');
-                                                            }}
-                                                            // Saat opsi dipilih, isi nmStatusPulang otomatis dari label referensi
-                                                            onSelect={(opt) => {
-                                                                const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                                updateKunjunganField('nmStatusPulang', label);
-                                                            }}
-                                                            placeholder="Pilih Status Pulang"
-                                                            searchPlaceholder="Cari status pulang…"
-                                                            sourceParams={{ rawatInap: false }}
-                                                            className="text-xs"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa Utama (kdDiag1)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag1 ?? ''}
-                                                            onChange={(val) => {
-                                                                updateKunjunganField('kdDiag1', val);
-                                                                // Reset state jika diagnosa dihapus (value kosong)
-                                                                if (!val || val === '') {
-                                                                    setIsDiagnosaNonSpesialis(false);
-                                                                    setKdTaccVisible(false);
+                                                {/* GROUP 3: DIAGNOSA & TERAPI */}
+                                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-md border border-emerald-100 dark:border-emerald-800">
+                                                    <h5 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-3 uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-800 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                                        Diagnosa & Terapi
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa Utama (kdDiag1)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag1 ?? ''}
+                                                                onChange={(val) => {
+                                                                    updateKunjunganField('kdDiag1', val);
+                                                                    if (!val || val === '') {
+                                                                        setIsDiagnosaNonSpesialis(false);
+                                                                        setKdTaccVisible(false);
+                                                                        setTaccError('');
+                                                                        updateKunjunganField('kdTacc', -1, 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    }
+                                                                }}
+                                                                onSelect={(opt) => {
+                                                                    const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true;
+                                                                    setIsDiagnosaNonSpesialis(isNonSpesialis);
+                                                                    setKdTaccVisible(!!isNonSpesialis);
                                                                     setTaccError('');
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            onSelect={(opt) => {
-                                                                // TACC wajib diisi bila diagnosa NonSpesialis = true
-                                                                const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true;
-                                                                setIsDiagnosaNonSpesialis(isNonSpesialis);
-                                                                setKdTaccVisible(!!isNonSpesialis);
-                                                                setTaccError('');
-                                                                if (isNonSpesialis) {
-                                                                    // Reset kdTacc agar wajib diisi
-                                                                    updateKunjunganField('kdTacc', '', 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                } else {
-                                                                    // Diagnosa Spesialis (nonSpesialis = false): Default Tanpa TACC
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            placeholder="Pilih Diagnosa Utama"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className="text-xs"
-                                                        />
+                                                                    if (isNonSpesialis) {
+                                                                        updateKunjunganField('kdTacc', '', 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    } else {
+                                                                        updateKunjunganField('kdTacc', -1, 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    }
+                                                                }}
+                                                                placeholder="Pilih Diagnosa Utama"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa 2 (kdDiag2)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag2 ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDiag2', val)}
+                                                                placeholder="Pilih Diagnosa 2 (opsional)"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa 3 (kdDiag3)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag3 ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDiag3', val)}
+                                                                placeholder="Pilih Diagnosa 3 (opsional)"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa 2 (kdDiag2)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag2 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag2', val)}
-                                                            placeholder="Pilih Diagnosa 2 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className="text-xs"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Diagnosa 3 (kdDiag3)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag3 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag3', val)}
-                                                            placeholder="Pilih Diagnosa 3 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className="text-xs"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Alergi Makan, Alergi Udara, Alergi Obat, KD Prognosa, KD Sadar */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Alergi Makan</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiMakan ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiMakan', val);
-                                                            if (!val) updateKunjunganField('nmAlergiMakanan', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiMakanan', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Makanan"
-                                                        searchPlaceholder="Cari alergi (makanan)…"
-                                                        sourceParams={{ jenis: '01' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                        className="text-xs"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Alergi Udara</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiUdara ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiUdara', val);
-                                                            if (!val) updateKunjunganField('nmAlergiUdara', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiUdara', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Udara"
-                                                        searchPlaceholder="Cari alergi (udara)…"
-                                                        sourceParams={{ jenis: '02' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                        className="text-xs"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">Alergi Obat</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiObat ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiObat', val);
-                                                            if (!val) updateKunjunganField('nmAlergiObat', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiObat', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Obat"
-                                                        searchPlaceholder="Cari alergi (obat)…"
-                                                        sourceParams={{ jenis: '03' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                        className="text-xs"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">KD Prognosa</label>
-                                                    <SearchableSelect
-                                                        source="prognosa"
-                                                        value={kunjunganPreview.kdPrognosa ?? '02'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdPrognosa', val);
-                                                            if (!val) updateKunjunganField('nmPrognosa', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmPrognosa', label);
-                                                        }}
-                                                        placeholder="Pilih Prognosa"
-                                                        searchPlaceholder="Cari prognosa…"
-                                                        defaultDisplay="Bonam (Baik)"
-                                                        className="text-xs"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-bold mb-0.5">KD Sadar</label>
-                                                    <SearchableSelect
-                                                        source="kesadaran"
-                                                        value={kunjunganPreview.kdSadar ?? '01'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdSadar', val);
-                                                            if (!val) updateKunjunganField('nmSadar', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmSadar', label);
-                                                        }}
-                                                        placeholder="Pilih Kesadaran"
-                                                        searchPlaceholder="Cari kesadaran…"
-                                                        defaultDisplay="Compos mentis"
-                                                        className="text-xs"
-                                                    />
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Terapi Obat</label>
+                                                            <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Terapi Non Obat</label>
+                                                                <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">BMHP</label>
+                                                                <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Terapi Obat - tidak diminta satu baris, tetap terpisah */}
-                                                <div>
-                                                    <label className="block text-xs font-bold mb-0.5">Terapi Obat</label>
-                                                <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs"></textarea>
-                                                <div className="mt-2 flex justify-end">
-                                                    <button
-                                                        type="button"
-                                                        onClick={editKunjungan}
-                                                        disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))}
-                                                        className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium"
-                                                    >
-                                                        Edit Kunjungan
-                                                    </button>
+                                                {/* GROUP 4: DATA TAMBAHAN & KEPULANGAN */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                    {/* Alergi */}
+                                                    <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md border border-amber-100 dark:border-amber-800">
+                                                        <h5 className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-3 uppercase tracking-wider border-b border-amber-200 dark:border-amber-800 pb-1 flex items-center gap-2">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                                            Riwayat Alergi
+                                                        </h5>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Makan</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiMakan ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiMakan', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiMakanan', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiMakanan', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Makanan"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '01' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Udara</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiUdara ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiUdara', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiUdara', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiUdara', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Udara"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '02' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Obat</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiObat ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiObat', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiObat', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiObat', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Obat"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '03' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Kepulangan */}
+                                                    <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-md border border-purple-100 dark:border-purple-800">
+                                                        <h5 className="text-xs font-bold text-purple-800 dark:text-purple-300 mb-3 uppercase tracking-wider border-b border-purple-200 dark:border-purple-800 pb-1 flex items-center gap-2">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                                            Status Pulang
+                                                        </h5>
+                                                        <div className="space-y-3">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <label className="block text-xs font-bold mb-0.5">Tanggal Pulang</label>
+                                                                    <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="block text-xs font-bold mb-0.5">Status Pulang</label>
+                                                                    <SearchableSelect
+                                                                        source="statuspulang"
+                                                                        value={kunjunganPreview.kdStatusPulang ?? ''}
+                                                                        onChange={(val) => {
+                                                                            updateKunjunganField('kdStatusPulang', val);
+                                                                            if (!val) updateKunjunganField('nmStatusPulang', '');
+                                                                        }}
+                                                                        onSelect={(opt) => {
+                                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                            updateKunjunganField('nmStatusPulang', label);
+                                                                        }}
+                                                                        placeholder="Pilih Status Pulang"
+                                                                        searchPlaceholder="Cari status..."
+                                                                        sourceParams={{ rawatInap: false }}
+                                                                        className="text-xs"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Poli Rujuk Internal</label>
+                                                                <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} placeholder="Kode Poli Rujuk Internal (jika ada)" className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            {/* Bagian preview payload dihapus sesuai permintaan untuk membuat popup lebih ringkas */}
-                                        </div>
-                                    )}
+                                        )}
 
-                                        <div className="flex justify-end">
-                                            <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
-                                                {sendingKunjungan ? (
-                                                    <>
-                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Mengirim...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Kirim Kunjungan
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                        {/* Button Kirim Kunjungan removed */}
                                         {kunjunganResult && (
                                             <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
                                                 {kunjunganResult.success ? (
@@ -3027,8 +3100,32 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className={`text-sm font-semibold ${rujukanActive ? 'text-violet-800 dark:text-violet-300' : 'text-gray-700 dark:text-gray-300'}`}>Rujukan PCare</h4>
                                 </div>
-                                {!rujukanActive && (
+                                {!rujukanActive && (!pcareRujukanSubspesialis || !pcareRujukanSubspesialis.noKunjungan) && (
                                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Kartu Rujukan akan terbuka otomatis saat memilih Status Pulang "Rujuk Vertikal" (kode 4).</div>
+                                )}
+                                {!rujukanActive && pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan && (
+                                    <div className="space-y-3 text-sm">
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="font-semibold text-blue-800 dark:text-blue-300">Data Rujukan Tersimpan</div>
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">{pcareRujukanSubspesialis.noKunjungan}</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                                <div>
+                                                    <div className="text-xs text-gray-500">Tanggal Estimasi</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.tglEstRujuk || '-'}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-gray-500">PPK Rujukan</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.nmPPK || pcareRujukanSubspesialis.kdppk || '-'}</div>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <div className="text-xs text-gray-500">Sub Spesialis</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.nmSubSpesialis || pcareRujukanSubspesialis.kdSubSpesialis1 || '-'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                                 {rujukanActive && (
                                     <div className="space-y-3 text-sm">
@@ -3228,9 +3325,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
                             <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
                             <div className="flex items-center gap-2">
-                                <button type="button" onClick={closeBridgingModal} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
                                 <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
                                 <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
+                                <button type="button" onClick={closeBridgingModal} className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm">Tutup</button>
                             </div>
                         </div>
                     </div>
