@@ -2,20 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
-<<<<<<< HEAD
-=======
 import DataAlergi from '../../../Alergi/DataAlergi.jsx';
->>>>>>> Algojo
 import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-<<<<<<< HEAD
-import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
-=======
 import { Eraser, Activity, FileText, HelpCircle, Plus, Save } from 'lucide-react';
 import axios from 'axios';
->>>>>>> Algojo
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -538,8 +531,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Menyimpan payload terakhir untuk template cetak rujukan
     const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
-<<<<<<< HEAD
-=======
     const [dbTemplateOptions, setDbTemplateOptions] = useState([]);
     const [selectedDbTemplate, setSelectedDbTemplate] = useState('');
     const [templateSaving, setTemplateSaving] = useState(false);
@@ -708,7 +699,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             setTemplateSaving(false);
         }
     };
->>>>>>> Algojo
 
     // State untuk Modal Keluar
     const [exitModalOpen, setExitModalOpen] = useState(false);
@@ -2943,8 +2933,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
             </Modal>
 
-<<<<<<< HEAD
-=======
             <DataAlergi open={alergiModalOpen} onClose={() => setAlergiModalOpen(false)} />
 
             <Modal show={showNmTemplateModal} onClose={() => setShowNmTemplateModal(false)} maxWidth="lg">
@@ -2998,7 +2986,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
             </Modal>
 
->>>>>>> Algojo
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
