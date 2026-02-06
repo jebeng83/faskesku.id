@@ -19,7 +19,16 @@ function LanjutanRegistrasiLayout({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
-  
+  // Keep session alive
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch('/keep-alive').catch((err) => {
+        console.error('Failed to keep session alive:', err);
+      });
+    }, 15 * 60 * 1000); // Ping every 15 minutes
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Restore sidebar toggle state from localStorage
   useEffect(() => {

@@ -12,6 +12,17 @@ export default function AppLayout({
     children,
     variant = "default",
 }) {
+    // Keep session alive
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetch('/keep-alive').catch((err) => {
+                console.error('Failed to keep session alive:', err);
+            });
+        }, 15 * 60 * 1000); // Ping every 15 minutes
+
+        return () => clearInterval(interval);
+    }, []);
+
     const page = usePage();
     const { auth, menu_hierarchy, current_menu } = page.props;
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
