@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import usePermission from '@/hooks/usePermission';
 import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
-    const { can } = usePermission();
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -2066,18 +2064,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </>
                         )}
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => setExitModalOpen(true)}
-                        disabled={isSubmitting || exitLoading || !can('edit-appointments')}
-                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
-                        title={!can('edit-appointments') ? 'Anda tidak memiliki akses' : 'Keluar & Update Status'}
-                    >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Keluar
-                    </button>
                     {showBridging && (
                         <button
                             type="button"
@@ -2669,6 +2655,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             Cetak Rujukan
                         </button>
                     )}
+                    <button
+                        type="button"
+                        onClick={() => setExitModalOpen(true)}
+                        disabled={isSubmitting || exitLoading}
+                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+                        title="Keluar & Update Status"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Keluar
+                    </button>
                 </div>
                 </div>
             </form>
