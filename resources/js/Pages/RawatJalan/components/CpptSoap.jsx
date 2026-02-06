@@ -2673,36 +2673,43 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
             </form>
 
-            <Modal show={exitModalOpen} onClose={() => setExitModalOpen(false)} maxWidth="sm">
-                <div className="p-4 sm:p-6">
-                    <div className="flex items-start gap-3">
-                        <HelpCircle className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                            <h2 className="text-lg font-normal text-gray-900 dark:text-gray-100 mb-1">
-                                Konfirmasi Selesai
-                            </h2>
-                            <p className="text-base font-medium text-gray-800 dark:text-gray-200">
-                                Apakah pelayanan pasien ini sudah selesai?
-                            </p>
+            <Modal show={exitModalOpen} onClose={() => setExitModalOpen(false)} maxWidth="lg">
+                <div className="relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                    <div className="p-6">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 sm:mx-0 sm:h-10 sm:w-10 shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-50 dark:ring-indigo-900/20">
+                                <HelpCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                                    Konfirmasi Selesai
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-base text-gray-600 dark:text-gray-300">
+                                        Apakah pelayanan pasien ini sudah selesai?
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-6 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={() => handleExit('tidak')}
-                            disabled={exitLoading}
-                            className="px-3 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                        >
-                            Tidak (Belum)
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleExit('ya')}
-                            disabled={exitLoading}
-                            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm"
-                        >
-                            {exitLoading ? 'Memproses...' : 'Ya (Sudah)'}
-                        </button>
+                        <div className="mt-6 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
+                            <button
+                                type="button"
+                                onClick={() => handleExit('ya')}
+                                disabled={exitLoading}
+                                className="inline-flex w-full justify-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 sm:w-auto disabled:opacity-50 transition-all transform hover:scale-[1.02]"
+                            >
+                                {exitLoading ? 'Memproses...' : 'Ya, Selesai'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleExit('tidak')}
+                                disabled={exitLoading}
+                                className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto disabled:opacity-50 transition-colors"
+                            >
+                                Belum
+                            </button>
+                        </div>
                     </div>
                 </div>
             </Modal>
