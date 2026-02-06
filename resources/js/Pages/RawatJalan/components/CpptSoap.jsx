@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser, Activity, FileText } from 'lucide-react';
+import usePermission from '@/hooks/usePermission';
+import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+    const { can } = usePermission();
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -526,6 +528,45 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Menyimpan payload terakhir untuk template cetak rujukan
     const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
+
+    // State untuk Modal Keluar
+    const [exitModalOpen, setExitModalOpen] = useState(false);
+    const [exitLoading, setExitLoading] = useState(false);
+
+    const handleExit = async (choice) => {
+        setExitLoading(true);
+        const newStatus = choice === 'ya' ? 'Sudah' : 'Belum';
+
+        try {
+            const res = await fetch(route('rawat-jalan.status.update'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    no_rawat: noRawat,
+                    stts: newStatus
+                })
+            });
+
+            if (res.ok) {
+                // Redirect langsung tanpa alert
+                window.location.href = route('rawat-jalan.index');
+            } else {
+                const json = await res.json();
+                alert(json.message || 'Gagal memperbarui status');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Terjadi kesalahan saat menghubungi server');
+        } finally {
+            setExitLoading(false);
+            setExitModalOpen(false);
+        }
+    };
+
     const [kunjunganPreview, setKunjunganPreview] = useState(null); // payload preview kunjungan
     const [sendingKunjungan, setSendingKunjungan] = useState(false);
     const [kunjunganResult, setKunjunganResult] = useState(null); // hasil kirim kunjungan
@@ -2025,6 +2066,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </>
                         )}
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setExitModalOpen(true)}
+                        disabled={isSubmitting || exitLoading || !can('edit-appointments')}
+                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+                        title={!can('edit-appointments') ? 'Anda tidak memiliki akses' : 'Keluar & Update Status'}
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Keluar
+                    </button>
                     {showBridging && (
                         <button
                             type="button"
@@ -2619,6 +2672,41 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
                 </div>
             </form>
+
+            <Modal show={exitModalOpen} onClose={() => setExitModalOpen(false)} maxWidth="sm">
+                <div className="p-4 sm:p-6">
+                    <div className="flex items-start gap-3">
+                        <HelpCircle className="h-6 w-6 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                            <h2 className="text-lg font-normal text-gray-900 dark:text-gray-100 mb-1">
+                                Konfirmasi Selesai
+                            </h2>
+                            <p className="text-base font-medium text-gray-800 dark:text-gray-200">
+                                Apakah pelayanan pasien ini sudah selesai?
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-6 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => handleExit('tidak')}
+                            disabled={exitLoading}
+                            className="px-3 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md text-sm font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            Tidak (Belum)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleExit('ya')}
+                            disabled={exitLoading}
+                            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm"
+                        >
+                            {exitLoading ? 'Memproses...' : 'Ya (Sudah)'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>

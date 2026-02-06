@@ -1893,6 +1893,9 @@ Route::middleware('auth')->group(function () {
         ->name('penilaian-awal-keperawatan-ralan.destroy')
         ->where('no_rawat', '.*');
 
+    // Update status periksa
+    Route::post('rawat-jalan/status', [RawatJalanController::class, 'updateStatus'])->name('rawat-jalan.status.update');
+
     // API routes untuk obat
     Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
     Route::get('api/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
