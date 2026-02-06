@@ -60,7 +60,7 @@ export default function Lanjutan({ rawatInap, params }) {
             case 'konsultasi': return <Konsultasi {...commonProps} />;
             case 'tarifTindakan': return <TarifTindakan {...commonProps} />;
             case 'resep': return <Resep {...commonProps} kdPoli={rawatInap?.kd_poli || ''} />;
-            case 'diagnosa': return <Diagnosa {...commonProps} />;
+            case 'diagnosa': return <Diagnosa {...commonProps} kdPj={rawatInap?.kd_pj || rawatInap?.penjab?.kd_pj || ''} />;
             case 'lab': return <PermintaanLab {...commonProps} />;
             case 'radiologi': return <PermintaanRadiologi {...commonProps} />;
             default: return <CpptSoap {...commonProps} />;

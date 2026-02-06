@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::masterAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1730
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1769
 * @route '/api/aturan-pakai'
 */
 export const masterAturanPakai = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ masterAturanPakai.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::masterAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1730
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1769
 * @route '/api/aturan-pakai'
 */
 masterAturanPakai.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ masterAturanPakai.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::masterAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1730
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1769
 * @route '/api/aturan-pakai'
 */
 masterAturanPakai.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ masterAturanPakai.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::masterAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1730
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1769
 * @route '/api/aturan-pakai'
 */
 masterAturanPakai.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ masterAturanPakai.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/public-store'
 */
 const createAturanPakai374ccfefb05fd1b966138257f3ff85d4 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ createAturanPakai374ccfefb05fd1b966138257f3ff85d4.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/public-store'
 */
 createAturanPakai374ccfefb05fd1b966138257f3ff85d4.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ createAturanPakai374ccfefb05fd1b966138257f3ff85d4.url = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/public-store'
 */
 createAturanPakai374ccfefb05fd1b966138257f3ff85d4.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ createAturanPakai374ccfefb05fd1b966138257f3ff85d4.post = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai'
 */
 const createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -94,7 +94,7 @@ createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai'
 */
 createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e.url = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai'
 */
 createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -113,7 +113,7 @@ createAturanPakaia7bc10726b589e75b0cf5faa36c0ad0e.post = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/store'
 */
 const createAturanPakai213b1574bb365761d9ad0fabfef9a35a = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ createAturanPakai213b1574bb365761d9ad0fabfef9a35a.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/store'
 */
 createAturanPakai213b1574bb365761d9ad0fabfef9a35a.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ createAturanPakai213b1574bb365761d9ad0fabfef9a35a.url = (options?: RouteQueryOpt
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::createAturanPakai
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1763
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1802
 * @route '/api/aturan-pakai/store'
 */
 createAturanPakai213b1574bb365761d9ad0fabfef9a35a.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:185
+* @see app/Http/Controllers/RawatJalan/ResepController.php:170
 * @route '/api/resep/racikan'
 */
 export const storeRacikan = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -202,7 +202,7 @@ storeRacikan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:185
+* @see app/Http/Controllers/RawatJalan/ResepController.php:170
 * @route '/api/resep/racikan'
 */
 storeRacikan.url = (options?: RouteQueryOptions) => {
@@ -211,7 +211,7 @@ storeRacikan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:185
+* @see app/Http/Controllers/RawatJalan/ResepController.php:170
 * @route '/api/resep/racikan'
 */
 storeRacikan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -221,7 +221,7 @@ storeRacikan.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeCombined
-* @see app/Http/Controllers/RawatJalan/ResepController.php:318
+* @see app/Http/Controllers/RawatJalan/ResepController.php:303
 * @route '/api/resep/combined'
 */
 export const storeCombined = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +236,7 @@ storeCombined.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeCombined
-* @see app/Http/Controllers/RawatJalan/ResepController.php:318
+* @see app/Http/Controllers/RawatJalan/ResepController.php:303
 * @route '/api/resep/combined'
 */
 storeCombined.url = (options?: RouteQueryOptions) => {
@@ -245,7 +245,7 @@ storeCombined.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::storeCombined
-* @see app/Http/Controllers/RawatJalan/ResepController.php:318
+* @see app/Http/Controllers/RawatJalan/ResepController.php:303
 * @route '/api/resep/combined'
 */
 storeCombined.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ storeCombined.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::list
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1565
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1563
 * @route '/api/resep/list'
 */
 export const list = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -270,7 +270,7 @@ list.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::list
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1565
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1563
 * @route '/api/resep/list'
 */
 list.url = (options?: RouteQueryOptions) => {
@@ -279,7 +279,7 @@ list.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::list
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1565
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1563
 * @route '/api/resep/list'
 */
 list.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -289,7 +289,7 @@ list.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::list
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1565
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1563
 * @route '/api/resep/list'
 */
 list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -299,7 +299,7 @@ list.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getStokInfo
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1887
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1926
 * @route '/api/resep/stok-info'
 */
 export const getStokInfo = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -314,7 +314,7 @@ getStokInfo.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getStokInfo
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1887
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1926
 * @route '/api/resep/stok-info'
 */
 getStokInfo.url = (options?: RouteQueryOptions) => {
@@ -323,7 +323,7 @@ getStokInfo.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getStokInfo
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1887
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1926
 * @route '/api/resep/stok-info'
 */
 getStokInfo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -333,7 +333,7 @@ getStokInfo.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getStokInfo
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1887
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1926
 * @route '/api/resep/stok-info'
 */
 getStokInfo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -343,7 +343,7 @@ getStokInfo.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::generateQrCode
-* @see app/Http/Controllers/RawatJalan/ResepController.php:2003
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2042
 * @route '/api/resep/qrcode'
 */
 export const generateQrCode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -358,7 +358,7 @@ generateQrCode.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::generateQrCode
-* @see app/Http/Controllers/RawatJalan/ResepController.php:2003
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2042
 * @route '/api/resep/qrcode'
 */
 generateQrCode.url = (options?: RouteQueryOptions) => {
@@ -367,7 +367,7 @@ generateQrCode.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::generateQrCode
-* @see app/Http/Controllers/RawatJalan/ResepController.php:2003
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2042
 * @route '/api/resep/qrcode'
 */
 generateQrCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -377,7 +377,7 @@ generateQrCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::generateQrCode
-* @see app/Http/Controllers/RawatJalan/ResepController.php:2003
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2042
 * @route '/api/resep/qrcode'
 */
 generateQrCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -387,7 +387,7 @@ generateQrCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawat
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1151
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1149
 * @route '/api/resep/rawat/{no_rawat}'
 */
 export const getByNoRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -402,7 +402,7 @@ getByNoRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawat
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1151
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1149
 * @route '/api/resep/rawat/{no_rawat}'
 */
 getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -429,7 +429,7 @@ getByNoRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawat
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1151
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1149
 * @route '/api/resep/rawat/{no_rawat}'
 */
 getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -439,7 +439,7 @@ getByNoRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawat
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1151
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1149
 * @route '/api/resep/rawat/{no_rawat}'
 */
 getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -449,7 +449,7 @@ getByNoRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawatQuery
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1206
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1204
 * @route '/api/resep/rawat'
 */
 export const getByNoRawatQuery = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -464,7 +464,7 @@ getByNoRawatQuery.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawatQuery
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1206
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1204
 * @route '/api/resep/rawat'
 */
 getByNoRawatQuery.url = (options?: RouteQueryOptions) => {
@@ -473,7 +473,7 @@ getByNoRawatQuery.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawatQuery
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1206
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1204
 * @route '/api/resep/rawat'
 */
 getByNoRawatQuery.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -483,7 +483,7 @@ getByNoRawatQuery.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRawatQuery
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1206
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1204
 * @route '/api/resep/rawat'
 */
 getByNoRawatQuery.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -493,7 +493,7 @@ getByNoRawatQuery.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRkmMedis
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1222
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1220
 * @route '/api/resep/pasien/{no_rkm_medis}'
 */
 export const getByNoRkmMedis = (args: { no_rkm_medis: string | number } | [no_rkm_medis: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -508,7 +508,7 @@ getByNoRkmMedis.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRkmMedis
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1222
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1220
 * @route '/api/resep/pasien/{no_rkm_medis}'
 */
 getByNoRkmMedis.url = (args: { no_rkm_medis: string | number } | [no_rkm_medis: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -535,7 +535,7 @@ getByNoRkmMedis.url = (args: { no_rkm_medis: string | number } | [no_rkm_medis: 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRkmMedis
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1222
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1220
 * @route '/api/resep/pasien/{no_rkm_medis}'
 */
 getByNoRkmMedis.get = (args: { no_rkm_medis: string | number } | [no_rkm_medis: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -545,7 +545,7 @@ getByNoRkmMedis.get = (args: { no_rkm_medis: string | number } | [no_rkm_medis: 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getByNoRkmMedis
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1222
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1220
 * @route '/api/resep/pasien/{no_rkm_medis}'
 */
 getByNoRkmMedis.head = (args: { no_rkm_medis: string | number } | [no_rkm_medis: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -555,7 +555,7 @@ getByNoRkmMedis.head = (args: { no_rkm_medis: string | number } | [no_rkm_medis:
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getResep
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1308
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1306
 * @route '/api/resep/{no_resep}'
 */
 export const getResep = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -570,7 +570,7 @@ getResep.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getResep
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1308
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1306
 * @route '/api/resep/{no_resep}'
 */
 getResep.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -597,7 +597,7 @@ getResep.url = (args: { no_resep: string | number } | [no_resep: string | number
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getResep
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1308
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1306
 * @route '/api/resep/{no_resep}'
 */
 getResep.get = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -607,7 +607,7 @@ getResep.get = (args: { no_resep: string | number } | [no_resep: string | number
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::getResep
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1308
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1306
 * @route '/api/resep/{no_resep}'
 */
 getResep.head = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -617,7 +617,7 @@ getResep.head = (args: { no_resep: string | number } | [no_resep: string | numbe
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::destroy
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1961
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2000
 * @route '/api/resep/{no_resep}'
 */
 export const destroy = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -632,7 +632,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::destroy
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1961
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2000
 * @route '/api/resep/{no_resep}'
 */
 destroy.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -659,7 +659,7 @@ destroy.url = (args: { no_resep: string | number } | [no_resep: string | number 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::destroy
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1961
+* @see app/Http/Controllers/RawatJalan/ResepController.php:2000
 * @route '/api/resep/{no_resep}'
 */
 destroy.delete = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -669,7 +669,7 @@ destroy.delete = (args: { no_resep: string | number } | [no_resep: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::validasi
-* @see app/Http/Controllers/RawatJalan/ResepController.php:632
+* @see app/Http/Controllers/RawatJalan/ResepController.php:605
 * @route '/api/resep/{no_resep}/validasi'
 */
 export const validasi = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -684,7 +684,7 @@ validasi.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::validasi
-* @see app/Http/Controllers/RawatJalan/ResepController.php:632
+* @see app/Http/Controllers/RawatJalan/ResepController.php:605
 * @route '/api/resep/{no_resep}/validasi'
 */
 validasi.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -711,7 +711,7 @@ validasi.url = (args: { no_resep: string | number } | [no_resep: string | number
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::validasi
-* @see app/Http/Controllers/RawatJalan/ResepController.php:632
+* @see app/Http/Controllers/RawatJalan/ResepController.php:605
 * @route '/api/resep/{no_resep}/validasi'
 */
 validasi.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -721,7 +721,7 @@ validasi.post = (args: { no_resep: string | number } | [no_resep: string | numbe
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::penyerahan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:699
+* @see app/Http/Controllers/RawatJalan/ResepController.php:672
 * @route '/api/resep/{no_resep}/penyerahan'
 */
 export const penyerahan = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -736,7 +736,7 @@ penyerahan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::penyerahan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:699
+* @see app/Http/Controllers/RawatJalan/ResepController.php:672
 * @route '/api/resep/{no_resep}/penyerahan'
 */
 penyerahan.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -763,7 +763,7 @@ penyerahan.url = (args: { no_resep: string | number } | [no_resep: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::penyerahan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:699
+* @see app/Http/Controllers/RawatJalan/ResepController.php:672
 * @route '/api/resep/{no_resep}/penyerahan'
 */
 penyerahan.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -772,8 +772,60 @@ penyerahan.post = (args: { no_resep: string | number } | [no_resep: string | num
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\ResepController::stageJurnalRalan
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @route '/api/resep/{no_resep}/jurnal/stage'
+*/
+export const stageJurnalRalan = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageJurnalRalan.url(args, options),
+    method: 'post',
+})
+
+stageJurnalRalan.definition = {
+    methods: ["post"],
+    url: '/api/resep/{no_resep}/jurnal/stage',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\ResepController::stageJurnalRalan
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @route '/api/resep/{no_resep}/jurnal/stage'
+*/
+stageJurnalRalan.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_resep: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_resep: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_resep: args.no_resep,
+    }
+
+    return stageJurnalRalan.definition.url
+            .replace('{no_resep}', parsedArgs.no_resep.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\ResepController::stageJurnalRalan
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @route '/api/resep/{no_resep}/jurnal/stage'
+*/
+stageJurnalRalan.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: stageJurnalRalan.url(args, options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\ResepController::appendRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:511
+* @see app/Http/Controllers/RawatJalan/ResepController.php:484
 * @route '/api/resep/{no_resep}/racikan'
 */
 export const appendRacikan = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -788,7 +840,7 @@ appendRacikan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::appendRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:511
+* @see app/Http/Controllers/RawatJalan/ResepController.php:484
 * @route '/api/resep/{no_resep}/racikan'
 */
 appendRacikan.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -815,7 +867,7 @@ appendRacikan.url = (args: { no_resep: string | number } | [no_resep: string | n
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::appendRacikan
-* @see app/Http/Controllers/RawatJalan/ResepController.php:511
+* @see app/Http/Controllers/RawatJalan/ResepController.php:484
 * @route '/api/resep/{no_resep}/racikan'
 */
 appendRacikan.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -823,6 +875,6 @@ appendRacikan.post = (args: { no_resep: string | number } | [no_resep: string | 
     method: 'post',
 })
 
-const ResepController = { masterAturanPakai, createAturanPakai, store, storeRacikan, storeCombined, list, getStokInfo, generateQrCode, getByNoRawat, getByNoRawatQuery, getByNoRkmMedis, getResep, destroy, validasi, penyerahan, appendRacikan }
+const ResepController = { masterAturanPakai, createAturanPakai, store, storeRacikan, storeCombined, list, getStokInfo, generateQrCode, getByNoRawat, getByNoRawatQuery, getByNoRkmMedis, getResep, destroy, validasi, penyerahan, stageJurnalRalan, appendRacikan }
 
 export default ResepController

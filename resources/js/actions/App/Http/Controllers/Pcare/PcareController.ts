@@ -93,6 +93,208 @@ export const getDiagnosa = {
 }
 
 /**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/dev/pcare/pendaftaran'
+*/
+const addPendaftaranae2ca85987d75ff6c35ec5e033d32804 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addPendaftaranae2ca85987d75ff6c35ec5e033d32804.url(options),
+    method: 'post',
+})
+
+addPendaftaranae2ca85987d75ff6c35ec5e033d32804.definition = {
+    methods: ["post"],
+    url: '/api/dev/pcare/pendaftaran',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/dev/pcare/pendaftaran'
+*/
+addPendaftaranae2ca85987d75ff6c35ec5e033d32804.url = (options?: RouteQueryOptions) => {
+    return addPendaftaranae2ca85987d75ff6c35ec5e033d32804.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/dev/pcare/pendaftaran'
+*/
+addPendaftaranae2ca85987d75ff6c35ec5e033d32804.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addPendaftaranae2ca85987d75ff6c35ec5e033d32804.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/pcare/pendaftaran'
+*/
+const addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.url(options),
+    method: 'post',
+})
+
+addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.definition = {
+    methods: ["post"],
+    url: '/api/pcare/pendaftaran',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/pcare/pendaftaran'
+*/
+addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.url = (options?: RouteQueryOptions) => {
+    return addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
+* @see app/Http/Controllers/Pcare/PcareController.php:2287
+* @route '/api/pcare/pendaftaran'
+*/
+addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f.url(options),
+    method: 'post',
+})
+
+export const addPendaftaran = {
+    '/api/dev/pcare/pendaftaran': addPendaftaranae2ca85987d75ff6c35ec5e033d32804,
+    '/api/pcare/pendaftaran': addPendaftaran8f95b69dbf01f8e62ca56839f9d8366f,
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/dev/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+const getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4 = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.url(args, options),
+    method: 'get',
+})
+
+getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.definition = {
+    methods: ["get","head"],
+    url: '/api/dev/pcare/pendaftaran/rawat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/dev/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/dev/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/dev/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+const getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098 = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.url(args, options),
+    method: 'get',
+})
+
+getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/pendaftaran/rawat/{no_rawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
+* @see app/Http/Controllers/Pcare/PcareController.php:2244
+* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
+*/
+getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098.url(args, options),
+    method: 'head',
+})
+
+export const getPendaftaranByRawat = {
+    '/api/dev/pcare/pendaftaran/rawat/{no_rawat}': getPendaftaranByRawat03c90d80518d4b68fe2d2fa6828414f4,
+    '/api/pcare/pendaftaran/rawat/{no_rawat}': getPendaftaranByRawat5c54dfcfaeaa4929ed1f1e9840d99098,
+}
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareController::ping
 * @see app/Http/Controllers/Pcare/PcareController.php:33
 * @route '/api/pcare/ping'
@@ -1183,40 +1385,6 @@ export const pesertaByNoKartu = {
 }
 
 /**
-* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
-* @see app/Http/Controllers/Pcare/PcareController.php:2287
-* @route '/api/pcare/pendaftaran'
-*/
-export const addPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: addPendaftaran.url(options),
-    method: 'post',
-})
-
-addPendaftaran.definition = {
-    methods: ["post"],
-    url: '/api/pcare/pendaftaran',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
-* @see app/Http/Controllers/Pcare/PcareController.php:2287
-* @route '/api/pcare/pendaftaran'
-*/
-addPendaftaran.url = (options?: RouteQueryOptions) => {
-    return addPendaftaran.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::addPendaftaran
-* @see app/Http/Controllers/Pcare/PcareController.php:2287
-* @route '/api/pcare/pendaftaran'
-*/
-addPendaftaran.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: addPendaftaran.url(options),
-    method: 'post',
-})
-
-/**
 * @see \App\Http\Controllers\Pcare\PcareController::deletePendaftaran
 * @see app/Http/Controllers/Pcare/PcareController.php:2522
 * @route '/api/pcare/pendaftaran'
@@ -1248,68 +1416,6 @@ deletePendaftaran.url = (options?: RouteQueryOptions) => {
 deletePendaftaran.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: deletePendaftaran.url(options),
     method: 'delete',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2244
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
-*/
-export const getPendaftaranByRawat = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPendaftaranByRawat.url(args, options),
-    method: 'get',
-})
-
-getPendaftaranByRawat.definition = {
-    methods: ["get","head"],
-    url: '/api/pcare/pendaftaran/rawat/{no_rawat}',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2244
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
-*/
-getPendaftaranByRawat.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { no_rawat: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            no_rawat: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        no_rawat: args.no_rawat,
-    }
-
-    return getPendaftaranByRawat.definition.url
-            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2244
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
-*/
-getPendaftaranByRawat.get = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getPendaftaranByRawat.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Pcare\PcareController::getPendaftaranByRawat
-* @see app/Http/Controllers/Pcare/PcareController.php:2244
-* @route '/api/pcare/pendaftaran/rawat/{no_rawat}'
-*/
-getPendaftaranByRawat.head = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getPendaftaranByRawat.url(args, options),
-    method: 'head',
 })
 
 /**
@@ -3388,6 +3494,6 @@ deletePesertaKegiatan.delete = (args: { eduId: string | number, noKartu: string 
     method: 'delete',
 })
 
-const PcareController = { getDiagnosa, ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, addPendaftaran, deletePendaftaran, getPendaftaranByRawat, getMcu, addMcu, getSkriningPeserta, getProlanisDm, getProlanisHt, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, cetakRujukan, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, getReferensiSrk, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
+const PcareController = { getDiagnosa, addPendaftaran, getPendaftaranByRawat, ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, deletePendaftaran, getMcu, addMcu, getSkriningPeserta, getProlanisDm, getProlanisHt, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, cetakRujukan, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, getReferensiSrk, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
 
 export default PcareController

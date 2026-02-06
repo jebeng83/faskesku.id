@@ -3,6 +3,7 @@ import publicMethod from './public'
 import resep from './resep'
 import pcare from './pcare'
 import icare from './icare'
+import dev from './dev'
 import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
@@ -15,6 +16,7 @@ import kamarInap from './kamar-inap'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
+import templatePemeriksaanDokter from './template-pemeriksaan-dokter'
 import sdki from './sdki'
 import kategoriSdki from './kategori-sdki'
 import subkategoriSdki from './subkategori-sdki'
@@ -228,6 +230,7 @@ const api = {
     resep: Object.assign(resep, resep),
     pcare: Object.assign(pcare, pcare),
     icare: Object.assign(icare, icare),
+    dev: Object.assign(dev, dev),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
@@ -240,6 +243,7 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
+    templatePemeriksaanDokter: Object.assign(templatePemeriksaanDokter, templatePemeriksaanDokter),
     sdki: Object.assign(sdki, sdki),
     kategoriSdki: Object.assign(kategoriSdki, kategoriSdki),
     subkategoriSdki: Object.assign(subkategoriSdki, subkategoriSdki),

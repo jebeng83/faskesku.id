@@ -139,21 +139,6 @@ class ResepController extends Controller
 
             DB::commit();
 
-            // Otomatis susun dan posting jurnal obat ralan (Suspen vs Pendapatan, HPP vs Persediaan)
-            // Dilakukan setelah transaksi resep berhasil disimpan. Pengurangan stok dipindahkan ke event penyerahan.
-            try {
-                $composer = app()->make('App\\Services\\Akutansi\\TampJurnalComposerResepRalan');
-                $composer->composeForNoResep($resepObat->no_resep);
-                $postingService = new JurnalPostingService;
-                $postingService->post();
-            } catch (\Throwable $e) {
-                // Jangan gagalkan penyimpanan resep jika posting jurnal gagal; log agar dapat ditindaklanjuti.
-                Log::error('Gagal posting jurnal resep ralan: '.$e->getMessage(), [
-                    'no_resep' => $resepObat->no_resep,
-                    'no_rawat' => $request->no_rawat,
-                ]);
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Resep berhasil disimpan',
@@ -480,18 +465,6 @@ class ResepController extends Controller
             }
 
             DB::commit();
-
-            try {
-                $composer = app()->make('App\\Services\\Akutansi\\TampJurnalComposerResepRalan');
-                $composer->composeForNoResep($resepObat->no_resep);
-                $postingService = new JurnalPostingService;
-                $postingService->post();
-            } catch (\Throwable $e) {
-                Log::error('Gagal posting jurnal resep ralan: '.$e->getMessage(), [
-                    'no_resep' => $resepObat->no_resep,
-                    'no_rawat' => $request->no_rawat,
-                ]);
-            }
 
             return response()->json([
                 'success' => true,
@@ -1103,6 +1076,31 @@ class ResepController extends Controller
         }
     }
 
+    public function stageJurnalRalan(Request $request, string $noResep): JsonResponse
+    {
+        try {
+            $composer = app()->make('App\\Services\\Akutansi\\TampJurnalComposerPenyerahanResepRalan');
+            $result = $composer->composeForNoResep($noResep);
+
+            $balanced = (round((float) ($result['debet'] ?? 0), 2) === round((float) ($result['kredit'] ?? 0), 2)) && ($result['debet'] ?? 0) > 0 && ($result['kredit'] ?? 0) > 0;
+
+            return response()->json([
+                'success' => true,
+                'meta' => [
+                    'debet' => (float) ($result['debet'] ?? 0),
+                    'kredit' => (float) ($result['kredit'] ?? 0),
+                    'balanced' => $balanced,
+                ],
+                'lines' => $result['lines'] ?? [],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staging jurnal gagal: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * Mendapatkan detail resep berdasarkan nomor resep
      *
@@ -1704,6 +1702,47 @@ class ResepController extends Controller
                 ->take($limit)
                 ->select($selects)
                 ->get();
+
+            try {
+                $noReseps = $rows->pluck('no_resep')->all();
+                if (! empty($noReseps)) {
+                    $nonMap = [];
+                    $racMap = [];
+                    try {
+                        $nonRows = DB::table('resep_dokter')
+                            ->whereIn('no_resep', $noReseps)
+                            ->select('no_resep', DB::raw('COUNT(*) as cnt'))
+                            ->groupBy('no_resep')
+                            ->get();
+                        foreach ($nonRows as $nr) {
+                            $nonMap[$nr->no_resep] = (int) ($nr->cnt ?? 0);
+                        }
+                    } catch (\Throwable $th) {
+                        $nonMap = [];
+                    }
+                    try {
+                        $racRows = DB::table('resep_dokter_racikan')
+                            ->whereIn('no_resep', $noReseps)
+                            ->select('no_resep', DB::raw('COUNT(*) as cnt'))
+                            ->groupBy('no_resep')
+                            ->get();
+                        foreach ($racRows as $rr) {
+                            $racMap[$rr->no_resep] = (int) ($rr->cnt ?? 0);
+                        }
+                    } catch (\Throwable $th) {
+                        $racMap = [];
+                    }
+
+                    $rows = $rows->map(function ($r) use ($nonMap, $racMap) {
+                        $nr = (int) ($nonMap[$r->no_resep] ?? 0);
+                        $rc = (int) ($racMap[$r->no_resep] ?? 0);
+                        $r->has_non_racikan = $nr > 0;
+                        $r->has_racikan = $rc > 0;
+                        return $r;
+                    });
+                }
+            } catch (\Throwable $th) {
+            }
 
             return response()->json([
                 'success' => true,

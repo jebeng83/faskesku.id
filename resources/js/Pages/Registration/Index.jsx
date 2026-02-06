@@ -20,6 +20,8 @@ import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
 import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
 import { todayDateString, nowDateTimeString, getAppTimeZone } from "@/tools/datetime";
+import { Toaster } from "@/Components/ui";
+import ConfirmationAlert from "@/Components/ConfirmationAlert";
 
 export default function Registration({
     _auth,
@@ -103,6 +105,22 @@ export default function Registration({
             return s;
         }
     };
+    const [toasts, setToasts] = useState([]);
+    const addToast = (type = "info", title = "", message = "", duration = 4000) => {
+        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        setToasts((prev) => [...prev, { id, type, title, message, duration }]);
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, duration + 100);
+    };
+    const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
+    const notify = (type = "info", title = "", message = "", duration) => {
+        const defaults = { success: 3200, error: 4500, warning: 4000, info: 3500 };
+        const d = typeof duration === "number" ? duration : (defaults[type] ?? 4000);
+        addToast(type, title, message, d);
+    };
+    const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+    const [confirmCancelConfig, setConfirmCancelConfig] = useState({ title: "", message: "", confirmText: "Ya, Batalkan", cancelText: "Batal", onConfirm: null });
     const formatSkriningTanggal = (value) => {
         if (!value) return "-";
         const s = String(value);
@@ -633,7 +651,7 @@ export default function Registration({
                     }
                 } catch (_) {}
             }
-            alert(e?.response?.data?.message || 'Gagal melakukan check-in');
+            notify('error', 'Gagal Check-in', e?.response?.data?.message || 'Gagal melakukan check-in');
         }
     };
 
@@ -709,7 +727,7 @@ export default function Registration({
             setSearchResults(filtered);
         } catch (error) {
             console.error("Error searching patients:", error);
-            alert("Gagal mencari data pasien");
+            notify('error', 'Gagal', 'Gagal mencari data pasien');
         } finally {
             setIsSearching(false);
         }
@@ -885,7 +903,7 @@ export default function Registration({
         try {
             if (!selectedPatient || !selectedPatient.no_rkm_medis) {
                 setIsSubmitting(false);
-                alert('Silakan pilih pasien terlebih dahulu');
+                notify('warning', 'Lengkapi', 'Silakan pilih pasien terlebih dahulu');
                 return;
             }
             
@@ -903,7 +921,7 @@ export default function Registration({
                     hubunganpj: 'Hubungan',
                 };
                 const missingList = missing.map(f => missingLabels[f] || f).join(', ');
-                alert(`Lengkapi data registrasi: ${missingList}`);
+                notify('warning', 'Lengkapi Data Registrasi', `Lengkapi data registrasi: ${missingList}`);
                 return;
             }
             
@@ -960,12 +978,12 @@ export default function Registration({
                 
                 if (!cookieToken || cookieToken.length <= 10) {
                     setIsSubmitting(false);
-                    alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
+                    notify('error', 'CSRF Token', 'Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
                     return;
                 }
             } catch {
                 setIsSubmitting(false);
-                alert('Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
+                notify('error', 'CSRF Token', 'Gagal mendapatkan CSRF token. Silakan refresh halaman dan coba lagi.');
                 return;
             }
 
@@ -1105,7 +1123,7 @@ export default function Registration({
                 );
                 
                 if (isLoginPage) {
-                    alert('Session expired. Silakan login ulang.');
+                    notify('error', 'Session Expired', 'Session expired. Silakan login ulang.');
                     window.location.reload();
                     return;
                 }
@@ -1119,7 +1137,7 @@ export default function Registration({
                 
                 if (is404Error) {
                     const errorMsg = `Route tidak ditemukan (404).\n\nURL: ${url}\nPasien: ${selectedPatient?.no_rkm_medis}\n\nPastikan route sudah benar dan pasien ada di database.`;
-                    alert(errorMsg);
+                    notify('error', 'Route 404', errorMsg);
                     throw new Error('Route tidak ditemukan (404)');
                 }
                 
@@ -1131,13 +1149,13 @@ export default function Registration({
                 );
                 
                 if (is500Error) {
-                    alert('Terjadi kesalahan pada server (500). Silakan cek log Laravel untuk detail.');
+                    notify('error', 'Server Error 500', 'Terjadi kesalahan pada server (500). Silakan cek log Laravel untuk detail.');
                     throw new Error('Server error (500)');
                 }
                 
                 // Generic HTML response error
                 const errorMsg = `Server mengembalikan HTML bukan JSON.\n\nKemungkinan:\n1. Route tidak ditemukan\n2. Middleware memblokir request\n3. CSRF token invalid\n\nURL: ${url}\nStatus: ${response?.status}\n\nSilakan cek log untuk detail.`;
-                alert(errorMsg);
+                notify('error', 'Response HTML', errorMsg);
                 throw new Error('Response adalah HTML, bukan JSON');
             }
 
@@ -1152,9 +1170,13 @@ export default function Registration({
             }
 
             if (response.data.success === true || response.data.success === 'true' || response.data.success === 1) {
+<<<<<<< HEAD
                 let mainMessage = response.data.message || (isEditMode ? 'Registrasi berhasil diperbarui!' : 'Registrasi berhasil!');
                 let showMainAlert = true;
 
+=======
+                notify('success', 'Registrasi Berhasil', response.data.message || (isEditMode ? 'Registrasi berhasil diperbarui!' : 'Registrasi berhasil!'));
+>>>>>>> Algojo
                 // Simpan tanggal registrasi yang baru dibuat untuk filter
                 const newRegDate = response.data.data?.tgl_registrasi || formData.tgl_registrasi || todayDateString();
                 
@@ -1178,6 +1200,7 @@ export default function Registration({
                             raw: JSON.stringify(mjResData, null, 2),
                         });
                     } else {
+<<<<<<< HEAD
                          // Status HTTP 200, cek metadata code
                          const meta = mjResData.metadata || mjResData.metaData || {};
                          const codeNum = Number(meta.code || 200);
@@ -1224,6 +1247,76 @@ export default function Registration({
                              
                              // Jangan panggil openBpjsPopup untuk sukses, cukup alert gabungan
                          }
+=======
+                        const reg = response.data.data || {};
+                        const mjRes = await axios.post(
+                            "/api/mobilejkn/antrean/add",
+                            {
+                                no_rkm_medis: selectedPatient.no_rkm_medis,
+                                kd_poli: formData.kd_poli,
+                                kd_dokter: formData.kd_dokter,
+                                tanggalperiksa: reg.tgl_registrasi,
+                                no_reg: reg.no_reg,
+                            }
+                        );
+                        // Jika status selain 200, tampilkan popup respon BPJS
+                        if (mjRes?.status !== 200) {
+                            openBpjsPopup({
+                                status: mjRes?.status,
+                                message:
+                                    mjRes?.data?.metaData?.message ||
+                                    mjRes?.data?.metadata?.message ||
+                                    "BPJS Mobile JKN mengembalikan status selain 200",
+                                data: mjRes?.data ?? null,
+                                raw:
+                                    typeof mjRes?.data === "string"
+                                        ? mjRes.data
+                                        : JSON.stringify(
+                                              mjRes?.data ?? {},
+                                              null,
+                                              2
+                                          ),
+                            });
+                        } else {
+                            // Status HTTP 200, tetapi perlu cek metaData.code dan pesan kegagalan pada body
+                            const meta =
+                                mjRes?.data?.metaData ??
+                                mjRes?.data?.metadata ??
+                                {};
+                            const codeNum = Number(meta?.code ?? 200);
+                            const msgStr = String(meta?.message ?? "").trim();
+                            const looksLikeFailure =
+                                codeNum !== 200 ||
+                                /skrining kesehatan|gagal|tidak/i.test(msgStr);
+                            if (looksLikeFailure) {
+                                openBpjsPopup({
+                                    status: 200,
+                                    message:
+                                        msgStr ||
+                                        "Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200",
+                                    data: mjRes?.data ?? null,
+                                    raw:
+                                        typeof mjRes?.data === "string"
+                                            ? mjRes.data
+                                            : JSON.stringify(
+                                                  mjRes?.data ?? {},
+                                                  null,
+                                                  2
+                                              ),
+                                });
+                            } else {
+                                const payloadResp = mjRes?.data?.response ?? mjRes?.data?.resp ?? mjRes?.data?.data ?? null;
+                                let nomorAntrean = null;
+                                if (payloadResp) {
+                                    const r = Array.isArray(payloadResp) ? (payloadResp[0] || {}) : payloadResp;
+                                    nomorAntrean = r?.nomorantrean ?? r?.nomorAntrian ?? r?.nomor_antrian ?? r?.nomor ?? r?.number ?? r?.noUrut ?? r?.angkaantrean ?? r?.angkaAntrian ?? null;
+                                }
+                                if (!nomorAntrean && reg?.no_reg) nomorAntrean = reg.no_reg;
+                                const label = typeof nomorAntrean === 'number' ? String(nomorAntrean) : String(nomorAntrean || '').trim();
+                                notify('success', 'Pendaftaran PCare Sukses', `No Antrean ${label || '-'}`);
+                            }
+                        }
+>>>>>>> Algojo
                     }
                 }
 
@@ -1262,7 +1355,7 @@ export default function Registration({
             } else {
                 // Response tidak sukses
                 const errorMsg = response.data.message || 'Registrasi gagal. Silakan coba lagi.';
-                alert(errorMsg);
+                notify('error', 'Registrasi Gagal', errorMsg);
             }
         } catch (error) {
             // Handle validation errors dari backend
@@ -1286,32 +1379,32 @@ export default function Registration({
                     })
                     .join('\n');
                 
-                alert(`Validasi gagal:\n${errorMessages}`);
+                notify('error', 'Validasi Gagal', `Validasi gagal:\n${errorMessages}`);
             } else if (error?.response?.status === 404) {
-                alert('Endpoint tidak ditemukan. Pastikan URL benar.');
+                notify('error', 'Endpoint Tidak Ditemukan', 'Endpoint tidak ditemukan. Pastikan URL benar.');
             } else if (error?.response?.status === 403) {
-                alert('Anda tidak memiliki izin untuk melakukan aksi ini.');
+                notify('error', 'Tidak Berizin', 'Anda tidak memiliki izin untuk melakukan aksi ini.');
             } else if (error?.response?.status === 419 || error?.message?.includes('Session expired')) {
                 // Jika masih 419 setelah interceptor retry, berarti session benar-benar expired
                 const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
-                alert(errorMessage);
+                notify('error', 'Session Expired', errorMessage);
                 // Refresh halaman untuk mendapatkan session baru
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
                 return;
             } else if (error?.response?.status === 500) {
-                alert('Terjadi kesalahan pada server. Silakan cek log untuk detail.');
+                notify('error', 'Server Error', 'Terjadi kesalahan pada server. Silakan cek log untuk detail.');
             } else if (error?.response?.data?.message) {
                 // Error message dari backend
-                alert(error.response.data.message);
+                notify('error', 'Error', error.response.data.message);
             } else if (error?.code === 'NETWORK_ERROR' || error?.message?.includes('Network Error')) {
-                alert('Gagal terhubung ke server. Periksa koneksi internet Anda.');
+                notify('error', 'Koneksi', 'Gagal terhubung ke server. Periksa koneksi internet Anda.');
             } else if (error?.message) {
                 // Network atau error lainnya
-                alert(`Gagal mendaftarkan pasien: ${error.message}`);
+                notify('error', 'Gagal Mendaftar', `Gagal mendaftarkan pasien: ${error.message}`);
             } else {
-                alert('Gagal mendaftarkan pasien. Silakan coba lagi atau hubungi administrator.');
+                notify('error', 'Gagal Mendaftar', 'Gagal mendaftarkan pasien. Silakan coba lagi atau hubungi administrator.');
             }
         } finally {
             setIsSubmitting(false);
@@ -1707,91 +1800,60 @@ export default function Registration({
             closePrintMenu();
         } catch (error) {
             console.error('Error opening print window:', error);
-            alert('Gagal membuka halaman cetak registrasi');
+            notify('error', 'Gagal Cetak', 'Gagal membuka halaman cetak registrasi');
         }
     };
 
-    // Cancel registration, sambil mengirim status panggil (2 = Tidak Hadir) ke Mobile JKN jika penjamin BPJS
-    const handleCancelRegistration = async (regOrNoRawat) => {
-        if (!confirm("Apakah Anda yakin ingin membatalkan registrasi ini?")) {
-            return;
-        }
-
-        // Jika memungkinkan, kirim panggil antrean dengan status 2 (Tidak Hadir)
+    const proceedCancelRegistration = async (regOrNoRawat) => {
         try {
-            const reg =
-                typeof regOrNoRawat === "object"
-                    ? regOrNoRawat
-                    : (registrationData?.data || []).find(
-                          (r) => r.no_rawat === regOrNoRawat
-                      );
+            const reg = typeof regOrNoRawat === "object" ? regOrNoRawat : (registrationData?.data || []).find((r) => r.no_rawat === regOrNoRawat);
             if (reg && isRegistrationAllowedForAntrean(reg)) {
-                const payloadPanggil = {
-                    no_rkm_medis: reg.no_rkm_medis,
-                    kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    status: 2, // Tidak Hadir
-                    tanggalperiksa: todayDateString(getAppTimeZone()),
-                };
-                try {
-                    await axios.post(
-                        "/api/mobilejkn/antrean/panggil",
-                        payloadPanggil
-                    );
-                } catch (err) {
-                    console.warn(
-                        "Gagal mengirim update status antrean (status=2) ke Mobile JKN:",
-                        err?.response?.data || err?.message
-                    );
-                }
-
-                // Setelah update status tidak hadir, kirim permintaan pembatalan antrean ke Mobile JKN
-                const payloadBatal = {
-                    no_rkm_medis: reg.no_rkm_medis,
-                    kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli,
-                    tanggalperiksa: todayDateString(getAppTimeZone()),
-                    alasan: "Batal registrasi oleh petugas",
-                };
-                try {
-                    await axios.post(
-                        "/api/mobilejkn/antrean/batal",
-                        payloadBatal
-                    );
-                } catch (err) {
-                    console.warn(
-                        "Gagal mengirim pembatalan antrean ke Mobile JKN:",
-                        err?.response?.data || err?.message
-                    );
-                }
+                const payloadPanggil = { no_rkm_medis: reg.no_rkm_medis, kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli, status: 2, tanggalperiksa: todayDateString(getAppTimeZone()) };
+                try { await axios.post("/api/mobilejkn/antrean/panggil", payloadPanggil); } catch (err) { console.warn("Gagal mengirim update status antrean (status=2) ke Mobile JKN:", err?.response?.data || err?.message); }
+                const payloadBatal = { no_rkm_medis: reg.no_rkm_medis, kd_poli: reg.kd_poli || reg?.poliklinik?.kd_poli, tanggalperiksa: todayDateString(getAppTimeZone()), alasan: "Batal registrasi oleh petugas" };
+                try { await axios.post("/api/mobilejkn/antrean/batal", payloadBatal); } catch (err) { console.warn("Gagal mengirim pembatalan antrean ke Mobile JKN:", err?.response?.data || err?.message); }
             }
         } catch (_) {}
-
         try {
-            const no_rawat =
-                typeof regOrNoRawat === "object"
-                    ? regOrNoRawat?.no_rawat
-                    : regOrNoRawat;
-            const response = await axios.post("/registration/cancel", {
-                no_rawat: no_rawat,
-            });
-
-            if (response.data.success) {
-                alert(response.data.message);
-                // Refresh registrations and stats
-                loadRegistrations();
-            }
+            const no_rawat = typeof regOrNoRawat === "object" ? regOrNoRawat?.no_rawat : regOrNoRawat;
+            const response = await axios.post("/registration/cancel", { no_rawat });
+            if (response.data.success) { notify('success', 'Registrasi Dibatalkan', response.data.message); loadRegistrations(); }
         } catch (error) {
             console.error("Error cancelling registration:", error);
-            if (error.response?.data?.message) {
-                alert(error.response.data.message);
-            } else {
-                alert("Gagal membatalkan registrasi");
-            }
+            if (error.response?.data?.message) { notify('error', 'Gagal Membatalkan', error.response.data.message); } else { notify('error', 'Gagal Membatalkan', 'Gagal membatalkan registrasi'); }
+        }
+    };
+    const handleCancelRegistration = async (regOrNoRawat) => {
+        try {
+            const reg = typeof regOrNoRawat === "object" ? regOrNoRawat : (registrationData?.data || []).find((r) => r.no_rawat === regOrNoRawat);
+            const nama = reg?.pasien?.nm_pasien || selectedPatient?.nm_pasien || "";
+            const rm = reg?.no_rkm_medis || selectedPatient?.no_rkm_medis || "";
+            const poli = reg?.poliklinik?.nm_poli || "";
+            const date = reg?.tgl_registrasi || todayDateString(getAppTimeZone());
+            const msg = `Pembatalan akan mengirim status tidak hadir dan pembatalan antrean ke Mobile JKN bila tersedia.\nPasien: ${nama} (${rm})\nPoli: ${poli}\nTanggal: ${date}\nLanjutkan pembatalan?`;
+            setConfirmCancelConfig({ title: "Konfirmasi Pembatalan", message: msg, confirmText: "Ya, Batalkan", cancelText: "Batal", onConfirm: async () => { await proceedCancelRegistration(regOrNoRawat); setShowConfirmCancel(false); } });
+            setShowConfirmCancel(true);
+        } catch (_) {
+            setConfirmCancelConfig({ title: "Konfirmasi Pembatalan", message: "Pembatalan registrasi akan diproses.", confirmText: "Ya, Batalkan", cancelText: "Batal", onConfirm: async () => { await proceedCancelRegistration(regOrNoRawat); setShowConfirmCancel(false); } });
+            setShowConfirmCancel(true);
         }
     };
 
     return (
         <LanjutanRegistrasiLayout title="Pendaftaran Pasien" menuConfig={{ activeTab: "registrasi" }}>
             <Head title="Pendaftaran Pasien" />
+            <Toaster toasts={toasts} onRemove={removeToast} />
+            <ConfirmationAlert
+                isOpen={showConfirmCancel}
+                type="danger"
+                title={confirmCancelConfig.title}
+                message={confirmCancelConfig.message}
+                confirmText={confirmCancelConfig.confirmText}
+                cancelText={confirmCancelConfig.cancelText}
+                onConfirm={confirmCancelConfig.onConfirm}
+                onCancel={() => setShowConfirmCancel(false)}
+                onClose={() => setShowConfirmCancel(false)}
+            />
 
             {/* Header */}
             <motion.div
@@ -4787,7 +4849,7 @@ export default function Registration({
                                     <motion.button
                                         onClick={() => {
                                             // TODO: Implement cetak kartu berobat
-                                            alert('Fitur cetak kartu berobat akan segera tersedia');
+                                            notify('info', 'Fitur Belum Tersedia', 'Cetak kartu berobat akan segera tersedia');
                                         }}
                                         className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors flex items-center gap-3"
                                         whileHover={{ scale: 1.02 }}
@@ -4820,7 +4882,7 @@ export default function Registration({
                                     <motion.button
                                         onClick={() => {
                                             // TODO: Implement cetak rincian biaya
-                                            alert('Fitur cetak rincian biaya akan segera tersedia');
+                                            notify('info', 'Fitur Belum Tersedia', 'Cetak rincian biaya akan segera tersedia');
                                         }}
                                         className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors flex items-center gap-3"
                                         whileHover={{ scale: 1.02 }}

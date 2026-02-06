@@ -625,6 +625,9 @@ Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}/verify', [RawatJalanControl
     ->name('rawat-jalan.surat-sakit.verify.by-nomor')
     ->where('no_surat', '.*');
 
+Route::get('/api/alergi/pasien', [\App\Http\Controllers\Alergi\AlergiController::class, 'getAlergiPasien'])
+    ->name('api.alergi.pasien.index');
+
 Route::middleware('auth')->group(function () {
     Route::post('rawat-jalan/validasi-ttd', [RawatJalanController::class, 'storeValidasiTtd'])
         ->name('rawat-jalan.validasi-ttd.store');

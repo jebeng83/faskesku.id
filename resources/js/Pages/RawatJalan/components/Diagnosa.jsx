@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function Diagnosa({ noRawat = '', onDiagnosaSaved = null }) {
+export default function Diagnosa({ noRawat = '', kdPj = '', onDiagnosaSaved = null }) {
     const [query, setQuery] = useState('');
     const [type, setType] = useState('utama');
     const [selected, setSelected] = useState([]);
@@ -166,8 +166,11 @@ export default function Diagnosa({ noRawat = '', onDiagnosaSaved = null }) {
                 setLoading(true);
                 setErrorMsg('');
                 setWarningMsg('');
-                const response = await axios.get('/api/pcare/diagnosa', {
-                    params: { q: query, start: 0, limit: 25 },
+                const isBpjs = ['BPJ', 'PBI'].includes(String(kdPj || '').toUpperCase());
+                const url = isBpjs ? '/api/pcare/diagnosa' : '/api/rawat-jalan/penyakit/search';
+                const params = isBpjs ? { q: query, start: 0, limit: 25 } : { q: query, limit: 25 };
+                const response = await axios.get(url, {
+                    params,
                     withCredentials: true,
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 });
@@ -182,7 +185,7 @@ export default function Diagnosa({ noRawat = '', onDiagnosaSaved = null }) {
                     return {
                         kode,
                         nama: it?.nmDiag || it?.nama || '',
-                        source: it?.source || 'bpjs',
+                        source: isBpjs ? 'bpjs' : 'penyakit',
                         categoryId: kategori.id,
                         categoryLabel: kategori.label,
                     };
@@ -200,7 +203,7 @@ export default function Diagnosa({ noRawat = '', onDiagnosaSaved = null }) {
         }, 350);
 
         return () => clearTimeout(handle);
-    }, [query]);
+    }, [query, kdPj]);
 
     // Load diagnosa yang sudah tersimpan dari backend saat komponen mount atau noRawat berubah
     useEffect(() => {

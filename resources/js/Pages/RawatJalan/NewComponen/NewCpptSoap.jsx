@@ -2,7 +2,8 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { route } from 'ziggy-js';
 import { usePage } from '@inertiajs/react';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
-import { Eraser, Pencil, Trash2, Copy } from 'lucide-react';
+import Modal from '../../../Components/Modal.jsx';
+import { Eraser, Pencil, Trash2, Copy, Save } from 'lucide-react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import DataAlergi from '../../../Alergi/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
@@ -173,10 +174,50 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   const [kdAlergi, setKdAlergi] = useState('');
   const [pegawaiOptions, setPegawaiOptions] = useState([]);
   const [alergiOptions, setAlergiOptions] = useState([]);
+  const [dokterPJ, setDokterPJ] = useState({ kd_dokter: '', nm_dokter: '' });
+  const [, setLoadingDokterPJ] = useState(false);
+  const [, setDokterPJError] = useState(null);
   useEffect(() => {
     setFormData((p) => ({ ...p, alergi: '' }));
     setKdAlergi('');
   }, [alergiJenis]);
+
+  useEffect(() => {
+    const fetchDokterPenanggungJawab = async () => {
+      if (!noRawat) return;
+      setLoadingDokterPJ(true);
+      setDokterPJError(null);
+      try {
+        let regData = null;
+        try {
+          const respRegExact = await axios.get('/api/reg-periksa/by-rawat', { params: { no_rawat: noRawat }, withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+          regData = respRegExact?.data?.data || null;
+        } catch (_) {}
+        if (!regData) {
+          const respReg = await axios.get('/api/reg-periksa', { params: { search: noRawat, per_page: 1 }, withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+          regData = respReg?.data?.data?.data?.[0] || null;
+        }
+        if (regData?.kd_dokter && regData.kd_dokter !== '-') {
+          const kd = regData.kd_dokter;
+          let nm = regData?.dokter?.nm_dokter || regData?.doctor?.nm_dokter || '';
+          if (!nm) {
+            try {
+              const respDokter = await axios.get(`/api/dokter/${encodeURIComponent(kd)}`, { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+              nm = respDokter?.data?.data?.nm_dokter || nm;
+            } catch (_) {}
+          }
+          setDokterPJ({ kd_dokter: kd, nm_dokter: nm || kd });
+        } else {
+          setDokterPJ({ kd_dokter: '', nm_dokter: '' });
+        }
+      } catch (_) {
+        setDokterPJError('Gagal memuat dokter penanggung jawab');
+      } finally {
+        setLoadingDokterPJ(false);
+      }
+    };
+    fetchDokterPenanggungJawab();
+  }, [noRawat]);
 
   useEffect(() => {
     const loadJenis = async () => {
@@ -919,6 +960,13 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
     ];
   }, [customTemplates]);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [dbTemplateOptions, setDbTemplateOptions] = useState([]);
+  const [selectedDbTemplate, setSelectedDbTemplate] = useState('');
+  const [templateSaving, setTemplateSaving] = useState(false);
+  const [templateError, setTemplateError] = useState(null);
+  const [templateMessage, setTemplateMessage] = useState(null);
+  const [showNmTemplateModal, setShowNmTemplateModal] = useState(false);
+  const [nmTemplateInput, setNmTemplateInput] = useState('');
   const templatesMap = useMemo(() => {
     const map = {};
     DWFKTP_TEMPLATES.forEach((t) => { map[t.key] = t.template; });
@@ -967,6 +1015,154 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
       evaluasi: '',
     }));
     setSelectedTemplate('');
+  };
+
+  useEffect(() => {
+    let active = true;
+    const loadDbTemplates = async () => {
+      try {
+        const res = await fetch('/api/template-pemeriksaan-dokter/list', {
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        const json = await res.json();
+        const arr = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.list) ? json.list : []);
+        const opts = arr.map((it) => ({
+          value: it?.no_template || it?.id || '',
+          label: it?.nm_template || it?.penilaian || it?.keluhan || it?.no_template || '',
+        }));
+        if (active) setDbTemplateOptions(opts);
+      } catch (_) {
+        if (active) setDbTemplateOptions([]);
+      }
+    };
+    loadDbTemplates();
+    return () => { active = false; };
+  }, []);
+
+  const applyDbTemplate = async (key) => {
+    setSelectedDbTemplate(key);
+    if (!key) return;
+    try {
+      const url = `/api/template-pemeriksaan-dokter/item?no_template=${encodeURIComponent(key)}`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
+      const json = await res.json();
+      const t = json?.data || json || {};
+      setFormData((prev) => ({
+        ...prev,
+        suhu_tubuh: t.suhu || prev.suhu_tubuh || '',
+        tensi: t.tensi || prev.tensi || '',
+        nadi: t.nadi || prev.nadi || '',
+        respirasi: t.respirasi || prev.respirasi || '',
+        spo2: t.spo2 || prev.spo2 || '',
+        gcs: t.gcs || prev.gcs || '',
+        tinggi: t.tinggi || prev.tinggi || '',
+        berat: t.berat || prev.berat || '',
+        lingkar_perut: t.lingkar_perut || prev.lingkar_perut || '',
+        keluhan: t.keluhan || prev.keluhan || '',
+        pemeriksaan: t.pemeriksaan || prev.pemeriksaan || '',
+        penilaian: t.penilaian || prev.penilaian || '',
+        rtl: t.rencana || prev.rtl || '',
+        instruksi: t.instruksi || prev.instruksi || '',
+        evaluasi: t.evaluasi || prev.evaluasi || '',
+      }));
+      setTemplateError(null);
+    } catch (e) {
+      setTemplateError(e?.message || 'Gagal memuat template');
+    }
+  };
+
+  const deriveNmTemplate = () => {
+    const a = (formData?.penilaian && String(formData.penilaian).trim() !== '') ? String(formData.penilaian).trim() : '';
+    const b = (!a && formData?.keluhan && String(formData.keluhan).trim() !== '') ? String(formData.keluhan).trim() : '';
+    return a || b || 'Template Pemeriksaan';
+  };
+
+  const openNmTemplateModal = () => {
+    setNmTemplateInput(deriveNmTemplate());
+    setShowNmTemplateModal(true);
+  };
+
+  const confirmNmTemplateAndSave = async () => {
+    setShowNmTemplateModal(false);
+    await saveOrUpdateTemplate(nmTemplateInput);
+  };
+
+  const saveOrUpdateTemplate = async (nmOverride) => {
+    try {
+      setTemplateSaving(true);
+      setTemplateError(null);
+      setTemplateMessage(null);
+      const creating = !selectedDbTemplate;
+      const nmTemplate = (typeof nmOverride === 'string' && nmOverride.trim() !== '') ? nmOverride.trim() : deriveNmTemplate();
+      if (!dokterPJ?.kd_dokter || dokterPJ.kd_dokter === '-') {
+        setTemplateError('Kode dokter tidak ditemukan untuk kunjungan ini');
+        setTemplateSaving(false);
+        return;
+      }
+      const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
+      const xsrfToken = typeof document !== 'undefined' ? (document.cookie.split('; ').find((row) => row.startsWith('XSRF-TOKEN='))?.split('=')[1] || '') : '';
+      const mainPayload = {
+        no_template: selectedDbTemplate || undefined,
+        kd_dokter: dokterPJ?.kd_dokter || '',
+        keluhan: formData.keluhan || '',
+        pemeriksaan: formData.pemeriksaan || '',
+        penilaian: formData.penilaian || '',
+        rencana: formData.rtl || '',
+        instruksi: formData.instruksi || '',
+        evaluasi: formData.evaluasi || '',
+      };
+      const detailPayload = {
+        no_template: selectedDbTemplate || undefined,
+        nm_template: nmTemplate,
+        suhu_tubuh: formData.suhu_tubuh || '',
+        tensi: formData.tensi || '',
+        nadi: formData.nadi || '',
+        respirasi: formData.respirasi || '',
+        spo2: formData.spo2 || '',
+        tinggi: formData.tinggi || '',
+        berat: formData.berat || '',
+        gcs: formData.gcs || '',
+        lingkar_perut: formData.lingkar_perut || '',
+      };
+      try {
+        await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch (_) {}
+
+      const mainRes = await axios({
+        method: creating ? 'POST' : 'PUT',
+        url: '/api/template-pemeriksaan-dokter',
+        data: mainPayload,
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}) },
+      });
+      const mainJson = mainRes?.data || {};
+      const noTemplate = mainJson?.no_template || selectedDbTemplate;
+      const detailRes = await axios({
+        method: creating ? 'POST' : 'PUT',
+        url: '/api/template-pemeriksaan-dokter/detail',
+        data: { ...detailPayload, no_template: noTemplate },
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}) },
+      });
+      const detailJson = detailRes?.data || {};
+      setSelectedDbTemplate(noTemplate);
+      setTemplateMessage(detailJson?.message || mainJson?.message || (creating ? 'Template tersimpan' : 'Template diperbarui'));
+      // Refresh list
+      try {
+        const res = await fetch('/api/template-pemeriksaan-dokter/list', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
+        const json = await res.json();
+        const arr = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.list) ? json.list : []);
+        const opts = arr.map((it) => ({ value: it?.no_template || it?.id || '', label: it?.nm_template || it?.penilaian || it?.keluhan || it?.no_template || '' }));
+        setDbTemplateOptions(opts);
+      } catch (_) {}
+    } catch (e) {
+      const msg = e?.response?.data?.message || e?.message || 'Gagal menyimpan template';
+      setTemplateError(msg);
+    } finally {
+      setTemplateSaving(false);
+    }
   };
 
   return (
@@ -1078,8 +1274,55 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             >
               <Eraser className="w-4 h-4" />
             </button>
+            <div className="w-44 md:w-56">
+              <SearchableSelect
+                options={dbTemplateOptions}
+                value={selectedDbTemplate}
+                onChange={(val) => { applyDbTemplate(val); }}
+                placeholder="Template Manual"
+                searchPlaceholder="Cari template..."
+                displayKey="label"
+                valueKey="value"
+                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
+                dropdownClassName="bg-[oklch(98.5%_0_0)] border-[oklch(29.1%_0.149_302.717_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                searchInputClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(45.2%_0.211_324.591_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(45.2%_0.211_324.591)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
+                optionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
+                selectedOptionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)]"
+                optionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
+                selectedOptionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
+                displayClassName="text-[oklch(14.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={openNmTemplateModal}
+              className="inline-flex items-center w-auto p-1 text-[oklch(84.1%_0.238_128.85)] bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591_/_0.35)] rounded-md hover:bg-[oklch(14.5%_0_0_/_0.9)] transition-colors"
+              title="Simpan/Update Template"
+              aria-label="Simpan/Update Template"
+              disabled={templateSaving}
+            >
+              <Save className="w-4 h-4" />
+            </button>
+            {templateError && (
+              <span className="text-[11px] text-red-600 dark:text-red-400">{templateError}</span>
+            )}
+            {templateMessage && (
+              <span className="text-[11px] text-emerald-700 dark:text-emerald-400">{templateMessage}</span>
+            )}
           </div>
         </div>
+        <Modal show={showNmTemplateModal} onClose={() => setShowNmTemplateModal(false)} title="Nama Template" size="sm">
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[11px] mb-1">Nama Template</label>
+              <input value={nmTemplateInput} onChange={(e) => setNmTemplateInput(e.target.value)} className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setShowNmTemplateModal(false)} className="px-3 py-1.5 text-[11px] rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]">Batal</button>
+              <button type="button" onClick={confirmNmTemplateAndSave} className="px-3 py-1.5 text-[11px] rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]">Simpan</button>
+            </div>
+          </div>
+        </Modal>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           <div>
             <label className="block text-[11px] mb-0.5">Suhu (°C)</label>

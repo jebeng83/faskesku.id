@@ -1,6 +1,50 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 
+// Global cache and pending requests to avoid redundant PCare API calls which trigger 429
+const GLOBAL_PCARE_CACHE = new Map();
+const PENDING_PCARE_REQS = new Map();
+
+/**
+ * Helper to fetch PCare data with global caching and request deduplication.
+ */
+async function fetchPcareDeduplicated(url) {
+    // 1. Check cache first
+    if (GLOBAL_PCARE_CACHE.has(url)) {
+        return GLOBAL_PCARE_CACHE.get(url);
+    }
+
+    // 2. If already fetching this URL, wait for it
+    if (PENDING_PCARE_REQS.has(url)) {
+        return PENDING_PCARE_REQS.get(url);
+    }
+
+    // 3. Otherwise, fire the request
+    const fetchPromise = (async () => {
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "include",
+            });
+            if (!res.ok) {
+                const errJson = await res.json().catch(() => ({}));
+                throw new Error(errJson?.metaData?.message || `HTTP ${res.status}`);
+            }
+            const json = await res.json();
+            GLOBAL_PCARE_CACHE.set(url, json);
+            return json;
+        } finally {
+            PENDING_PCARE_REQS.delete(url);
+        }
+    })();
+
+    PENDING_PCARE_REQS.set(url, fetchPromise);
+    return fetchPromise;
+}
+
 // Konfigurasi sumber referensi PCare agar SearchableSelect bisa memuat opsi secara remote
 const REFERENSI_CONFIG = {
     pegawai: {
@@ -249,6 +293,7 @@ const REFERENSI_CONFIG = {
             return list.map((it) => ({
                 value: it?.kd_alergi || it?.kdAlergi || it?.kode || "",
                 label: it?.nm_alergi || it?.nmAlergi || it?.nama || "",
+                kode_jenis: it?.kode_jenis ?? null,
             }));
         },
     },
@@ -714,6 +759,22 @@ const REFERENSI_CONFIG = {
             });
         },
     },
+    spesialis: {
+        supportsSearch: false,
+        defaultParams: {},
+        buildUrl: () => `/api/pcare/spesialis`,
+        parse: (json) => {
+            const list = json?.response?.list || json?.list || json?.data || [];
+            return list.map((it) => {
+                const value = it?.kdSpesialis || it?.kode || "";
+                const name = it?.nmSpesialis || it?.nama || "";
+                return {
+                    value,
+                    label: `${value} — ${name}`.trim(),
+                };
+            });
+        },
+    },
 };
 
 const SearchableSelect = ({
@@ -726,6 +787,7 @@ const SearchableSelect = ({
     searchPlaceholder = "Cari...",
     className = "",
     error = false,
+    disabled = false,
     displayKey = "label",
     // Kunci tampilan khusus untuk dropdown; jika null, gunakan displayKey
     optionDisplayKey = null,
@@ -760,14 +822,27 @@ const SearchableSelect = ({
     const optionRefs = useRef([]);
 
     const abortRef = useRef(null);
-    const cacheRef = useRef(new Map());
-    const reqIdRef = useRef(0);
 
     const useRemote = !!source && !!REFERENSI_CONFIG[source];
     const cfg = useRemote ? REFERENSI_CONFIG[source] : null;
 
+    // Reset opsi remote ketika parameter sumber berubah (mis. ganti Spesialis untuk SubSpesialis)
+    useEffect(() => {
+        if (useRemote) {
+            setRemoteOptions([]);
+            setRemoteError("");
+        }
+    }, [source, JSON.stringify(sourceParams)]);
+
     // Filter options based on search term
     const baseOptions = useRemote ? remoteOptions : options;
+
+    // Find selected option early so it can be used in effects and display logic
+    const selectedOption = baseOptions.find((option) => {
+        const optionValue = typeof option === "string" ? option : option[valueKey];
+        return optionValue === value;
+    });
+
     const filteredOptions = baseOptions.filter((option) => {
         const key = optionDisplayKey || displayKey;
         const displayValueRaw =
@@ -828,12 +903,7 @@ const SearchableSelect = ({
 
     // Get selected option display text
     const getSelectedDisplay = () => {
-        if (!value) return placeholder;
-        const selectedOption = baseOptions.find((option) => {
-            const optionValue =
-                typeof option === "string" ? option : option[valueKey];
-            return optionValue === value;
-        });
+        if (!value) return defaultDisplay || placeholder;
         // Jika nilai sudah ada tapi opsi belum dimuat (mis. sumber remote belum dibuka),
         // tampilkan defaultDisplay (jika disediakan) sebagai fallback agar "textbox" tetap menampilkan label.
         if (!selectedOption) {
@@ -915,9 +985,16 @@ const SearchableSelect = ({
             // listeners to keep dropdown aligned while scrolling/resizing
             window.addEventListener("scroll", updatePosition, true);
             window.addEventListener("resize", updatePosition);
-            // focus search input slightly after mount
+            // focus search input slightly after mount without scrolling the container
             setTimeout(() => {
-                if (searchInputRef.current) searchInputRef.current.focus();
+                try {
+                    if (searchInputRef.current) {
+                        // preventScroll avoids any scroll jump when focusing
+                        searchInputRef.current.focus({ preventScroll: true });
+                    }
+                } catch (_) {
+                    if (searchInputRef.current) searchInputRef.current.focus();
+                }
             }, 0);
 
             // Saat dibuka, jika menggunakan sumber remote dan belum ada opsi, lakukan load awal
@@ -934,37 +1011,15 @@ const SearchableSelect = ({
                 if (canLoadInitial) {
                     (async () => {
                         const url = cfg.buildUrl(params);
-                        const cached = cacheRef.current.get(url);
-                        if (cached) {
-                            setRemoteOptions(Array.isArray(cached) ? cached : []);
-                            setRemoteLoading(false);
-                            setRemoteError("");
-                            return;
-                        }
                         try {
-                            if (abortRef.current) {
-                                try { abortRef.current.abort(); } catch { }
-                            }
-                            const controller = new AbortController();
-                            abortRef.current = controller;
-                            reqIdRef.current += 1;
                             setRemoteLoading(true);
                             setRemoteError("");
-                            const res = await fetch(url, {
-                                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-                                credentials: "include",
-                                signal: controller.signal,
-                            });
-                            const json = await res.json();
+                            const json = await fetchPcareDeduplicated(url);
                             const opts = cfg.parse(json);
                             const arr = Array.isArray(opts) ? opts : [];
                             setRemoteOptions(arr);
-                            cacheRef.current.set(url, arr);
                         } catch (_e) {
-                            if (_e?.name === "AbortError") {
-                            } else {
-                                setRemoteError(_e?.message || "Gagal memuat data");
-                            }
+                            setRemoteError(_e?.message || "Gagal memuat data");
                         } finally {
                             setRemoteLoading(false);
                         }
@@ -1012,29 +1067,18 @@ const SearchableSelect = ({
                     q: searchTerm,
                 };
                 const url = cfg.buildUrl(params);
-                const cached = cacheRef.current.get(url);
-                if (cached) {
-                    setRemoteOptions(Array.isArray(cached) ? cached : []);
+                try {
+                    setRemoteLoading(true);
+                    setRemoteError("");
+                    const json = await fetchPcareDeduplicated(url);
+                    const opts = cfg.parse(json);
+                    const arr = Array.isArray(opts) ? opts : [];
+                    setRemoteOptions(arr);
+                } catch (_e) {
+                    setRemoteError(_e?.message || "Gagal memuat data");
+                } finally {
                     setRemoteLoading(false);
-                    return;
                 }
-                if (abortRef.current) {
-                    try { abortRef.current.abort(); } catch { }
-                }
-                const controller = new AbortController();
-                abortRef.current = controller;
-                reqIdRef.current += 1;
-                setRemoteLoading(true);
-                const res = await fetch(url, {
-                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-                    credentials: "include",
-                    signal: controller.signal,
-                });
-                const json = await res.json();
-                const opts = cfg.parse(json);
-                const arr = Array.isArray(opts) ? opts : [];
-                setRemoteOptions(arr);
-                cacheRef.current.set(url, arr);
             } catch (_e) {
                 if (_e?.name === "AbortError") {
                 } else {
@@ -1049,34 +1093,24 @@ const SearchableSelect = ({
     }, [searchTerm, isOpen, source, JSON.stringify(sourceParams)]);
 
     useEffect(() => {
-        if (!useRemote) return;
-        if (!cfg) return;
-        if (!value) return;
-        if (isOpen) return;
-        if ((remoteOptions || []).length > 0) return;
+        if (!useRemote || !cfg || !value || isOpen) return;
+        // Don't re-fetch if we already have the option, item is loading, or it failed
+        if (selectedOption || remoteLoading || remoteError) return;
+
         const params = {
             ...(cfg?.defaultParams || {}),
             ...(sourceParams || {}),
             q: String(value || ""),
         };
         const url = cfg.buildUrl(params);
-        const cached = cacheRef.current.get(url);
-        if (cached) {
-            setRemoteOptions(Array.isArray(cached) ? cached : []);
-            return;
-        }
+
         (async () => {
             try {
                 setRemoteLoading(true);
-                const res = await fetch(url, {
-                    headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-                    credentials: "include",
-                });
-                const json = await res.json();
+                const json = await fetchPcareDeduplicated(url);
                 const opts = cfg.parse(json);
                 const arr = Array.isArray(opts) ? opts : [];
                 setRemoteOptions(arr);
-                cacheRef.current.set(url, arr);
                 setRemoteError("");
             } catch (_e) {
                 setRemoteError(_e?.message || "Gagal memuat data");
@@ -1084,7 +1118,7 @@ const SearchableSelect = ({
                 setRemoteLoading(false);
             }
         })();
-    }, [useRemote, cfg, value, isOpen, JSON.stringify(sourceParams)]);
+    }, [useRemote, cfg, value, isOpen, JSON.stringify(sourceParams), !!selectedOption, remoteLoading, remoteError]);
 
     return (
         <div
@@ -1095,16 +1129,15 @@ const SearchableSelect = ({
             {/* Selected value display */}
             <button
                 type="button"
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
+                disabled={disabled}
                 className={`w-full px-3 py-2 text-sm text-left border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex justify-between items-center ${error
                     ? "border-red-500"
                     : "border-gray-300 dark:border-gray-600"
-                    } ${className}`}
+                    } ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800" : ""} ${className}`}
             >
                 <span
-                    className={
-                        displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")
-                    }
+                    className={`${displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")} flex-1 min-w-0 truncate`}
                 >
                     {getSelectedDisplay()}
                 </span>

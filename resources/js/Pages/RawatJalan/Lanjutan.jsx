@@ -13,7 +13,7 @@ import PermintaanLab from "./components/PermintaanLab";
 import PermintaanRadiologi from "./components/PermintaanRadiologi";
 import TarifTindakan from "./components/TarifTindakan";
 import OdontogramForm from "../Odontogram/odontogram";
- 
+
 
 export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitDate }) {
 
@@ -26,7 +26,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [autoSaveStatus, setAutoSaveStatus] = useState("");
-    
+
     const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [resepAppendItems, setResepAppendItems] = useState(null);
     const [selectedDokterForResep, setSelectedDokterForResep] = useState(() => {
@@ -81,7 +81,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         if (rawatJalan) {
             const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
             const nama = rawatJalan?.dokter?.nm_dokter || "";
-            
+
             if (kd && !selectedDokterForResep) {
                 setSelectedDokterForResep(String(kd));
             }
@@ -95,7 +95,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         setActiveTab(tab);
     };
 
-    
+
     const getSkriningBadgeClasses = (v) => {
         const k = String(v || '').toLowerCase();
         if (k === 'merah') return 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
@@ -125,6 +125,14 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     setSkriningVisual(first);
                     return;
                 }
+
+                // Jika index kosong, berarti memang tidak ada data skrining sama sekali untuk pasien ini.
+                // Tidak perlu memanggil show secara spesifik.
+                if (!aborted && Array.isArray(json?.data)) {
+                    setSkriningVisual(null);
+                    return;
+                }
+
                 if (!aborted && tanggal) {
                     const tanggalOnly = (() => {
                         try {
@@ -308,7 +316,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         },
     ];
 
-    
+
 
     // Callback to handle pemeriksa change from CpptSoap
     const handlePemeriksaChange = useCallback((dok) => {
@@ -343,19 +351,19 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         return (
             <>
                 <div className={`${isCppt ? "block" : "hidden"} h-full`}>
-                    <CpptSoap 
-                        {...commonProps} 
-                        onOpenResep={() => setActiveTab("resep")} 
+                    <CpptSoap
+                        {...commonProps}
+                        onOpenResep={() => setActiveTab("resep")}
                         onOpenDiagnosa={() => setActiveTab("diagnosa")}
                         onOpenLab={() => setActiveTab("lab")}
-                        appendToPlanning={resepAppendItems} 
-                        onPlanningAppended={() => setResepAppendItems(null)} 
+                        appendToPlanning={resepAppendItems}
+                        onPlanningAppended={() => setResepAppendItems(null)}
                         appendToAssessment={diagnosaAppendItems}
                         onAssessmentAppended={() => setDiagnosaAppendItems(null)}
                         onPemeriksaChange={handlePemeriksaChange}
                     />
                 </div>
-                
+
                 <div className={`${isResep ? "block" : "hidden"} h-full`}>
                     <Resep
                         {...commonProps}
@@ -369,21 +377,22 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     />
                 </div>
 
-                {activeTab === "tarifTindakan" && <TarifTindakan 
-                    {...commonProps} 
+                {activeTab === "tarifTindakan" && <TarifTindakan
+                    {...commonProps}
                     initialDokter={selectedDokterForResep}
                     initialDokterNama={selectedDokterNamaForResep}
                 />}
-                {activeTab === "diagnosa" && <Diagnosa 
-                    {...commonProps} 
+                {activeTab === "diagnosa" && <Diagnosa
+                    {...commonProps}
+                    kdPj={rawatJalan?.kd_pj || rawatJalan?.penjab?.kd_pj || ""}
                     onDiagnosaSaved={(items) => {
                         setDiagnosaAppendItems(items);
                         setActiveTab("cppt");
                     }}
                 />}
                 {activeTab === "odontogram" && <OdontogramForm {...commonProps} />}
-                {activeTab === "lab" && <PermintaanLab 
-                    {...commonProps} 
+                {activeTab === "lab" && <PermintaanLab
+                    {...commonProps}
                     initialDokter={selectedDokterForResep}
                     initialDokterNama={selectedDokterNamaForResep}
                 />}
@@ -403,7 +412,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             try {
                 await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
                 await new Promise(r => setTimeout(r, 150));
-            } catch (_) {}
+            } catch (_) { }
             try {
                 await axios.post('/api/antrian-poli/call', payload, {
                     withCredentials: true,
@@ -412,7 +421,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         'X-Requested-With': 'XMLHttpRequest',
                     },
                 });
-            } catch (_) {}
+            } catch (_) { }
             try {
                 let no_reg_bc = '';
                 try {
@@ -430,7 +439,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             no_reg_bc = String(h.no_reg || '');
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
                 const bc = new BroadcastChannel('antrian-poli-call');
                 bc.postMessage({
                     no_rawat,
@@ -443,7 +452,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     repeat: false,
                 });
                 bc.close();
-            } catch (_) {}
+            } catch (_) { }
         } catch (_) {
         } finally {
             setPoliCalling(false);
@@ -461,7 +470,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             try {
                 await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
                 await new Promise(r => setTimeout(r, 150));
-            } catch (_) {}
+            } catch (_) { }
             try {
                 const ck = typeof document !== 'undefined' ? document.cookie || '' : '';
                 const hasSession = ck.includes('laravel_session=');
@@ -474,7 +483,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         },
                     });
                 }
-            } catch (_) {}
+            } catch (_) { }
             try {
                 let no_reg_bc = '';
                 try {
@@ -492,7 +501,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                             no_reg_bc = String(h.no_reg || '');
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
                 const bc = new BroadcastChannel('antrian-poli-call');
                 bc.postMessage({
                     no_rawat,
@@ -505,7 +514,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     repeat: true,
                 });
                 bc.close();
-            } catch (_) {}
+            } catch (_) { }
         } catch (_) {
         } finally {
             setPoliRepeatCalling(false);
@@ -559,18 +568,18 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         const list = Array.isArray(j.data) ? j.data : [];
                         const filtered =
                             list &&
-                            list.length &&
-                            list.some((row) =>
-                                Object.prototype.hasOwnProperty.call(
-                                    row,
-                                    "no_rawat"
+                                list.length &&
+                                list.some((row) =>
+                                    Object.prototype.hasOwnProperty.call(
+                                        row,
+                                        "no_rawat"
+                                    )
                                 )
-                            )
                                 ? list.filter(
-                                      (row) =>
-                                          String(row.no_rawat) ===
-                                          String(v.no_rawat)
-                                  )
+                                    (row) =>
+                                        String(row.no_rawat) ===
+                                        String(v.no_rawat)
+                                )
                                 : list;
                         const parse = (x) => {
                             const d = x.tgl_perawatan || "";
@@ -578,9 +587,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 typeof x.jam_rawat === "string"
                                     ? x.jam_rawat
                                     : "";
-                            const iso = `${d}T${
-                                (t.length === 5 ? `${t}:00` : t) || "00:00:00"
-                            }`;
+                            const iso = `${d}T${(t.length === 5 ? `${t}:00` : t) || "00:00:00"
+                                }`;
                             const dt = new Date(iso);
                             return isNaN(dt.getTime()) ? new Date() : dt;
                         };
@@ -646,14 +654,14 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 if (nama && match) {
                                     setPegawaiNameMap((prev) => ({ ...prev, [nip]: nama }));
                                 }
-                            }).catch(() => {}));
-                        } catch (_) {}
+                            }).catch(() => { }));
+                        } catch (_) { }
                     }
                 }
                 if (pending.length) {
                     await Promise.allSettled(pending);
                 }
-            } catch (_) {}
+            } catch (_) { }
         };
         loadPegawaiNames();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -687,8 +695,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         soapPage < 1
             ? 1
             : soapPage > soapTotalPages
-            ? soapTotalPages
-            : soapPage;
+                ? soapTotalPages
+                : soapPage;
     const soapPageStart = (soapCurrentPage - 1) * SOAP_PAGE_SIZE;
     const soapPageEnd = soapPageStart + SOAP_PAGE_SIZE;
 
@@ -747,12 +755,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             }}
         >
             <Head
-                title={`Lanjutan Rawat Jalan${
-                    params?.no_rawat ? " - " + params.no_rawat : ""
-                }`}
+                title={`Lanjutan Rawat Jalan${params?.no_rawat ? " - " + params.no_rawat : ""
+                    }`}
             />
 
-            <div className="px-4 sm:px-6 lg:px-8 py-6 w-full overflow-x-hidden mx-auto max-w-[1600px]">
+            <div className="px-3 sm:px-5 lg:px-6 py-6 w-full overflow-x-hidden mx-auto max-w-[1800px]">
                 <div className="mb-1">
                     <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 rounded-lg p-2 text-white">
                         <div className="flex items-center justify-between">
@@ -806,11 +813,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
                 <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full min-w-0 overflow-x-hidden items-stretch`}>
                     {/* Left Column - Riwayat Perawatan (scrollable) */}
-                    <div className={`transition-all duration-300 w-full max-w-full min-w-0 lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-4' : 'hidden lg:hidden'}`}>
+                    <div className={`transition-all duration-300 w-full max-w-full min-w-0 lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-5' : 'hidden lg:hidden'}`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-all duration-300 flex flex-col">
-                            <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
-                                openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
-                            }`}>
+                            <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
+                                }`}>
                                 <button
                                     onClick={() => toggle("pemeriksaan")}
                                     className={`w-full group hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200 flex items-center justify-between text-left p-2`}
@@ -818,11 +824,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                 >
                                     <div className={`flex items-center gap-3 transition-all duration-300`}>
                                         <div
-                                            className={`w-3 h-3 rounded-full transition-colors flex-shrink-0 ${
-                                                openAcc.pemeriksaan
-                                                    ? "bg-blue-500 shadow-lg shadow-blue-500/30"
-                                                    : "bg-gray-400"
-                                            }`}
+                                            className={`w-3 h-3 rounded-full transition-colors flex-shrink-0 ${openAcc.pemeriksaan
+                                                ? "bg-blue-500 shadow-lg shadow-blue-500/30"
+                                                : "bg-gray-400"
+                                                }`}
                                         ></div>
                                         <svg
                                             className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0"
@@ -952,11 +957,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
                                                 return (
                                                     <div
-                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                                                            isBpjs
-                                                                ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
-                                                                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
-                                                        }`}
+                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${isBpjs
+                                                            ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                                                            : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                                                            }`}
                                                     >
                                                         {penjamin}
                                                     </div>
@@ -1030,9 +1034,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             }
                                         >
                                             <svg
-                                                className={`w-3 h-3 transition-transform duration-200 ${
-                                                    openAcc.kunjungan ? "rotate-180" : ""
-                                                }`}
+                                                className={`w-3 h-3 transition-transform duration-200 ${openAcc.kunjungan ? "rotate-180" : ""
+                                                    }`}
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -1051,8 +1054,8 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             token={
                                                 typeof window !== "undefined"
                                                     ? new URLSearchParams(
-                                                          window.location.search
-                                                      ).get("t")
+                                                        window.location.search
+                                                    ).get("t")
                                                     : ""
                                             }
                                             noRkmMedis={
@@ -1068,7 +1071,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
 
                     {/* Right Column - Input Form Content (50%) */}
-                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-8' : ''} flex flex-col h-full`}>
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-7' : ''} flex flex-col h-full`}>
                         {!openAcc.pemeriksaan && (
                             <div className="flex justify-end mb-2">
                                 <button
@@ -1201,11 +1204,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                 type="button"
                                                 onClick={() => openSoapHistoryModal(!soapShowAll)}
                                                 aria-pressed={soapShowAll}
-                                                className={`text-xs px-3 py-1 rounded border transition-colors ${
-                                                    soapShowAll
-                                                        ? 'bg-indigo-600 text-white border-indigo-600'
-                                                        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
-                                                }`}
+                                                className={`text-xs px-3 py-1 rounded border transition-colors ${soapShowAll
+                                                    ? 'bg-indigo-600 text-white border-indigo-600'
+                                                    : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                                                    }`}
                                                 title="Tampilkan semua riwayat SOAP"
                                             >
                                                 Semua record
@@ -1255,122 +1257,122 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
                                             <div className="overflow-x-auto lg:overflow-x-hidden w-full max-w-full">
                                                 <table className="w-full text-xs table-auto">
-                                                        <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                                            <tr className="text-left text-gray-600 dark:text-gray-300">
-                                                                <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
-                                                                <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
-                                                                <th className="px-3 py-2 font-bold min-w-[9rem] w-28 lg:w-auto">TTV</th>
-                                                                <th className="px-3 py-2 font-bold w-56 lg:w-auto">Pemeriksaan Fisik (Objektif)</th>
-                                                                <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian (Assessment)</th>
-                                                                <th className="px-3 py-2 font-bold w-48 lg:w-auto">Tindak Lanjut (Planning)</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                                            {(() => {
-                                                                let rowIndex = -1;
-                                                                return soapModalItems.map((h) => {
-                                                                    let tanggal = '-';
-                                                                    try {
-                                                                        if (typeof h.no_rawat === 'string') {
-                                                                            const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
-                                                                            if (m) {
-                                                                                const y = m[1];
-                                                                                const mm = m[2];
-                                                                                const dd = m[3];
-                                                                                const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
-                                                                                tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                                            } else if (h.tgl_registrasi) {
-                                                                                tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-                                                                            }
+                                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                                        <tr className="text-left text-gray-600 dark:text-gray-300">
+                                                            <th className="px-3 py-2 font-bold w-44 lg:w-auto">Tanggal</th>
+                                                            <th className="px-3 py-2 font-bold w-56 lg:w-auto">Keluhan (Subjektif)</th>
+                                                            <th className="px-3 py-2 font-bold min-w-[9rem] w-28 lg:w-auto">TTV</th>
+                                                            <th className="px-3 py-2 font-bold w-56 lg:w-auto">Pemeriksaan Fisik (Objektif)</th>
+                                                            <th className="px-3 py-2 font-bold w-48 lg:w-auto">Penilaian (Assessment)</th>
+                                                            <th className="px-3 py-2 font-bold w-48 lg:w-auto">Tindak Lanjut (Planning)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {(() => {
+                                                            let rowIndex = -1;
+                                                            return soapModalItems.map((h) => {
+                                                                let tanggal = '-';
+                                                                try {
+                                                                    if (typeof h.no_rawat === 'string') {
+                                                                        const m = h.no_rawat.match(/^(\d{4})\/(\d{2})\/(\d{2})\//);
+                                                                        if (m) {
+                                                                            const y = m[1];
+                                                                            const mm = m[2];
+                                                                            const dd = m[3];
+                                                                            const dt = new Date(`${y}-${mm}-${dd}T00:00:00`);
+                                                                            tanggal = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                                         } else if (h.tgl_registrasi) {
                                                                             tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                                         }
-                                                                    } catch (_) {}
-                                                                    return (
-                                                                        <React.Fragment key={`${h.no_rawat}-group`}>
-                                                                            {Array.isArray(h.entries) && h.entries.length > 0 &&
-                                                                                h.entries
-                                                                                    .slice()
-                                                                                    .sort((a, b) => {
-                                                                                        const aa = String(a.jam_rawat || '').substring(0, 5);
-                                                                                        const bb = String(b.jam_rawat || '').substring(0, 5);
-                                                                                        return aa < bb ? 1 : aa > bb ? -1 : 0;
-                                                                                    })
-                                                                                    .map((e, i) => {
-                                                                                        rowIndex += 1;
-                                                                                        if (rowIndex < soapPageStart || rowIndex >= soapPageEnd) {
-                                                                                            return null;
-                                                                                        }
-                                                                                        return (
-                                                                                            <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                                                    <td className="px-3 py-2 text-gray-900 dark:text-white">
-                                                                                        <div className="space-y-0.5">
-                                                                                            <div className="font-mono">
-                                                                                                {tanggal} {(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}
-                                                                                            </div>
-                                                                                            <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</div>
-                                                                                            <div className="text-[11px] truncate">{(e?.nip && pegawaiNameMap[e.nip]) || '-'}</div>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                                                                        <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
-                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 min-w-[9rem]">
-                                                                                        <div className="space-y-0.5 text-[11px] leading-tight">
-                                                                                            <div className="flex justify-between gap-2">
-                                                                                                <span className="text-gray-500 whitespace-nowrap">Suhu</span>
-                                                                                                <span className="text-right">{e.suhu_tubuh || '-'}°C</span>
-                                                                                            </div>
-                                                                                            <div className="flex justify-between gap-2">
-                                                                                                <span className="text-gray-500 whitespace-nowrap">Tensi</span>
-                                                                                                <span className="text-right">{e.tensi || '-'}</span>
-                                                                                            </div>
-                                                                                            <div className="flex justify-between gap-2">
-                                                                                                <span className="text-gray-500 whitespace-nowrap">Nadi</span>
-                                                                                                <span className="text-right">{e.nadi || '-'}/min</span>
-                                                                                            </div>
-                                                                                            <div className="flex justify-between gap-2">
-                                                                                                <span className="text-gray-500 whitespace-nowrap">SpO2</span>
-                                                                                                <span className="text-right">{e.spo2 || '-'}%</span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                                                                        <div className="break-words whitespace-normal" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
-                                                                                            {(typeof e.pemeriksaan === 'string' && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : '-'}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                                                                        <div className="break-words whitespace-normal" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
-                                                                                            {(typeof e.penilaian === 'string' && e.penilaian.trim()) ? e.penilaian.trim() : '-'}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
-                                                                                        <div className="break-words whitespace-normal" title={(() => {
-                                                                                            const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
-                                                                                            const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
-                                                                                            const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
-                                                                                            return s || i || v || '';
-                                                                                        })()}>
-                                                                                            {(() => {
-                                                                                                const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
-                                                                                                const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
-                                                                                                const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
-                                                                                                return s || i || v || '-';
-                                                                                            })()}
-                                                                                        </div>
-                                                                                    </td>
-                                                                                </tr>
-                                                                                        );
-                                                                                    })}
-                                                                        </React.Fragment>
-                                                                    );
-                                                                });
-                                                            })()}
-                                                        </tbody>
-                                                    </table>
+                                                                    } else if (h.tgl_registrasi) {
+                                                                        tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                                    }
+                                                                } catch (_) { }
+                                                                return (
+                                                                    <React.Fragment key={`${h.no_rawat}-group`}>
+                                                                        {Array.isArray(h.entries) && h.entries.length > 0 &&
+                                                                            h.entries
+                                                                                .slice()
+                                                                                .sort((a, b) => {
+                                                                                    const aa = String(a.jam_rawat || '').substring(0, 5);
+                                                                                    const bb = String(b.jam_rawat || '').substring(0, 5);
+                                                                                    return aa < bb ? 1 : aa > bb ? -1 : 0;
+                                                                                })
+                                                                                .map((e, i) => {
+                                                                                    rowIndex += 1;
+                                                                                    if (rowIndex < soapPageStart || rowIndex >= soapPageEnd) {
+                                                                                        return null;
+                                                                                    }
+                                                                                    return (
+                                                                                        <tr key={`${h.no_rawat}-e-${i}`} className="bg-white dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                                                            <td className="px-3 py-2 text-gray-900 dark:text-white">
+                                                                                                <div className="space-y-0.5">
+                                                                                                    <div className="font-mono">
+                                                                                                        {tanggal} {(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0, 5) : '-'}
+                                                                                                    </div>
+                                                                                                    <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</div>
+                                                                                                    <div className="text-[11px] truncate">{(e?.nip && pegawaiNameMap[e.nip]) || '-'}</div>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                                <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                                    {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-gray-700 dark:text-gray-300 min-w-[9rem]">
+                                                                                                <div className="space-y-0.5 text-[11px] leading-tight">
+                                                                                                    <div className="flex justify-between gap-2">
+                                                                                                        <span className="text-gray-500 whitespace-nowrap">Suhu</span>
+                                                                                                        <span className="text-right">{e.suhu_tubuh || '-'}°C</span>
+                                                                                                    </div>
+                                                                                                    <div className="flex justify-between gap-2">
+                                                                                                        <span className="text-gray-500 whitespace-nowrap">Tensi</span>
+                                                                                                        <span className="text-right">{e.tensi || '-'}</span>
+                                                                                                    </div>
+                                                                                                    <div className="flex justify-between gap-2">
+                                                                                                        <span className="text-gray-500 whitespace-nowrap">Nadi</span>
+                                                                                                        <span className="text-right">{e.nadi || '-'}/min</span>
+                                                                                                    </div>
+                                                                                                    <div className="flex justify-between gap-2">
+                                                                                                        <span className="text-gray-500 whitespace-nowrap">SpO2</span>
+                                                                                                        <span className="text-right">{e.spo2 || '-'}%</span>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                                <div className="break-words whitespace-normal" title={typeof e.pemeriksaan === 'string' ? e.pemeriksaan.trim() : ''}>
+                                                                                                    {(typeof e.pemeriksaan === 'string' && e.pemeriksaan.trim()) ? e.pemeriksaan.trim() : '-'}
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                                <div className="break-words whitespace-normal" title={typeof e.penilaian === 'string' ? e.penilaian.trim() : ''}>
+                                                                                                    {(typeof e.penilaian === 'string' && e.penilaian.trim()) ? e.penilaian.trim() : '-'}
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                                                                                <div className="break-words whitespace-normal" title={(() => {
+                                                                                                    const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
+                                                                                                    const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
+                                                                                                    const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
+                                                                                                    return s || i || v || '';
+                                                                                                })()}>
+                                                                                                    {(() => {
+                                                                                                        const s = typeof e.rtl === 'string' ? e.rtl.trim() : '';
+                                                                                                        const i = typeof e.instruksi === 'string' ? e.instruksi.trim() : '';
+                                                                                                        const v = typeof e.evaluasi === 'string' ? e.evaluasi.trim() : '';
+                                                                                                        return s || i || v || '-';
+                                                                                                    })()}
+                                                                                                </div>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    );
+                                                                                })}
+                                                                    </React.Fragment>
+                                                                );
+                                                            });
+                                                        })()}
+                                                    </tbody>
+                                                </table>
                                             </div>
                                             <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-700 text-[11px] text-gray-600 dark:text-gray-300">
                                                 <span>
@@ -1383,11 +1385,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                         type="button"
                                                         onClick={() => setSoapPage((p) => Math.max(1, p - 1))}
                                                         disabled={soapCurrentPage <= 1}
-                                                        className={`px-2 py-1 rounded border text-[11px] ${
-                                                            soapCurrentPage <= 1
-                                                                ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
-                                                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
-                                                        }`}
+                                                        className={`px-2 py-1 rounded border text-[11px] ${soapCurrentPage <= 1
+                                                            ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
+                                                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                            }`}
                                                     >
                                                         Sebelumnya
                                                     </button>
@@ -1398,11 +1399,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                         type="button"
                                                         onClick={() => setSoapPage((p) => Math.min(soapTotalPages, p + 1))}
                                                         disabled={soapCurrentPage >= soapTotalPages}
-                                                        className={`px-2 py-1 rounded border text-[11px] ${
-                                                            soapCurrentPage >= soapTotalPages
-                                                                ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
-                                                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
-                                                        }`}
+                                                        className={`px-2 py-1 rounded border text-[11px] ${soapCurrentPage >= soapTotalPages
+                                                            ? "bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600 cursor-not-allowed"
+                                                            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                            }`}
                                                     >
                                                         Berikutnya
                                                     </button>
@@ -1429,12 +1429,12 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                     } else if (h.tgl_registrasi) {
                                                         tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                     }
-                                                } catch (_) {}
+                                                } catch (_) { }
                                                 const countDisplay = (() => {
                                                     if (Array.isArray(h.entries)) {
                                                         const seen = new Set();
                                                         for (const e of h.entries) {
-                                                            const t = String(e.jam_rawat || '').substring(0,5);
+                                                            const t = String(e.jam_rawat || '').substring(0, 5);
                                                             if (!t) continue;
                                                             seen.add(t);
                                                         }
@@ -1502,21 +1502,21 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                     const uniq = [];
                                                                     const seen = new Set();
                                                                     for (const e of (Array.isArray(h.entries) ? h.entries : [])) {
-                                                                        const t = String(e.jam_rawat || '').substring(0,5);
+                                                                        const t = String(e.jam_rawat || '').substring(0, 5);
                                                                         if (seen.has(t)) continue;
                                                                         seen.add(t);
                                                                         uniq.push(e);
                                                                     }
                                                                     return uniq.slice().sort((a, b) => {
-                                                                        const aa = String(a.jam_rawat || '').substring(0,5);
-                                                                        const bb = String(b.jam_rawat || '').substring(0,5);
+                                                                        const aa = String(a.jam_rawat || '').substring(0, 5);
+                                                                        const bb = String(b.jam_rawat || '').substring(0, 5);
                                                                         return aa < bb ? 1 : aa > bb ? -1 : 0;
                                                                     }).map((e, i) => (
                                                                         <div key={`${h.no_rawat}-cv-${i}`} className="grid grid-cols-[14rem_12rem_1fr] gap-2 py-1">
                                                                             <div className="text-gray-900 dark:text-white">
                                                                                 <div className="space-y-0.5">
                                                                                     <div className="font-mono">
-                                                                                        {`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0,5) : '-'}`}
+                                                                                        {`${tanggal} ${(typeof e.jam_rawat === 'string' && e.jam_rawat.trim()) ? e.jam_rawat.trim().substring(0, 5) : '-'}`}
                                                                                     </div>
                                                                                     <div className="text-[11px] font-mono text-gray-900 dark:text-white">{h.no_rawat || '-'}</div>
                                                                                     <div className="text-[11px] truncate">{(e?.nip && pegawaiNameMap[e.nip]) || '-'}</div>
@@ -1534,11 +1534,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                     <div className="text-right text-[11px]">{e.spo2 || '-'}%</div>
                                                                                 </div>
                                                                             </div>
-                                                                                    <div className="text-gray-700 dark:text-gray-300">
-                                                                                        <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
-                                                                                            {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
-                                                                                        </div>
-                                                                                    </div>
+                                                                            <div className="text-gray-700 dark:text-gray-300">
+                                                                                <div className="break-words whitespace-normal" title={typeof e.keluhan === 'string' ? e.keluhan.trim() : ''}>
+                                                                                    {(typeof e.keluhan === 'string' && e.keluhan.trim()) ? e.keluhan.trim() : '-'}
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
                                                                     ));
                                                                 })()}
@@ -1582,7 +1582,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                 } else if (h.tgl_registrasi) {
                                                                     tanggal = new Date(h.tgl_registrasi).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                                                                 }
-                                                            } catch (_) {}
+                                                            } catch (_) { }
                                                             return (
                                                                 <tr key={`${h.no_rawat}-full`}>
                                                                     <td className="px-3 py-2 w-44">
@@ -1613,13 +1613,13 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                                                 <span className="text-gray-500">SpO2:</span>
                                                                                 <span className="font-medium">{latest.spo2 || '-'}%</span>
                                                                             </div>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
-                                                                            <div className="break-words whitespace-normal" title={latest.pemeriksaan || ''}>
-                                                                                {latest.pemeriksaan || '-'}
-                                                                            </div>
-                                                                        </td>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-64">
+                                                                        <div className="break-words whitespace-normal" title={latest.pemeriksaan || ''}>
+                                                                            {latest.pemeriksaan || '-'}
+                                                                        </div>
+                                                                    </td>
                                                                     <td className="px-3 py-2 text-gray-700 dark:text-gray-300 w-48">
                                                                         <div className="break-words whitespace-normal" title={latest.penilaian || ''}>
                                                                             {latest.penilaian || '-'}

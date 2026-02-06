@@ -1524,10 +1524,10 @@ class PcareController extends Controller
 
             if (! $data) {
                 return response()->json([
-                    'success' => false,
+                    'success' => true,
                     'data' => null,
                     'message' => 'Data rujukan tidak ditemukan',
-                ], 404);
+                ], 200);
             }
 
             // Mapping hubungan keluarga ke status BPJS
@@ -3125,7 +3125,7 @@ class PcareController extends Controller
 
     /**
      * Get Skrining Riwayat Kesehatan Peserta (PCare REST).
-     * Endpoint PCare: GET /skrinning/peserta/{nomor_peserta}/{start}/{limit}
+     * Endpoint PCare: GET /skrining/peserta/{nomor_peserta}/{start}/{limit}
      * Parameter 1: Nomor atau Nama Peserta
      * Parameter 2: Row data awal (start)
      * Parameter 3: Limit jumlah data
@@ -3153,7 +3153,7 @@ class PcareController extends Controller
             // Pastikan nomor peserta di-encode dengan benar untuk URL path
             // Gunakan rawurlencode untuk encode karakter khusus tapi tetap bisa digunakan di path
             $nomorPesertaEncoded = rawurlencode($nomorPeserta);
-            $endpoint = 'skrinning/peserta/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            $endpoint = 'skrining/peserta/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
             
             Log::channel('bpjs')->info('PCare getSkriningPeserta requesting endpoint', [
                 'endpoint' => $endpoint,
@@ -3224,7 +3224,7 @@ class PcareController extends Controller
 
     /**
      * Get Data Prolanis Diabetes Mellitus (PCare REST).
-     * Endpoint PCare: GET /skrinning/prolanis/dm/{nomor_peserta}/{start}/{limit}
+     * Endpoint PCare: GET /skrining/prolanis/dm/{nomor_peserta}/{start}/{limit}
      * Parameter 1: Nomor atau Nama Peserta
      * Parameter 2: Row data awal (start)
      * Parameter 3: Limit jumlah data
@@ -3251,7 +3251,7 @@ class PcareController extends Controller
 
         try {
             $nomorPesertaEncoded = rawurlencode($nomorPeserta);
-            $endpoint = 'skrinning/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            $endpoint = 'skrining/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
             
             Log::channel('bpjs')->info('PCare getProlanisDm requesting endpoint', [
                 'endpoint' => $endpoint,
@@ -3320,7 +3320,7 @@ class PcareController extends Controller
 
     /**
      * Get Data Prolanis Hipertensi (PCare REST).
-     * Endpoint PCare: GET /skrinning/prolanis/ht/{nomor_peserta}/{start}/{limit}
+     * Endpoint PCare: GET /skrining/prolanis/ht/{nomor_peserta}/{start}/{limit}
      * Parameter 1: Nomor atau Nama Peserta
      * Parameter 2: Row data awal (start)
      * Parameter 3: Limit jumlah data
@@ -3347,7 +3347,7 @@ class PcareController extends Controller
 
         try {
             $nomorPesertaEncoded = rawurlencode($nomorPeserta);
-            $endpoint = 'skrinning/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
+            $endpoint = 'skrining/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
             
             Log::channel('bpjs')->info('PCare getProlanisHt requesting endpoint', [
                 'endpoint' => $endpoint,
@@ -3564,7 +3564,7 @@ class PcareController extends Controller
 
     /**
      * Referensi Penyakit SRK (Skrinning Rekap) dari PCare.
-     * Sesuai katalog BPJS: GET {Base URL}/{Service Name}/skrinning/rekap
+     * Sesuai katalog BPJS: GET {Base URL}/{Service Name}/skrining/rekap
      * Endpoint ini TIDAK menerima parameter apapun dan mengembalikan semua data rekapitulasi.
      *
      * Catatan: Parameter q, start, limit di frontend digunakan untuk filtering/pagination di sisi client
@@ -3588,10 +3588,10 @@ class PcareController extends Controller
             ], 422);
         }
 
-        // Sesuai katalog BPJS, endpoint skrinning/rekap TIDAK menerima parameter
+        // Sesuai katalog BPJS, endpoint skrining/rekap TIDAK menerima parameter
         // Endpoint langsung mengembalikan semua data rekapitulasi
         // Content-Type sesuai katalog: application/json; charset=utf-8
-        $endpoint = 'skrinning/rekap';
+        $endpoint = 'skrining/rekap';
 
         try {
             Log::channel('bpjs')->info('PCare getReferensiSrk requesting endpoint', [
@@ -3601,7 +3601,7 @@ class PcareController extends Controller
             ]);
 
             // Gunakan pcareRequest seperti endpoint lain yang sudah bekerja
-            // Endpoint skrinning/rekap tidak menerima parameter sesuai katalog BPJS
+            // Endpoint skrining/rekap tidak menerima parameter sesuai katalog BPJS
             // Content-Type sesuai katalog: application/json; charset=utf-8
             $result = $this->pcareRequest('GET', $endpoint, [], null, [
                 'Content-Type' => 'application/json; charset=utf-8',

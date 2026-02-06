@@ -2,11 +2,20 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
+<<<<<<< HEAD
+=======
+import DataAlergi from '../../../Alergi/DataAlergi.jsx';
+>>>>>>> Algojo
 import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+<<<<<<< HEAD
 import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
+=======
+import { Eraser, Activity, FileText, HelpCircle, Plus, Save } from 'lucide-react';
+import axios from 'axios';
+>>>>>>> Algojo
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -512,6 +521,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [error, setError] = useState(null);
     const [pegawaiMap, setPegawaiMap] = useState({});
     const [pegawaiQuery, setPegawaiQuery] = useState('');
+    const [kdAlergi, setKdAlergi] = useState('');
+    const [alergiJenis, setAlergiJenis] = useState('');
+    const [alergiModalOpen, setAlergiModalOpen] = useState(false);
     const [editKey, setEditKey] = useState(null); // { no_rawat, tgl_perawatan, jam_rawat }
     // Bridging PCare states
     const [showBridging, setShowBridging] = useState(false); // Default hidden, tampil saat pendaftaran berhasil
@@ -526,6 +538,177 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Menyimpan payload terakhir untuk template cetak rujukan
     const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
+<<<<<<< HEAD
+=======
+    const [dbTemplateOptions, setDbTemplateOptions] = useState([]);
+    const [selectedDbTemplate, setSelectedDbTemplate] = useState('');
+    const [templateSaving, setTemplateSaving] = useState(false);
+    const [templateError, setTemplateError] = useState(null);
+    const [templateMessage, setTemplateMessage] = useState(null);
+    const [showNmTemplateModal, setShowNmTemplateModal] = useState(false);
+    const [nmTemplateInput, setNmTemplateInput] = useState('');
+
+    useEffect(() => {
+        let active = true;
+        const loadAlergiPasien = async () => {
+            if (!noRkmMedis || editKey) return;
+            try {
+                let res = await fetch(`/api/alergi/pasien?no_rkm_medis=${encodeURIComponent(noRkmMedis)}`, {
+                    headers: { Accept: 'application/json' },
+                    credentials: 'same-origin',
+                });
+                if (res.status === 419) {
+                    await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' }).catch(() => {});
+                    res = await fetch(`/api/alergi/pasien?no_rkm_medis=${encodeURIComponent(noRkmMedis)}`, {
+                        headers: { Accept: 'application/json' },
+                        credentials: 'same-origin',
+                    });
+                }
+                if (res.status === 401) {
+                    throw new Error('Unauthenticated');
+                }
+                const js = await res.json();
+                const list = Array.isArray(js?.data) ? js.data : [];
+                if (!active) return;
+                if (list.length > 0) {
+                    const first = list[0];
+                    setAlergiJenis(String(first.kode_jenis || ''));
+                    setKdAlergi(first.kd_alergi || '');
+                    setFormData((p) => ({ ...p, alergi: first.nm_alergi || '' }));
+                } else {
+                    setKdAlergi('');
+                    setAlergiJenis('');
+                    setFormData((p) => ({ ...p, alergi: '' }));
+                }
+            } catch (_) { }
+        };
+        loadAlergiPasien();
+        return () => { active = false; };
+    }, [noRkmMedis, editKey]);
+
+    useEffect(() => {
+        let active = true;
+        const loadDbTemplates = async () => {
+            try {
+                const res = await fetch('/api/template-pemeriksaan-dokter/list', {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'include',
+                });
+                const json = await res.json();
+                const arr = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.list) ? json.list : []);
+                const opts = arr.map((it) => ({
+                    value: it?.no_template || it?.id || '',
+                    label: it?.nm_template || it?.penilaian || it?.keluhan || it?.no_template || '',
+                }));
+                if (active) setDbTemplateOptions(opts);
+            } catch (_) {
+                if (active) setDbTemplateOptions([]);
+            }
+        };
+        loadDbTemplates();
+        return () => { active = false; };
+    }, []);
+
+    const applyDbTemplate = async (key) => {
+        setSelectedDbTemplate(key);
+        if (!key) return;
+        try {
+            const url = `/api/template-pemeriksaan-dokter/item?no_template=${encodeURIComponent(key)}`;
+            const res = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
+            const json = await res.json();
+            const t = json?.data || json || {};
+            setFormData((prev) => ({
+                ...prev,
+                suhu_tubuh: t.suhu || prev.suhu_tubuh || '',
+                tensi: t.tensi || prev.tensi || '',
+                nadi: t.nadi || prev.nadi || '',
+                respirasi: t.respirasi || prev.respirasi || '',
+                spo2: t.spo2 || prev.spo2 || '',
+                gcs: t.gcs || prev.gcs || '',
+                tinggi: t.tinggi || prev.tinggi || '',
+                berat: t.berat || prev.berat || '',
+                lingkar_perut: t.lingkar_perut || prev.lingkar_perut || '',
+                keluhan: t.keluhan || prev.keluhan || '',
+                pemeriksaan: t.pemeriksaan || prev.pemeriksaan || '',
+                penilaian: t.penilaian || prev.penilaian || '',
+                rtl: t.rencana || prev.rtl || '',
+                instruksi: t.instruksi || prev.instruksi || '',
+                evaluasi: t.evaluasi || prev.evaluasi || '',
+            }));
+        } catch (_) { }
+    };
+
+    const deriveNmTemplate = () => {
+        const a = (formData?.penilaian && String(formData.penilaian).trim() !== '') ? String(formData.penilaian).trim() : '';
+        const b = (!a && formData?.keluhan && String(formData.keluhan).trim() !== '') ? String(formData.keluhan).trim() : '';
+        return a || b || 'Template Pemeriksaan';
+    };
+
+    const openNmTemplateModal = () => {
+        setNmTemplateInput(deriveNmTemplate());
+        setShowNmTemplateModal(true);
+    };
+
+    const confirmNmTemplateAndSave = async () => {
+        setShowNmTemplateModal(false);
+        await saveOrUpdateTemplate(nmTemplateInput);
+    };
+
+    const saveOrUpdateTemplate = async (nmOverride) => {
+        try {
+            setTemplateSaving(true);
+            setTemplateError(null);
+            setTemplateMessage(null);
+            const creating = !selectedDbTemplate;
+            const nmTemplate = (typeof nmOverride === 'string' && nmOverride.trim() !== '') ? nmOverride.trim() : deriveNmTemplate();
+            const mainPayload = {
+                no_template: selectedDbTemplate || undefined,
+                keluhan: formData.keluhan || '',
+                pemeriksaan: formData.pemeriksaan || '',
+                penilaian: formData.penilaian || '',
+                rencana: formData.rtl || '',
+                instruksi: formData.instruksi || '',
+                evaluasi: formData.evaluasi || '',
+            };
+            const detailPayload = {
+                no_template: selectedDbTemplate || undefined,
+                nm_template: nmTemplate,
+                suhu_tubuh: formData.suhu_tubuh || '',
+                tensi: formData.tensi || '',
+                nadi: formData.nadi || '',
+                respirasi: formData.respirasi || '',
+                spo2: formData.spo2 || '',
+                tinggi: formData.tinggi || '',
+                berat: formData.berat || '',
+                gcs: formData.gcs || '',
+                lingkar_perut: formData.lingkar_perut || '',
+            };
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (_) {}
+            const mainRes = await axios({ method: creating ? 'POST' : 'PUT', url: '/api/template-pemeriksaan-dokter', data: mainPayload, withCredentials: true });
+            const mainJson = mainRes?.data || {};
+            const noTemplate = mainJson?.no_template || selectedDbTemplate;
+            const detailRes = await axios({ method: creating ? 'POST' : 'PUT', url: '/api/template-pemeriksaan-dokter/detail', data: { ...detailPayload, no_template: noTemplate }, withCredentials: true });
+            const detailJson = detailRes?.data || {};
+            setSelectedDbTemplate(noTemplate);
+            setTemplateMessage(detailJson?.message || mainJson?.message || (creating ? 'Template tersimpan' : 'Template diperbarui'));
+            try {
+                const res = await fetch('/api/template-pemeriksaan-dokter/list', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
+                const json = await res.json();
+                const arr = Array.isArray(json?.data) ? json.data : (Array.isArray(json?.list) ? json.list : []);
+                const opts = arr.map((it) => ({ value: it?.no_template || it?.id || '', label: it?.nm_template || it?.penilaian || it?.keluhan || it?.no_template || '' }));
+                setDbTemplateOptions(opts);
+            } catch (_) {}
+        } catch (e) {
+            const msg = e?.response?.data?.message || e?.message || 'Gagal menyimpan template';
+            setTemplateError(msg);
+        } finally {
+            setTemplateSaving(false);
+        }
+    };
+>>>>>>> Algojo
 
     // State untuk Modal Keluar
     const [exitModalOpen, setExitModalOpen] = useState(false);
@@ -912,9 +1095,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     normalizedFormData[key] = '-';
                 }
             });
+            const jenisInt = alergiJenis ? parseInt(alergiJenis, 10) : null;
+            const hasAlergiData = !!(noRkmMedis && kdAlergi && String(kdAlergi).trim() !== '' && String(kdAlergi).trim() !== '-' && jenisInt);
+            const alergiPayload = hasAlergiData ? {
+                no_rkm_medis: noRkmMedis,
+                kode_jenis: jenisInt,
+                kd_alergi: String(kdAlergi).trim(),
+            } : null;
             const payload = creating
-                ? { ...normalizedFormData, no_rawat: noRawat, t: token }
-                : { ...normalizedFormData, key: editKey };
+                ? { ...normalizedFormData, no_rawat: noRawat, t: token, ...(hasAlergiData && { alergi_pasien: alergiPayload }) }
+                : { ...normalizedFormData, key: editKey, ...(hasAlergiData && { alergi_pasien: alergiPayload }) };
             const res = await fetch(url, {
                 method: creating ? 'POST' : 'PUT',
                 headers: {
@@ -945,6 +1135,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }));
             setPegawaiQuery('');
             setEditKey(null);
+            setKdAlergi('');
+            setAlergiJenis('');
 
             // Setelah pemeriksaan tersimpan, otomatis hit ke BPJS PCare: pendaftaran
             try {
@@ -1757,7 +1949,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     return (
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between gap-3">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                             <svg
@@ -1858,22 +2050,39 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
                                         Alergi :
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="alergi"
-                                        value={formData.alergi}
-                                        onChange={handleChange}
-                                        placeholder="Contoh: Penisilin, Aspirin"
-                                        className={`w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                                            ((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'
-                                        }`}
-                                    />
+                                    <div className="w-full md:flex-1 relative pr-8">
+                                        <SearchableSelect
+                                            source="alergi_local"
+                                            value={kdAlergi}
+                                            onChange={(val) => { setKdAlergi(val); }}
+                                            onSelect={(opt) => {
+                                                const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                setFormData((prev) => ({ ...prev, alergi: label }));
+                                                const jenis = typeof opt === 'object' ? (opt?.kode_jenis ?? null) : null;
+                                                if (jenis != null) setAlergiJenis(String(jenis));
+                                            }}
+                                            placeholder="Pilih alergi..."
+                                            searchPlaceholder="Cari alergi..."
+                                            defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
+                                            className="!h-7 !px-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
+                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setAlergiModalOpen(true)}
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-[2001]"
+                                            aria-label="Tambah Data Alergi"
+                                            title="Tambah Data Alergi"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
                                     <div className="w-full md:flex-1">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                            <div className="w-full sm:w-52 md:w-52">
+                                            <div className="w-full sm:w-40 md:w-40">
                                                 <SearchableSelect
                                                     options={templateOptions}
                                                     value={selectedTemplate}
@@ -1893,6 +2102,28 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 title="Bersihkan"
                                             >
                                                 <Eraser className="w-4 h-4" />
+                                            </button>
+                                            <div className="w-full sm:w-44 md:w-44">
+                                                <SearchableSelect
+                                                    options={dbTemplateOptions}
+                                                    value={selectedDbTemplate}
+                                                    onChange={(val) => { applyDbTemplate(val); }}
+                                                    placeholder="Template Manual"
+                                                    searchPlaceholder="Cari template..."
+                                                    displayKey="label"
+                                                    valueKey="value"
+                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={openNmTemplateModal}
+                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shrink-0"
+                                                title="Simpan/Update Template"
+                                                aria-label="Simpan/Update Template"
+                                                disabled={templateSaving}
+                                            >
+                                                <Save className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </div>
@@ -2712,6 +2943,62 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
             </Modal>
 
+<<<<<<< HEAD
+=======
+            <DataAlergi open={alergiModalOpen} onClose={() => setAlergiModalOpen(false)} />
+
+            <Modal show={showNmTemplateModal} onClose={() => setShowNmTemplateModal(false)} maxWidth="lg">
+                <div className="relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                    <div className="p-6">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 sm:mx-0 sm:h-10 sm:w-10 shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-50 dark:ring-indigo-900/20">
+                                <Save className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                                    Simpan/Update Template
+                                </h3>
+                                <div className="mt-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Template</label>
+                                    <input
+                                        type="text"
+                                        value={nmTemplateInput}
+                                        onChange={(e) => setNmTemplateInput(e.target.value)}
+                                        className="w-full text-sm h-9 px-3 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    />
+                                    {templateError && (
+                                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{templateError}</p>
+                                    )}
+                                    {templateMessage && (
+                                        <p className="mt-2 text-sm text-green-600 dark:text-green-400">{templateMessage}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-6 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
+                            <button
+                                type="button"
+                                onClick={confirmNmTemplateAndSave}
+                                disabled={templateSaving}
+                                className="inline-flex w-full justify-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 sm:w-auto disabled:opacity-50 transition-all transform hover:scale-[1.02]"
+                            >
+                                {templateSaving ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowNmTemplateModal(false)}
+                                disabled={templateSaving}
+                                className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto disabled:opacity-50 transition-colors"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+>>>>>>> Algojo
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>

@@ -635,40 +635,7 @@ class RawatJalanController extends Controller
                     'rows_affected' => $updated,
                 ]);
 
-                // Simpan alergi pasien jika ada
-                if (isset($alergiPasien) && is_array($alergiPasien)) {
-                    $alergiData = $alergiPasien;
-                    $noRM = $alergiData['no_rkm_medis'] ?? null;
-                    $kodeJenis = $alergiData['kode_jenis'] ?? null;
-                    $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
-
-                    if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
-                        try {
-                            DB::table('alergi_pasien')->updateOrInsert(
-                                [
-                                    'no_rkm_medis' => $noRM,
-                                    'kd_alergi' => $kdAlergi,
-                                ],
-                                [
-                                    'kode_jenis' => $kodeJenis,
-                                ]
-                            );
-
-                            \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien', [
-                                'no_rkm_medis' => $noRM,
-                                'kode_jenis' => $kodeJenis,
-                                'kd_alergi' => $kdAlergi,
-                            ]);
-                        } catch (\Throwable $e) {
-                            \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien', [
-                                'no_rkm_medis' => $noRM,
-                                'kode_jenis' => $kodeJenis,
-                                'kd_alergi' => $kdAlergi,
-                                'error' => $e->getMessage(),
-                            ]);
-                        }
-                    }
-                }
+                
             } else {
                 \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
                     'no_rawat' => $validated['no_rawat'],
@@ -681,6 +648,40 @@ class RawatJalanController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+        }
+
+        if (isset($alergiPasien) && is_array($alergiPasien)) {
+            $alergiData = $alergiPasien;
+            $noRM = $alergiData['no_rkm_medis'] ?? null;
+            $kodeJenis = $alergiData['kode_jenis'] ?? null;
+            $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
+
+            if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
+                try {
+                    DB::table('alergi_pasien')->updateOrInsert(
+                        [
+                            'no_rkm_medis' => $noRM,
+                            'kd_alergi' => $kdAlergi,
+                        ],
+                        [
+                            'kode_jenis' => $kodeJenis,
+                        ]
+                    );
+
+                    \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien', [
+                        'no_rkm_medis' => $noRM,
+                        'kode_jenis' => $kodeJenis,
+                        'kd_alergi' => $kdAlergi,
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien', [
+                        'no_rkm_medis' => $noRM,
+                        'kode_jenis' => $kodeJenis,
+                        'kd_alergi' => $kdAlergi,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
 
         return response()->json(['message' => 'Pemeriksaan tersimpan']);
@@ -779,40 +780,7 @@ class RawatJalanController extends Controller
                     'rows_affected' => $updatedReg,
                 ]);
 
-                // Simpan alergi pasien jika ada
-                if (isset($validated['alergi_pasien']) && is_array($validated['alergi_pasien'])) {
-                    $alergiData = $validated['alergi_pasien'];
-                    $noRM = $alergiData['no_rkm_medis'] ?? null;
-                    $kodeJenis = $alergiData['kode_jenis'] ?? null;
-                    $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
-
-                    if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
-                        try {
-                            DB::table('alergi_pasien')->updateOrInsert(
-                                [
-                                    'no_rkm_medis' => $noRM,
-                                    'kd_alergi' => $kdAlergi,
-                                ],
-                                [
-                                    'kode_jenis' => $kodeJenis,
-                                ]
-                            );
-
-                            \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien setelah update pemeriksaan', [
-                                'no_rkm_medis' => $noRM,
-                                'kode_jenis' => $kodeJenis,
-                                'kd_alergi' => $kdAlergi,
-                            ]);
-                        } catch (\Throwable $e) {
-                            \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien setelah update pemeriksaan', [
-                                'no_rkm_medis' => $noRM,
-                                'kode_jenis' => $kodeJenis,
-                                'kd_alergi' => $kdAlergi,
-                                'error' => $e->getMessage(),
-                            ]);
-                        }
-                    }
-                }
+                
             } else {
                 \Illuminate\Support\Facades\Log::warning('reg_periksa tidak ditemukan untuk update status', [
                     'no_rawat' => $key['no_rawat'],
@@ -825,6 +793,40 @@ class RawatJalanController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+        }
+
+        if (isset($validated['alergi_pasien']) && is_array($validated['alergi_pasien'])) {
+            $alergiData = $validated['alergi_pasien'];
+            $noRM = $alergiData['no_rkm_medis'] ?? null;
+            $kodeJenis = $alergiData['kode_jenis'] ?? null;
+            $kdAlergi = trim((string) ($alergiData['kd_alergi'] ?? ''));
+
+            if ($noRM && $kodeJenis && $kdAlergi !== '' && $kdAlergi !== '-') {
+                try {
+                    DB::table('alergi_pasien')->updateOrInsert(
+                        [
+                            'no_rkm_medis' => $noRM,
+                            'kd_alergi' => $kdAlergi,
+                        ],
+                        [
+                            'kode_jenis' => $kodeJenis,
+                        ]
+                    );
+
+                    \Illuminate\Support\Facades\Log::info('Berhasil menyimpan alergi_pasien setelah update pemeriksaan', [
+                        'no_rkm_medis' => $noRM,
+                        'kode_jenis' => $kodeJenis,
+                        'kd_alergi' => $kdAlergi,
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Gagal menyimpan alergi_pasien setelah update pemeriksaan', [
+                        'no_rkm_medis' => $noRM,
+                        'kode_jenis' => $kodeJenis,
+                        'kd_alergi' => $kdAlergi,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
 
         return response()->json(['message' => 'Pemeriksaan diperbarui']);
