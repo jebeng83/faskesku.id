@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -827,6 +828,40 @@ class RawatJalanController extends Controller
         }
 
         return response()->json(['message' => 'Pemeriksaan diperbarui']);
+    }
+
+    /**
+     * Update status periksa (stts) pada reg_periksa
+     */
+    public function updateStatus(Request $request)
+    {
+        // Validasi hak akses user
+        if (!$request->user() || !$request->user()->can('edit-appointments')) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah status periksa'], 403);
+        }
+
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
+        ]);
+
+        $updated = DB::table('reg_periksa')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->update(['stts' => $validated['stts']]);
+
+        if ($updated === 0) {
+            // Cek apakah no_rawat ada
+            $exists = DB::table('reg_periksa')->where('no_rawat', $validated['no_rawat'])->exists();
+            if (!$exists) {
+                return response()->json(['message' => 'No rawat tidak ditemukan'], 404);
+            }
+            // Jika ada tapi tidak update, mungkin status sudah sama, dianggap sukses
+        }
+
+        return response()->json([
+            'message' => 'Status berhasil diperbarui',
+            'stts' => $validated['stts']
+        ]);
     }
 
     /**

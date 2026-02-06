@@ -244,6 +244,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
 
+    const handleAwalKeperawatanUmum = (noRawat) => {
+        // TODO: Implement navigation to Awal Keperawatan Umum
+        // console.log("Awal Keperawatan Umum:", noRawat);
+        alert("Fitur Awal Keperawatan Umum belum tersedia.");
+    };
+
     const toBase64Url = (obj) => {
         try {
             const b = btoa(JSON.stringify(obj));

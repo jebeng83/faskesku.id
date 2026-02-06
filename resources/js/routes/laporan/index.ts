@@ -42,7 +42,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:726
+* @see routes/web.php:935
 * @route '/laporan/stats'
 */
 export const stats = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ stats.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:726
+* @see routes/web.php:935
 * @route '/laporan/stats'
 */
 stats.url = (options?: RouteQueryOptions) => {
@@ -64,7 +64,7 @@ stats.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:726
+* @see routes/web.php:935
 * @route '/laporan/stats'
 */
 stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +73,7 @@ stats.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:726
+* @see routes/web.php:935
 * @route '/laporan/stats'
 */
 stats.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

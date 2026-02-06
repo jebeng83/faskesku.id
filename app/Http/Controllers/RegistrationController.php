@@ -602,6 +602,7 @@ class RegistrationController extends Controller
             ->join('poliklinik', 'poliklinik.kd_poli', '=', 'reg_periksa.kd_poli')
             ->selectRaw('MONTH(reg_periksa.tgl_registrasi) as month, reg_periksa.kd_poli as kd_poli, poliklinik.nm_poli as nm_poli, COUNT(*) as total')
             ->whereYear('reg_periksa.tgl_registrasi', $year)
+            ->where('reg_periksa.stts', '!=', 'Batal')
             ->groupBy('month', 'reg_periksa.kd_poli', 'poliklinik.nm_poli')
             ->get();
 

@@ -355,6 +355,14 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           lingkar_perut: pemeriksaanPayload.lingkar_perut,
           berat: pemeriksaanPayload.berat,
           tinggi: pemeriksaanPayload.tinggi,
+          kdSadar: (() => {
+            const val = (pemeriksaanPayload.kesadaran || '').toLowerCase();
+            if (val.includes('compos')) return '01';
+            if (val.includes('somnolen')) return '02';
+            if (val.includes('sopor')) return '03';
+            if (val.includes('coma') || val.includes('koma')) return '04';
+            return '01'; // Default Compos Mentis
+          })(),
         };
         const pcareRes = await axios({
           method: 'POST',

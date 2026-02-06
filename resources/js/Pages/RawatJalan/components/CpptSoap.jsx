@@ -1,12 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
+import Modal from '@/Components/Modal';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser } from 'lucide-react';
+import usePermission from '@/hooks/usePermission';
+import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+    const { can } = usePermission();
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -508,7 +512,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [loadingList, setLoadingList] = useState(false);
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
-    const [pegawaiOptions, setPegawaiOptions] = useState([]);
     const [pegawaiMap, setPegawaiMap] = useState({});
     const [pegawaiQuery, setPegawaiQuery] = useState('');
     const [editKey, setEditKey] = useState(null); // { no_rawat, tgl_perawatan, jam_rawat }
@@ -525,11 +528,90 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Menyimpan payload terakhir untuk template cetak rujukan
     const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
+
+    // State untuk Modal Keluar
+    const [exitModalOpen, setExitModalOpen] = useState(false);
+    const [exitLoading, setExitLoading] = useState(false);
+
+    const handleExit = async (choice) => {
+        setExitLoading(true);
+        const newStatus = choice === 'ya' ? 'Sudah' : 'Belum';
+
+        try {
+            const res = await fetch(route('rawat-jalan.status.update'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify({
+                    no_rawat: noRawat,
+                    stts: newStatus
+                })
+            });
+
+            if (res.ok) {
+                // Redirect langsung tanpa alert
+                window.location.href = route('rawat-jalan.index');
+            } else {
+                const json = await res.json();
+                alert(json.message || 'Gagal memperbarui status');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Terjadi kesalahan saat menghubungi server');
+        } finally {
+            setExitLoading(false);
+            setExitModalOpen(false);
+        }
+    };
+
     const [kunjunganPreview, setKunjunganPreview] = useState(null); // payload preview kunjungan
     const [sendingKunjungan, setSendingKunjungan] = useState(false);
     const [kunjunganResult, setKunjunganResult] = useState(null); // hasil kirim kunjungan
     const [rujukForm, setRujukForm] = useState({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
     const [viewMode, setViewMode] = useState('current');
+    const [showGrafikModal, setShowGrafikModal] = useState(false);
+
+    // Konstanta rentang normal
+    const NORMAL_RANGES = {
+        sistole: { min: 90, max: 120, label: 'Normal Sistole', color: '#ef4444' },
+        diastole: { min: 60, max: 80, label: 'Normal Diastole', color: '#3b82f6' },
+        suhu: { min: 36.5, max: 37.5, label: 'Normal Suhu', color: '#f59e0b' },
+        nadi: { min: 60, max: 100, label: 'Normal Nadi', color: '#10b981' },
+        respirasi: { min: 12, max: 20, label: 'Normal Respirasi', color: '#8b5cf6' }
+    };
+
+    const grafikData = useMemo(() => {
+        if (!list || list.length === 0) return [];
+        // Sort by date ascending
+        const sorted = [...list].sort((a, b) => {
+            const dateA = new Date(`${a.tgl_perawatan}T${a.jam_rawat || '00:00'}`);
+            const dateB = new Date(`${b.tgl_perawatan}T${b.jam_rawat || '00:00'}`);
+            return dateA - dateB;
+        });
+
+        return sorted.map(item => {
+            let sistole = null;
+            let diastole = null;
+            if (item.tensi && item.tensi.includes('/')) {
+                const parts = item.tensi.split('/');
+                sistole = parseInt(parts[0]);
+                diastole = parseInt(parts[1]);
+            }
+            return {
+                date: item.tgl_perawatan,
+                datetime: `${item.tgl_perawatan} ${item.jam_rawat ? item.jam_rawat.substring(0, 5) : ''}`,
+                suhu: parseFloat(item.suhu_tubuh) || null,
+                nadi: parseFloat(item.nadi) || null,
+                respirasi: parseFloat(item.respirasi) || null,
+                spo2: parseFloat(item.spo2) || null,
+                sistole,
+                diastole
+            };
+        }).filter(item => item.suhu || item.nadi || item.respirasi || item.sistole || item.diastole);
+    }, [list]);
     // Referensi Poli & Dokter (untuk menampilkan nama pada KD Poli/Dokter)
     const [poliOptions, setPoliOptions] = useState([]);
     const [dokterOptions, setDokterOptions] = useState([]);
@@ -1040,6 +1122,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const saJson = await saRes.json();
             const saList = saJson?.response?.list || [];
             setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ''} — ${row.nmSarana || ''}` })));
+
+            // Auto-select '1' (REKAM MEDIK) as default, or fallback to '3' (Rumah Sakit)
+            const defaultSarana = saList.find((r) => String(r.kdSarana) === '1') || saList.find((r) => String(r.kdSarana) === '3');
+            if (defaultSarana) {
+                setRujukForm((prev) => (prev.kdSarana ? prev : { ...prev, kdSarana: defaultSarana.kdSarana }));
+            }
         } catch {
             setSaranaOptions([]);
         }
@@ -1053,6 +1141,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setKunjunganResult(null);
         setSelectedSpesialis('');
         setSubSpesialisOptions([]);
+        setRujukForm({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
     };
 
     const toggleKunjungan = async (checked) => {
@@ -1222,7 +1311,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         };
         loadProviders();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rujukForm.kdSubSpesialis1, rujukForm.kdSarana, rujukForm.tglEstRujuk]);
 
     // Helper konversi tanggal untuk input HTML date
@@ -1500,14 +1588,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
     };
 
-    const fetchAllByNoRm = async () => {
+    const fetchAllByNoRm = async (limit = 0) => {
         if (!noRkmMedis) return;
         setLoadingList(true);
         try {
             const base = route('rawat-jalan.riwayat');
             const res = await fetch(`${base}?no_rkm_medis=${encodeURIComponent(noRkmMedis)}`, { headers: { 'Accept': 'application/json' } });
             const json = await res.json();
-            const regs = (Array.isArray(json.data) ? json.data : []).filter((r) => String(r?.stts || '').toLowerCase() !== 'batal');
+            let regs = (Array.isArray(json.data) ? json.data : []).filter((r) => String(r?.stts || '').toLowerCase() !== 'batal');
+            
+            // Sort by latest registration first
+            regs.sort((a, b) => new Date(b.tgl_registrasi || 0) - new Date(a.tgl_registrasi || 0));
+
+            // Ambil lebih banyak data registrasi untuk memastikan kita mendapatkan data pemeriksaan yang cukup
+            // (karena tidak semua registrasi memiliki data pemeriksaan/SOAP)
+            if (limit > 0) {
+                // Kita ambil buffer yang cukup besar (misal 50) untuk mencari 6 record valid
+                regs = regs.slice(0, 50);
+            }
+
             const promises = regs
                 .map((r) => r?.no_rawat)
                 .filter(Boolean)
@@ -1532,7 +1631,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 const db = new Date(tb);
                 return db - da;
             });
-            setList(allRows);
+            
+            if (limit > 0) {
+                setList(allRows.slice(0, limit));
+            } else {
+                setList(allRows);
+            }
+
             const ids = Array.from(new Set(allRows.map((r) => String(r?.nik || r?.nip || '')).filter((s) => !!s)));
             const missing = ids.filter((id) => !(id in pegawaiMap));
             if (missing.length) {
@@ -1560,10 +1665,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     useEffect(() => {
         if (viewMode === 'current') {
             fetchList();
+        } else if (viewMode === 'limit_6') {
+            fetchAllByNoRm(6);
         } else {
             fetchAllByNoRm();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat, noRkmMedis, viewMode]);
 
     // Cek status pendaftaran PCare dari tabel pcare_pendaftaran
@@ -1601,9 +1707,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     useEffect(() => {
         const checkRujukanSubspesialis = async () => {
-            if (!noRawat) { setRujukanBerhasil(false); return; }
-            const shouldCheck = rujukanActive || rujukanBerhasil;
-            if (!shouldCheck) { setRujukanBerhasil(false); setPcareRujukanSubspesialis(null); return; }
+            if (!noRawat) { 
+                setRujukanBerhasil(false); 
+                setPcareRujukanSubspesialis(null);
+                return; 
+            }
+            // Always check if noRawat exists, regardless of rujukanActive state
+            // This ensures we display existing referral data as requested
             try {
                 const url = `/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`;
                 const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -1615,46 +1725,36 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         setPcareRujukanSubspesialis(data);
                         if (data.noKunjungan) { setLastNoKunjungan(data.noKunjungan); }
                     } else {
+                        // Only clear if we are NOT in active referral mode (to avoid clearing form during entry)
+                        // But here we are fetching from server. If server has no data, we should probably reflect that,
+                        // unless we are currently creating one?
+                        // If rujukanActive is true, we might be in the middle of creating one.
+                        // But this fetch is by noRawat (existing data).
+                        if (!rujukanActive) {
+                            setRujukanBerhasil(false);
+                            setPcareRujukanSubspesialis(null);
+                        }
+                    }
+                } else {
+                    if (!rujukanActive) {
                         setRujukanBerhasil(false);
                         setPcareRujukanSubspesialis(null);
                     }
-                } else {
+                }
+            } catch {
+                if (!rujukanActive) {
                     setRujukanBerhasil(false);
                     setPcareRujukanSubspesialis(null);
                 }
-            } catch {
-                setRujukanBerhasil(false);
-                setPcareRujukanSubspesialis(null);
             }
         };
         checkRujukanSubspesialis();
-    }, [noRawat, rujukanActive, rujukanBerhasil]);
+    }, [noRawat, rujukanActive]);
 
     // Monitor perubahan state rujukanBerhasil untuk debugging
     useEffect(() => {
         console.warn('[CpptSoap] State changed: rujukanBerhasil =', rujukanBerhasil, ', pcareRujukanSubspesialis =', pcareRujukanSubspesialis ? 'exists' : 'null');
     }, [rujukanBerhasil, pcareRujukanSubspesialis]);
-
-    const searchPegawai = async (q) => {
-        const url = route('pegawai.search', { q });
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        const json = await res.json();
-        const list = json.data || [];
-        setPegawaiOptions(list);
-        list.forEach((it) => {
-            const id = String(it?.nik || '');
-            const nama = it?.nama || '';
-            if (id && nama) {
-                setPegawaiMap((prev) => (id in prev ? prev : { ...prev, [id]: nama }));
-            }
-        });
-    };
-
-    useEffect(() => {
-        if (pegawaiQuery.trim() === '') { setPegawaiOptions([]); return; }
-        const id = setTimeout(() => { searchPegawai(pegawaiQuery); }, 300);
-        return () => clearTimeout(id);
-    }, [pegawaiQuery]);
 
     return (
         <div className="space-y-6">
@@ -1728,38 +1828,33 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="relative">
                                     <div className="min-w-0 flex flex-row items-center gap-1">
                                         <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
-                                        <input
-                                            type="text"
-                                            value={pegawaiQuery}
-                                            onChange={(e) => setPegawaiQuery(e.target.value)}
-                                            placeholder="Ketik nama atau NIK pegawai..."
-                                            className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                        />
+                                        <div className="w-full md:flex-1">
+                                            <SearchableSelect
+                                                source="pegawai"
+                                                value={formData.nip}
+                                                onChange={(val) => {
+                                                    setFormData((prev) => ({ ...prev, nip: val }));
+                                                }}
+                                                onSelect={(option) => {
+                                                    const val = option?.value;
+                                                    const label = option?.label || '';
+                                                    // Save label for persistence
+                                                    setPegawaiQuery(label);
+                                                    
+                                                    const labelParts = label.split('—');
+                                                    const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
+                                                    
+                                                    if (typeof onPemeriksaChange === 'function' && val) {
+                                                        onPemeriksaChange({ id: val, nama });
+                                                    }
+                                                }}
+                                                placeholder="Ketik nama atau NIK pegawai..."
+                                                searchPlaceholder="Cari pegawai..."
+                                                defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
+                                                className="!h-7 !px-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
+                                            />
+                                        </div>
                                     </div>
-                                    {pegawaiOptions.length > 0 && (
-                                        <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                            {pegawaiOptions.map((p) => (
-                                                <button
-                                                    key={p.nik}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const nik = String(p.nik || '');
-                                                        const nama = p.nama || '';
-                                                        setFormData((prev) => ({ ...prev, nip: nik }));
-                                                        setPegawaiQuery((nama || '') + ' (' + nik + ')');
-                                                        setPegawaiOptions([]);
-                                                        if (typeof onPemeriksaChange === 'function' && nik) {
-                                                            onPemeriksaChange({ id: nik, nama });
-                                                        }
-                                                    }}
-                                                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                                >
-                                                    <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
                                 </div>
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
@@ -1970,6 +2065,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
                             </>
                         )}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setExitModalOpen(true)}
+                        disabled={isSubmitting || exitLoading || !can('edit-appointments')}
+                        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed"
+                        title={!can('edit-appointments') ? 'Anda tidak memiliki akses' : 'Keluar & Update Status'}
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Keluar
                     </button>
                     {showBridging && (
                         <button
@@ -2565,10 +2672,52 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
                 </div>
             </form>
+
+            <Modal show={exitModalOpen} onClose={() => setExitModalOpen(false)} maxWidth="lg">
+                <div className="relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                    <div className="p-6">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 sm:mx-0 sm:h-10 sm:w-10 shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-50 dark:ring-indigo-900/20">
+                                <HelpCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100">
+                                    Konfirmasi Selesai
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-base text-gray-600 dark:text-gray-300">
+                                        Apakah pelayanan pasien ini sudah selesai?
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-6 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
+                            <button
+                                type="button"
+                                onClick={() => handleExit('ya')}
+                                disabled={exitLoading}
+                                className="inline-flex w-full justify-center rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 sm:w-auto disabled:opacity-50 transition-all transform hover:scale-[1.02]"
+                            >
+                                {exitLoading ? 'Memproses...' : 'Ya, Selesai'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleExit('tidak')}
+                                disabled={exitLoading}
+                                className="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto disabled:opacity-50 transition-colors"
+                            >
+                                Belum
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
             {bridgingOpen && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
                     <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full md:max-w-5xl mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                             <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Bridging PCare</h3>
                             <button onClick={closeBridgingModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
@@ -2579,355 +2728,421 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         </div>
                         <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
                             {/* 1. Pendaftaran PCare */}
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-4 overflow-x-hidden">
-                                <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 mb-2">Pendaftaran PCare</h4>
-                                {pcarePendaftaran ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
-                                        <div><span className="font-medium">No Rawat:</span> {pcarePendaftaran.no_rawat}</div>
-                                        <div><span className="font-medium">No Kartu:</span> {pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</div>
-                                        <div><span className="font-medium">Tgl Daftar:</span> {pcarePendaftaran.tglDaftar || '-'}</div>
-                                        <div><span className="font-medium">Kd Poli:</span> {pcarePendaftaran.kdPoli || '-'}</div>
-                                        <div><span className="font-medium">Keluhan:</span> {pcarePendaftaran.keluhan || '-'}</div>
-                                        <div><span className="font-medium">Sistole/Diastole:</span> {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}</div>
-                                        <div><span className="font-medium">Berat/Tinggi:</span> {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''}kg / ${pcarePendaftaran.tinggiBadan || ''}cm` : '-'}</div>
-                                        <div><span className="font-medium">Resp/HR:</span> {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}</div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
-                                )}
+                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg overflow-hidden">
+                                <div className="px-4 py-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                    <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Pendaftaran PCare</h4>
+                                </div>
+                                <div className="p-4">
+                                    {pcarePendaftaran ? (
+                                        <div className="space-y-4">
+                                            {/* Baris 1: Identitas */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Rawat</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Kartu</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Tgl Daftar</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Kd Poli</span>
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Baris 2: Vital Signs */}
+                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-3 border border-indigo-100 dark:border-indigo-800/50">
+                                                <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                                                    <Activity className="w-3.5 h-3.5" />
+                                                    Tanda Vital
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Tekanan Darah</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">mmHg</span>
+                                                    </div>
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Resp / HR</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">x/menit</span>
+                                                    </div>
+                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
+                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">BB / TB</span>
+                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                                                            {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''} / ${pcarePendaftaran.tinggiBadan || ''}` : '-'}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400">kg / cm</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Baris 3: Keluhan */}
+                                            <div>
+                                                <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Keluhan Utama</span>
+                                                <div className="bg-white dark:bg-gray-800 p-2.5 rounded border border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200 italic">
+                                                    "{pcarePendaftaran.keluhan || '-'}"
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                                            <FileText className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                                            <p className="text-sm">Data pendaftaran belum tersedia.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* 2. Kunjungan PCare */}
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3 md:p-4">
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3">
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Kunjungan PCare</h4>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                         {/* Form Kunjungan PCare */}
                                         {kunjunganPreview && (
-                                            <div className="space-y-4 md:space-y-5">
-                                                {/* 1 baris: No Kartu BPJS, Tanggal Daftar, KD Poli, KD Dokter */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">No Kartu BPJS</label>
-                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Daftar</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Poli (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={poliOptions}
-                                                            value={kunjunganPreview.kdPoli ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdPoli', val)}
-                                                            placeholder="Pilih Poli"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Dokter (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={dokterOptions}
-                                                            value={kunjunganPreview.kdDokter ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDokter', val)}
-                                                            placeholder="Pilih Dokter"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Keluhan, Anamnesa */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Keluhan</label>
-                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Anamnesa</label>
-                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                            <div className="space-y-4">
+                                                {/* GROUP 1: ADMINISTRASI & DOKTER */}
+                                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-md border border-emerald-200 dark:border-emerald-700">
+                                                    <h5 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-3 uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-700 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .667.333 1 1 1v1m0-1h2" /></svg>
+                                                        Administrasi & Dokter
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">No Kartu BPJS</label>
+                                                            <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Tanggal Daftar</label>
+                                                            <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">KD Poli (PCare)</label>
+                                                            <SearchableSelect
+                                                                options={poliOptions}
+                                                                value={kunjunganPreview.kdPoli ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdPoli', val)}
+                                                                placeholder="Pilih Poli"
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">KD Dokter (PCare)</label>
+                                                            <SearchableSelect
+                                                                options={dokterOptions}
+                                                                value={kunjunganPreview.kdDokter ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDokter', val)}
+                                                                placeholder="Pilih Dokter"
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* 1 baris: Sistole, Diastole, Berat, Tinggi */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Sistole</label>
-                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diastole</label>
-                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Berat Badan (kg)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tinggi Badan (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                {/* GROUP 2: KLINIS & VITAL SIGNS */}
+                                                <div className="bg-gray-50 dark:bg-gray-800/20 p-3 rounded-md border border-gray-100 dark:border-gray-700">
+                                                    <h5 className="text-xs font-bold text-gray-800 dark:text-gray-300 mb-3 uppercase tracking-wider border-b border-gray-200 dark:border-gray-700 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                        Klinis & Tanda Vital
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                        <div className="lg:col-span-1 space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Keluhan</label>
+                                                                <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Anamnesa</label>
+                                                                <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3 content-start">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Sistole</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">mmHg</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Diastole</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">mmHg</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Berat (kg)</label>
+                                                                <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Tinggi (cm)</label>
+                                                                <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Resp Rate</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">x/m</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Heart Rate</label>
+                                                                <div className="relative"><input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">x/m</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Lingkar Perut</label>
+                                                                <div className="relative"><input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-8" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">cm</span></div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Suhu</label>
+                                                                <div className="relative"><input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5 pr-6" /><span className="absolute right-2 top-1.5 text-[10px] text-gray-400">°C</span></div>
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <label className="block text-xs font-bold mb-0.5">KD Prognosa</label>
+                                                                <SearchableSelect
+                                                                    source="prognosa"
+                                                                    value={kunjunganPreview.kdPrognosa ?? '02'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('kdPrognosa', val);
+                                                                        if (!val) updateKunjunganField('nmPrognosa', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmPrognosa', label);
+                                                                    }}
+                                                                    placeholder="Pilih Prognosa"
+                                                                    searchPlaceholder="Cari prognosa…"
+                                                                    defaultDisplay="Bonam (Baik)"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <label className="block text-xs font-bold mb-0.5">KD Sadar</label>
+                                                                <SearchableSelect
+                                                                    source="kesadaran"
+                                                                    value={kunjunganPreview.kdSadar ?? '01'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('kdSadar', val);
+                                                                        if (!val) updateKunjunganField('nmSadar', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmSadar', label);
+                                                                    }}
+                                                                    placeholder="Pilih Kesadaran"
+                                                                    searchPlaceholder="Cari kesadaran…"
+                                                                    defaultDisplay="Compos mentis"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* 1 baris: Resp Rate, Heart Rate, Lingkar Perut, Suhu */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Resp Rate</label>
-                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Heart Rate</label>
-                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Lingkar Perut (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Suhu</label>
-                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Tanggal Pulang, Poli Rujuk Internal, Terapi Non Obat, BMHP */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Pulang</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Poli Rujuk Internal (kdPoliRujukInternal)</label>
-                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Terapi Non Obat</label>
-                                                        <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">BMHP</label>
-                                                        <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Status Pulang, Diagnosa Utama, Diagnosa 2, Diagnosa 3 */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Status Pulang (kdStatusPulang)</label>
-                                                        <SearchableSelect
-                                                            source="statuspulang"
-                                                            value={kunjunganPreview.kdStatusPulang ?? ''}
-                                                            onChange={(val) => {
-                                                                // Update kode status pulang
-                                                                updateKunjunganField('kdStatusPulang', val);
-                                                                // Jika kode dikosongkan, kosongkan juga nama status pulang
-                                                                if (!val) updateKunjunganField('nmStatusPulang', '');
-                                                            }}
-                                                            // Saat opsi dipilih, isi nmStatusPulang otomatis dari label referensi
-                                                            onSelect={(opt) => {
-                                                                const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                                updateKunjunganField('nmStatusPulang', label);
-                                                            }}
-                                                            placeholder="Pilih Status Pulang"
-                                                            searchPlaceholder="Cari status pulang…"
-                                                            sourceParams={{ rawatInap: false }}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa Utama (kdDiag1)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag1 ?? ''}
-                                                            onChange={(val) => {
-                                                                updateKunjunganField('kdDiag1', val);
-                                                                // Reset state jika diagnosa dihapus (value kosong)
-                                                                if (!val || val === '') {
-                                                                    setIsDiagnosaNonSpesialis(false);
-                                                                    setKdTaccVisible(false);
+                                                {/* GROUP 3: DIAGNOSA & TERAPI */}
+                                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-md border border-emerald-100 dark:border-emerald-800">
+                                                    <h5 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-3 uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-800 pb-1 flex items-center gap-2">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                                        Diagnosa & Terapi
+                                                    </h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa Utama (kdDiag1)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag1 ?? ''}
+                                                                onChange={(val) => {
+                                                                    updateKunjunganField('kdDiag1', val);
+                                                                    if (!val || val === '') {
+                                                                        setIsDiagnosaNonSpesialis(false);
+                                                                        setKdTaccVisible(false);
+                                                                        setTaccError('');
+                                                                        updateKunjunganField('kdTacc', -1, 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    }
+                                                                }}
+                                                                onSelect={(opt) => {
+                                                                    const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true;
+                                                                    setIsDiagnosaNonSpesialis(isNonSpesialis);
+                                                                    setKdTaccVisible(!!isNonSpesialis);
                                                                     setTaccError('');
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            onSelect={(opt) => {
-                                                                // TACC wajib diisi bila diagnosa NonSpesialis = true
-                                                                const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true;
-                                                                setIsDiagnosaNonSpesialis(isNonSpesialis);
-                                                                setKdTaccVisible(!!isNonSpesialis);
-                                                                setTaccError('');
-                                                                if (isNonSpesialis) {
-                                                                    // Reset kdTacc agar wajib diisi
-                                                                    updateKunjunganField('kdTacc', '', 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                } else {
-                                                                    // Diagnosa Spesialis (nonSpesialis = false): Default Tanpa TACC
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            placeholder="Pilih Diagnosa Utama"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
+                                                                    if (isNonSpesialis) {
+                                                                        updateKunjunganField('kdTacc', '', 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    } else {
+                                                                        updateKunjunganField('kdTacc', -1, 'int');
+                                                                        updateKunjunganField('alasanTacc', '');
+                                                                    }
+                                                                }}
+                                                                placeholder="Pilih Diagnosa Utama"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa 2 (kdDiag2)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag2 ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDiag2', val)}
+                                                                placeholder="Pilih Diagnosa 2 (opsional)"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Diagnosa 3 (kdDiag3)</label>
+                                                            <SearchableSelect
+                                                                source="diagnosa"
+                                                                value={kunjunganPreview.kdDiag3 ?? ''}
+                                                                onChange={(val) => updateKunjunganField('kdDiag3', val)}
+                                                                placeholder="Pilih Diagnosa 3 (opsional)"
+                                                                searchPlaceholder="Cari diagnosa..."
+                                                                className="text-xs"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 2 (kdDiag2)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag2 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag2', val)}
-                                                            placeholder="Pilih Diagnosa 2 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 3 (kdDiag3)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag3 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag3', val)}
-                                                            placeholder="Pilih Diagnosa 3 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Alergi Makan, Alergi Udara, Alergi Obat, KD Prognosa, KD Sadar */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Makan</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiMakan ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiMakan', val);
-                                                            if (!val) updateKunjunganField('nmAlergiMakanan', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiMakanan', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Makanan"
-                                                        searchPlaceholder="Cari alergi (makanan)…"
-                                                        sourceParams={{ jenis: '01' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Udara</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiUdara ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiUdara', val);
-                                                            if (!val) updateKunjunganField('nmAlergiUdara', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiUdara', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Udara"
-                                                        searchPlaceholder="Cari alergi (udara)…"
-                                                        sourceParams={{ jenis: '02' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Obat</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiObat ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiObat', val);
-                                                            if (!val) updateKunjunganField('nmAlergiObat', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiObat', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Obat"
-                                                        searchPlaceholder="Cari alergi (obat)…"
-                                                        sourceParams={{ jenis: '03' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Prognosa</label>
-                                                    <SearchableSelect
-                                                        source="prognosa"
-                                                        value={kunjunganPreview.kdPrognosa ?? '02'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdPrognosa', val);
-                                                            if (!val) updateKunjunganField('nmPrognosa', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmPrognosa', label);
-                                                        }}
-                                                        placeholder="Pilih Prognosa"
-                                                        searchPlaceholder="Cari prognosa…"
-                                                        defaultDisplay="Bonam (Baik)"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Sadar</label>
-                                                    <SearchableSelect
-                                                        source="kesadaran"
-                                                        value={kunjunganPreview.kdSadar ?? '01'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdSadar', val);
-                                                            if (!val) updateKunjunganField('nmSadar', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmSadar', label);
-                                                        }}
-                                                        placeholder="Pilih Kesadaran"
-                                                        searchPlaceholder="Cari kesadaran…"
-                                                        defaultDisplay="Compos mentis"
-                                                    />
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        <div>
+                                                            <label className="block text-xs font-bold mb-0.5">Terapi Obat</label>
+                                                            <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={3} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5"></textarea>
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Terapi Non Obat</label>
+                                                                <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">BMHP</label>
+                                                                <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Terapi Obat - tidak diminta satu baris, tetap terpisah */}
-                                                <div>
-                                                    <label className="block text-xs font-medium mb-1">Terapi Obat</label>
-                                                <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
-                                                <div className="mt-2 flex justify-end">
-                                                    <button
-                                                        type="button"
-                                                        onClick={editKunjungan}
-                                                        disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))}
-                                                        className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium"
-                                                    >
-                                                        Edit Kunjungan
-                                                    </button>
+                                                {/* GROUP 4: DATA TAMBAHAN & KEPULANGAN */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                    {/* Alergi */}
+                                                    <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md border border-amber-100 dark:border-amber-800">
+                                                        <h5 className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-3 uppercase tracking-wider border-b border-amber-200 dark:border-amber-800 pb-1 flex items-center gap-2">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                                            Riwayat Alergi
+                                                        </h5>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Makan</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiMakan ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiMakan', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiMakanan', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiMakanan', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Makanan"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '01' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Udara</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiUdara ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiUdara', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiUdara', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiUdara', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Udara"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '02' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Alergi Obat</label>
+                                                                <SearchableSelect
+                                                                    source="alergi"
+                                                                    value={kunjunganPreview.alergiObat ?? '00'}
+                                                                    onChange={(val) => {
+                                                                        updateKunjunganField('alergiObat', val);
+                                                                        if (!val) updateKunjunganField('nmAlergiObat', '');
+                                                                    }}
+                                                                    onSelect={(opt) => {
+                                                                        const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                        updateKunjunganField('nmAlergiObat', label);
+                                                                    }}
+                                                                    placeholder="Pilih Alergi Obat"
+                                                                    searchPlaceholder="Cari alergi..."
+                                                                    sourceParams={{ jenis: '03' }}
+                                                                    defaultDisplay="Tidak Ada"
+                                                                    className="text-xs"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Kepulangan */}
+                                                    <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-md border border-purple-100 dark:border-purple-800">
+                                                        <h5 className="text-xs font-bold text-purple-800 dark:text-purple-300 mb-3 uppercase tracking-wider border-b border-purple-200 dark:border-purple-800 pb-1 flex items-center gap-2">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                                            Status Pulang
+                                                        </h5>
+                                                        <div className="space-y-3">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                                <div>
+                                                                    <label className="block text-xs font-bold mb-0.5">Tanggal Pulang</label>
+                                                                    <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="block text-xs font-bold mb-0.5">Status Pulang</label>
+                                                                    <SearchableSelect
+                                                                        source="statuspulang"
+                                                                        value={kunjunganPreview.kdStatusPulang ?? ''}
+                                                                        onChange={(val) => {
+                                                                            updateKunjunganField('kdStatusPulang', val);
+                                                                            if (!val) updateKunjunganField('nmStatusPulang', '');
+                                                                        }}
+                                                                        onSelect={(opt) => {
+                                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                                            updateKunjunganField('nmStatusPulang', label);
+                                                                        }}
+                                                                        placeholder="Pilih Status Pulang"
+                                                                        searchPlaceholder="Cari status..."
+                                                                        sourceParams={{ rawatInap: false }}
+                                                                        className="text-xs"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold mb-0.5">Poli Rujuk Internal</label>
+                                                                <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} placeholder="Kode Poli Rujuk Internal (jika ada)" className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            {/* Bagian preview payload dihapus sesuai permintaan untuk membuat popup lebih ringkas */}
-                                        </div>
-                                    )}
+                                        )}
 
-                                        <div className="flex justify-end">
-                                            <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
-                                                {sendingKunjungan ? (
-                                                    <>
-                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Mengirim...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Kirim Kunjungan
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                        {/* Button Kirim Kunjungan removed */}
                                         {kunjunganResult && (
                                             <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
                                                 {kunjunganResult.success ? (
@@ -2951,19 +3166,43 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="flex items-center justify-between mb-2">
                                     <h4 className={`text-sm font-semibold ${rujukanActive ? 'text-violet-800 dark:text-violet-300' : 'text-gray-700 dark:text-gray-300'}`}>Rujukan PCare</h4>
                                 </div>
-                                {!rujukanActive && (
+                                {!rujukanActive && (!pcareRujukanSubspesialis || !pcareRujukanSubspesialis.noKunjungan) && (
                                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Kartu Rujukan akan terbuka otomatis saat memilih Status Pulang "Rujuk Vertikal" (kode 4).</div>
+                                )}
+                                {!rujukanActive && pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan && (
+                                    <div className="space-y-3 text-sm">
+                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-800">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="font-semibold text-blue-800 dark:text-blue-300">Data Rujukan Tersimpan</div>
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded border border-blue-200">{pcareRujukanSubspesialis.noKunjungan}</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+                                                <div>
+                                                    <div className="text-xs text-gray-500">Tanggal Estimasi</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.tglEstRujuk || '-'}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-gray-500">PPK Rujukan</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.nmPPK || pcareRujukanSubspesialis.kdppk || '-'}</div>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <div className="text-xs text-gray-500">Sub Spesialis</div>
+                                                    <div className="font-medium text-gray-800 dark:text-gray-200">{pcareRujukanSubspesialis.nmSubSpesialis || pcareRujukanSubspesialis.kdSubSpesialis1 || '-'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                                 {rujukanActive && (
                                     <div className="space-y-3 text-sm">
                                         {/* Baris 1: Tanggal Estimasi Rujuk, Spesialis, Sub Spesialis */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Tanggal Estimasi Rujuk</label>
-                                                <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                <label className="block text-xs font-bold mb-0.5">Tanggal Estimasi Rujuk</label>
+                                                <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-xs py-1.5" />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Spesialis</label>
+                                                <label className="block text-xs font-bold mb-0.5">Spesialis</label>
                                                 <SearchableSelect
                                                     options={spesialisOptions}
                                                     value={selectedSpesialis}
@@ -2972,10 +3211,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari spesialis…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium mb-1">Sub Spesialis (kdSubSpesialis1)</label>
+                                                <label className="block text-xs font-bold mb-0.5">Sub Spesialis (kdSubSpesialis1)</label>
                                                 <SearchableSelect
                                                     options={subSpesialisOptions}
                                                     value={rujukForm.kdSubSpesialis1}
@@ -2984,14 +3224,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari sub spesialis…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Baris 2: Sarana 1 kolom dan PPK Rujukan 3 kolom (rasio 1:3) */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-start">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-start">
                                             <div className="md:col-span-1">
-                                                <label className="block text-xs font-medium mb-1">Sarana (kdSarana)</label>
+                                                <label className="block text-xs font-bold mb-0.5">Sarana (kdSarana)</label>
                                                 <SearchableSelect
                                                     options={saranaOptions}
                                                     value={rujukForm.kdSarana}
@@ -3000,10 +3241,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari sarana…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                             </div>
                                             <div className="md:col-span-3">
-                                                <label className="block text-xs font-medium mb-1">PPK Rujukan (kdppk)</label>
+                                                <label className="block text-xs font-bold mb-0.5">PPK Rujukan (kdppk)</label>
                                                 <SearchableSelect
                                                     options={providerOptions}
                                                     value={rujukForm.kdppk}
@@ -3012,6 +3254,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     searchPlaceholder="Cari PPK…"
                                                     displayKey="label"
                                                     valueKey="value"
+                                                    className="text-xs"
                                                 />
                                                 {/* Detail PPK Rujukan lengkap: Jadwal per hari, Alamat, Telp, Jarak, Statistik */}
                                                 {(() => {
@@ -3148,9 +3391,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
                             <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
                             <div className="flex items-center gap-2">
-                                <button type="button" onClick={closeBridgingModal} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
                                 <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
                                 <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
+                                <button type="button" onClick={closeBridgingModal} className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm">Tutup</button>
                             </div>
                         </div>
                     </div>
@@ -3192,6 +3435,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </button>
                             <button
                                 type="button"
+                                onClick={() => setViewMode('limit_6')}
+                                disabled={!noRkmMedis}
+                                aria-pressed={viewMode === 'limit_6'}
+                                className={`text-sm px-3 py-1 rounded ${viewMode === 'limit_6'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                } ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Tampilkan 6 pemeriksaan terakhir"
+                            >
+                                6 record
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => setViewMode('all')}
                                 disabled={!noRkmMedis}
                                 aria-pressed={viewMode === 'all'}
@@ -3203,9 +3459,18 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             >
                                 Semua record
                             </button>
-                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                {list.length} record
-                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setShowGrafikModal(true)}
+                                disabled={!noRkmMedis}
+                                className={`text-sm px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                title="Tampilkan grafik vital sign"
+                            >
+                                <div className="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-activity"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                    Grafik
+                                </div>
+                            </button>
                         </div>
                     </div>
                     {loadingList ? (
@@ -3341,7 +3606,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                                         evaluasi: row.evaluasi || '',
                                                                         nip: row.nip || '',
                                                                     });
-                                                                    setPegawaiQuery('');
+                                                                    setPegawaiQuery(pegawaiMap[row.nip] || row.nama_pegawai || row.nama || '');
                                                                     setEditKey({
                                                                         no_rawat: row.no_rawat,
                                                                         tgl_perawatan: row.tgl_perawatan,
@@ -3481,6 +3746,172 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     )}
                 </>
             </div>
+            
+            <Modal show={showGrafikModal} onClose={() => setShowGrafikModal(false)} size="wide" title="Grafik Tanda Vital">
+                {grafikData.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        Belum ada data vital sign yang cukup untuk ditampilkan
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Grafik Tensi */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 lg:col-span-2 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Tekanan Darah (mmHg)
+                                </h3>
+                                <div className="h-72 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 30, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            {/* Area Normal Sistole */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.sistole.min} 
+                                                y2={NORMAL_RANGES.sistole.max} 
+                                                fill={NORMAL_RANGES.sistole.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Normal Sistole', position: 'insideRight', fill: NORMAL_RANGES.sistole.color, fontSize: 10 }}
+                                            />
+                                            {/* Area Normal Diastole */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.diastole.min} 
+                                                y2={NORMAL_RANGES.diastole.max} 
+                                                fill={NORMAL_RANGES.diastole.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Normal Diastole', position: 'insideRight', fill: NORMAL_RANGES.diastole.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 11}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600', marginBottom: '4px'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="sistole" stroke="#ef4444" name="Sistole" strokeWidth={2.5} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                            <Line type="monotone" dataKey="diastole" stroke="#3b82f6" name="Diastole" strokeWidth={2.5} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Grafik Suhu */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    Suhu Tubuh (°C)
+                                </h3>
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 20, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.suhu.min} 
+                                                y2={NORMAL_RANGES.suhu.max} 
+                                                fill={NORMAL_RANGES.suhu.color} 
+                                                fillOpacity={0.15}
+                                                label={{ value: 'Normal', position: 'insideRight', fill: NORMAL_RANGES.suhu.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 10}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="suhu" stroke="#f59e0b" name="Suhu" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            {/* Grafik Nadi & Respirasi */}
+                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Nadi & Respirasi (x/menit)
+                                </h3>
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={grafikData} margin={{ top: 5, right: 20, left: 0, bottom: 55 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} vertical={false} />
+                                            {/* Area Normal Nadi */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.nadi.min} 
+                                                y2={NORMAL_RANGES.nadi.max} 
+                                                fill={NORMAL_RANGES.nadi.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Nadi Normal', position: 'insideTopRight', fill: NORMAL_RANGES.nadi.color, fontSize: 10 }}
+                                            />
+                                            {/* Area Normal Respirasi */}
+                                            <ReferenceArea 
+                                                y1={NORMAL_RANGES.respirasi.min} 
+                                                y2={NORMAL_RANGES.respirasi.max} 
+                                                fill={NORMAL_RANGES.respirasi.color} 
+                                                fillOpacity={0.1}
+                                                label={{ value: 'Resp. Normal', position: 'insideBottomRight', fill: NORMAL_RANGES.respirasi.color, fontSize: 10 }}
+                                            />
+                                            <XAxis 
+                                                dataKey="datetime" 
+                                                tick={{fontSize: 10}} 
+                                                angle={-45} 
+                                                textAnchor="end" 
+                                                height={60}
+                                                interval="preserveStartEnd"
+                                            />
+                                            <YAxis />
+                                            <Tooltip 
+                                                contentStyle={{
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid #e5e7eb', 
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                                }}
+                                                labelStyle={{color: '#111827', fontWeight: '600'}}
+                                            />
+                                            <Legend verticalAlign="top" height={36} />
+                                            <Line type="monotone" dataKey="nadi" stroke="#10b981" name="Nadi" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                            <Line type="monotone" dataKey="respirasi" stroke="#8b5cf6" name="Respirasi" strokeWidth={2.5} dot={{r: 4}} activeDot={{r: 6}} />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                    </div>
+                )}
+                
+                <div className="mt-6 flex justify-end">
+                    <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+                        onClick={() => setShowGrafikModal(false)}
+                    >
+                        Tutup
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 }
