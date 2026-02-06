@@ -451,8 +451,10 @@ const DaftarPermintaanResep = () => {
 
     // Fungsi untuk cetak etiket obat
     const cetakEtiket = async () => {
-        if (!selectedResep || !selectedResep.detail_obat || selectedResep.detail_obat.length === 0) {
-            alert("Tidak ada obat untuk dicetak etiketnya");
+        const hasNonRacikan = Array.isArray(selectedResep?.detail_obat) && selectedResep.detail_obat.length > 0;
+        const hasRacikan = Array.isArray(selectedResep?.racikan) && selectedResep.racikan.length > 0;
+        if (!selectedResep || (!hasNonRacikan && !hasRacikan)) {
+            alert("Tidak ada obat atau racikan untuk dicetak etiketnya");
             return;
         }
 
@@ -711,6 +713,49 @@ const DaftarPermintaanResep = () => {
             `;
         });
 
+        if (Array.isArray(selectedResep.racikan)) {
+            selectedResep.racikan.forEach((grp) => {
+                const namaRacik = grp.nama_racik || `Racikan #${grp.no_racik}`;
+                const metodeRacik = grp.metode || "";
+                const aturanRacik = grp.aturan_pakai || "-";
+                const jumlahRacik = grp.jml_dr ?? "-";
+
+                htmlContent += `
+                        <div class="etiket">
+                            <div class="kop">
+                                ${kop}
+                            </div>
+                            <div class="apoteker-info">
+                                Apoteker: ${apotekerNama || apotekerNik || ""}<br/>
+                                SIPA: ${apotekerSipa || ""}
+                            </div>
+                            <div class="divider"></div>
+                            <div class="info-resep-header">
+                                <span class="no-resep">No: ${noResep}</span>
+                                <span class="tgl-resep">Tanggal: ${tglResep}</span>
+                            </div>
+                            <div class="nama-obat">
+                                ${namaRacik}${metodeRacik ? ` (${metodeRacik})` : ""}
+                            </div>
+                            <div class="divider-dashed"></div>
+                            <div class="aturan-pakai">
+                                ${aturanRacik || ""}
+                            </div>
+                            <div class="divider"></div>
+                            <div class="footer-section">
+                                <div class="info-pasien">
+                                    nama: ${namaPasien || ""}
+                                </div>
+                                <div class="info-obat">
+                                    <span class="jml-obat">Jml: ${jumlahRacik}</span>
+                                    <span class="ed-obat">ED: -</span>
+                                </div>
+                            </div>
+                        </div>
+                `;
+            });
+        }
+
         htmlContent += `
                 </div>
                 <script>
@@ -721,15 +766,17 @@ const DaftarPermintaanResep = () => {
             </body>
             </html>
         `;
-
+        
         printWindow.document.write(htmlContent);
         printWindow.document.close();
     };
 
     // Fungsi untuk cetak resep
     const cetakResep = async () => {
-        if (!selectedResep || !selectedResep.detail_obat || selectedResep.detail_obat.length === 0) {
-            alert("Tidak ada obat untuk dicetak resepnya");
+        const hasNonRacikanResep = Array.isArray(selectedResep?.detail_obat) && selectedResep.detail_obat.length > 0;
+        const hasRacikanResep = Array.isArray(selectedResep?.racikan) && selectedResep.racikan.length > 0;
+        if (!selectedResep || (!hasNonRacikanResep && !hasRacikanResep)) {
+            alert("Tidak ada obat atau racikan untuk dicetak resepnya");
             return;
         }
 
@@ -994,7 +1041,48 @@ const DaftarPermintaanResep = () => {
                 <div class="resep-title">RESEP</div>
         `;
 
-        // Tambahkan setiap obat
+        const normalizeAturanPakai = (text) => {
+            const t0 = (text || '').toString().toLowerCase();
+            const t = t0.replace(/\s+/g, ' ').trim();
+            if (!t) return '-';
+            let freq;
+            let dose;
+            let timing;
+            let m = t.match(/(\d+)\s*x\s*(\d+)/);
+            if (m) { freq = parseInt(m[1], 10); dose = parseInt(m[2], 10); }
+            if (!freq) {
+                m = t.match(/(\d+)\s*(x|kali)\s*(sehari|per\s*hari)?/);
+                if (m) freq = parseInt(m[1], 10);
+            }
+            if (!freq) {
+                m = t.match(/(\d+)\s*dd/);
+                if (m) freq = parseInt(m[1], 10);
+            }
+            if (!freq) {
+                if (/\bbid\b/.test(t)) freq = 2; else if (/\btid\b/.test(t)) freq = 3; else if (/\bqid\b/.test(t)) freq = 4; else if (/\bqd\b/.test(t)) freq = 1;
+            }
+            if (!dose) {
+                m = t.match(/(\d+)\s*(kapsul|caps?|tab(?:let)?|cap|ml|tetes|butir)/);
+                if (m) dose = parseInt(m[1], 10);
+            }
+            if (!dose) {
+                m = t.match(/\b(\d+)\b(?!.*\b(dd|x|kali)\b)/);
+                if (m) {
+                    const val = parseInt(m[1], 10);
+                    if (!isNaN(val)) dose = val;
+                }
+            }
+            if (/\bpc\b|post\s*cibum|(sesudah|setelah|habis)\s*makan/.test(t)) timing = 'pc';
+            else if (/\bac\b|ante\s*cibum|(sebelum)\s*makan/.test(t)) timing = 'ac';
+            else if (/\bhs\b|hora\s*somni|(sebelum)\s*tidur/.test(t)) timing = 'hs';
+            const parts = [];
+            if (freq) parts.push(`${freq} dd`);
+            if (dose) parts.push(`${dose}`);
+            if (timing) parts.push(timing);
+            const res = parts.join(' ');
+            return res || t0;
+        };
+
         selectedResep.detail_obat.forEach((obat) => {
             const namaObat = obat.nama_brng || "-";
             const jumlahObat = obat.jml || "-";
@@ -1009,11 +1097,66 @@ const DaftarPermintaanResep = () => {
                         <span class="obat-jumlah">(${jumlahObat} ${satuanObat})</span>
                     </div>
                     <div class="aturan-pakai">
-                        ${aturanPakai}
+                        ${normalizeAturanPakai(aturanPakai)}
                     </div>
                 </div>
             `;
         });
+
+        if (Array.isArray(selectedResep.racikan)) {
+            selectedResep.racikan.forEach((grp) => {
+                const namaRacik = grp.nama_racik || `Racikan #${grp.no_racik}`;
+                const metodeRacik = grp.metode || grp.kd_racik || "";
+                const jumlahRacik = grp.jml_dr ?? "-";
+                const aturanRacik = grp.aturan_pakai || "-";
+
+                const metodeShort = (() => {
+                    const m = String(metodeRacik).toLowerCase();
+                    if (m.includes('cap') || m.includes('kap') || m.includes('caps')) return 'cap';
+                    if (m.includes('puyer') || m.includes('pulv')) return 'puy';
+                    if (m.includes('sir')) return 'sir';
+                    if (m.includes('ung') || m.includes('salep')) return 'ung';
+                    return (m.split(' ')[0] || 'cap');
+                })();
+
+                htmlContent += `
+                    <div class="resep-item">
+                        <div class="resep-line">
+                            <span class="resep-r">R/</span>
+                            <span class="obat-name">${namaRacik}</span>
+                        </div>
+                `;
+
+                const details = Array.isArray(grp.details) ? grp.details : [];
+                details.forEach((d) => {
+                    const namaDetail = d.nama_brng || "-";
+                    const kandungan = d.kandungan;
+                    const kandunganStr = (typeof kandungan === 'number') ? kandungan.toLocaleString('id-ID', { maximumFractionDigits: 3 }) : (kandungan ? String(kandungan) : "");
+                    const jumlahDetail = d.jml;
+                    const satuanDetail = (d.satuan || '').toLowerCase();
+                    const bracket = (jumlahDetail ? `(${jumlahDetail} ${satuanDetail || ''})` : "");
+                    const middle = kandunganStr ? ` ${kandunganStr}` : "";
+                    htmlContent += `
+                        <div class="resep-line" style="margin-left:30px;">
+                            ${namaDetail}${middle} ${bracket}
+                        </div>
+                    `;
+                });
+
+                htmlContent += `
+                        <div class="resep-line" style="margin-left:30px; margin-top:6px;">
+                            Mf ${metodeShort} ${jumlahRacik}
+                        </div>
+                        <div class="aturan-pakai">
+                            S ${normalizeAturanPakai(aturanRacik)}
+                        </div>
+                `;
+
+                htmlContent += `
+                    </div>
+                `;
+            });
+        }
 
         // Inject QR code SVG langsung ke HTML jika ada
         const qrCodeHtml = qrCodeSvg ? qrCodeSvg : '<div style="width: 60px; height: 60px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #999;">QR Code</div>';

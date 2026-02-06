@@ -639,6 +639,13 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::prefix('api')->group(function () {
+        Route::get('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'index'])->name('api.racikan-template.index');
+        Route::post('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'store'])->name('api.racikan-template.store');
+        Route::get('/racikan-template/{no_template}', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'show'])->name('api.racikan-template.show');
+        Route::delete('/racikan-template/{no_template}', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'destroy'])->name('api.racikan-template.destroy');
+    });
+
     // Pusat Laporan
     Route::get('/laporan', function () {
         return Inertia::render('Laporan/Home', [
@@ -1754,6 +1761,23 @@ Route::middleware('auth')->group(function () {
             ->name('penjualan.riwayat')->middleware('permission:farmasi.penjualan-obat');
         Route::get('/penjualan/print/{nota_jual}', [\App\Http\Controllers\Farmasi\PenjualanController::class, 'print'])
             ->name('penjualan.print')->middleware('permission:farmasi.penjualan-obat');
+
+        Route::get('/set-lokasi', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'index'])
+            ->name('set-lokasi')->middleware('permission:farmasi.set-lokasi');
+        Route::post('/set-lokasi', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'store'])
+            ->name('set-lokasi.store')->middleware('permission:farmasi.set-lokasi');
+        Route::put('/set-lokasi', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'update'])
+            ->name('set-lokasi.update')->middleware('permission:farmasi.set-lokasi');
+        Route::delete('/set-lokasi', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'destroy'])
+            ->name('set-lokasi.destroy')->middleware('permission:farmasi.set-lokasi');
+        Route::post('/set-lokasi/ralan-mapping', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'ralanStore'])
+            ->name('set-lokasi.ralan-mapping.store')->middleware('permission:farmasi.set-lokasi');
+        Route::delete('/set-lokasi/ralan-mapping', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'ralanDestroy'])
+            ->name('set-lokasi.ralan-mapping.destroy')->middleware('permission:farmasi.set-lokasi');
+        Route::post('/set-lokasi/ranap-mapping', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'ranapStore'])
+            ->name('set-lokasi.ranap-mapping.store')->middleware('permission:farmasi.set-lokasi');
+        Route::delete('/set-lokasi/ranap-mapping', [\App\Http\Controllers\Farmasi\SetLokasiController::class, 'ranapDestroy'])
+            ->name('set-lokasi.ranap-mapping.destroy')->middleware('permission:farmasi.set-lokasi');
 
         Route::get('/resep-obat', function () {
             return Inertia::render('farmasi/ResepObat');

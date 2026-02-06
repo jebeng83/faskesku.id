@@ -414,12 +414,12 @@ export default function WilayahSearchableSelect({
 								</div>
 							) : filteredOptions.length === 0 ? (
 								<div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-									{searchLoading ? "Mencari..." : noOptionsText}
-									{level === "village" && !searchLoading && (
-										<div className="mt-1 text-xs">
-											Ketik minimal 2 karakter untuk mencari kelurahan/desa
-										</div>
-									)}
+                                    {searchLoading ? "Mencari..." : noOptionsText}
+                                    {level === "village" && !searchLoading && (
+                                        <div className="mt-1 text-xs">
+                                            Ketik minimal 2 karakter. Bisa cari desa/kecamatan/kabupaten
+                                        </div>
+                                    )}
 								</div>
 							) : (
 								filteredOptions.map((option, index) => (

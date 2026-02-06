@@ -311,6 +311,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // API routes untuk resep
     Route::post('/resep', [ResepController::class, 'store'])->name('api.resep.store');
+    Route::post('/resep/racikan', [ResepController::class, 'storeRacikan'])->name('api.resep.racikan.store');
+    Route::post('/resep/combined', [ResepController::class, 'storeCombined'])->name('api.resep.combined.store');
     Route::get('/resep/list', [ResepController::class, 'list'])->name('api.resep.list');
     Route::get('/resep/stok-info', [ResepController::class, 'getStokInfo'])->name('api.resep.stok-info');
     Route::get('/resep/qrcode', [ResepController::class, 'generateQrCode'])->name('api.resep.qrcode');
@@ -323,6 +325,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->name('api.resep.delete');
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
+    Route::post('/resep/{no_resep}/racikan', [ResepController::class, 'appendRacikan'])->where('no_resep', '.*')->name('api.resep.racikan.append');
+
 
     Route::prefix('odontogram')->group(function () {
         Route::get('/pasien/{no_rkm_medis}', [OdontogramController::class, 'byPatient'])

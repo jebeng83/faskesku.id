@@ -176,9 +176,16 @@ const tabs = [
                 accent: "from-emerald-500 to-teal-500",
             },
             {
+                title: "Set Lokasi",
+                description: "Pengaturan unit/bangsal sumber stok obat",
+                href: route("farmasi.set-lokasi", {}, false),
+                icon: ClipboardDocumentListIcon,
+                accent: "from-blue-500 to-indigo-500",
+            },
+            {
                 title: "Data Obat",
                 description:
-                    "Kelola daftar obat, satuan, dan detail spesifikasi",
+                    "Kelola daftar obat, satuan, and detail spesifikasi",
                 href: route("farmasi.data-obat", {}, false),
                 icon: BeakerIcon,
                 accent: "from-blue-500 to-indigo-500",
@@ -238,9 +245,9 @@ const tabs = [
             },
         ],
     },
-            {
-                key: "laporan",
-                label: "Laporan",
+    {
+        key: "laporan",
+        label: "Laporan",
         items: [
             {
                 title: "Dashboard & Analitik",
@@ -348,11 +355,10 @@ export default function FarmasiIndex() {
                                 key={tab.key}
                                 layout
                                 onClick={() => setActiveTab(tab.key)}
-                                className={`relative -mb-px pb-3 text-sm font-medium transition-colors ${
-                                    activeTab === tab.key
+                                className={`relative -mb-px pb-3 text-sm font-medium transition-colors ${activeTab === tab.key
                                         ? "text-blue-600 dark:text-blue-400"
                                         : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                }`}
+                                    }`}
                                 whileTap={{ scale: 0.98 }}
                             >
                                 {tab.label}

@@ -1142,7 +1142,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                         "kode_wilayah"
                                                     )}
                                                     required={true}
-                                                    searchPlaceholder="Ketik nama kelurahan/desa..."
+                                                    searchPlaceholder="Ketik nama desa/kecamatan/kabupaten untuk mempersempit hasil"
                                                     noOptionsText="Tidak ada kelurahan/desa ditemukan"
                                                     loadingText="Memuat data kelurahan/desa..."
                                                 />
