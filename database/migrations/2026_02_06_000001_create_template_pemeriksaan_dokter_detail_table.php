@@ -9,6 +9,10 @@ return new class extends Migration {
     {
         if (! Schema::hasTable('template_pemeriksaan_dokter_detail')) {
             Schema::create('template_pemeriksaan_dokter_detail', function (Blueprint $table) {
+                $table->engine = 'InnoDB';
+                $table->charset = 'latin1';
+                $table->collation = 'latin1_swedish_ci';
+
                 $table->string('no_template', 32)->primary();
                 $table->string('nm_template', 255)->nullable();
                 $table->string('suhu_tubuh', 50)->nullable();
