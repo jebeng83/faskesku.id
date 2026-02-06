@@ -70,6 +70,11 @@ export default function Resep({
     const [racikSearchObat, setRacikSearchObat] = useState({});
     const [racikDropdownObat, setRacikDropdownObat] = useState({});
     const [isSubmittingRacikan, setIsSubmittingRacikan] = useState(false);
+    const [templates, setTemplates] = useState([]);
+    const [loadingTemplates, setLoadingTemplates] = useState(false);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+    const [templateQuery, setTemplateQuery] = useState("");
 
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
@@ -661,6 +666,88 @@ export default function Resep({
             alert(msg);
         } finally {
             setIsSubmittingRacikan(false);
+        }
+    };
+
+    const fetchTemplates = async () => {
+        if (!selectedDokter) return;
+        setLoadingTemplates(true);
+        try {
+            const resp = await axios.get('/api/racikan-template', { params: { kd_dokter: selectedDokter } });
+            if (resp.data?.success) setTemplates(resp.data.data);
+        } catch (_) { }
+        finally { setLoadingTemplates(false); }
+    };
+
+    const handleSaveAsTemplate = async (group) => {
+        if (!group.nama_racik || !group.kd_racik || (group.items || []).length === 0) {
+            alert('Nama, metode, dan bahan racikan harus diisi!');
+            return;
+        }
+        setIsSavingTemplate(true);
+        try {
+            const payload = {
+                nama_racik: group.nama_racik,
+                kd_racik: group.kd_racik,
+                kd_dokter: selectedDokter,
+                jml_dr: group.jml_dr || 0,
+                aturan_pakai: group.aturan_pakai || '',
+                keterangan: group.keterangan || '',
+                items: (group.items || []).map(it => ({
+                    kode_brng: it.kode_brng,
+                    p1: it.p1,
+                    p2: it.p2,
+                    kandungan: it.kandungan,
+                    jml: it.jml
+                }))
+            };
+            const resp = await axios.post('/api/racikan-template', payload);
+            if (resp.data?.success) {
+                alert('Template racikan berhasil disimpan!');
+                fetchTemplates();
+            }
+        } catch (error) {
+            alert('Gagal menyimpan template: ' + (error?.response?.data?.message || error.message));
+        } finally { setIsSavingTemplate(false); }
+    };
+
+    const loadTemplate = async (template) => {
+        try {
+            const resp = await axios.get(`/api/racikan-template/${template.no_template}`, { params: { kd_poli: kdPoli } });
+            if (resp.data?.success) {
+                const { header, items, stock_alert, out_of_stock_items } = resp.data.data;
+                if (stock_alert) {
+                    const names = (out_of_stock_items || []).map(it => it.nama_brng).join(', ');
+                    alert(`Peringatan: Stok obat [${names}] habis/tidak tersedia di lokasi poli ini!`);
+                }
+                const newId = Date.now();
+                const newGroup = {
+                    id: newId,
+                    no_racik: racikanGroups.length + 1,
+                    nama_racik: header.nama_racik,
+                    kd_racik: header.kd_racik,
+                    jml_dr: header.jml_dr,
+                    aturan_pakai: header.aturan_pakai,
+                    keterangan: header.keterangan,
+                    items: (items || []).map(it => ({
+                        id: Date.now() + Math.random(),
+                        kode_brng: it.kode_brng,
+                        nama_brng: it.nama_brng,
+                        satuan: it.satuan,
+                        kapasitas: it.kapasitas,
+                        stok: it.stok_tersedia,
+                        p1: it.p1,
+                        p2: it.p2,
+                        kandungan: it.kandungan,
+                        jml: it.jml
+                    }))
+                };
+                setRacikanGroups(prev => [...prev, newGroup]);
+                setActiveRacikId(newId);
+                setShowTemplateModal(false);
+            }
+        } catch (_) {
+            alert('Gagal memuat detail template');
         }
     };
 
@@ -1453,6 +1540,7 @@ export default function Resep({
                     <div className="flex items-center justify-between">
                         <h4 className="text-lg font-bold text-gray-900 dark:text-white">Resep Racikan</h4>
                         <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => { setShowTemplateModal(true); fetchTemplates(); }} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600">Pilih Template</button>
                             <button type="button" onClick={() => addRacikanGroup()} className="inline-flex items-center justify-center px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600">Tambah Racikan</button>
                         </div>
                     </div>
@@ -1502,7 +1590,8 @@ export default function Resep({
                                             </div>
                                         )}
                                     </div>
-                                    <div className="col-span-1 flex justify-end">
+                                    <div className="col-span-1 flex justify-end gap-2">
+                                        <button type="button" onClick={() => handleSaveAsTemplate(grp)} disabled={isSavingTemplate} className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-300 dark:border-gray-600" title="Simpan sebagai template">★</button>
                                         <button type="button" onClick={() => removeRacikanGroup(grp.id)} className="inline-flex items-center justify-center w-8 h-8 rounded bg-red-500 text-white">−</button>
                                     </div>
                                     <div className="col-span-12">
@@ -1584,6 +1673,70 @@ export default function Resep({
                         <button type="submit" disabled={isSubmittingRacikan || racikanGroups.length === 0} className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">{isSubmittingRacikan ? 'Menyimpan…' : 'Simpan Racikan'}</button>
                     </div>
                 </form>
+            )}
+
+            {showTemplateModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <div className="text-lg font-bold text-gray-900 dark:text-white">Pilih Template Racikan</div>
+                            <button type="button" onClick={() => setShowTemplateModal(false)} className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600">✕</button>
+                        </div>
+                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            {loadingTemplates ? (
+                                <div className="text-center text-sm text-gray-600 dark:text-gray-300">Memuat daftar template…</div>
+                            ) : templates.length === 0 ? (
+                                <div className="text-center text-sm text-gray-600 dark:text-gray-300">Belum ada template racikan</div>
+                            ) : (
+                                <>
+                                    <input type="text" value={templateQuery} onChange={(e) => setTemplateQuery(e.target.value)} placeholder="Cari template" className="w-full py-2 px-3 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                                    <div className="border rounded-md overflow-hidden">
+                                        <div className="hidden md:grid grid-cols-4 gap-2 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs border-b border-gray-200 dark:border-gray-600">
+                                            <div className="px-3 py-2">Nama racikan</div>
+                                            <div className="px-3 py-2">Dosis</div>
+                                            <div className="px-3 py-2">Aturan Pakai</div>
+                                            <div className="px-3 py-2">Keterangan</div>
+                                        </div>
+                                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {templates
+                                                .filter((tpl) => {
+                                                    const q = (templateQuery || '').toLowerCase();
+                                                    if (!q) return true;
+                                                    const fields = [tpl.nama_racik, tpl.jml_dr, tpl.aturan_pakai, tpl.keterangan];
+                                                    return fields.some((v) => String(v ?? '').toLowerCase().includes(q));
+                                                })
+                                                .map((tpl) => (
+                                                    <button key={tpl.no_template} onClick={() => loadTemplate(tpl)} className="w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 px-3 py-2">
+                                                            <div className="text-sm text-gray-800 dark:text-gray-100">
+                                                                <div className="md:hidden text-[11px] text-gray-500 dark:text-gray-400">Nama racikan</div>
+                                                                <div className="truncate font-medium">{tpl.nama_racik}</div>
+                                                            </div>
+                                                            <div className="text-sm text-gray-800 dark:text-gray-100">
+                                                                <div className="md:hidden text-[11px] text-gray-500 dark:text-gray-400">Dosis</div>
+                                                                <div className="truncate">{tpl.jml_dr}</div>
+                                                            </div>
+                                                            <div className="text-sm text-gray-800 dark:text-gray-100">
+                                                                <div className="md:hidden text-[11px] text-gray-500 dark:text-gray-400">Aturan Pakai</div>
+                                                                <div className="truncate">{tpl.aturan_pakai || '-'}</div>
+                                                            </div>
+                                                            <div className="text-sm text-gray-800 dark:text-gray-100">
+                                                                <div className="md:hidden text-[11px] text-gray-500 dark:text-gray-400">Keterangan</div>
+                                                                <div className="truncate">{tpl.keterangan || '-'}</div>
+                                                            </div>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                            <button type="button" onClick={() => setShowTemplateModal(false)} className="px-4 py-2 text-sm font-medium rounded border border-gray-300 dark:border-gray-600">Tutup</button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Kontrol tampil/sembunyi Riwayat Resep */}
@@ -2306,6 +2459,59 @@ export default function Resep({
                                 </tfoot>
                             </table>
                         </div>
+                        {Array.isArray(savedResep.racikan) && savedResep.racikan.length > 0 && (
+                            <div className="mt-6">
+                                <div className="text-sm font-medium mb-2">Detail Obat Racikan</div>
+                                {savedResep.racikan.map((grp, gidx) => (
+                                    <div key={gidx} className="mb-6">
+                                        <div className="flex items-center justify-between text-sm bg-gray-50 border p-3 rounded">
+                                            <div>
+                                                <div className="font-semibold">{grp.nama_racik || `Racikan #${grp.no_racik}`}</div>
+                                                <div className="text-gray-600">Metode: {grp.metode || '-'}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div>Jumlah Racikan: {grp.jml_dr ?? '-'}</div>
+                                                <div>Aturan Pakai: {grp.aturan_pakai || '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div className="overflow-x-auto mt-2">
+                                            <table className="w-full border-collapse border border-gray-200 text-sm">
+                                                <thead>
+                                                    <tr className="bg-gray-100">
+                                                        <th className="border px-3 py-2 text-left">Kode</th>
+                                                        <th className="border px-3 py-2 text-left">Nama Obat</th>
+                                                        <th className="border px-3 py-2 text-left">Satuan</th>
+                                                        <th className="border px-3 py-2 text-right">Tarif</th>
+                                                        <th className="border px-3 py-2 text-right">Jumlah</th>
+                                                        <th className="border px-3 py-2 text-left">Kandungan</th>
+                                                        <th className="border px-3 py-2 text-right">Subtotal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {(grp.details || []).length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan={7} className="border px-3 py-4 text-center text-gray-500">Tidak ada detail racikan.</td>
+                                                        </tr>
+                                                    ) : (
+                                                        (grp.details || []).map((d, idx) => (
+                                                            <tr key={d.kode_brng || idx}>
+                                                                <td className="border px-3 py-2 font-mono">{d.kode_brng}</td>
+                                                                <td className="border px-3 py-2">{d.nama_brng || '-'}</td>
+                                                                <td className="border px-3 py-2">{d.satuan || '-'}</td>
+                                                                <td className="border px-3 py-2 text-right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(d.tarif || 0))}</td>
+                                                                <td className="border px-3 py-2 text-right">{d.jml}</td>
+                                                                <td className="border px-3 py-2">{d.kandungan ?? '-'}</td>
+                                                                <td className="border px-3 py-2 text-right">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(d.subtotal || (Number(d.tarif || 0) * Number(d.jml || 0))))}</td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         </div>
                     </div>
             )}

@@ -30,7 +30,7 @@ class SkriningVisualController extends Controller
         $row = SkriningVisual::query()
             ->where('no_rkm_medis', $no_rkm_medis)
             ->whereDate('tanggal', $tanggal)
-            ->firstOrFail();
+            ->first();
         return response()->json(['data' => $row]);
     }
 

@@ -272,6 +272,16 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/obat/{kode_barang}', [ObatController::class, 'getDetailObat'])->name('api.obat.detail');
     Route::post('/obat/cek-stok', [ObatController::class, 'cekStokObat'])->name('api.obat.cek-stok');
 
+    // Template Pemeriksaan Dokter APIs (untuk CPPT SOAP templates)
+    Route::prefix('template-pemeriksaan-dokter')->group(function () {
+        Route::get('/list', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'list'])->name('api.template-pemeriksaan-dokter.list');
+        Route::get('/item', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'item'])->name('api.template-pemeriksaan-dokter.item');
+        Route::post('/', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'storeMain'])->name('api.template-pemeriksaan-dokter.store');
+        Route::put('/', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'storeMain'])->name('api.template-pemeriksaan-dokter.update');
+        Route::post('/detail', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'storeDetail'])->name('api.template-pemeriksaan-dokter.detail.store');
+        Route::put('/detail', [\App\Http\Controllers\RawatJalan\TemplatePemeriksaanDokterController::class, 'storeDetail'])->name('api.template-pemeriksaan-dokter.detail.update');
+    });
+
     // SDKI CRUD endpoints
     Route::get('/sdki', [SdkiController::class, 'index'])->name('api.sdki.index');
     Route::post('/sdki', [SdkiController::class, 'store'])->name('api.sdki.store');
@@ -325,6 +335,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('/resep/{no_resep}', [ResepController::class, 'destroy'])->name('api.resep.delete');
     Route::post('/resep/{no_resep}/validasi', [ResepController::class, 'validasi'])->where('no_resep', '.*')->name('api.resep.validasi');
     Route::post('/resep/{no_resep}/penyerahan', [ResepController::class, 'penyerahan'])->where('no_resep', '.*')->name('api.resep.penyerahan');
+    Route::post('/resep/{no_resep}/jurnal/stage', [ResepController::class, 'stageJurnalRalan'])->where('no_resep', '.*')->name('api.resep.jurnal.stage');
     Route::post('/resep/{no_resep}/racikan', [ResepController::class, 'appendRacikan'])->where('no_resep', '.*')->name('api.resep.racikan.append');
 
 

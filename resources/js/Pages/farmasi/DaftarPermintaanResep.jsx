@@ -68,6 +68,17 @@ const DaftarPermintaanResep = () => {
         return value || "Pilih status";
     };
 
+    const getStatusResepType = (row) => {
+        const hasNon = Array.isArray(row?.detail_obat) && row.detail_obat.length > 0;
+        const hasRac = Array.isArray(row?.racikan) && row.racikan.length > 0;
+        const flagNon = typeof row?.has_non_racikan === "boolean" ? row.has_non_racikan : hasNon;
+        const flagRac = typeof row?.has_racikan === "boolean" ? row.has_racikan : hasRac;
+        if (flagNon && flagRac) return "Non Racikan + Racikan";
+        if (flagRac) return "Racikan";
+        if (flagNon) return "Non Racikan";
+        return "-";
+    };
+
     const [filters, setFilters] = useState({
         jenis: "ralan",
         start_date: todayStr(),
@@ -1348,6 +1359,50 @@ const DaftarPermintaanResep = () => {
             });
             setConfirmOpen(false);
             alert("Penyerahan obat berhasil diproses.");
+
+            try {
+                const stageRes = await fetch(`/api/resep/${encodeURIComponent(selectedResep.no_resep)}/jurnal/stage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const stageData = await stageRes.json();
+                if (!stageRes.ok || !stageData.success || !stageData.meta?.balanced) {
+                    const errMsg = stageData?.message || 'Staging jurnal gagal atau tidak seimbang. Posting dibatalkan.';
+                    alert(`Staging jurnal penyerahan gagal: ${errMsg}`);
+                } else {
+                    const postRes = await fetch('/api/akutansi/jurnal/post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({
+                            no_bukti: selectedResep.no_resep,
+                            keterangan: `Posting otomatis penyerahan Resep ${selectedResep.no_resep}${selectedResep.no_rawat ? ` (no_rawat ${selectedResep.no_rawat})` : ''}`,
+                            tgl_jurnal: tglPenyerahanBaru
+                        })
+                    });
+                    let postData = {};
+                    try {
+                        const text = await postRes.text();
+                        postData = text ? JSON.parse(text) : {};
+                    } catch (_) {
+                        postData = {};
+                    }
+                    if (postRes.status === 201 && postData.no_jurnal) {
+                        const noJurnal = postData.no_jurnal;
+                        alert(`Jurnal penyerahan diposting (No: ${noJurnal}).`);
+                    } else {
+                        const errMsg = postData?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                        alert(`Gagal posting jurnal penyerahan: ${errMsg}`);
+                    }
+                }
+            } catch (e) {
+                const msg = e?.message || 'Terjadi kesalahan saat staging/posting jurnal penyerahan';
+                alert(msg);
+            }
         } catch (e) {
             alert(e.message);
         } finally {
@@ -1392,63 +1447,41 @@ const DaftarPermintaanResep = () => {
             };
         const ppnRate = typeof res.ppn_rate === "number" ? res.ppn_rate : 0.11;
 
-        // Kumpulkan item non-racikan
-        const nonRacikan = Array.isArray(res.detail_obat)
-            ? res.detail_obat
-            : [];
+        const nonRacikan = Array.isArray(res.detail_obat) ? res.detail_obat : [];
         const subtotalNonRacikan = nonRacikan.reduce((acc, it) => {
-            const sub =
-                typeof it.subtotal === "number"
-                    ? it.subtotal
-                    : Number(it.tarif || 0) * Number(it.jml || 0);
-            return acc + sub;
+            const tarif = Number(it.tarif || 0);
+            const jml = Number(it.jml || 0);
+            return acc + tarif * jml;
         }, 0);
         const tambahanNonRacikan = nonRacikan.reduce((acc, it) => {
-            const emb = Number(it.embalase || 0);
-            const tus = Number(it.tuslah || 0);
-            return acc + emb + tus;
+            return acc + Number(it.embalase || 0) + Number(it.tuslah || 0);
         }, 0);
 
-        // Kumpulkan item racikan (detail dalam setiap grup)
         const racikanGroups = Array.isArray(res.racikan) ? res.racikan : [];
         const { subtotalRacikan, tambahanRacikan } = racikanGroups.reduce(
             (acc, grp) => {
                 const details = Array.isArray(grp?.details) ? grp.details : [];
                 for (const d of details) {
-                    const sub =
-                        typeof d.subtotal === "number"
-                            ? d.subtotal
-                            : Number(d.tarif || 0) * Number(d.jml || 0);
-                    const emb = Number(d.embalase || 0);
-                    const tus = Number(d.tuslah || 0);
-                    acc.subtotalRacikan += sub;
-                    acc.tambahanRacikan += emb + tus;
+                    const tarif = Number(d.tarif || 0);
+                    const jml = Number(d.jml || 0);
+                    acc.subtotalRacikan += tarif * jml;
+                    acc.tambahanRacikan += Number(d.embalase || 0) + Number(d.tuslah || 0);
                 }
                 return acc;
             },
             { subtotalRacikan: 0, tambahanRacikan: 0 }
         );
 
-        const subtotalFallback = subtotalNonRacikan + subtotalRacikan;
-        const tambahanFallback = tambahanNonRacikan + tambahanRacikan;
-        const ppnFallback = Math.round(subtotalFallback * ppnRate);
-        const totalPlusPpnFallback =
-            subtotalFallback + tambahanFallback + ppnFallback;
+        const subtotal = subtotalNonRacikan + subtotalRacikan;
+        const tambahan = tambahanNonRacikan + tambahanRacikan;
+        const ppn = Math.round(subtotal * ppnRate);
+        const totalPlusPpn = subtotal + tambahan + ppn;
 
         return {
-            subtotal:
-                typeof res.subtotal === "number"
-                    ? res.subtotal
-                    : subtotalFallback,
-            tambahan_total:
-                typeof res.tambahan_total === "number"
-                    ? res.tambahan_total
-                    : tambahanFallback,
-            ppn: typeof res.ppn === "number" ? res.ppn : ppnFallback,
-            total_plus_ppn:
-                typeof res.total_plus_ppn === "number"
-                    ? res.total_plus_ppn
-                    : totalPlusPpnFallback,
+            subtotal,
+            tambahan_total: tambahan,
+            ppn,
+            total_plus_ppn: totalPlusPpn,
             ppn_rate: ppnRate,
         };
     };
@@ -1499,6 +1532,27 @@ const DaftarPermintaanResep = () => {
             const item = { ...details[idx] };
             const num = Number(value ?? 0);
             item[key] = Number.isFinite(num) && num >= 0 ? num : 0;
+            details[idx] = item;
+            grp.details = details;
+            groups[gidx] = grp;
+            return { ...prev, racikan: groups };
+        });
+    };
+
+    // Edit jumlah per item racikan
+    const updateRacikanJumlah = (gidx, idx, key, value) => {
+        setSelectedResep((prev) => {
+            if (!prev) return prev;
+            const groups = Array.isArray(prev.racikan)
+                ? prev.racikan.map((g) => ({ ...g }))
+                : [];
+            if (!groups[gidx]) return prev;
+            const grp = { ...groups[gidx] };
+            const details = Array.isArray(grp.details) ? [...grp.details] : [];
+            if (!details[idx]) return prev;
+            const item = { ...details[idx] };
+            const num = Number(value ?? 0);
+            item[key] = Number.isFinite(num) && num >= 0.1 ? num : 0.1;
             details[idx] = item;
             grp.details = details;
             groups[gidx] = grp;
@@ -1917,6 +1971,9 @@ const DaftarPermintaanResep = () => {
                                                 Status Terlayani
                                             </th>
                                             <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
+                                                Status Resep
+                                            </th>
+                                            <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                                                 Jenis Bayar
                                             </th>
                                             <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
@@ -2063,6 +2120,22 @@ const DaftarPermintaanResep = () => {
                                                                     whileHover={{ scale: 1.05 }}
                                                                 >
                                                                     {statusLabel}
+                                                                </motion.span>
+                                                            </td>
+                                                            <td className="px-4 py-3">
+                                                                <motion.span
+                                                                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ring-1 ${
+                                                                        getStatusResepType(item) === "Non Racikan + Racikan"
+                                                                            ? "bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 text-indigo-700 dark:text-indigo-300 ring-indigo-200 dark:ring-indigo-800"
+                                                                            : getStatusResepType(item) === "Racikan"
+                                                                            ? "bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/30 dark:to-fuchsia-900/30 text-purple-700 dark:text-purple-300 ring-purple-200 dark:ring-purple-800"
+                                                                            : getStatusResepType(item) === "Non Racikan"
+                                                                            ? "bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/30 dark:to-sky-900/30 text-blue-700 dark:text-blue-300 ring-blue-200 dark:ring-blue-800"
+                                                                            : "bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800/30 dark:to-slate-800/30 text-gray-700 dark:text-gray-300 ring-gray-200 dark:ring-gray-700"
+                                                                    }`}
+                                                                    whileHover={{ scale: 1.05 }}
+                                                                >
+                                                                    {getStatusResepType(item)}
                                                                 </motion.span>
                                                             </td>
                                                             <td className="px-4 py-3">
@@ -2446,17 +2519,7 @@ const DaftarPermintaanResep = () => {
                                                             </td>
                                                             <td className="border px-3 py-2 text-right">
                                                                 {formatRupiah(
-                                                                    typeof d.subtotal ===
-                                                                        "number"
-                                                                        ? d.subtotal
-                                                                        : Number(
-                                                                              d.tarif ||
-                                                                                  0
-                                                                          ) *
-                                                                              Number(
-                                                                                  d.jml ||
-                                                                                      0
-                                                                              )
+                                                                    Number(d.tarif || 0) * Number(d.jml || 0)
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -2842,9 +2905,25 @@ const DaftarPermintaanResep = () => {
                                                                                             )}
                                                                                         </td>
                                                                                         <td className="border px-3 py-2 text-right">
-                                                                                            {
-                                                                                                d.jml
-                                                                                            }
+                                                                                            <Input
+                                                                                                type="number"
+                                                                                                min={0.1}
+                                                                                                step="0.1"
+                                                                                                value={
+                                                                                                    typeof d.jml === "number"
+                                                                                                        ? d.jml
+                                                                                                        : Number(d.jml || 0)
+                                                                                                }
+                                                                                                onChange={(e) =>
+                                                                                                    updateRacikanJumlah(
+                                                                                                        gidx,
+                                                                                                        idx,
+                                                                                                        "jml",
+                                                                                                        e.target.value
+                                                                                                    )
+                                                                                                }
+                                                                                                className="w-28 text-right"
+                                                                                            />
                                                                                         </td>
                                                                                         <td className="border px-3 py-2">
                                                                                             {d.kandungan ||
@@ -2914,17 +2993,7 @@ const DaftarPermintaanResep = () => {
                                                                                         </td>
                                                                                         <td className="border px-3 py-2 text-right">
                                                                                             {formatRupiah(
-                                                                                                typeof d.subtotal ===
-                                                                                                    "number"
-                                                                                                    ? d.subtotal
-                                                                                                    : Number(
-                                                                                                          d.tarif ||
-                                                                                                              0
-                                                                                                      ) *
-                                                                                                          Number(
-                                                                                                              d.jml ||
-                                                                                                                  0
-                                                                                                          )
+                                                                                                Number(d.tarif || 0) * Number(d.jml || 0)
                                                                                             )}
                                                                                         </td>
                                                                                     </tr>

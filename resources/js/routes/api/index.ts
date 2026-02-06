@@ -15,6 +15,7 @@ import kamarInap from './kamar-inap'
 import users from './users'
 import menus from './menus'
 import obat from './obat'
+import templatePemeriksaanDokter from './template-pemeriksaan-dokter'
 import sdki from './sdki'
 import kategoriSdki from './kategori-sdki'
 import subkategoriSdki from './subkategori-sdki'
@@ -240,6 +241,7 @@ const api = {
     users: Object.assign(users, users),
     menus: Object.assign(menus, menus),
     obat: Object.assign(obat, obat),
+    templatePemeriksaanDokter: Object.assign(templatePemeriksaanDokter, templatePemeriksaanDokter),
     sdki: Object.assign(sdki, sdki),
     kategoriSdki: Object.assign(kategoriSdki, kategoriSdki),
     subkategoriSdki: Object.assign(subkategoriSdki, subkategoriSdki),

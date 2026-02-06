@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser } from 'lucide-react';
+import axios from 'axios';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token: _token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -503,7 +504,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         nip: '',
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, _setIsSubmitting] = useState(false);
     const [list, setList] = useState([]);
     const [loadingList, setLoadingList] = useState(false);
     const [message, setMessage] = useState(null);
@@ -515,6 +516,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Bridging PCare states
     const [showBridging, setShowBridging] = useState(false); // Default hidden, tampil saat pendaftaran berhasil
     const [bridgingOpen, setBridgingOpen] = useState(false); // kontrol popup modal
+    const [bridgingLoading, setBridgingLoading] = useState(false);
+    const [bridgingError, setBridgingError] = useState('');
+    const [bridgingInfo, setBridgingInfo] = useState(null);
     const [pcarePendaftaran, setPcarePendaftaran] = useState(null);
     const [pcareRujukanSubspesialis, setPcareRujukanSubspesialis] = useState(null);
     const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -522,23 +526,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [rujukanBerhasil, setRujukanBerhasil] = useState(false);
     // Menyimpan nomor kunjungan terakhir (pengganti no rujukan bila belum tersedia)
     const [lastNoKunjungan, setLastNoKunjungan] = useState('');
+    const [noKunjunganFromLog, setNoKunjunganFromLog] = useState('');
     // Menyimpan payload terakhir untuk template cetak rujukan
-    const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
+    const [lastKunjunganPayload, _setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
     const [kunjunganPreview, setKunjunganPreview] = useState(null); // payload preview kunjungan
     const [sendingKunjungan, setSendingKunjungan] = useState(false);
     const [kunjunganResult, setKunjunganResult] = useState(null); // hasil kirim kunjungan
     const [rujukForm, setRujukForm] = useState({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
+    const setRujukFormSafe = (updater) => { preserveScroll(() => setRujukForm(updater)); };
     const [viewMode, setViewMode] = useState('current');
     // Referensi Poli & Dokter (untuk menampilkan nama pada KD Poli/Dokter)
     const [poliOptions, setPoliOptions] = useState([]);
     const [dokterOptions, setDokterOptions] = useState([]);
     // KD TACC: default hidden, tampil wajib isi bila diagnosa NonSpesialis dipilih
-    const [kdTaccVisible, setKdTaccVisible] = useState(false);
-    const [taccError, setTaccError] = useState('');
+    const [_kdTaccVisible, setKdTaccVisible] = useState(false);
+    const [_taccError, setTaccError] = useState('');
     const [isDiagnosaNonSpesialis, setIsDiagnosaNonSpesialis] = useState(false); // Menyimpan informasi apakah diagnosa yang dipilih adalah NonSpesialis
     // Referensi KD TACC & Alasan (untuk penentuan rujuk). Sumber sesuai permintaan user.
-    const REF_TACC = useMemo(() => ([
+    const _REF_TACC = useMemo(() => ([
         { kdTacc: -1, nmTacc: 'Tanpa TACC', alasanTacc: [] },
         { kdTacc: 1, nmTacc: 'Time', alasanTacc: ['< 3 Hari', '>= 3 - 7 Hari', '>= 7 Hari'] },
         { kdTacc: 2, nmTacc: 'Age', alasanTacc: ['< 1 Bulan', '>= 1 Bulan s/d < 12 Bulan', '>= 1 Tahun s/d < 5 Tahun', '>= 5 Tahun s/d < 12 Tahun', '>= 12 Tahun s/d < 55 Tahun', '>= 55 Tahun'] },
@@ -547,10 +553,33 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     ]), []);
     // Referensi untuk Rujukan PCare
     const [providerOptions, setProviderOptions] = useState([]);
-    const [spesialisOptions, setSpesialisOptions] = useState([]);
     const [subSpesialisOptions, setSubSpesialisOptions] = useState([]);
-    const [saranaOptions, setSaranaOptions] = useState([]);
+    const [subSpesialisLoading, setSubSpesialisLoading] = useState(false);
+    const [subSpesialisError, setSubSpesialisError] = useState('');
     const [selectedSpesialis, setSelectedSpesialis] = useState('');
+    const [mcuData, setMcuData] = useState(null);
+    const [loadingMcu, setLoadingMcu] = useState(false);
+    const [mcuFormOpen, setMcuFormOpen] = useState(false);
+    const [_mcuForm, setMcuForm] = useState({ kdMCU: 0, noKunjungan: '', kdProvider: '', tglPelayanan: '' });
+    const [loadingSkrining, setLoadingSkrining] = useState(false);
+    const [skriningData, setSkriningData] = useState(null);
+    const [skriningError, setSkriningError] = useState('');
+    const bridgingScrollRef = useRef(null);
+    const preserveScroll = (fn) => {
+        try {
+            const el = bridgingScrollRef.current;
+            const top = el ? el.scrollTop : null;
+            fn();
+            if (el != null && top != null) {
+                requestAnimationFrame(() => {
+                    try { el.scrollTop = top; } catch (_) {}
+                });
+            }
+        } catch (_) { fn(); }
+    };
+    const handleToggleRujukanActive = (checked) => {
+        preserveScroll(() => setRujukanActive(checked));
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -623,7 +652,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             payload.nmSubSpesialis = nmSubSpesialis;
             payload.nmPPK = nmPPK;
         }
-        const noKunjunganCandidate = (lastNoKunjungan && String(lastNoKunjungan)) || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan && String(pcareRujukanSubspesialis.noKunjungan)) || (payload.noKunjungan && String(payload.noKunjungan)) || '';
+        const noKunjunganCandidate = (noKunjunganFromLog && String(noKunjunganFromLog)) || (lastNoKunjungan && String(lastNoKunjungan)) || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan && String(pcareRujukanSubspesialis.noKunjungan)) || (payload.noKunjungan && String(payload.noKunjungan)) || '';
         if (!noKunjunganCandidate) {
             setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk edit.' });
             setSendingKunjungan(false);
@@ -650,6 +679,158 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 setKunjunganResult({ success: true, message: msg });
             } else {
                 const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal edit Kunjungan (${res.status})`;
+                setKunjunganResult({ success: false, message: errMsg });
+            }
+        } catch (e) {
+            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+        } finally {
+            setSendingKunjungan(false);
+        }
+    };
+
+    const sendKunjungan = async () => {
+        if (!kunjunganPreview) return;
+        setSendingKunjungan(true);
+        setKunjunganResult(null);
+        setTaccError('');
+        const payload = { ...kunjunganPreview };
+        if (noRawat) {
+            payload.no_rawat = noRawat;
+        }
+        if (isDiagnosaNonSpesialis) {
+            const v = payload.kdTacc;
+            const isEmpty = v === undefined || v === null || v === '' || String(v).trim() === '';
+            const isMinusOne = v === -1 || v === '-1' || v === 0 || v === '0';
+            const isValidTacc = v === 1 || v === 2 || v === 3 || v === 4 || v === '1' || v === '2' || v === '3' || v === '4';
+            if (isEmpty || isMinusOne || !isValidTacc) {
+                setTaccError('KD TACC wajib diisi untuk diagnosa NonSpesialis. Pilih salah satu: 1 (Time), 2 (Age), 3 (Complication), atau 4 (Comorbidity).');
+                setSendingKunjungan(false);
+                return;
+            }
+            const alasan = payload.alasanTacc;
+            const alasanEmpty = alasan === undefined || alasan === null || String(alasan).trim() === '';
+            if (alasanEmpty) {
+                setTaccError('Alasan TACC wajib diisi saat KD TACC dipilih untuk diagnosa NonSpesialis.');
+                setSendingKunjungan(false);
+                return;
+            }
+        }
+        const isMinusOne = payload.kdTacc === -1 || payload.kdTacc === '-1';
+        const isEmptyTacc = payload.kdTacc === undefined || payload.kdTacc === null || payload.kdTacc === '';
+        if (isEmptyTacc || isMinusOne) {
+            payload.kdTacc = -1;
+            payload.alasanTacc = null;
+        } else {
+            if (payload.alasanTacc === undefined || payload.alasanTacc === null) {
+                payload.alasanTacc = '';
+            }
+            if (payload.kdTacc === -1 || payload.kdTacc === '-1') {
+                payload.alasanTacc = null;
+            }
+        }
+        const fmtDate = (d) => {
+            if (!d) return null;
+            try {
+                const dt = new Date(d);
+                const dd = String(dt.getDate()).padStart(2, '0');
+                const mm = String(dt.getMonth() + 1).padStart(2, '0');
+                const yyyy = dt.getFullYear();
+                return `${dd}-${mm}-${yyyy}`;
+            } catch (_) {
+                return d;
+            }
+        };
+        if (rujukanActive && rujukForm.kdppk) {
+            const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(rujukForm.kdSubSpesialis1));
+            const nmSubSpesialis = selectedSubSp ? (selectedSubSp.label.split(' — ')[1] || selectedSubSp.label || '').trim() : '';
+            let nmPPK = '';
+            const selectedProvider = providerOptions.find(opt => String(opt.value) === String(rujukForm.kdppk));
+            if (selectedProvider) {
+                const labelParts = selectedProvider.label.split(' — ');
+                nmPPK = (labelParts.length > 1 ? labelParts[1] : labelParts[0] || '').trim();
+                if (!nmPPK && selectedProvider.meta?.nmppk) {
+                    nmPPK = String(selectedProvider.meta.nmppk).trim();
+                }
+                if (!nmPPK && selectedProvider.meta?.nmProvider) {
+                    nmPPK = String(selectedProvider.meta.nmProvider).trim();
+                }
+            }
+            payload.rujukLanjut = {
+                kdppk: rujukForm.kdppk,
+                tglEstRujuk: fmtDate(rujukForm.tglEstRujuk) || null,
+                subSpesialis: {
+                    kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null,
+                    kdSarana: rujukForm.kdSarana || null,
+                },
+                khusus: null,
+            };
+            payload.nmSubSpesialis = nmSubSpesialis;
+            payload.nmPPK = nmPPK;
+        }
+        const extractNoKunjungan = (resp) => {
+            if (!resp) return '';
+            try {
+                if (resp.noKunjungan) return String(resp.noKunjungan);
+                if (resp.response) {
+                    const r = resp.response;
+                    if (typeof r === 'object' && r !== null) {
+                        if (r.noKunjungan) return String(r.noKunjungan);
+                        if (r.field === 'noKunjungan' && r.message) return String(r.message);
+                    }
+                    if (Array.isArray(r) && r.length > 0 && r[0]?.noKunjungan) {
+                        return String(r[0].noKunjungan);
+                    }
+                }
+            } catch (_) { }
+            return '';
+        };
+        try {
+            try { console.warn('[PCare] Payload akan dikirim', payload); } catch (_) { }
+            const res = await fetch('/api/pcare/kunjungan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                credentials: 'include',
+                body: JSON.stringify(payload),
+            });
+            const text = await res.text();
+            let json;
+            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
+            if (res.ok) {
+                const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
+                const noKunj = extractNoKunjungan(json);
+                setLastNoKunjungan(noKunj);
+                _setLastKunjunganPayload(payload);
+                if (payload.rujukLanjut && noRawat) {
+                    try {
+                        const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
+                        });
+                        const rujukJson = await rujukRes.json();
+                        const rujukData = rujukJson.data || null;
+                        if (rujukRes.ok && rujukData) {
+                            setRujukanBerhasil(true);
+                            setPcareRujukanSubspesialis(rujukData);
+                            if (rujukData.noKunjungan) {
+                                setLastNoKunjungan(rujukData.noKunjungan);
+                            }
+                        } else if (payload.rujukLanjut) {
+                            setRujukanBerhasil(true);
+                        }
+                    } catch {
+                        if (payload.rujukLanjut) {
+                            setRujukanBerhasil(true);
+                        }
+                    }
+                }
+                setKunjunganResult({ success: true, message: msg });
+            } else {
+                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal kirim Kunjungan (${res.status})`;
                 setKunjunganResult({ success: false, message: errMsg });
             }
         } catch (e) {
@@ -721,19 +902,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     onPemeriksaChange({ id: nip, nama: nama });
                 }
             }
-        } catch (_) {}
+        } catch (_) { }
     }, [onPemeriksaChange]);
 
     useEffect(() => {
         try {
             sessionStorage.setItem('cpptSoap_pegawaiQuery', pegawaiQuery || '');
-        } catch (_) {}
+        } catch (_) { }
     }, [pegawaiQuery]);
 
     useEffect(() => {
         try {
             sessionStorage.setItem('cpptSoap_nip', formData.nip || '');
-        } catch (_) {}
+        } catch (_) { }
     }, [formData.nip]);
 
     useEffect(() => {
@@ -750,7 +931,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 rtl: prev.rtl ? `${prev.rtl}\n${block}` : block,
             }));
             if (typeof onPlanningAppended === 'function') {
-                try { onPlanningAppended(); } catch (_) {}
+                try { onPlanningAppended(); } catch (_) { }
             }
         }
     }, [appendToPlanning]);
@@ -759,13 +940,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         if (appendToAssessment && Array.isArray(appendToAssessment) && appendToAssessment.length > 0) {
             const utama = appendToAssessment.find(d => d.type === 'utama');
             const sekunder = appendToAssessment.filter(d => d.type === 'sekunder');
-            
             let block = '';
-            
             if (utama) {
                 block += `Diagnosa Utama: [${utama.kode}] ${utama.nama}`;
             }
-            
+
             if (sekunder.length > 0) {
                 if (block) block += '\n';
                 block += 'Diagnosa Sekunder:';
@@ -773,16 +952,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     block += `\n${idx + 1}. [${d.kode}] ${d.nama}`;
                 });
             }
-            
+
             if (block) {
                 setFormData((prev) => ({
                     ...prev,
                     penilaian: prev.penilaian ? `${prev.penilaian}\n\n${block}` : block,
                 }));
             }
-            
+
             if (typeof onAssessmentAppended === 'function') {
-                try { onAssessmentAppended(); } catch (_) {}
+                try { onAssessmentAppended(); } catch (_) { }
             }
         }
     }, [appendToAssessment]);
@@ -806,143 +985,20 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     };
 
     const kesadaranOptions = [
-        'Compos Mentis','Somnolence','Sopor','Coma','Alert','Confusion','Voice','Pain','Unresponsive','Apatis','Delirium'
+        'Compos Mentis', 'Somnolence', 'Sopor', 'Coma', 'Alert', 'Confusion', 'Voice', 'Pain', 'Unresponsive', 'Apatis', 'Delirium'
     ];
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            const creating = !editKey;
-            const url = creating ? route('rawat-jalan.pemeriksaan-ralan.store') : route('rawat-jalan.pemeriksaan-ralan.update');
-            const vitalKeys = ['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'spo2', 'tinggi', 'berat', 'gcs', 'lingkar_perut'];
-            const textAreaKeys = ['keluhan', 'pemeriksaan', 'penilaian', 'rtl', 'instruksi', 'evaluasi'];
-            const normalizedFormData = { ...formData };
-            vitalKeys.forEach((key) => {
-                const raw = normalizedFormData[key];
-                const trimmed = (raw ?? '').toString().trim();
-                if (trimmed === '') {
-                    normalizedFormData[key] = 'N/A';
-                }
-            });
-            textAreaKeys.forEach((key) => {
-                const raw = normalizedFormData[key];
-                const trimmed = (raw ?? '').toString().trim();
-                if (trimmed === '') {
-                    normalizedFormData[key] = '-';
-                }
-            });
-            const payload = creating
-                ? { ...normalizedFormData, no_rawat: noRawat, t: token }
-                : { ...normalizedFormData, key: editKey };
-            const res = await fetch(url, {
-                method: creating ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(payload),
-            });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (!res.ok) {
-                const msg = (json && (json.message || (json.errors && Object.values(json.errors).flat().join(', ')))) || `Gagal menyimpan (${res.status})`;
-                setError(msg);
-                setMessage(null);
-                return;
-            }
-            setError(null);
-            setMessage(json.message || (creating ? 'Pemeriksaan tersimpan' : 'Pemeriksaan diperbarui'));
-            await fetchList();
-            setFormData((prev) => ({
-                ...prev,
-                suhu_tubuh: '', tensi: '', nadi: '', respirasi: '', tinggi: '', berat: '', spo2: '', gcs: '',
-                keluhan: '', pemeriksaan: '', alergi: '', lingkar_perut: '', rtl: '', penilaian: '', instruksi: '', evaluasi: ''
-            }));
-            setPegawaiQuery('');
-            setEditKey(null);
-
-            // Setelah pemeriksaan tersimpan, otomatis hit ke BPJS PCare: pendaftaran
-            try {
-                // Gunakan endpoint API langsung untuk memastikan kompatibilitas Ziggy
-                const pcareUrl = '/api/pcare/pendaftaran';
-                const pcarePayload = {
-                    no_rawat: noRawat,
-                    tgl_perawatan: payload.tgl_perawatan,
-                    keluhan: payload.keluhan,
-                    tensi: payload.tensi,
-                    nadi: payload.nadi,
-                    respirasi: payload.respirasi,
-                    lingkar_perut: payload.lingkar_perut,
-                    berat: payload.berat,
-                    tinggi: payload.tinggi,
-                };
-                const pcareRes = await fetch(pcareUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(pcarePayload),
-                });
-                const pcareText = await pcareRes.text();
-                let pcareJson;
-                try { pcareJson = pcareText ? JSON.parse(pcareText) : {}; } catch (_) { pcareJson = {}; }
-                if (pcareRes.ok) {
-                    // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
-                    const skipped = !!(pcareJson && pcareJson.skipped);
-                    if (skipped) {
-                        const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : 'Pendaftaran PCare dilewati (Non-BPJS)';
-                        // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
-                        setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
-                        // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS
-                        setShowBridging(false);
-                    } else if (pcareRes.status === 201 || pcareRes.status === 200) {
-                        // Sukses kirim ke BPJS PCare
-                        const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
-                            ? (pcareJson.response.message || '')
-                            : '';
-                        setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
-                        setShowBridging(true);
-                    } else {
-                        const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : `Gagal pendaftaran PCare (${pcareRes.status})`;
-                        setError(errMsg);
-                        setShowBridging(false);
-                    }
-                } else {
-                    const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
-                    setError(errMsg);
-                    setShowBridging(false);
-                }
-            } catch (e) {
-                setError(`Gagal koneksi ke PCare: ${e.message || e}`);
-            }
-        } catch (e) {
-            setError(e.message || 'Terjadi kesalahan saat menyimpan');
-            setMessage(null);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    // _handleSubmit dihapus karena tidak dipakai pada onSubmit form
 
     // Bridging PCare helpers
     const openBridgingModal = async () => {
         setBridgingOpen(true);
+        setBridgingLoading(true);
+        setBridgingError('');
         setKunjunganResult(null);
         setIsUnauthorized(false);
         // Secara default, buka Kunjungan dan muat preview
-        try { await toggleKunjungan(true); } catch (_) {}
+        try { await toggleKunjungan(true); } catch (_) { }
         // Ambil data pendaftaran dari tabel pcare_pendaftaran
         try {
             const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
@@ -955,7 +1011,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             } else {
                 setIsUnauthorized(false);
                 const json = await res.json();
-                setPcarePendaftaran(json.data || null);
+                const data = json && json.data ? json.data : {};
+                setPcarePendaftaran(data || null);
+                const status = data && data.status ? data.status : 'Tidak Diketahui';
+                const noUrut = data && data.response && data.response.field === 'noUrut' ? (data.response.message || '') : '';
+                const meta = (json && json.metaData && json.metaData.message) ? json.metaData.message : (data && data.metaData && data.metaData.message ? data.metaData.message : '');
+                setBridgingInfo({ status, noUrut, meta });
             }
         } catch (_) {
             setPcarePendaftaran(null);
@@ -989,6 +1050,22 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             setPcareRujukanSubspesialis(null);
             setRujukanBerhasil(false);
         }
+        try {
+            const nkRes = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'include',
+            });
+            if (nkRes.ok) {
+                const nkJson = await nkRes.json();
+                if (nkJson && nkJson.success && nkJson.noKunjungan) {
+                    setNoKunjunganFromLog(String(nkJson.noKunjungan));
+                } else {
+                    setNoKunjunganFromLog('');
+                }
+            }
+        } catch (_) {
+            setNoKunjunganFromLog('');
+        }
         // Muat referensi Poli & Dokter untuk menampilkan nama pada field KD Poli/Dokter
         try {
             const params = new URLSearchParams({ start: 0, limit: 200 });
@@ -1019,29 +1096,103 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         // Muat referensi awal untuk Rujukan
         // Provider Rujukan akan dimuat dinamis berdasarkan SubSpesialis + Sarana + Tgl Estimasi Rujuk
         setProviderOptions([]);
+        setBridgingLoading(false);
+    };
+
+    const hapusPendaftaranPcare = async () => {
         try {
-            // Spesialis
-            const spRes = await fetch(`/api/pcare/spesialis`, {
-                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'include',
+            const ok = typeof window !== 'undefined' ? window.confirm('Yakin ingin menghapus pendaftaran PCare?') : true;
+            if (!ok) return;
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch { }
+            const res = await axios({
+                method: 'DELETE',
+                url: '/api/pcare/pendaftaran',
+                data: { no_rawat: noRawat },
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
+                },
             });
-            const spJson = await spRes.json();
-            const spList = spJson?.response?.list || [];
-            setSpesialisOptions(spList.map((row) => ({ value: row.kdSpesialis, label: `${row.kdSpesialis || ''} — ${row.nmSpesialis || ''}` })));
-        } catch {
-            setSpesialisOptions([]);
+            const json = res.data || {};
+            const msg = (json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+            setMessage(`Pendaftaran PCare dihapus (${msg})`);
+            setBridgingInfo({ status: 'Dihapus', noUrut: '', meta: msg });
+            setShowBridging(false);
+            setBridgingOpen(false);
+            setPcarePendaftaran(null);
+        } catch (e) {
+            const errorMessage = e?.response?.data?.metaData?.message || e?.message || 'Gagal menghapus pendaftaran PCare';
+            setBridgingError(errorMessage);
         }
+    };
+
+    const refreshBridgingStatus = async () => {
         try {
-            // Sarana
-            const saRes = await fetch(`/api/pcare/spesialis/sarana`, {
+            setBridgingLoading(true);
+            setBridgingError('');
+            const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'include',
             });
-            const saJson = await saRes.json();
-            const saList = saJson?.response?.list || [];
-            setSaranaOptions(saList.map((row) => ({ value: row.kdSarana, label: `${row.kdSarana || ''} — ${row.nmSarana || ''}` })));
-        } catch {
-            setSaranaOptions([]);
+            if (res.status === 401) {
+                setBridgingError('Tidak diizinkan');
+                setPcarePendaftaran(null);
+                setBridgingLoading(false);
+                return;
+            }
+            const json = await res.json();
+            const data = json && json.data ? json.data : {};
+            setPcarePendaftaran(data || null);
+            const status = data && data.status ? data.status : 'Tidak Diketahui';
+            const noUrut = data && data.response && data.response.field === 'noUrut' ? (data.response.message || '') : '';
+            const meta = (json && json.metaData && json.metaData.message) ? json.metaData.message : (data && data.metaData && data.metaData.message ? data.metaData.message : '');
+            setBridgingInfo({ status, noUrut, meta });
+        } catch (e) {
+            setBridgingError(e?.message || String(e));
+        } finally {
+            setBridgingLoading(false);
+        }
+    };
+
+    const hapusKunjungan = async () => {
+        try {
+            const candidate = (noKunjunganFromLog && String(noKunjunganFromLog)) || (lastNoKunjungan && String(lastNoKunjungan)) || (kunjunganPreview && kunjunganPreview.noKunjungan && String(kunjunganPreview.noKunjungan)) || '';
+            if (!candidate) {
+                setKunjunganResult({ success: false, message: 'NoKunjungan belum tersedia untuk hapus.' });
+                return;
+            }
+            const ok = typeof window !== 'undefined' ? window.confirm('Yakin ingin menghapus Kunjungan PCare?') : true;
+            if (!ok) return;
+            try {
+                await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch { }
+            const res = await axios({
+                method: 'DELETE',
+                url: '/api/pcare/kunjungan',
+                data: { noKunjungan: candidate, no_rawat: noRawat },
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
+                },
+            });
+            const json = res.data || {};
+            const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+            setKunjunganResult({ success: true, message: `Kunjungan dihapus (${msg})` });
+            setNoKunjunganFromLog('');
+            setLastNoKunjungan('');
+        } catch (e) {
+            const errMsg = e?.response?.data?.metaData?.message || e?.message || 'Gagal menghapus Kunjungan PCare';
+            setKunjunganResult({ success: false, message: errMsg });
         }
     };
 
@@ -1053,6 +1204,376 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setKunjunganResult(null);
         setSelectedSpesialis('');
         setSubSpesialisOptions([]);
+    };
+
+    const BridgingModalSection = () => {
+        if (!bridgingOpen) return null;
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700">
+                    <div className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6" ref={bridgingScrollRef}>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden lg:col-span-4">
+                                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold">Pendaftaran PCare</div>
+                                <div className="p-3 sm:p-4">
+                                    {bridgingLoading ? (
+                                        <div className="text-gray-500">Memuat…</div>
+                                    ) : bridgingError ? (
+                                        <div className="text-red-600 dark:text-red-400">{bridgingError}</div>
+                                    ) : bridgingInfo ? (
+                                        <div className="space-y-1">
+                                            <div className="font-medium">Status Pendaftaran PCare: {bridgingInfo.status || '-'}</div>
+                                            {bridgingInfo.noUrut ? (<div>No Urut: {bridgingInfo.noUrut}</div>) : null}
+                                            {bridgingInfo.meta ? (<div>Keterangan: {bridgingInfo.meta}</div>) : null}
+                                        </div>
+                                    ) : (
+                                        <div className="text-gray-500">Tidak ada data pendaftaran</div>
+                                    )}
+                                    {pcarePendaftaran ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
+                                            <div><span className="font-medium">No Rawat:</span> {pcarePendaftaran.no_rawat}</div>
+                                            <div><span className="font-medium">No Kartu:</span> {pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</div>
+                                            <div><span className="font-medium">Tgl Daftar:</span> {pcarePendaftaran.tglDaftar || '-'}</div>
+                                            <div><span className="font-medium">Kd Poli:</span> {pcarePendaftaran.kdPoli || '-'}</div>
+                                            <div><span className="font-medium">Keluhan:</span> {pcarePendaftaran.keluhan || '-'}</div>
+                                            <div><span className="font-medium">Sistole/Diastole:</span> {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}</div>
+                                            <div><span className="font-medium">Berat/Tinggi:</span> {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''}kg / ${pcarePendaftaran.tinggiBadan || ''}cm` : '-'}</div>
+                                            <div><span className="font-medium">Resp/HR:</span> {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}</div>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
+                                    )}
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <button type="button" onClick={hapusPendaftaranPcare} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white border border-red-700">Hapus Pendaftaran PCare</button>
+                                        <button type="button" onClick={refreshBridgingStatus} className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border">Perbarui Status</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden lg:col-span-8">
+                                <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold flex items-center justify-between">
+                                    <span>Kunjungan PCare</span>
+                                    {(noKunjunganFromLog || lastNoKunjungan) && (
+                                        <span className="text-xs text-emerald-700 dark:text-emerald-300">No Kunjungan: {noKunjunganFromLog || lastNoKunjungan}</span>
+                                    )}
+                                </div>
+                                <div className="p-3 md:p-4">
+                                    <div className="space-y-3">
+                                        {kunjunganPreview && (
+                                            <div className="space-y-4 md:space-y-5">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">No Kartu BPJS</label>
+                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Tanggal Daftar</label>
+                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">KD Poli (PCare)</label>
+                                                        <SearchableSelect options={poliOptions} value={kunjunganPreview.kdPoli ?? ''} onChange={(val) => updateKunjunganField('kdPoli', val)} placeholder="Pilih Poli" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">KD Dokter (PCare)</label>
+                                                        <SearchableSelect options={dokterOptions} value={kunjunganPreview.kdDokter ?? ''} onChange={(val) => updateKunjunganField('kdDokter', val)} placeholder="Pilih Dokter" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Keluhan</label>
+                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Anamnesa</label>
+                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Sistole</label>
+                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Diastole</label>
+                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Berat Badan (kg)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Tinggi Badan (cm)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Resp Rate</label>
+                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Heart Rate</label>
+                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Lingkar Perut (cm)</label>
+                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Suhu</label>
+                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Tanggal Pulang</label>
+                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Poli Rujuk Internal (kdPoliRujukInternal)</label>
+                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Terapi Non Obat</label>
+                                                        <textarea value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">BMHP</label>
+                                                        <textarea value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Status Pulang</label>
+                                                        <SearchableSelect source="statuspulang" value={kunjunganPreview.kdStatusPulang ?? ''} onChange={(val) => { updateKunjunganField('kdStatusPulang', val); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmStatusPulang', label); }} placeholder="Pilih Status Pulang" searchPlaceholder="Cari status pulang…" sourceParams={{ rawatInap: false }} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Diagnosa Utama (kdDiag1)</label>
+                                                                <SearchableSelect source="diagnosa" value={kunjunganPreview.kdDiag1 ?? ''} onChange={(val) => { updateKunjunganField('kdDiag1', val); if (!val || val === '') { preserveScroll(() => { setIsDiagnosaNonSpesialis(false); setKdTaccVisible(false); setTaccError(''); }); updateKunjunganField('kdTacc', -1, 'int'); updateKunjunganField('alasanTacc', ''); } }} onSelect={(opt) => { const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true; preserveScroll(() => { setIsDiagnosaNonSpesialis(isNonSpesialis); setKdTaccVisible(!!isNonSpesialis); setTaccError(''); }); if (isNonSpesialis) { updateKunjunganField('kdTacc', '', 'int'); updateKunjunganField('alasanTacc', ''); } else { updateKunjunganField('kdTacc', -1, 'int'); updateKunjunganField('alasanTacc', ''); } }} placeholder="Pilih Diagnosa Utama" searchPlaceholder="Cari diagnosa (kode atau nama)…" className="" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Diagnosa 2 (kdDiag2)</label>
+                                                        <SearchableSelect source="diagnosa" value={kunjunganPreview.kdDiag2 ?? ''} onChange={(val) => updateKunjunganField('kdDiag2', val)} placeholder="Pilih Diagnosa 2 (opsional)" searchPlaceholder="Cari diagnosa (kode atau nama)…" className="" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Diagnosa 3 (kdDiag3)</label>
+                                                        <SearchableSelect source="diagnosa" value={kunjunganPreview.kdDiag3 ?? ''} onChange={(val) => updateKunjunganField('kdDiag3', val)} placeholder="Pilih Diagnosa 3 (opsional)" searchPlaceholder="Cari diagnosa (kode atau nama)…" className="" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Alergi Makan</label>
+                                                        <SearchableSelect source="alergi" value={kunjunganPreview.alergiMakan ?? '00'} onChange={(val) => { updateKunjunganField('alergiMakan', val); if (!val) updateKunjunganField('nmAlergiMakanan', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiMakanan', label); }} placeholder="Pilih Alergi Makanan" searchPlaceholder="Cari alergi (makanan)…" sourceParams={{ jenis: '01' }} defaultDisplay="Tidak Ada" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Alergi Udara</label>
+                                                        <SearchableSelect source="alergi" value={kunjunganPreview.alergiUdara ?? '00'} onChange={(val) => { updateKunjunganField('alergiUdara', val); if (!val) updateKunjunganField('nmAlergiUdara', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiUdara', label); }} placeholder="Pilih Alergi Udara" searchPlaceholder="Cari alergi (udara)…" sourceParams={{ jenis: '02' }} defaultDisplay="Tidak Ada" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">Alergi Obat</label>
+                                                        <SearchableSelect source="alergi" value={kunjunganPreview.alergiObat ?? '00'} onChange={(val) => { updateKunjunganField('alergiObat', val); if (!val) updateKunjunganField('nmAlergiObat', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmAlergiObat', label); }} placeholder="Pilih Alergi Obat" searchPlaceholder="Cari alergi (obat)…" sourceParams={{ jenis: '03' }} defaultDisplay="Tidak Ada" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">KD Prognosa</label>
+                                                        <SearchableSelect source="prognosa" value={kunjunganPreview.kdPrognosa ?? '02'} onChange={(val) => { updateKunjunganField('kdPrognosa', val); if (!val) updateKunjunganField('nmPrognosa', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmPrognosa', label); }} placeholder="Pilih Prognosa" searchPlaceholder="Cari prognosa…" defaultDisplay="Bonam (Baik)" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium mb-1">KD Sadar</label>
+                                                        <SearchableSelect source="kesadaran" value={kunjunganPreview.kdSadar ?? '01'} onChange={(val) => { updateKunjunganField('kdSadar', val); if (!val) updateKunjunganField('nmSadar', ''); }} onSelect={(opt) => { const label = typeof opt === 'string' ? opt : (opt?.label ?? ''); updateKunjunganField('nmSadar', label); }} placeholder="Pilih Kesadaran" searchPlaceholder="Cari kesadaran…" defaultDisplay="Compos mentis" />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1">Terapi Obat</label>
+                                                    <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
+                                                    <div className="mt-2 flex justify-end"></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-4">
+                                            <div className={`border rounded-lg p-3 md:p-4 ${rujukanActive ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-300 dark:border-gray-600' : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700'}`}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Rujukan PCare</h4>
+                                                    <span className="text-xs text-gray-500">{rujukanActive ? 'Rujukan aktif' : 'Rujukan nonaktif'}</span>
+                                                </div>
+                                                <div className="text-xs text-gray-600 dark:text-gray-300">Kartu Rujukan akan terbuka otomatis saat memilih Status Pulang "Rujuk Vertikal" (kode 4).</div>
+                                                <div className="mt-2">
+                                                    <label className="inline-flex items-center gap-2 text-xs">
+                                                        <input type="checkbox" checked={rujukanActive} onChange={(e) => handleToggleRujukanActive(e.target.checked)} />
+                                                        <span>Aktifkan Rujukan manual</span>
+                                                    </label>
+                                                </div>
+                                                {rujukanActive && (
+                                                    <div className="mt-3 space-y-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label className="block text-xs font-medium mb-1">Spesialis</label>
+                                                                <SearchableSelect
+                                                                    source="spesialis"
+                                                                    value={selectedSpesialis || ''}
+                                                                    onChange={(val) => {
+                                                                        preserveScroll(() => setSelectedSpesialis(val));
+                                                                        setRujukFormSafe((p) => ({ ...p, kdSubSpesialis1: '' }));
+                                                                        setProviderOptions([]);
+                                                                    }}
+                                                                    placeholder="Pilih Spesialis"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-medium mb-1">Sub Spesialis</label>
+                                                                <SearchableSelect
+                                                                    source="subspesialis"
+                                                                    sourceParams={{ kdSpesialis: selectedSpesialis }}
+                                                                    value={rujukForm.kdSubSpesialis1 || ''}
+                                                                    onChange={(val) => setRujukFormSafe((p) => ({ ...p, kdSubSpesialis1: val }))}
+                                                                    placeholder="Pilih Sub Spesialis"
+                                                                    disabled={!selectedSpesialis}
+                                                                />
+                                                                {subSpesialisLoading && (
+                                                                    <div className="mt-1 text-[11px] text-gray-500">Memuat sub spesialis…</div>
+                                                                )}
+                                                                {!subSpesialisLoading && subSpesialisError && (
+                                                                    <div className="mt-1 text-[11px] text-red-500">{subSpesialisError}</div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-medium mb-1">Sarana</label>
+                                                                <SearchableSelect
+                                                                    source="sarana"
+                                                                    value={rujukForm.kdSarana || ''}
+                                                                    onChange={(val) => setRujukFormSafe((p) => ({ ...p, kdSarana: val }))}
+                                                                    placeholder="Pilih Sarana"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label className="block text-xs font-medium mb-1">Tanggal Estimasi Rujuk</label>
+                                                                <input type="date" value={rujukForm.tglEstRujuk || ''} onChange={(e) => setRujukFormSafe((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-medium mb-1">Faskes Rujukan (PPK)</label>
+                                                                <SearchableSelect
+                                                                    options={providerOptions}
+                                                                    value={rujukForm.kdppk || ''}
+                                                                    onChange={(val) => setRujukFormSafe((p) => ({ ...p, kdppk: val }))}
+                                                                    placeholder="Pilih PPK"
+                                                                    disabled={!rujukForm.kdSubSpesialis1 || !rujukForm.kdSarana || !rujukForm.tglEstRujuk}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="border rounded-lg p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300">Data MCU</h4>
+                                                    {!mcuFormOpen && (noKunjunganFromLog || lastNoKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan)) && (
+                                                        <button type="button" onClick={() => { const currentNoKunjungan = noKunjunganFromLog || lastNoKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan); setMcuForm((prev) => ({ ...prev, noKunjungan: currentNoKunjungan })); setMcuFormOpen(true); }} className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-blue-600 hover:bg-blue-700 text-white">
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                                                            Add MCU
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {loadingMcu ? (
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                        Memuat data MCU...
+                                                    </div>
+                                                ) : mcuData && mcuData.list && mcuData.list.length > 0 ? (
+                                                    <div className="space-y-3 text-sm">
+                                                        {mcuData.list.map((mcu, idx) => (
+                                                            <div key={idx} className="space-y-2">
+                                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                                    <div><span className="font-medium text-gray-700 dark:text-gray-300">Tanggal Pelayanan:</span><span className="ml-1 text-gray-600 dark:text-gray-400">{mcu.tglPelayanan || '-'}</span></div>
+                                                                    <div><span className="font-medium text-gray-700 dark:text-gray-300">KD Provider:</span><span className="ml-1 text-gray-600 dark:text-gray-400">{mcu.kdProvider || '-'}</span></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400">Data MCU belum tersedia untuk kunjungan ini.</div>
+                                                )}
+                                            </div>
+
+                                            <div className="border rounded-lg p-3 md:p-4 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-300">Skrining Riwayat Kesehatan</h4>
+                                                    {skriningData && skriningData.count !== undefined && (
+                                                        <span className="text-xs text-purple-600 dark:text-purple-400">Total: {skriningData.count}</span>
+                                                    )}
+                                                </div>
+                                                {loadingSkrining ? (
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-2 py-2">
+                                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                        Memuat data Skrining Riwayat Kesehatan...
+                                                    </div>
+                                                ) : skriningError ? (
+                                                    <div className="text-xs px-3 py-2 rounded-md border border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                                                        <div className="flex items-start gap-2">
+                                                            <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                            <div><strong className="font-semibold">Informasi:</strong><span className="ml-1">{skriningError}</span></div>
+                                                        </div>
+                                                    </div>
+                                                ) : skriningData && skriningData.list && Array.isArray(skriningData.list) && skriningData.list.length > 0 ? (
+                                                    <div className="space-y-3 text-xs">
+                                                        {skriningData.list.map((item, idx) => (
+                                                            <div key={`sk-${idx}`} className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                                <div className="flex items-start"><span className="font-medium text-gray-700 dark:text-gray-300 min-w-[100px]">Nomor Peserta:</span><span className="ml-2 text-gray-600 dark:text-gray-400 break-all">{item.nomor_peserta || '-'}</span></div>
+                                                                <div className="flex items-start"><span className="font-medium text-gray-700 dark:text-gray-300 min-w-[60px]">Nama:</span><span className="ml-2 text-gray-600 dark:text-gray-400 break-words">{item.nama || '-'}</span></div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400">Data tidak tersedia.</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {kunjunganResult && (
+                                            <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
+                                                {kunjunganResult.success ? (
+                                                    <div className="flex items-center">
+                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                                        Berhasil: {kunjunganResult.message}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center">
+                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                        Gagal: {kunjunganResult.message}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
+                                    <div className="flex items-center gap-2">
+                                        <button type="button" onClick={hapusKunjungan} disabled={sendingKunjungan || !(noKunjunganFromLog || lastNoKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-md text-sm">Hapus Kunjungan</button>
+                                        <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(noKunjunganFromLog || lastNoKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
+                                        <button type="button" onClick={closeBridgingModal} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
+                                        <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-emerald-400 disabled:to-teal-400 text-white shadow-lg">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                            {rujukanActive ? 'Kirim Kunjungan + Rujuk' : 'Kirim Kunjungan'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const toggleKunjungan = async (checked) => {
@@ -1107,26 +1628,120 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Muat Sub Spesialis ketika spesialis dipilih
     useEffect(() => {
         const loadSubSpesialis = async () => {
+            setSubSpesialisError('');
             if (!selectedSpesialis) {
                 setSubSpesialisOptions([]);
+                setSubSpesialisLoading(false);
                 return;
             }
+            setSubSpesialisLoading(true);
             try {
                 const params = new URLSearchParams({ kdSpesialis: selectedSpesialis });
-                // Gunakan endpoint PCare yang benar: /api/pcare/spesialis/subspesialis
                 const ssRes = await fetch(`/api/pcare/spesialis/subspesialis?${params.toString()}`, {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     credentials: 'include',
                 });
-                const ssJson = await ssRes.json();
-                const ssList = ssJson?.response?.list || [];
-                setSubSpesialisOptions(ssList.map((row) => ({ value: row.kdSubSpesialis, label: `${row.kdSubSpesialis || ''} — ${row.nmSubSpesialis || ''}` })));
-            } catch {
+                if (ssRes.status === 401) {
+                    setSubSpesialisError('Tidak diizinkan: session PCare belum aktif.');
+                    setSubSpesialisOptions([]);
+                } else {
+                    const ssJson = await ssRes.json();
+                    const ssList = ssJson?.response?.list || [];
+                    setSubSpesialisOptions(ssList.map((row) => ({
+                        value: row.kdSubSpesialis || row.kdSubSpesialis1 || row.kode || '',
+                        label: `${row.kdSubSpesialis || row.kdSubSpesialis1 || row.kode || ''} — ${row.nmSubSpesialis || row.nama || ''}`,
+                    })));
+                }
+            } catch (e) {
+                setSubSpesialisError(e?.message || 'Gagal memuat sub spesialis');
                 setSubSpesialisOptions([]);
+            } finally {
+                setSubSpesialisLoading(false);
             }
         };
         loadSubSpesialis();
     }, [selectedSpesialis]);
+
+    useEffect(() => {
+        const loadMcuData = async () => {
+            const currentNoKunjungan = noKunjunganFromLog || lastNoKunjungan || (kunjunganPreview && kunjunganPreview.noKunjungan);
+            if (!bridgingOpen || !currentNoKunjungan) {
+                setMcuData(null);
+                return;
+            }
+            setLoadingMcu(true);
+            try {
+                const res = await axios.get(`/api/pcare/mcu/kunjungan/${encodeURIComponent(currentNoKunjungan)}`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    withCredentials: true,
+                });
+                if (res.status === 200 && res.data && res.data.response) {
+                    setMcuData(res.data.response);
+                } else {
+                    setMcuData(null);
+                }
+            } catch (_) {
+                setMcuData(null);
+            } finally {
+                setLoadingMcu(false);
+            }
+        };
+        loadMcuData();
+    }, [bridgingOpen, noKunjunganFromLog, lastNoKunjungan, kunjunganPreview]);
+
+    useEffect(() => {
+        const loadSkriningData = async () => {
+            const currentNoPeserta = (pcarePendaftaran && (pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu)) || (kunjunganPreview && kunjunganPreview.noKartu);
+            if (!bridgingOpen || !currentNoPeserta) {
+                setSkriningData(null);
+                setSkriningError('');
+                return;
+            }
+            setLoadingSkrining(true);
+            setSkriningError('');
+            try {
+                const res = await axios.get(`/api/pcare/skrining/peserta/${encodeURIComponent(currentNoPeserta)}/1/10`, {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    withCredentials: true,
+                });
+                if (res.status === 200 && res.data) {
+                    const metaCode = res.data?.metaData?.code;
+                    if (metaCode === 200 && res.data.response && res.data.response.list) {
+                        setSkriningData(res.data.response);
+                        setSkriningError('');
+                    } else {
+                        const errorMsg = res.data?.metaData?.message || 'Data tidak tersedia';
+                        if (errorMsg.includes('not registered') || errorMsg.includes('Unauthorized')) {
+                            setSkriningError('Layanan Skrining Riwayat Kesehatan tidak terdaftar untuk PPK ini.');
+                        } else {
+                            setSkriningError(errorMsg);
+                        }
+                        setSkriningData(null);
+                    }
+                } else {
+                    const errorMsg = res.data?.metaData?.message || 'Gagal memuat data';
+                    setSkriningError(errorMsg);
+                    setSkriningData(null);
+                }
+            } catch (error) {
+                const errorResponse = error?.response?.data;
+                const errorMsg = errorResponse?.metaData?.message || error?.message || '';
+                if (errorMsg.includes('not registered') || errorMsg.includes('Unauthorized')) {
+                    setSkriningError('Layanan Skrining Riwayat Kesehatan tidak terdaftar untuk PPK ini.');
+                } else if (errorResponse?.metaData?.message) {
+                    setSkriningError(errorResponse.metaData.message);
+                } else if (errorMsg) {
+                    setSkriningError(errorMsg);
+                } else {
+                    setSkriningError('Terjadi kesalahan saat memuat data Skrining Riwayat Kesehatan');
+                }
+                setSkriningData(null);
+            } finally {
+                setLoadingSkrining(false);
+            }
+        };
+        loadSkriningData();
+    }, [bridgingOpen, pcarePendaftaran, kunjunganPreview]);
 
     // Muat daftar Faskes Rujukan Sub Spesialis (PPK Rujukan) ketika
     // kdSubSpesialis1, kdSarana, dan tglEstRujuk telah diisi.
@@ -1136,15 +1751,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const kdSa = rujukForm.kdSarana;
             const tglIso = rujukForm.tglEstRujuk; // yyyy-mm-dd dari input type=date
             if (!kdSub || !kdSa || !tglIso) {
-                setProviderOptions([]);
-                // Kosongkan kdppk bila parameter belum lengkap agar tidak menggunakan pilihan yang stale
-                setRujukForm((p) => ({ ...p, kdppk: '' }));
+                preserveScroll(() => {
+                    setProviderOptions([]);
+                    // Kosongkan kdppk bila parameter belum lengkap agar tidak menggunakan pilihan yang stale
+                    setRujukForm((p) => ({ ...p, kdppk: '' }));
+                });
                 return;
             }
             const tglParam = fromInputDate(tglIso); // jadi dd-mm-yyyy
             if (!tglParam) {
-                setProviderOptions([]);
-                setRujukForm((p) => ({ ...p, kdppk: '' }));
+                preserveScroll(() => {
+                    setProviderOptions([]);
+                    setRujukForm((p) => ({ ...p, kdppk: '' }));
+                });
                 return;
             }
             try {
@@ -1157,7 +1776,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 const json = await res.json();
                 const list = json?.response?.list || [];
                 // Simpan kdppk dan nmppk sebagai value/label, serta lampirkan jadwal/kapasitas/telepon untuk ditampilkan
-                const DAY_ORDER = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+                const DAY_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
                 const parseJadwal = (text) => {
                     const result = {};
                     if (!text || typeof text !== 'string') return result;
@@ -1209,16 +1828,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         },
                     };
                 });
-                setProviderOptions(newOptions);
+                preserveScroll(() => setProviderOptions(newOptions));
                 // Pastikan kdppk yang terpilih valid untuk Tanggal Estimasi Rujuk saat ini
                 if (rujukForm.kdppk) {
                     const stillExists = newOptions.some((opt) => String(opt.value) === String(rujukForm.kdppk));
                     if (!stillExists) {
-                        setRujukForm((p) => ({ ...p, kdppk: '' }));
+                        preserveScroll(() => setRujukForm((p) => ({ ...p, kdppk: '' })));
                     }
                 }
             } catch {
-                setProviderOptions([]);
+                preserveScroll(() => setProviderOptions([]));
             }
         };
         loadProviders();
@@ -1249,17 +1868,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     // Update field helper untuk form Kunjungan
     const updateKunjunganField = (key, value, type = 'text') => {
-        setKunjunganPreview((prev) => {
-            if (!prev) return prev;
-            let val = value;
-            if (type === 'int') {
-                const n = parseInt(value, 10);
-                val = isNaN(n) ? '' : n;
-            } else if (type === 'float') {
-                const f = parseFloat(value);
-                val = isNaN(f) ? '' : f;
-            }
-            return { ...prev, [key]: val };
+        preserveScroll(() => {
+            setKunjunganPreview((prev) => {
+                if (!prev) return prev;
+                let val = value;
+                if (type === 'int') {
+                    const n = parseInt(value, 10);
+                    val = isNaN(n) ? '' : n;
+                } else if (type === 'float') {
+                    const f = parseFloat(value);
+                    val = isNaN(f) ? '' : f;
+                }
+                return { ...prev, [key]: val };
+            });
         });
     };
 
@@ -1272,7 +1893,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
         const k = kunjunganPreview.kdStatusPulang ? String(kunjunganPreview.kdStatusPulang) : '';
         const active = k === '4';
-        setRujukanActive(active);
         if (!active) {
             // Reset form rujukan agar tidak mengirim data rujukan saat status pulang bukan rujuk vertikal
             setRujukForm({ kdppk: '', tglEstRujuk: '', kdSubSpesialis1: '', kdSarana: '' });
@@ -1280,190 +1900,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
     }, [kunjunganPreview?.kdStatusPulang]);
 
-    const sendKunjungan = async () => {
-        if (!kunjunganPreview) return;
-        setSendingKunjungan(true);
-        setKunjunganResult(null);
-        setTaccError('');
-        const payload = { ...kunjunganPreview };
-        // Sertakan no_rawat agar backend dapat menyimpan ke tabel lokal sesuai kunjungan ini
-        if (noRawat) {
-            payload.no_rawat = noRawat;
-        }
-        
-        // Validasi: Jika diagnosa NonSpesialis dipilih, kdTacc wajib diisi (1, 2, 3, atau 4) dan alasanTacc wajib diisi
-        if (isDiagnosaNonSpesialis) {
-            const v = payload.kdTacc;
-            const isEmpty = v === undefined || v === null || v === '' || String(v).trim() === '';
-            const isMinusOne = v === -1 || v === '-1' || v === 0 || v === '0';
-            const isValidTacc = v === 1 || v === 2 || v === 3 || v === 4 || v === '1' || v === '2' || v === '3' || v === '4';
-            
-            if (isEmpty || isMinusOne || !isValidTacc) {
-                setTaccError('KD TACC wajib diisi untuk diagnosa NonSpesialis. Pilih salah satu: 1 (Time), 2 (Age), 3 (Complication), atau 4 (Comorbidity).');
-                setSendingKunjungan(false);
-                return;
-            }
-            
-            // Validasi tambahan: bila KD TACC dipilih (1, 2, 3, atau 4), maka Alasan TACC wajib diisi
-            const alasan = payload.alasanTacc;
-            const alasanEmpty = alasan === undefined || alasan === null || String(alasan).trim() === '';
-            if (alasanEmpty) {
-                setTaccError('Alasan TACC wajib diisi saat KD TACC dipilih untuk diagnosa NonSpesialis.');
-                setSendingKunjungan(false);
-                return;
-            }
-        }
-        
-        // Normalisasi KD TACC untuk API PCare
-        // Sesuai Ref_TACC BPJS: nilai valid adalah -1 (Tanpa TACC), 1 (Time), 2 (Age), 3 (Complication), 4 (Comorbidity)
-        // API BPJS menerima -1 untuk "Tanpa TACC", bukan 0
-        // Backend akan menormalkan nilai 0 menjadi -1 jika diperlukan
-        const isMinusOne = payload.kdTacc === -1 || payload.kdTacc === '-1';
-        const isEmptyTacc = payload.kdTacc === undefined || payload.kdTacc === null || payload.kdTacc === '';
-        // Jika kosong atau -1, set ke -1 (Tanpa TACC) dan kosongkan alasan
-        if (isEmptyTacc || isMinusOne) {
-            payload.kdTacc = -1;
-            payload.alasanTacc = null;
-        } else {
-            // Pastikan alasanTacc tidak undefined/null jika kdTacc diisi
-            if (payload.alasanTacc === undefined || payload.alasanTacc === null) {
-                payload.alasanTacc = '';
-            }
-            // Jika kdTacc = -1, pastikan alasanTacc kosong
-            if (payload.kdTacc === -1 || payload.kdTacc === '-1') {
-                payload.alasanTacc = null;
-            }
-        }
-        const fmtDate = (d) => {
-            if (!d) return null;
-            try {
-                const dt = new Date(d);
-                const dd = String(dt.getDate()).padStart(2, '0');
-                const mm = String(dt.getMonth() + 1).padStart(2, '0');
-                const yyyy = dt.getFullYear();
-                return `${dd}-${mm}-${yyyy}`;
-            } catch (_) {
-                return d;
-            }
-        };
-        if (rujukanActive && rujukForm.kdppk) {
-            // Ambil nama SubSpesialis dari options
-            const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(rujukForm.kdSubSpesialis1));
-            const nmSubSpesialis = selectedSubSp ? (selectedSubSp.label.split(' — ')[1] || selectedSubSp.label || '').trim() : '';
-            
-            // Ambil nama PPK dari provider options
-            let nmPPK = '';
-            const selectedProvider = providerOptions.find(opt => String(opt.value) === String(rujukForm.kdppk));
-            if (selectedProvider) {
-                // Coba ambil dari label yang di-split
-                const labelParts = selectedProvider.label.split(' — ');
-                nmPPK = (labelParts.length > 1 ? labelParts[1] : labelParts[0] || '').trim();
-                // Jika masih kosong, coba dari meta
-                if (!nmPPK && selectedProvider.meta?.nmppk) {
-                    nmPPK = String(selectedProvider.meta.nmppk).trim();
-                }
-                // Jika masih kosong, coba dari meta.nmProvider
-                if (!nmPPK && selectedProvider.meta?.nmProvider) {
-                    nmPPK = String(selectedProvider.meta.nmProvider).trim();
-                }
-            }
-            
-            // Bangun payload rujukan lanjut hanya saat rujukan aktif dan PPK rujukan terpilih
-            payload.rujukLanjut = {
-                kdppk: rujukForm.kdppk,
-                tglEstRujuk: fmtDate(rujukForm.tglEstRujuk) || null,
-                subSpesialis: {
-                    kdSubSpesialis1: rujukForm.kdSubSpesialis1 || null,
-                    kdSarana: rujukForm.kdSarana || null,
-                },
-                khusus: null,
-            };
-            
-            // Tambahkan nama-nama ke payload untuk disimpan di backend
-            payload.nmSubSpesialis = nmSubSpesialis;
-            payload.nmPPK = nmPPK;
-        }
-        // Helper: ekstrak noKunjungan dari variasi struktur respon backend
-        const extractNoKunjungan = (resp) => {
-            if (!resp) return '';
-            try {
-                if (resp.noKunjungan) return String(resp.noKunjungan);
-                if (resp.response) {
-                    const r = resp.response;
-                    if (typeof r === 'object' && r !== null) {
-                        if (r.noKunjungan) return String(r.noKunjungan);
-                        if (r.field === 'noKunjungan' && r.message) return String(r.message);
-                    }
-                    if (Array.isArray(r) && r.length > 0 && r[0]?.noKunjungan) {
-                        return String(r[0].noKunjungan);
-                    }
-                }
-            } catch (_) {}
-            return '';
-        };
-
-        try {
-            // Tampilkan payload di console untuk debug
-            try { console.warn('[PCare] Payload akan dikirim', payload); } catch (_) {}
-            const res = await fetch('/api/pcare/kunjungan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'include',
-                body: JSON.stringify(payload),
-            });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (res.ok) {
-                const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
-                // Simpan informasi untuk cetak rujukan bila rujukan aktif
-                const noKunj = extractNoKunjungan(json);
-                setLastNoKunjungan(noKunj);
-                setLastKunjunganPayload(payload);
-                // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
-                if (payload.rujukLanjut && noRawat) {
-                    try {
-                        const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
-                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        });
-                        const rujukJson = await rujukRes.json();
-                        const rujukData = rujukJson.data || null;
-                        
-                        // Jika response OK dan ada data, set state rujukan
-                        if (rujukRes.ok && rujukData) {
-                            setRujukanBerhasil(true);
-                            setPcareRujukanSubspesialis(rujukData);
-                            if (rujukData.noKunjungan) {
-                                setLastNoKunjungan(rujukData.noKunjungan);
-                            }
-                        } else if (payload.rujukLanjut) {
-                            // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
-                            setRujukanBerhasil(true);
-                        }
-                    } catch {
-                        // Jika error cek tabel, tetap set berdasarkan payload
-                if (payload.rujukLanjut) {
-                    setRujukanBerhasil(true);
-                        }
-                    }
-                }
-                setKunjunganResult({ success: true, message: msg });
-            } else {
-                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal kirim Kunjungan (${res.status})`;
-                setKunjunganResult({ success: false, message: errMsg });
-            }
-        } catch (e) {
-            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
-        } finally {
-            setSendingKunjungan(false);
-        }
-    };
+    
 
     // Fungsi salin payload ke clipboard dihapus karena preview payload sudah dihilangkan
 
@@ -1596,7 +2033,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         };
         checkPendaftaranStatus();
-         
+
     }, [noRawat]);
 
     useEffect(() => {
@@ -1657,714 +2094,716 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     }, [pegawaiQuery]);
 
     return (
-        <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
-                        </div>
-                        <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Tanggal Perawatan
-                                </label>
-                                <input
-                                    id="tgl_perawatan"
-                                    type="date"
-                                    name="tgl_perawatan"
-                                    value={formData.tgl_perawatan}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+        <>
+            <div className="space-y-6">
+                <div className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    />
+                                </svg>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Jam Rawat
-                                </label>
-                                <input
-                                    id="jam_rawat"
-                                    type="time"
-                                    name="jam_rawat"
-                                    value={formData.jam_rawat}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+                            <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
+                            </div>
+                            <div className="flex items-center gap-4 flex-wrap">
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                        Tanggal Perawatan
+                                    </label>
+                                    <input
+                                        id="tgl_perawatan"
+                                        type="date"
+                                        name="tgl_perawatan"
+                                        value={formData.tgl_perawatan}
+                                        onChange={handleChange}
+                                        className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
+                                        Jam Rawat
+                                    </label>
+                                    <input
+                                        id="jam_rawat"
+                                        type="time"
+                                        name="jam_rawat"
+                                        value={formData.jam_rawat}
+                                        onChange={handleChange}
+                                        className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="p-2 md:p-3 flex-1 overflow-y-auto">
-                <div className="grid grid-cols-1 gap-2 md:gap-3">
-                    {/* Kolom Utama */}
-                    <div className="order-2 md:order-1 space-y-2 min-w-0">
-                        {/* Informasi Dasar */}
-                        <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                        {kesadaranOptions.map((opt) => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="relative">
-                                    <div className="min-w-0 flex flex-row items-center gap-1">
-                                        <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
-                                        <input
-                                            type="text"
-                                            value={pegawaiQuery}
-                                            onChange={(e) => setPegawaiQuery(e.target.value)}
-                                            placeholder="Ketik nama atau NIK pegawai..."
-                                            className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                        />
-                                    </div>
-                                    {pegawaiOptions.length > 0 && (
-                                        <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                            {pegawaiOptions.map((p) => (
-                                                <button
-                                                    key={p.nik}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const nik = String(p.nik || '');
-                                                        const nama = p.nama || '';
-                                                        setFormData((prev) => ({ ...prev, nip: nik }));
-                                                        setPegawaiQuery((nama || '') + ' (' + nik + ')');
-                                                        setPegawaiOptions([]);
-                                                        if (typeof onPemeriksaChange === 'function' && nik) {
-                                                            onPemeriksaChange({ id: nik, nama });
-                                                        }
-                                                    }}
-                                                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                                >
-                                                    <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                                    </button>
+                    <div className="p-2 md:p-3 flex-1 overflow-y-auto">
+                        <div className="grid grid-cols-1 gap-2 md:gap-3">
+                            {/* Kolom Utama */}
+                            <div className="order-2 md:order-1 space-y-2 min-w-0">
+                                {/* Informasi Dasar */}
+                                <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
+                                        <div className="min-w-0 flex flex-row items-center gap-1">
+                                            <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
+                                            <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                                {kesadaranOptions.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
                                                 ))}
-                                            </div>
-                                        )}
-                                </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
-                                        Alergi :
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="alergi"
-                                        value={formData.alergi}
-                                        onChange={handleChange}
-                                        placeholder="Contoh: Penisilin, Aspirin"
-                                        className={`w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                                            ((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'
-                                        }`}
-                                    />
-                                </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
-                                    <div className="w-full md:flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                            <div className="w-full sm:w-52 md:w-52">
-                                                <SearchableSelect
-                                                    options={templateOptions}
-                                                    value={selectedTemplate}
-                                                    onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                                                    placeholder="Pilih template..."
-                                                    searchPlaceholder="Cari diagnosa..."
-                                                    displayKey="label"
-                                                    valueKey="key"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                            </select>
+                                        </div>
+                                        <div className="relative">
+                                            <div className="min-w-0 flex flex-row items-center gap-1">
+                                                <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
+                                                <input
+                                                    type="text"
+                                                    value={pegawaiQuery}
+                                                    onChange={(e) => setPegawaiQuery(e.target.value)}
+                                                    placeholder="Ketik nama atau NIK pegawai..."
+                                                    className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                                                 />
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={clearTemplateFields}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                                aria-label="Bersihkan Form"
-                                                title="Bersihkan"
-                                            >
-                                                <Eraser className="w-4 h-4" />
-                                            </button>
+                                            {pegawaiOptions.length > 0 && (
+                                                <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
+                                                    {pegawaiOptions.map((p) => (
+                                                        <button
+                                                            key={p.nik}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const nik = String(p.nik || '');
+                                                                const nama = p.nama || '';
+                                                                setFormData((prev) => ({ ...prev, nip: nik }));
+                                                                setPegawaiQuery((nama || '') + ' (' + nik + ')');
+                                                                setPegawaiOptions([]);
+                                                                if (typeof onPemeriksaChange === 'function' && nik) {
+                                                                    onPemeriksaChange({ id: nik, nama });
+                                                                }
+                                                            }}
+                                                            className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                                                        >
+                                                            <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex flex-row items-center gap-1">
+                                            <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
+                                                Alergi :
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="alergi"
+                                                value={formData.alergi}
+                                                onChange={handleChange}
+                                                placeholder="Contoh: Penisilin, Aspirin"
+                                                className={`w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'
+                                                    }`}
+                                            />
+                                        </div>
+                                        <div className="min-w-0 flex flex-row items-center gap-1">
+                                            <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
+                                            <div className="w-full md:flex-1">
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                                    <div className="w-full sm:w-52 md:w-52">
+                                                        <SearchableSelect
+                                                            options={templateOptions}
+                                                            value={selectedTemplate}
+                                                            onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                                                            placeholder="Pilih template..."
+                                                            searchPlaceholder="Cari diagnosa..."
+                                                            displayKey="label"
+                                                            valueKey="key"
+                                                            className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={clearTemplateFields}
+                                                        className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                        aria-label="Bersihkan Form"
+                                                        title="Bersihkan"
+                                                    >
+                                                        <Eraser className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Subjektif & Objektif */}
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
-                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
-                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
                             </div>
-                        </div>
 
-                        {/* Tanda-Tanda Vital & Antropometri */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
-                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
-                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
-                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
-                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
-                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
-                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
-                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
-                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
-                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Assessment & Planning */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                if (typeof onOpenDiagnosa === 'function') {
-                                                    e.preventDefault();
-                                                    onOpenDiagnosa();
-                                                }
-                                            }}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                            aria-label="Buka tab Diagnosa"
-                                            title="Buka Diagnosa (ICD-10)"
-                                        >
-                                            ICD
-                                        </button>
+                            {/* Subjektif & Objektif */}
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
+                                    <div className="flex flex-col h-full">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
+                                        <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                     </div>
-                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
+                                    <div className="flex flex-col h-full">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
+                                        <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
+                                    </div>
                                 </div>
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
-                                        <div className="flex items-center gap-2">
+                            </div>
+
+                            {/* Tanda-Tanda Vital & Antropometri */}
+                            <div className="space-y-px md:space-y-px">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
+                                        <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
+                                        <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
+                                        <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
+                                        <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
+                                        <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
+                                        <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
+                                        <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
+                                        <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
+                                        <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Assessment & Planning */}
+                            <div className="space-y-px md:space-y-px">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-between">
+                                            <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
-                                                    if (typeof onOpenLab === 'function') {
+                                                    if (typeof onOpenDiagnosa === 'function') {
                                                         e.preventDefault();
-                                                        onOpenLab();
-                                                    }
-                                                }}
-                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 transition-colors"
-                                                aria-label="Buka tab Laboratorium"
-                                                title="Buka Permintaan Lab"
-                                            >
-                                                Laborat
-                                            </button>
-                                            <Link
-                                                href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
-                                                onClick={(e) => {
-                                                    if (typeof onOpenResep === 'function') {
-                                                        e.preventDefault();
-                                                        onOpenResep();
+                                                        onOpenDiagnosa();
                                                     }
                                                 }}
                                                 className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                                aria-label="Buka tab Resep"
-                                                title="Buka Resep Obat"
+                                                aria-label="Buka tab Diagnosa"
+                                                title="Buka Diagnosa (ICD-10)"
                                             >
-                                                Resep
-                                            </Link>
+                                                ICD
+                                            </button>
                                         </div>
+                                        <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                     </div>
-                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-between">
+                                            <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        if (typeof onOpenLab === 'function') {
+                                                            e.preventDefault();
+                                                            onOpenLab();
+                                                        }
+                                                    }}
+                                                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 transition-colors"
+                                                    aria-label="Buka tab Laboratorium"
+                                                    title="Buka Permintaan Lab"
+                                                >
+                                                    Laborat
+                                                </button>
+                                                <Link
+                                                    href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
+                                                    onClick={(e) => {
+                                                        if (typeof onOpenResep === 'function') {
+                                                            e.preventDefault();
+                                                            onOpenResep();
+                                                        }
+                                                    }}
+                                                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+                                                    aria-label="Buka tab Resep"
+                                                    title="Buka Resep Obat"
+                                                >
+                                                    Resep
+                                                </Link>
+                                            </div>
+                                        </div>
+                                        <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
+                                    </div>
+                                    <div className="flex flex-col h-full">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
+                                        <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
+                                    </div>
+                                    <div className="flex flex-col h-full">
+                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
+                                        <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
+                                    </div>
                                 </div>
                             </div>
+
+
                         </div>
 
-
+                        {/* Kolom kedua dihapus; konten template kini di dalam main form */}
                     </div>
 
-                    {/* Kolom kedua dihapus; konten template kini di dalam main form */}
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-3">
-                    {editKey && (
-                        <button
-                            type="button"
-                            onClick={() => { setEditKey(null); setMessage(null); setError(null); }}
-                            className="bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Batal
-                        </button>
-                    )}
-                    <button type="submit" className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                {editKey ? 'Mengupdate...' : 'Menyimpan...'}
-                            </>
-                        ) : (
-                            <>
+                    {/* Footer Buttons */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-3">
+                        {editKey && (
+                            <button
+                                type="button"
+                                onClick={() => { setEditKey(null); setMessage(null); setError(null); }}
+                                className="bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
+                            >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                                {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
-                            </>
+                                Batal
+                            </button>
                         )}
-                    </button>
-                    {showBridging && (
-                        <button
-                            type="button"
-                            onClick={openBridgingModal}
-                            className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md"
-                            title="Bridging PCare"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m4 0h-1v4h-1m1-9h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Bridging PCare
+                        <button type="submit" className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {editKey ? 'Mengupdate...' : 'Menyimpan...'}
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
+                                </>
+                            )}
                         </button>
-                    )}
-                    {/* Debug: Log state rujukanBerhasil saat render */}
-                    {isUnauthorized && (
-                        <div className="mt-2 flex items-center justify-between rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
-                            <span>Anda belum login. Silakan login untuk mengakses PCare.</span>
-                            <a href="/login" className="inline-flex items-center rounded bg-red-600 px-2 py-1 text-white">Login</a>
-                        </div>
-                    )}
-                    {/* Tombol Cetak Rujukan - tampil jika ada data di tabel pcare_rujuk_subspesialis */}
-                    {(rujukanBerhasil && (lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan))) && (
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                try {
-                                    console.warn('[CpptSoap] Cetak Rujukan clicked');
-                                    console.warn('[CpptSoap] State check:', {
-                                        hasRujukanData: !!pcareRujukanSubspesialis,
-                                        hasPayload: !!lastKunjunganPayload,
-                                        hasPendaftaran: !!pcarePendaftaran
-                                    });
-                                    
-                                    // Prioritaskan data dari tabel pcare_rujuk_subspesialis jika tersedia
-                                    const rujukanData = pcareRujukanSubspesialis || {};
-                                const p = lastKunjunganPayload || {};
-                                const pd = pcarePendaftaran || {};
-                                const findLabel = (opts, val) => {
-                                    if (!val) return '';
-                                    const it = (opts || []).find(o => String(o.value) === String(val));
-                                    return it ? it.label : '';
-                                };
-                                    
-                                    console.warn('[CpptSoap] Starting data fetch...');
-                                    
-                                    const kdPPK = rujukanData.kdPPK || p?.rujukLanjut?.kdppk || '';
-                                    const kdSubSpesialis = rujukanData.kdSubSpesialis || p?.rujukLanjut?.subSpesialis?.kdSubSpesialis1 || '';
-                                    const kdSarana = rujukanData.kdSarana || p?.rujukLanjut?.subSpesialis?.kdSarana || '';
-                                    const tglEstRujuk = rujukanData.tglEstRujuk || p?.rujukLanjut?.tglEstRujuk || '';
-                                    
-                                    // Optimasi: Fetch paralel hanya jika diperlukan
-                                    const fetchPromises = [];
-                                    
-                                    // Ambil data FKTP provider - hanya jika nmPPK belum ada di rujukanData
-                                    let fktpData = null;
-                                    if (kdPPK && (!rujukanData.nmPPK || rujukanData.nmPPK.trim() === '' || rujukanData.nmPPK === '-')) {
+                        {showBridging && (
+                            <button
+                                type="button"
+                                onClick={openBridgingModal}
+                                className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md"
+                                title="Bridging PCare"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m4 0h-1v4h-1m1-9h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Bridging PCare
+                            </button>
+                        )}
+                        {/* Debug: Log state rujukanBerhasil saat render */}
+                        {isUnauthorized && (
+                            <div className="mt-2 flex items-center justify-between rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+                                <span>Anda belum login. Silakan login untuk mengakses PCare.</span>
+                                <a href="/login" className="inline-flex items-center rounded bg-red-600 px-2 py-1 text-white">Login</a>
+                            </div>
+                        )}
+                        {/* Tombol Cetak Rujukan - tampil jika ada data di tabel pcare_rujuk_subspesialis */}
+                        {(rujukanBerhasil && (lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan))) && (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    try {
+                                        console.warn('[CpptSoap] Cetak Rujukan clicked');
+                                        console.warn('[CpptSoap] State check:', {
+                                            hasRujukanData: !!pcareRujukanSubspesialis,
+                                            hasPayload: !!lastKunjunganPayload,
+                                            hasPendaftaran: !!pcarePendaftaran
+                                        });
+
+                                        // Prioritaskan data dari tabel pcare_rujuk_subspesialis jika tersedia
+                                        const rujukanData = pcareRujukanSubspesialis || {};
+                                        const p = lastKunjunganPayload || {};
+                                        const pd = pcarePendaftaran || {};
+                                        const findLabel = (opts, val) => {
+                                            if (!val) return '';
+                                            const it = (opts || []).find(o => String(o.value) === String(val));
+                                            return it ? it.label : '';
+                                        };
+
+                                        console.warn('[CpptSoap] Starting data fetch...');
+
+                                        const kdPPK = rujukanData.kdPPK || p?.rujukLanjut?.kdppk || '';
+                                        const kdSubSpesialis = rujukanData.kdSubSpesialis || p?.rujukLanjut?.subSpesialis?.kdSubSpesialis1 || '';
+                                        const kdSarana = rujukanData.kdSarana || p?.rujukLanjut?.subSpesialis?.kdSarana || '';
+                                        const tglEstRujuk = rujukanData.tglEstRujuk || p?.rujukLanjut?.tglEstRujuk || '';
+
+                                        // Optimasi: Fetch paralel hanya jika diperlukan
+                                        const fetchPromises = [];
+
+                                        // Ambil data FKTP provider - hanya jika nmPPK belum ada di rujukanData
+                                        let fktpData = null;
+                                        if (kdPPK && (!rujukanData.nmPPK || rujukanData.nmPPK.trim() === '' || rujukanData.nmPPK === '-')) {
+                                            fetchPromises.push(
+                                                fetch(`/api/pcare/provider?start=0&limit=200`, {
+                                                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                                    credentials: 'include',
+                                                })
+                                                    .then(res => res.ok ? res.json() : null)
+                                                    .then(json => {
+                                                        if (json?.response?.list) {
+                                                            fktpData = json.response.list.find(pr => String(pr.kdProvider) === String(kdPPK));
+                                                        }
+                                                    })
+                                                    .catch(() => { })
+                                            );
+                                        }
+
+                                        // Ambil jadwal praktek - hanya jika diperlukan (opsional, bisa di-skip)
+                                        const jadwalPraktek = '';
+                                        // Skip fetch jadwal untuk mempercepat - bisa ditambahkan nanti jika diperlukan
+
+                                        // Ambil kabupaten/kota dari config - fetch cepat
+                                        let kabupatenKota = '';
                                         fetchPromises.push(
-                                            fetch(`/api/pcare/provider?start=0&limit=200`, {
+                                            fetch('/api/pcare/config/kabupaten', {
                                                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                                                 credentials: 'include',
                                             })
                                                 .then(res => res.ok ? res.json() : null)
                                                 .then(json => {
-                                                    if (json?.response?.list) {
-                                                        fktpData = json.response.list.find(pr => String(pr.kdProvider) === String(kdPPK));
-                                                    }
+                                                    kabupatenKota = json?.kabupaten || '';
                                                 })
-                                                .catch(() => {})
+                                                .catch(() => { })
                                         );
-                                    }
-                                    
-                                    // Ambil jadwal praktek - hanya jika diperlukan (opsional, bisa di-skip)
-                                    const jadwalPraktek = '';
-                                    // Skip fetch jadwal untuk mempercepat - bisa ditambahkan nanti jika diperlukan
-                                    
-                                    // Ambil kabupaten/kota dari config - fetch cepat
-                                    let kabupatenKota = '';
-                                    fetchPromises.push(
-                                        fetch('/api/pcare/config/kabupaten', {
-                                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                                            credentials: 'include',
-                                        })
-                                            .then(res => res.ok ? res.json() : null)
-                                            .then(json => {
-                                                kabupatenKota = json?.kabupaten || '';
-                                            })
-                                            .catch(() => {})
-                                    );
-                                    
-                                    // Tunggu semua fetch selesai (maksimal 2 detik)
-                                    await Promise.race([
-                                        Promise.all(fetchPromises),
-                                        new Promise(resolve => setTimeout(resolve, 2000))
-                                    ]);
-                                    
-                                    // Gunakan data dari tabel jika tersedia, fallback ke payload
-                                    const nmPPK = fktpData?.nmProvider || rujukanData.nmPPK || '';
-                                    
-                                    
-                                    // Cari label dari options jika tersedia
-                                    const providerLabel = findLabel(providerOptions, kdPPK);
-                                const providerParts = providerLabel.split(' — ');
-                                    const kdProvider = providerParts[0] || kdPPK || '';
-                                    // Format FKTP: "Nama FKTP (Kode)" atau hanya "Kode" jika nama tidak ada
-                                    const nmProvider = providerParts[1] || nmPPK || '';
-                                    const fktpDisplay = nmProvider ? `${nmProvider} (${kdProvider})` : kdProvider || '-';
-                                    
-                                    // Format SubSpesialis untuk "Kepada Yth. TS Dokter"
-                                    // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmSubSpesialis
-                                    // Jika kosong, coba dari options yang sudah di-load (tidak fetch lagi untuk performa)
-                                    let subSpDisplay = rujukanData.nmSubSpesialis || '';
-                                    if (!subSpDisplay || subSpDisplay === '-') {
-                                        // Coba dari subSpesialisOptions yang sudah di-load (tidak fetch untuk performa)
-                                        const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(kdSubSpesialis));
-                                        if (selectedSubSp) {
-                                            subSpDisplay = selectedSubSp.label.split(' — ')[1] || selectedSubSp.label;
-                                        } else {
-                                            // Coba dari findLabel sebagai fallback
-                                            const subSpLabel = findLabel(subSpesialisOptions, kdSubSpesialis);
-                                            if (subSpLabel) {
-                                                subSpDisplay = subSpLabel.split(' — ')[1] || subSpLabel;
+
+                                        // Tunggu semua fetch selesai (maksimal 2 detik)
+                                        await Promise.race([
+                                            Promise.all(fetchPromises),
+                                            new Promise(resolve => setTimeout(resolve, 2000))
+                                        ]);
+
+                                        // Gunakan data dari tabel jika tersedia, fallback ke payload
+                                        const nmPPK = fktpData?.nmProvider || rujukanData.nmPPK || '';
+
+
+                                        // Cari label dari options jika tersedia
+                                        const providerLabel = findLabel(providerOptions, kdPPK);
+                                        const providerParts = providerLabel.split(' — ');
+                                        const kdProvider = providerParts[0] || kdPPK || '';
+                                        // Format FKTP: "Nama FKTP (Kode)" atau hanya "Kode" jika nama tidak ada
+                                        const nmProvider = providerParts[1] || nmPPK || '';
+                                        const fktpDisplay = nmProvider ? `${nmProvider} (${kdProvider})` : kdProvider || '-';
+
+                                        // Format SubSpesialis untuk "Kepada Yth. TS Dokter"
+                                        // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmSubSpesialis
+                                        // Jika kosong, coba dari options yang sudah di-load (tidak fetch lagi untuk performa)
+                                        let subSpDisplay = rujukanData.nmSubSpesialis || '';
+                                        if (!subSpDisplay || subSpDisplay === '-') {
+                                            // Coba dari subSpesialisOptions yang sudah di-load (tidak fetch untuk performa)
+                                            const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(kdSubSpesialis));
+                                            if (selectedSubSp) {
+                                                subSpDisplay = selectedSubSp.label.split(' — ')[1] || selectedSubSp.label;
                                             } else {
-                                                subSpDisplay = '-';
+                                                // Coba dari findLabel sebagai fallback
+                                                const subSpLabel = findLabel(subSpesialisOptions, kdSubSpesialis);
+                                                if (subSpLabel) {
+                                                    subSpDisplay = subSpLabel.split(' — ')[1] || subSpLabel;
+                                                } else {
+                                                    subSpDisplay = '-';
+                                                }
                                             }
                                         }
-                                    }
-                                    
-                                    // Format Provider untuk "Di"
-                                    // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmPPK
-                                    // Jika kosong, coba dari provider options atau fallback ke '-'
-                                    let diDisplay = '';
-                                    // Cek nmPPK dari rujukanData (tabel pcare_rujuk_subspesialis)
-                                    if (rujukanData.nmPPK && rujukanData.nmPPK.trim() !== '' && rujukanData.nmPPK !== '-') {
-                                        diDisplay = rujukanData.nmPPK.trim();
-                                    } else {
-                                        // Jika kosong, coba dari fktpData yang sudah di-fetch
-                                        if (fktpData && fktpData.nmProvider && fktpData.nmProvider.trim() !== '') {
-                                            diDisplay = fktpData.nmProvider.trim();
+
+                                        // Format Provider untuk "Di"
+                                        // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmPPK
+                                        // Jika kosong, coba dari provider options atau fallback ke '-'
+                                        let diDisplay = '';
+                                        // Cek nmPPK dari rujukanData (tabel pcare_rujuk_subspesialis)
+                                        if (rujukanData.nmPPK && rujukanData.nmPPK.trim() !== '' && rujukanData.nmPPK !== '-') {
+                                            diDisplay = rujukanData.nmPPK.trim();
                                         } else {
-                                            // Coba dari providerOptions yang sudah di-load
-                                            const selectedProvider = providerOptions.find(opt => String(opt.value) === String(kdPPK));
-                                            if (selectedProvider) {
-                                                const providerName = selectedProvider.label.split(' — ')[1] || selectedProvider.meta?.nmppk || '';
-                                                if (providerName && providerName.trim() !== '') {
-                                                    diDisplay = providerName.trim();
+                                            // Jika kosong, coba dari fktpData yang sudah di-fetch
+                                            if (fktpData && fktpData.nmProvider && fktpData.nmProvider.trim() !== '') {
+                                                diDisplay = fktpData.nmProvider.trim();
+                                            } else {
+                                                // Coba dari providerOptions yang sudah di-load
+                                                const selectedProvider = providerOptions.find(opt => String(opt.value) === String(kdPPK));
+                                                if (selectedProvider) {
+                                                    const providerName = selectedProvider.label.split(' — ')[1] || selectedProvider.meta?.nmppk || '';
+                                                    if (providerName && providerName.trim() !== '') {
+                                                        diDisplay = providerName.trim();
+                                                    }
                                                 }
-                                            }
-                                            // Jika masih kosong, coba dari nmProvider atau nmPPK yang sudah di-parse
-                                            if (!diDisplay || diDisplay === '') {
-                                                diDisplay = (nmProvider && nmProvider.trim() !== '') ? nmProvider.trim() : 
-                                                           (nmPPK && nmPPK.trim() !== '') ? nmPPK.trim() : '-';
+                                                // Jika masih kosong, coba dari nmProvider atau nmPPK yang sudah di-parse
+                                                if (!diDisplay || diDisplay === '') {
+                                                    diDisplay = (nmProvider && nmProvider.trim() !== '') ? nmProvider.trim() :
+                                                        (nmPPK && nmPPK.trim() !== '') ? nmPPK.trim() : '-';
+                                                }
                                             }
                                         }
-                                    }
-                                    
-                                    
-                                    const fmtIdDateShort = (d) => {
-                                        if (!d) return '-';
-                                        try {
-                                            if (typeof d === 'string' && d.includes('-')) {
-                                                const parts = d.split('-');
-                                                if (parts.length === 3) {
-                                                    let dt;
-                                                    if (parts[0].length === 2 && parts[2].length === 4) {
-                                                        // Format DD-MM-YYYY
-                                                        dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                                    } else if (parts[0].length === 4) {
-                                                        // Format YYYY-MM-DD
-                                                        dt = new Date(d);
-                                                    } else {
-                                                        dt = new Date(d);
+
+
+                                        const fmtIdDateShort = (d) => {
+                                            if (!d) return '-';
+                                            try {
+                                                if (typeof d === 'string' && d.includes('-')) {
+                                                    const parts = d.split('-');
+                                                    if (parts.length === 3) {
+                                                        let dt;
+                                                        if (parts[0].length === 2 && parts[2].length === 4) {
+                                                            // Format DD-MM-YYYY
+                                                            dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                                                        } else if (parts[0].length === 4) {
+                                                            // Format YYYY-MM-DD
+                                                            dt = new Date(d);
+                                                        } else {
+                                                            dt = new Date(d);
+                                                        }
+                                                        const day = String(dt.getDate()).padStart(2, '0');
+                                                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                                        const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
+                                                        const year = dt.getFullYear();
+                                                        return `${day}-${month}-${year}`;
                                                     }
-                                                    const day = String(dt.getDate()).padStart(2, '0');
-                                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                                    const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
-                                                    const year = dt.getFullYear();
-                                                    return `${day}-${month}-${year}`;
                                                 }
-                                            }
-                                            const dt = new Date(d);
-                                            const day = String(dt.getDate()).padStart(2, '0');
-                                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                            const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
-                                            const year = dt.getFullYear();
-                                            return `${day}-${month}-${year}`;
-                                        } catch { return String(d); }
-                                    };
-                                    
-                                    const tglEstStr = tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-';
-                                    
-                                    // Hitung tanggal validitas (90 hari dari tglEstRujuk)
-                                    let tglValiditasStr = '-';
-                                    if (tglEstRujuk) {
-                                        try {
-                                            let tglEstDate;
-                                            if (typeof tglEstRujuk === 'string' && tglEstRujuk.includes('-')) {
-                                                const parts = tglEstRujuk.split('-');
-                                                if (parts.length === 3) {
-                                                    if (parts[0].length === 2 && parts[2].length === 4) {
-                                                        tglEstDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                                                const dt = new Date(d);
+                                                const day = String(dt.getDate()).padStart(2, '0');
+                                                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                                const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
+                                                const year = dt.getFullYear();
+                                                return `${day}-${month}-${year}`;
+                                            } catch { return String(d); }
+                                        };
+
+                                        const tglEstStr = tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-';
+
+                                        // Hitung tanggal validitas (90 hari dari tglEstRujuk)
+                                        let tglValiditasStr = '-';
+                                        if (tglEstRujuk) {
+                                            try {
+                                                let tglEstDate;
+                                                if (typeof tglEstRujuk === 'string' && tglEstRujuk.includes('-')) {
+                                                    const parts = tglEstRujuk.split('-');
+                                                    if (parts.length === 3) {
+                                                        if (parts[0].length === 2 && parts[2].length === 4) {
+                                                            tglEstDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                                                        } else {
+                                                            tglEstDate = new Date(tglEstRujuk);
+                                                        }
                                                     } else {
                                                         tglEstDate = new Date(tglEstRujuk);
                                                     }
                                                 } else {
                                                     tglEstDate = new Date(tglEstRujuk);
                                                 }
-                                            } else {
-                                                tglEstDate = new Date(tglEstRujuk);
-                                            }
-                                            const tglValiditas = new Date(tglEstDate);
-                                            tglValiditas.setDate(tglValiditas.getDate() + 90);
-                                            // Gunakan helper untuk mendapatkan tanggal dengan timezone yang benar
-                                            const tz = getAppTimeZone();
-                                            const dateParts = tglValiditas.toLocaleDateString('en-GB', { timeZone: tz }).split('/');
-                                            if (dateParts.length === 3) {
-                                                tglValiditasStr = fmtIdDateShort(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-                                            } else {
-                                                tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
-                                            }
-                                        } catch {
-                                            tglValiditasStr = '-';
-                                        }
-                                    }
-                                    
-                                    // Data pasien
-                                    const noKunjungan = rujukanData.noKunjungan || lastNoKunjungan || '';
-                                    const namaPasien = rujukanData.nm_pasien || pd?.nm_pasien || pd?.nama || '-';
-                                    const noKartu = rujukanData.noKartu || pd?.noKartu || pd?.no_kartu || '-';
-                                    
-                                    // Format diagnosa: "Nama Diagnosa (Kode)" atau hanya "Kode" jika nama tidak ada
-                                    const kdDiag1 = rujukanData.kdDiag1 || '';
-                                    const nmDiag1 = rujukanData.nmDiag1 || '';
-                                    const diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : (kdDiag1 || '-');
-                                    
-                                    // Umur: hanya angka tanpa satuan
-                                    const umur = rujukanData.umur || rujukanData.umurdaftar || '';
-                                    const umurDisplay = umur ? String(umur) : '-';
-                                    
-                                    const tglLahir = rujukanData.tgl_lahir || '';
-                                    const tglLahirStr = tglLahir ? fmtIdDateShort(tglLahir) : '-';
-                                    
-                                    // Format status: "Kode Deskripsi"
-                                    const statusPeserta = rujukanData.statusPeserta || '1';
-                                    const statusDisplay = statusPeserta === '1' ? '1 Utama/Tanggungan' : 
-                                                          statusPeserta === '2' ? '2 Istri' : 
-                                                          statusPeserta === '3' ? '3 Anak' : 
-                                                          `${statusPeserta} Lainnya`;
-                                    
-                                    // Format gender: "L (L / P)" atau "P (L / P)"
-                                    const jenisKelamin = rujukanData.jenisKelamin || pd?.jk || pd?.jenis_kelamin || 'L';
-                                    const genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : jenisKelamin === 'P' ? 'P (L / P)' : 'L (L / P)';
-                                    
-                                    const tglDaftar = rujukanData.tglDaftar || '';
-                                    const tglDaftarStr = tglDaftar ? fmtIdDateShort(tglDaftar) : '-';
-                                    const nmDokter = rujukanData.nm_dokter || '';
-                                    
-                                    // Format jadwal praktek: "Hari : Jam" dari jadwal yang sudah di-parse
-                                    let jadwalPraktekDisplay = '';
-                                    if (jadwalPraktek) {
-                                        // Parse jadwal jika format string, atau gunakan langsung jika sudah di-parse
-                                        const DAY_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-                                        const parseJadwal = (text) => {
-                                            const result = {};
-                                            if (!text || typeof text !== 'string') return result;
-                                            const re = /(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)\s*:/gi;
-                                            let match;
-                                            const segments = [];
-                                            while ((match = re.exec(text)) !== null) {
-                                                segments.push({ day: match[1], start: match.index, end: null });
-                                            }
-                                            for (let i = 0; i < segments.length; i++) {
-                                                segments[i].end = i < segments.length - 1 ? segments[i + 1].start : text.length;
-                                            }
-                                            segments.forEach(seg => {
-                                                const raw = text.slice(seg.start, seg.end);
-                                                const [dayLabel, rest] = raw.split(':');
-                                                if (!dayLabel || !rest) return;
-                                                const day = dayLabel.trim();
-                                                const times = rest.replace(/\n/g, ' ').split(/[,;]+/).map(s => s.trim()).filter(Boolean);
-                                                if (times.length) {
-                                                    result[day] = times;
+                                                const tglValiditas = new Date(tglEstDate);
+                                                tglValiditas.setDate(tglValiditas.getDate() + 90);
+                                                // Gunakan helper untuk mendapatkan tanggal dengan timezone yang benar
+                                                const tz = getAppTimeZone();
+                                                const dateParts = tglValiditas.toLocaleDateString('en-GB', { timeZone: tz }).split('/');
+                                                if (dateParts.length === 3) {
+                                                    tglValiditasStr = fmtIdDateShort(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+                                                } else {
+                                                    tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
                                                 }
-                                            });
-                                            return result;
-                                        };
-                                        const jadwalParsed = parseJadwal(jadwalPraktek);
-                                        // Ambil jadwal untuk hari yang sesuai dengan tglEstRujuk jika ada
-                                        if (tglEstRujuk) {
-                                            try {
-                                                const tglEstDate = new Date(tglEstRujuk.includes('-') && tglEstRujuk.split('-')[0].length === 2 
-                                                    ? `${tglEstRujuk.split('-')[2]}-${tglEstRujuk.split('-')[1]}-${tglEstRujuk.split('-')[0]}`
-                                                    : tglEstRujuk);
-                                                const dayIndex = tglEstDate.getDay();
-                                                const dayName = DAY_ORDER[dayIndex === 0 ? 6 : dayIndex - 1]; // Convert Sunday=0 to Monday=0
-                                                if (jadwalParsed[dayName] && jadwalParsed[dayName].length > 0) {
-                                                    jadwalPraktekDisplay = `${dayName} : ${jadwalParsed[dayName].join(' - ')}`;
+                                            } catch {
+                                                tglValiditasStr = '-';
+                                            }
+                                        }
+
+                                        // Data pasien
+                                        const noKunjungan = rujukanData.noKunjungan || lastNoKunjungan || '';
+                                        const namaPasien = rujukanData.nm_pasien || pd?.nm_pasien || pd?.nama || '-';
+                                        const noKartu = rujukanData.noKartu || pd?.noKartu || pd?.no_kartu || '-';
+
+                                        // Format diagnosa: "Nama Diagnosa (Kode)" atau hanya "Kode" jika nama tidak ada
+                                        const kdDiag1 = rujukanData.kdDiag1 || '';
+                                        const nmDiag1 = rujukanData.nmDiag1 || '';
+                                        const diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : (kdDiag1 || '-');
+
+                                        // Umur: hanya angka tanpa satuan
+                                        const umur = rujukanData.umur || rujukanData.umurdaftar || '';
+                                        const umurDisplay = umur ? String(umur) : '-';
+
+                                        const tglLahir = rujukanData.tgl_lahir || '';
+                                        const tglLahirStr = tglLahir ? fmtIdDateShort(tglLahir) : '-';
+
+                                        // Format status: "Kode Deskripsi"
+                                        const statusPeserta = rujukanData.statusPeserta || '1';
+                                        const statusDisplay = statusPeserta === '1' ? '1 Utama/Tanggungan' :
+                                            statusPeserta === '2' ? '2 Istri' :
+                                                statusPeserta === '3' ? '3 Anak' :
+                                                    `${statusPeserta} Lainnya`;
+
+                                        // Format gender: "L (L / P)" atau "P (L / P)"
+                                        const jenisKelamin = rujukanData.jenisKelamin || pd?.jk || pd?.jenis_kelamin || 'L';
+                                        const genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : jenisKelamin === 'P' ? 'P (L / P)' : 'L (L / P)';
+
+                                        const tglDaftar = rujukanData.tglDaftar || '';
+                                        const tglDaftarStr = tglDaftar ? fmtIdDateShort(tglDaftar) : '-';
+                                        const nmDokter = rujukanData.nm_dokter || '';
+
+                                        // Format jadwal praktek: "Hari : Jam" dari jadwal yang sudah di-parse
+                                        let jadwalPraktekDisplay = '';
+                                        if (jadwalPraktek) {
+                                            // Parse jadwal jika format string, atau gunakan langsung jika sudah di-parse
+                                            const DAY_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+                                            const parseJadwal = (text) => {
+                                                const result = {};
+                                                if (!text || typeof text !== 'string') return result;
+                                                const re = /(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)\s*:/gi;
+                                                let match;
+                                                const segments = [];
+                                                while ((match = re.exec(text)) !== null) {
+                                                    segments.push({ day: match[1], start: match.index, end: null });
                                                 }
-                                        } catch {
-                                            // Fallback: ambil jadwal pertama yang ada
-                                            const firstDay = Object.keys(jadwalParsed)[0];
-                                            if (firstDay && jadwalParsed[firstDay].length > 0) {
-                                                jadwalPraktekDisplay = `${firstDay} : ${jadwalParsed[firstDay].join(' - ')}`;
+                                                for (let i = 0; i < segments.length; i++) {
+                                                    segments[i].end = i < segments.length - 1 ? segments[i + 1].start : text.length;
+                                                }
+                                                segments.forEach(seg => {
+                                                    const raw = text.slice(seg.start, seg.end);
+                                                    const [dayLabel, rest] = raw.split(':');
+                                                    if (!dayLabel || !rest) return;
+                                                    const day = dayLabel.trim();
+                                                    const times = rest.replace(/\n/g, ' ').split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+                                                    if (times.length) {
+                                                        result[day] = times;
+                                                    }
+                                                });
+                                                return result;
+                                            };
+                                            const jadwalParsed = parseJadwal(jadwalPraktek);
+                                            // Ambil jadwal untuk hari yang sesuai dengan tglEstRujuk jika ada
+                                            if (tglEstRujuk) {
+                                                try {
+                                                    const tglEstDate = new Date(tglEstRujuk.includes('-') && tglEstRujuk.split('-')[0].length === 2
+                                                        ? `${tglEstRujuk.split('-')[2]}-${tglEstRujuk.split('-')[1]}-${tglEstRujuk.split('-')[0]}`
+                                                        : tglEstRujuk);
+                                                    const dayIndex = tglEstDate.getDay();
+                                                    const dayName = DAY_ORDER[dayIndex === 0 ? 6 : dayIndex - 1]; // Convert Sunday=0 to Monday=0
+                                                    if (jadwalParsed[dayName] && jadwalParsed[dayName].length > 0) {
+                                                        jadwalPraktekDisplay = `${dayName} : ${jadwalParsed[dayName].join(' - ')}`;
+                                                    }
+                                                } catch {
+                                                    // Fallback: ambil jadwal pertama yang ada
+                                                    const firstDay = Object.keys(jadwalParsed)[0];
+                                                    if (firstDay && jadwalParsed[firstDay].length > 0) {
+                                                        jadwalPraktekDisplay = `${firstDay} : ${jadwalParsed[firstDay].join(' - ')}`;
+                                                    }
+                                                }
                                             }
                                         }
-                                        }
-                                    }
 
-                                    console.warn('[CpptSoap] Data prepared:', { 
-                                        noKunjungan, 
-                                        namaPasien, 
-                                        noKartu,
-                                        tglEstRujuk,
-                                        kdSubSpesialis,
-                                        kdSarana,
-                                        kdPPK
-                                    });
-                                    console.warn('[CpptSoap] Preparing print data...', { noKunjungan, namaPasien, noKartu });
-                                    
-                                    // Generate barcode menggunakan library JsBarcode (CDN)
-                                    const barcodeSvg = noKunjungan ? `<svg id="barcode"></svg>` : '';
+                                        console.warn('[CpptSoap] Data prepared:', {
+                                            noKunjungan,
+                                            namaPasien,
+                                            noKartu,
+                                            tglEstRujuk,
+                                            kdSubSpesialis,
+                                            kdSarana,
+                                            kdPPK
+                                        });
+                                        console.warn('[CpptSoap] Preparing print data...', { noKunjungan, namaPasien, noKartu });
 
-                                    // Cari logo BPJS (non-blocking, gunakan default jika gagal)
-                                const base = window.location.origin || '';
-                                const logoCandidates = [
-                                    `${base}/img/BPJS_Kesehatan_logo.png`,
-                                    '/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8000/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8001/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8006/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8007/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8008/img/BPJS_Kesehatan_logo.png',
-                                ];
-                                    
-                                    // Resolve logo dengan timeout singkat untuk performa
-                                    let logoSrc = '/img/BPJS_Kesehatan_logo.png';
-                                    try {
-                                const fetchAsDataURL = async (url) => {
-                                            const controller = new AbortController();
-                                            const timeoutId = setTimeout(() => controller.abort(), 500); // Timeout 500ms per URL
-                                            try {
-                                                const r = await fetch(url, { method: 'GET', signal: controller.signal });
-                                                clearTimeout(timeoutId);
-                                    if (!r.ok) throw new Error('not ok');
-                                    const blob = await r.blob();
-                                                return await new Promise((resolve, reject) => {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => resolve(reader.result);
-                                                    reader.onerror = reject;
-                                        reader.readAsDataURL(blob);
-                                    });
-                                            } catch (e) {
-                                                clearTimeout(timeoutId);
-                                                throw e;
-                                            }
-                                        };
-                                        
-                                        // Coba resolve logo dengan timeout total 1 detik (lebih cepat)
-                                        const logoPromise = Promise.race([
-                                            (async () => {
-                                                // Coba hanya 2 URL pertama untuk mempercepat
-                                                for (const u of logoCandidates.slice(0, 2)) {
+                                        // Generate barcode menggunakan library JsBarcode (CDN)
+                                        const barcodeSvg = noKunjungan ? `<svg id="barcode"></svg>` : '';
+
+                                        // Cari logo BPJS (non-blocking, gunakan default jika gagal)
+                                        const base = window.location.origin || '';
+                                        const logoCandidates = [
+                                            `${base}/img/BPJS_Kesehatan_logo.png`,
+                                            '/img/BPJS_Kesehatan_logo.png',
+                                            'http://127.0.0.1:8000/img/BPJS_Kesehatan_logo.png',
+                                            'http://127.0.0.1:8001/img/BPJS_Kesehatan_logo.png',
+                                            'http://127.0.0.1:8006/img/BPJS_Kesehatan_logo.png',
+                                            'http://127.0.0.1:8007/img/BPJS_Kesehatan_logo.png',
+                                            'http://127.0.0.1:8008/img/BPJS_Kesehatan_logo.png',
+                                        ];
+
+                                        // Resolve logo dengan timeout singkat untuk performa
+                                        let logoSrc = '/img/BPJS_Kesehatan_logo.png';
                                         try {
-                                            const dataUrl = await fetchAsDataURL(u);
-                                            if (dataUrl) return dataUrl;
-                                        } catch { /* try next candidate */ }
-                                    }
-                                    return '/img/BPJS_Kesehatan_logo.png';
-                                            })(),
-                                            new Promise((resolve) => setTimeout(() => resolve('/img/BPJS_Kesehatan_logo.png'), 1000))
-                                        ]);
-                                        
-                                        logoSrc = await logoPromise;
-                                    } catch (e) {
-                                        console.warn('[CpptSoap] Error resolving logo:', e);
-                                        // Gunakan default logo jika gagal
-                                    }
+                                            const fetchAsDataURL = async (url) => {
+                                                const controller = new AbortController();
+                                                const timeoutId = setTimeout(() => controller.abort(), 500); // Timeout 500ms per URL
+                                                try {
+                                                    const r = await fetch(url, { method: 'GET', signal: controller.signal });
+                                                    clearTimeout(timeoutId);
+                                                    if (!r.ok) throw new Error('not ok');
+                                                    const blob = await r.blob();
+                                                    return await new Promise((resolve, reject) => {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => resolve(reader.result);
+                                                        reader.onerror = reject;
+                                                        reader.readAsDataURL(blob);
+                                                    });
+                                                } catch (e) {
+                                                    clearTimeout(timeoutId);
+                                                    throw e;
+                                                }
+                                            };
 
-                                    console.warn('[CpptSoap] Opening print window...');
-                                    // Pastikan window terbuka meskipun ada error sebelumnya
-                                    let win = null;
-                                    try {
-                                        win = window.open('', 'CetakRujukan', 'width=900,height=1000');
-                                        if (!win || win.closed || typeof win.closed === 'undefined') {
-                                            alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
+                                            // Coba resolve logo dengan timeout total 1 detik (lebih cepat)
+                                            const logoPromise = Promise.race([
+                                                (async () => {
+                                                    // Coba hanya 2 URL pertama untuk mempercepat
+                                                    for (const u of logoCandidates.slice(0, 2)) {
+                                                        try {
+                                                            const dataUrl = await fetchAsDataURL(u);
+                                                            if (dataUrl) return dataUrl;
+                                                        } catch { /* try next candidate */ }
+                                                    }
+                                                    return '/img/BPJS_Kesehatan_logo.png';
+                                                })(),
+                                                new Promise((resolve) => setTimeout(() => resolve('/img/BPJS_Kesehatan_logo.png'), 1000))
+                                            ]);
+
+                                            logoSrc = await logoPromise;
+                                        } catch (e) {
+                                            console.warn('[CpptSoap] Error resolving logo:', e);
+                                            // Gunakan default logo jika gagal
+                                        }
+
+                                        console.warn('[CpptSoap] Opening print window...');
+                                        // Pastikan window terbuka meskipun ada error sebelumnya
+                                        let win = null;
+                                        try {
+                                            win = window.open('', 'CetakRujukan', 'width=900,height=1000');
+                                            if (!win || win.closed || typeof win.closed === 'undefined') {
+                                                alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
+                                                return;
+                                            }
+                                            console.warn('[CpptSoap] Window opened successfully');
+                                        } catch (e) {
+                                            console.error('[CpptSoap] Error opening window:', e);
+                                            alert('Gagal membuka window cetak. Error: ' + (e.message || e));
                                             return;
                                         }
-                                        console.warn('[CpptSoap] Window opened successfully');
-                                    } catch (e) {
-                                        console.error('[CpptSoap] Error opening window:', e);
-                                        alert('Gagal membuka window cetak. Error: ' + (e.message || e));
-                                        return;
-                                    }
-                                    
-                                const html = `<!doctype html>
+
+                                        const html = `<!doctype html>
 <html lang="id"><head><meta charset="utf-8"/><title>Surat Rujukan FKTP</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <style>
@@ -2533,954 +2972,366 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     };
   </script>
 </body></html>`;
-                                    console.warn('[CpptSoap] Writing HTML to window...');
-                                    try {
-                                        if (!win || win.closed) {
-                                            throw new Error('Window sudah ditutup');
+                                        console.warn('[CpptSoap] Writing HTML to window...');
+                                        try {
+                                            if (!win || win.closed) {
+                                                throw new Error('Window sudah ditutup');
+                                            }
+                                            win.document.write(html);
+                                            win.document.close();
+                                            console.warn('[CpptSoap] HTML written successfully');
+                                        } catch (e) {
+                                            console.error('[CpptSoap] Error writing to window:', e);
+                                            alert('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
+                                            if (win && !win.closed) {
+                                                win.close();
+                                            }
                                         }
-                                win.document.write(html);
-                                win.document.close();
-                                        console.warn('[CpptSoap] HTML written successfully');
                                     } catch (e) {
-                                        console.error('[CpptSoap] Error writing to window:', e);
-                                        alert('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
-                                        if (win && !win.closed) {
-                                            win.close();
-                                        }
+                                        console.error('[CpptSoap] Error in Cetak Rujukan:', e);
+                                        alert('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
                                     }
-                                } catch (e) {
-                                    console.error('[CpptSoap] Error in Cetak Rujukan:', e);
-                                    alert('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
-                                }
-                            }}
-                            className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
-                            title="Cetak Rujukan"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
-                            </svg>
-                            Cetak Rujukan
-                        </button>
-                    )}
-                </div>
-                </div>
-            </form>
-            {bridgingOpen && (
-                <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto">
-                    <div className="absolute inset-0 bg-black/50" onClick={closeBridgingModal}></div>
-                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-full mx-2 sm:mx-4 my-4 sm:my-8 flex flex-col max-h-[88vh] overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Bridging PCare</h3>
-                            <button onClick={closeBridgingModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                }}
+                                className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                                title="Cetak Rujukan"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
                                 </svg>
+                                Cetak Rujukan
                             </button>
-                        </div>
-                        <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
-                            {/* 1. Pendaftaran PCare */}
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-4 overflow-x-hidden">
-                                <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 mb-2">Pendaftaran PCare</h4>
-                                {pcarePendaftaran ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-2 text-sm text-gray-700 dark:text-gray-200">
-                                        <div><span className="font-medium">No Rawat:</span> {pcarePendaftaran.no_rawat}</div>
-                                        <div><span className="font-medium">No Kartu:</span> {pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</div>
-                                        <div><span className="font-medium">Tgl Daftar:</span> {pcarePendaftaran.tglDaftar || '-'}</div>
-                                        <div><span className="font-medium">Kd Poli:</span> {pcarePendaftaran.kdPoli || '-'}</div>
-                                        <div><span className="font-medium">Keluhan:</span> {pcarePendaftaran.keluhan || '-'}</div>
-                                        <div><span className="font-medium">Sistole/Diastole:</span> {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}</div>
-                                        <div><span className="font-medium">Berat/Tinggi:</span> {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''}kg / ${pcarePendaftaran.tinggiBadan || ''}cm` : '-'}</div>
-                                        <div><span className="font-medium">Resp/HR:</span> {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}</div>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
-                                )}
-                            </div>
-
-                            {/* 2. Kunjungan PCare */}
-                            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3 md:p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Kunjungan PCare</h4>
-                                </div>
-                                <div className="space-y-3">
-                                        {/* Form Kunjungan PCare */}
-                                        {kunjunganPreview && (
-                                            <div className="space-y-4 md:space-y-5">
-                                                {/* 1 baris: No Kartu BPJS, Tanggal Daftar, KD Poli, KD Dokter */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">No Kartu BPJS</label>
-                                                        <input type="text" value={kunjunganPreview.noKartu || ''} onChange={(e) => updateKunjunganField('noKartu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Daftar</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglDaftar)} onChange={(e) => updateKunjunganField('tglDaftar', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Poli (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={poliOptions}
-                                                            value={kunjunganPreview.kdPoli ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdPoli', val)}
-                                                            placeholder="Pilih Poli"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Dokter (PCare)</label>
-                                                        <SearchableSelect
-                                                            options={dokterOptions}
-                                                            value={kunjunganPreview.kdDokter ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDokter', val)}
-                                                            placeholder="Pilih Dokter"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Keluhan, Anamnesa */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Keluhan</label>
-                                                        <textarea value={kunjunganPreview.keluhan || ''} onChange={(e) => updateKunjunganField('keluhan', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Anamnesa</label>
-                                                        <textarea value={kunjunganPreview.anamnesa || ''} onChange={(e) => updateKunjunganField('anamnesa', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Sistole, Diastole, Berat, Tinggi */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Sistole</label>
-                                                        <input type="number" value={kunjunganPreview.sistole ?? ''} onChange={(e) => updateKunjunganField('sistole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diastole</label>
-                                                        <input type="number" value={kunjunganPreview.diastole ?? ''} onChange={(e) => updateKunjunganField('diastole', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Berat Badan (kg)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.beratBadan ?? ''} onChange={(e) => updateKunjunganField('beratBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tinggi Badan (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.tinggiBadan ?? ''} onChange={(e) => updateKunjunganField('tinggiBadan', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Resp Rate, Heart Rate, Lingkar Perut, Suhu */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Resp Rate</label>
-                                                        <input type="number" value={kunjunganPreview.respRate ?? ''} onChange={(e) => updateKunjunganField('respRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Heart Rate</label>
-                                                        <input type="number" value={kunjunganPreview.heartRate ?? ''} onChange={(e) => updateKunjunganField('heartRate', e.target.value, 'int')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Lingkar Perut (cm)</label>
-                                                        <input type="number" step="0.1" value={kunjunganPreview.lingkarPerut ?? ''} onChange={(e) => updateKunjunganField('lingkarPerut', e.target.value, 'float')} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Suhu</label>
-                                                        <input type="text" value={kunjunganPreview.suhu ?? ''} onChange={(e) => updateKunjunganField('suhu', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Tanggal Pulang, Poli Rujuk Internal, Terapi Non Obat, BMHP */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Tanggal Pulang</label>
-                                                        <input type="date" value={toInputDate(kunjunganPreview.tglPulang)} onChange={(e) => updateKunjunganField('tglPulang', fromInputDate(e.target.value))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Poli Rujuk Internal (kdPoliRujukInternal)</label>
-                                                        <input type="text" value={kunjunganPreview.kdPoliRujukInternal ?? ''} onChange={(e) => updateKunjunganField('kdPoliRujukInternal', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Terapi Non Obat</label>
-                                                        <input type="text" value={kunjunganPreview.terapiNonObat ?? ''} onChange={(e) => updateKunjunganField('terapiNonObat', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">BMHP</label>
-                                                        <input type="text" value={kunjunganPreview.bmhp ?? ''} onChange={(e) => updateKunjunganField('bmhp', e.target.value)} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Status Pulang, Diagnosa Utama, Diagnosa 2, Diagnosa 3 */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Status Pulang (kdStatusPulang)</label>
-                                                        <SearchableSelect
-                                                            source="statuspulang"
-                                                            value={kunjunganPreview.kdStatusPulang ?? ''}
-                                                            onChange={(val) => {
-                                                                // Update kode status pulang
-                                                                updateKunjunganField('kdStatusPulang', val);
-                                                                // Jika kode dikosongkan, kosongkan juga nama status pulang
-                                                                if (!val) updateKunjunganField('nmStatusPulang', '');
-                                                            }}
-                                                            // Saat opsi dipilih, isi nmStatusPulang otomatis dari label referensi
-                                                            onSelect={(opt) => {
-                                                                const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                                updateKunjunganField('nmStatusPulang', label);
-                                                            }}
-                                                            placeholder="Pilih Status Pulang"
-                                                            searchPlaceholder="Cari status pulang…"
-                                                            sourceParams={{ rawatInap: false }}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa Utama (kdDiag1)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag1 ?? ''}
-                                                            onChange={(val) => {
-                                                                updateKunjunganField('kdDiag1', val);
-                                                                // Reset state jika diagnosa dihapus (value kosong)
-                                                                if (!val || val === '') {
-                                                                    setIsDiagnosaNonSpesialis(false);
-                                                                    setKdTaccVisible(false);
-                                                                    setTaccError('');
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            onSelect={(opt) => {
-                                                                // TACC wajib diisi bila diagnosa NonSpesialis = true
-                                                                const isNonSpesialis = !!opt && typeof opt === 'object' && opt.nonSpesialis === true;
-                                                                setIsDiagnosaNonSpesialis(isNonSpesialis);
-                                                                setKdTaccVisible(!!isNonSpesialis);
-                                                                setTaccError('');
-                                                                if (isNonSpesialis) {
-                                                                    // Reset kdTacc agar wajib diisi
-                                                                    updateKunjunganField('kdTacc', '', 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                } else {
-                                                                    // Diagnosa Spesialis (nonSpesialis = false): Default Tanpa TACC
-                                                                    updateKunjunganField('kdTacc', -1, 'int');
-                                                                    updateKunjunganField('alasanTacc', '');
-                                                                }
-                                                            }}
-                                                            placeholder="Pilih Diagnosa Utama"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 2 (kdDiag2)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag2 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag2', val)}
-                                                            placeholder="Pilih Diagnosa 2 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Diagnosa 3 (kdDiag3)</label>
-                                                        <SearchableSelect
-                                                            source="diagnosa"
-                                                            value={kunjunganPreview.kdDiag3 ?? ''}
-                                                            onChange={(val) => updateKunjunganField('kdDiag3', val)}
-                                                            placeholder="Pilih Diagnosa 3 (opsional)"
-                                                            searchPlaceholder="Cari diagnosa (kode atau nama)…"
-                                                            className=""
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* 1 baris: Alergi Makan, Alergi Udara, Alergi Obat, KD Prognosa, KD Sadar */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Makan</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiMakan ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiMakan', val);
-                                                            if (!val) updateKunjunganField('nmAlergiMakanan', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiMakanan', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Makanan"
-                                                        searchPlaceholder="Cari alergi (makanan)…"
-                                                        sourceParams={{ jenis: '01' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Udara</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiUdara ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiUdara', val);
-                                                            if (!val) updateKunjunganField('nmAlergiUdara', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiUdara', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Udara"
-                                                        searchPlaceholder="Cari alergi (udara)…"
-                                                        sourceParams={{ jenis: '02' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">Alergi Obat</label>
-                                                    <SearchableSelect
-                                                        source="alergi"
-                                                        value={kunjunganPreview.alergiObat ?? '00'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('alergiObat', val);
-                                                            if (!val) updateKunjunganField('nmAlergiObat', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmAlergiObat', label);
-                                                        }}
-                                                        placeholder="Pilih Alergi Obat"
-                                                        searchPlaceholder="Cari alergi (obat)…"
-                                                        sourceParams={{ jenis: '03' }}
-                                                        defaultDisplay="Tidak Ada"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Prognosa</label>
-                                                    <SearchableSelect
-                                                        source="prognosa"
-                                                        value={kunjunganPreview.kdPrognosa ?? '02'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdPrognosa', val);
-                                                            if (!val) updateKunjunganField('nmPrognosa', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmPrognosa', label);
-                                                        }}
-                                                        placeholder="Pilih Prognosa"
-                                                        searchPlaceholder="Cari prognosa…"
-                                                        defaultDisplay="Bonam (Baik)"
-                                                    />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs font-medium mb-1">KD Sadar</label>
-                                                    <SearchableSelect
-                                                        source="kesadaran"
-                                                        value={kunjunganPreview.kdSadar ?? '01'}
-                                                        onChange={(val) => {
-                                                            updateKunjunganField('kdSadar', val);
-                                                            if (!val) updateKunjunganField('nmSadar', '');
-                                                        }}
-                                                        onSelect={(opt) => {
-                                                            const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                            updateKunjunganField('nmSadar', label);
-                                                        }}
-                                                        placeholder="Pilih Kesadaran"
-                                                        searchPlaceholder="Cari kesadaran…"
-                                                        defaultDisplay="Compos mentis"
-                                                    />
-                                                    </div>
-                                                </div>
-
-                                                {/* Terapi Obat - tidak diminta satu baris, tetap terpisah */}
-                                                <div>
-                                                    <label className="block text-xs font-medium mb-1">Terapi Obat</label>
-                                                <textarea value={kunjunganPreview.terapiObat ?? ''} onChange={(e) => updateKunjunganField('terapiObat', e.target.value)} rows={2} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"></textarea>
-                                                <div className="mt-2 flex justify-end">
-                                                    <button
-                                                        type="button"
-                                                        onClick={editKunjungan}
-                                                        disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))}
-                                                        className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-3 py-1.5 rounded-md text-xs font-medium"
-                                                    >
-                                                        Edit Kunjungan
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            {/* Bagian preview payload dihapus sesuai permintaan untuk membuat popup lebih ringkas */}
-                                        </div>
-                                    )}
-
-                                        <div className="flex justify-end">
-                                            <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
-                                                {sendingKunjungan ? (
-                                                    <>
-                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                        </svg>
-                                                        Mengirim...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        Kirim Kunjungan
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
-                                        {kunjunganResult && (
-                                            <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
-                                                {kunjunganResult.success ? (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                                        Berhasil: {kunjunganResult.message}
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        Gagal: {kunjunganResult.message}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                            </div>
-
-                            {/* 3. Rujukan PCare */}
-                            <div className={`border rounded-lg p-3 md:p-4 ${rujukanActive ? 'bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700' : 'bg-gray-50 dark:bg-gray-700/20 border-gray-200 dark:border-gray-700'}`}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className={`text-sm font-semibold ${rujukanActive ? 'text-violet-800 dark:text-violet-300' : 'text-gray-700 dark:text-gray-300'}`}>Rujukan PCare</h4>
-                                </div>
-                                {!rujukanActive && (
-                                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Kartu Rujukan akan terbuka otomatis saat memilih Status Pulang "Rujuk Vertikal" (kode 4).</div>
-                                )}
-                                {rujukanActive && (
-                                    <div className="space-y-3 text-sm">
-                                        {/* Baris 1: Tanggal Estimasi Rujuk, Spesialis, Sub Spesialis */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
-                                            <div>
-                                                <label className="block text-xs font-medium mb-1">Tanggal Estimasi Rujuk</label>
-                                                <input type="date" value={rujukForm.tglEstRujuk} onChange={(e) => setRujukForm((p) => ({ ...p, tglEstRujuk: e.target.value }))} className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium mb-1">Spesialis</label>
-                                                <SearchableSelect
-                                                    options={spesialisOptions}
-                                                    value={selectedSpesialis}
-                                                    onChange={(val) => setSelectedSpesialis(val)}
-                                                    placeholder="— Pilih Spesialis —"
-                                                    searchPlaceholder="Cari spesialis…"
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium mb-1">Sub Spesialis (kdSubSpesialis1)</label>
-                                                <SearchableSelect
-                                                    options={subSpesialisOptions}
-                                                    value={rujukForm.kdSubSpesialis1}
-                                                    onChange={(val) => setRujukForm((p) => ({ ...p, kdSubSpesialis1: val }))}
-                                                    placeholder="— Pilih Sub Spesialis —"
-                                                    searchPlaceholder="Cari sub spesialis…"
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Baris 2: Sarana 1 kolom dan PPK Rujukan 3 kolom (rasio 1:3) */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-start">
-                                            <div className="md:col-span-1">
-                                                <label className="block text-xs font-medium mb-1">Sarana (kdSarana)</label>
-                                                <SearchableSelect
-                                                    options={saranaOptions}
-                                                    value={rujukForm.kdSarana}
-                                                    onChange={(val) => setRujukForm((p) => ({ ...p, kdSarana: val }))}
-                                                    placeholder="— Pilih Sarana —"
-                                                    searchPlaceholder="Cari sarana…"
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-3">
-                                                <label className="block text-xs font-medium mb-1">PPK Rujukan (kdppk)</label>
-                                                <SearchableSelect
-                                                    options={providerOptions}
-                                                    value={rujukForm.kdppk}
-                                                    onChange={(val) => setRujukForm((p) => ({ ...p, kdppk: val }))}
-                                                    placeholder="— Pilih PPK Rujukan —"
-                                                    searchPlaceholder="Cari PPK…"
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                />
-                                                {/* Detail PPK Rujukan lengkap: Jadwal per hari, Alamat, Telp, Jarak, Statistik */}
-                                                {(() => {
-                                                    const sel = providerOptions.find((o) => String(o.value) === String(rujukForm.kdppk));
-                                                    const meta = sel?.meta || {};
-                                                    if (!meta) return null;
-                                                    const hasAny = meta.jadwal || meta.jadwalParsed || meta.alamat || meta.telp || meta.distance || meta.kapasitas || meta.persentase || meta.jmlRujuk;
-                                                    if (!hasAny) return null;
-                                                    const toKm = (d) => {
-                                                        if (d === undefined || d === null || isNaN(Number(d))) return null;
-                                                        const km = Number(d) / 1000;
-                                                        return `${km.toFixed(2)} km`;
-                                                    };
-                                                    return (
-                                                        <div className="mt-2 text-xs text-gray-700 dark:text-gray-300 space-y-1">
-                                                            {/* Jadwal per-hari */}
-                                                            {meta.jadwalParsed && Object.keys(meta.jadwalParsed).length > 0 ? (
-                                                                <div>
-                                                                    <div className="font-medium">Jadwal Praktek:</div>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-2">
-                                                                        {(meta.dayOrder || ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu']).map((d) => (
-                                                                            meta.jadwalParsed[d] ? (
-                                                                                <div key={d}>
-                                                                                    <span className="font-medium">{d}:</span> {meta.jadwalParsed[d].join('; ')}
-                                                                                </div>
-                                                                            ) : null
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                meta.jadwal ? (
-                                                                    <div><span className="font-medium">Jadwal Praktek:</span> {meta.jadwal}</div>
-                                                                ) : null
-                                                            )}
-                                                            {/* Alamat & Telp */}
-                                                            {(meta.alamat || meta.telp) && (
-                                                                <div className="flex flex-wrap gap-x-2">
-                                                                    {meta.alamat && (<span><span className="font-medium">Alamat:</span> {meta.alamat}</span>)}
-                                                                    {meta.telp && (<span><span className="font-medium">Telp:</span> {meta.telp}</span>)}
-                                                                </div>
-                                                            )}
-                                                            {/* Jarak */}
-                                                            {meta.distance !== undefined && meta.distance !== null && (
-                                                                <div><span className="font-medium">Jarak:</span> {toKm(meta.distance) || `${meta.distance}`}</div>
-                                                            )}
-                                                            {/* Statistik */}
-                                                            {(meta.jmlRujuk !== undefined || meta.kapasitas !== undefined || meta.persentase !== undefined) && (
-                                                                <div className="flex flex-wrap gap-x-3">
-                                                                    {meta.jmlRujuk !== undefined && (<span><span className="font-medium">Jml Rujuk:</span> {meta.jmlRujuk}</span>)}
-                                                                    {meta.kapasitas !== undefined && (<span><span className="font-medium">Kapasitas:</span> {meta.kapasitas}</span>)}
-                                                                    {meta.persentase !== undefined && (<span><span className="font-medium">Persentase:</span> {meta.persentase}%</span>)}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        </div>
-                                        {/* KD TACC: default hidden, muncul otomatis dan wajib diisi bila diagnosa NonSpesialis dipilih */}
-                                        {kdTaccVisible && (
-                                            <div>
-                                                <label className="block text-xs font-medium mb-1">
-                                                    KD TACC <span className="text-red-500">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={kunjunganPreview?.kdTacc ?? ''}
-                                                    onChange={(e) => {
-                                                        setTaccError('');
-                                                        updateKunjunganField('kdTacc', e.target.value, 'int');
-                                                    }}
-                                                    placeholder="Isi KD TACC (1=Time, 2=Age, 3=Complication, 4=Comorbidity)"
-                                                    className={`w-full rounded-md text-sm dark:bg-gray-800 dark:text-white ${taccError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
-                                                />
-                                                {taccError && (
-                                                    <div className="mt-1 text-xs text-red-600 dark:text-red-400">{taccError}</div>
-                                                )}
-                                            </div>
-                                        )}
-                                        <div>
-                                            <label className="block text-xs font-medium mb-1">
-                                                Alasan TACC {kdTaccVisible && <span className="text-red-500">*</span>}
-                                            </label>
-                                            {(() => {
-                                                const selected = REF_TACC.find((x) => x.kdTacc === (kunjunganPreview?.kdTacc ?? -1));
-                                                if (!selected || selected.kdTacc === -1) {
-                                                    return (
-                                                        <input
-                                                            type="text"
-                                                            value={kunjunganPreview?.alasanTacc ?? ''}
-                                                            onChange={(e) => updateKunjunganField('alasanTacc', e.target.value)}
-                                                            placeholder="Tanpa TACC (alasan kosong)"
-                                                            disabled
-                                                            className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white text-sm"
-                                                        />
-                                                    );
-                                                }
-                                                if (selected.kdTacc === 3) {
-                                                    return (
-                                                        <input
-                                                            type="text"
-                                                            value={kunjunganPreview?.alasanTacc ?? ''}
-                                                            onChange={(e) => {
-                                                                setTaccError('');
-                                                                updateKunjunganField('alasanTacc', e.target.value);
-                                                            }}
-                                                            placeholder={`mis. ${kunjunganPreview?.kdDiag1 ? `${kunjunganPreview.kdDiag1} - NamaDiagnosa` : 'A09 - Diarrhoea and gastroenteritis of presumed infectious origin'}`}
-                                                            className={`w-full rounded-md text-sm dark:bg-gray-800 dark:text-white ${taccError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
-                                                        />
-                                                    );
-                                                }
-                                                return (
-                                                    <SearchableSelect
-                                                        options={(selected?.alasanTacc || []).map((a) => ({ label: a, value: a }))}
-                                                        value={kunjunganPreview?.alasanTacc ?? ''}
-                                                        onChange={(val) => {
-                                                            setTaccError('');
-                                                            updateKunjunganField('alasanTacc', val);
-                                                        }}
-                                                        placeholder="— Pilih Alasan —"
-                                                        searchPlaceholder="Cari alasan…"
-                                                        displayKey="label"
-                                                        valueKey="value"
-                                                    />
-                                                );
-                                            })()}
-                                        </div>
-                                        {/* Card payload rujukan dihilangkan agar UI lebih bersih dan profesional */}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
-                            <div className="flex items-center gap-2">
-                                <button type="button" onClick={closeBridgingModal} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm">Tutup</button>
-                                <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
-                                <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
-            )}
-            <div className="relative z-20 pb-4 md:pb-6 px-3 md:px-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                {(message || error) && (
-                    <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
-                        <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {error ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            )}
-                        </svg>
-                        <span>{error || message}</span>
-                    </div>
-                )}
-                <>
-                    <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+
+                <BridgingModalSection />
+
+                <div className="relative z-20 pb-4 md:pb-6 px-3 md:px-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                    {(message || error) && (
+                        <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
+                            <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {error ? (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                ) : (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                )}
                             </svg>
-                            Riwayat Pemeriksaan
-                        </h4>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setViewMode('current')}
-                                aria-pressed={viewMode === 'current'}
-                                className={`text-sm px-3 py-1 rounded ${viewMode === 'current'
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                }`}
-                                title="Tampilkan pemeriksaan untuk kunjungan ini"
-                            >
-                                Kunjungan ini
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setViewMode('all')}
-                                disabled={!noRkmMedis}
-                                aria-pressed={viewMode === 'all'}
-                                className={`text-sm px-3 py-1 rounded ${viewMode === 'all'
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                } ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                title="Tampilkan semua pemeriksaan berdasarkan no RM"
-                            >
-                                Semua record
-                            </button>
-                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                {list.length} record
-                            </span>
+                            <span>{error || message}</span>
                         </div>
-                    </div>
-                    {loadingList ? (
-                        <div className="flex items-center justify-center py-8">
-                            <svg className="animate-spin h-6 w-6 text-indigo-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">Memuat riwayat pemeriksaan...</span>
+                    )}
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                Riwayat Pemeriksaan
+                            </h4>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('current')}
+                                    aria-pressed={viewMode === 'current'}
+                                    className={`text-sm px-3 py-1 rounded ${viewMode === 'current'
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        }`}
+                                    title="Tampilkan pemeriksaan untuk kunjungan ini"
+                                >
+                                    Kunjungan ini
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('all')}
+                                    disabled={!noRkmMedis}
+                                    aria-pressed={viewMode === 'all'}
+                                    className={`text-sm px-3 py-1 rounded ${viewMode === 'all'
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        } ${!noRkmMedis ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    title="Tampilkan semua pemeriksaan berdasarkan no RM"
+                                >
+                                    Semua record
+                                </button>
+                                <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                    {list.length} record
+                                </span>
+                            </div>
                         </div>
-                    ) : list.length === 0 ? (
-                        <div className="text-center py-12">
-                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada pemeriksaan</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan pemeriksaan pertama.</p>
-                        </div>
-                    ) : (
-                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
-                            <div className="overflow-x-auto w-full max-w-full">
-                                <table className="w-full text-sm table-fixed">
-                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                        <tr className="text-left text-gray-600 dark:text-gray-300">
-                                            <th className="px-4 py-3 font-medium w-40">Tanggal / Jam</th>
-                                            <th className="px-4 py-3 font-medium w-40">S</th>
-                                            <th className="px-4 py-3 font-medium w-52">O</th>
-                                            <th className="px-4 py-3 font-medium w-40">A</th>
-                                            <th className="px-4 py-3 font-medium w-52">P</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {list.map((row, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="px-4 py-3 text-gray-900 dark:text-white w-40 align-top">
-                                                    <div className="flex items-start justify-between gap-2 text-xs">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-medium">
-                                                                {(() => {
-                                                                    const v = row.tgl_perawatan;
-                                                                    if (!v) return '-';
-                                                                    try {
-                                                                        const tz = getAppTimeZone();
-                                                                        const d = new Date(v);
-                                                                        if (isNaN(d.getTime())) return '-';
-                                                                        return d.toLocaleDateString('id-ID', {
-                                                                            timeZone: tz,
-                                                                            day: '2-digit',
-                                                                            month: 'short',
-                                                                            year: 'numeric'
-                                                                        });
-                                                                    } catch (_) {
-                                                                        return '-';
-                                                                    }
-                                                                })()}
-                                                            </span>
-                                                            {viewMode === 'all' && (
-                                                                <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                                                                    {row.no_rawat || '-'}
-                                                                </span>
-                                                            )}
-                                                            <span className="font-mono text-[11px] text-gray-600 dark:text-gray-300">
-                                                                {row.jam_rawat ? String(row.jam_rawat).substring(0,5) : '-'}
-                                                            </span>
-                                                            <span className="text-[10px] text-gray-600 dark:text-gray-300 mt-0.5">
-                                                                {pegawaiMap[String(row.nik || row.nip || '')] || row.nama_pegawai || row.nama || row.nip || row.nik || '-'}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex flex-col items-end space-y-1">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const normalize = (v) => (v === 'N/A' ? '' : (v || ''));
-                                                                    const d = new Date();
-                                                                    const tgl = d.toISOString().slice(0, 10);
-                                                                    const jam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                                                                    setFormData({
-                                                                        tgl_perawatan: tgl,
-                                                                        jam_rawat: jam,
-                                                                        suhu_tubuh: normalize(row.suhu_tubuh),
-                                                                        tensi: normalize(row.tensi),
-                                                                        nadi: normalize(row.nadi),
-                                                                        respirasi: normalize(row.respirasi),
-                                                                        tinggi: normalize(row.tinggi),
-                                                                        berat: normalize(row.berat),
-                                                                        spo2: normalize(row.spo2),
-                                                                        gcs: normalize(row.gcs),
-                                                                        kesadaran: row.kesadaran || 'Compos Mentis',
-                                                                        keluhan: row.keluhan || '',
-                                                                        pemeriksaan: row.pemeriksaan || '',
-                                                                        alergi: row.alergi || '',
-                                                                        lingkar_perut: normalize(row.lingkar_perut),
-                                                                        rtl: row.rtl || '',
-                                                                        penilaian: row.penilaian || '',
-                                                                        instruksi: row.instruksi || '',
-                                                                        evaluasi: row.evaluasi || '',
-                                                                        nip: row.nip || '',
-                                                                    });
-                                                                    setPegawaiQuery('');
-                                                                    setEditKey(null);
-                                                                    setMessage(null);
-                                                                    setError(null);
-                                                                }}
-                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
-                                                                title="Salin ke pemeriksaan baru"
-                                                            >
-                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                                </svg>
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setFormData({
-                                                                        tgl_perawatan: row.tgl_perawatan,
-                                                                        jam_rawat: String(row.jam_rawat).substring(0,5),
-                                                                        suhu_tubuh: row.suhu_tubuh || '',
-                                                                        tensi: row.tensi || '',
-                                                                        nadi: row.nadi || '',
-                                                                        respirasi: row.respirasi || '',
-                                                                        tinggi: row.tinggi || '',
-                                                                        berat: row.berat || '',
-                                                                        spo2: row.spo2 || '',
-                                                                        gcs: row.gcs || '',
-                                                                        kesadaran: row.kesadaran || 'Compos Mentis',
-                                                                        keluhan: row.keluhan || '',
-                                                                        pemeriksaan: row.pemeriksaan || '',
-                                                                        alergi: row.alergi || '',
-                                                                        lingkar_perut: row.lingkar_perut || '',
-                                                                        rtl: row.rtl || '',
-                                                                        penilaian: row.penilaian || '',
-                                                                        instruksi: row.instruksi || '',
-                                                                        evaluasi: row.evaluasi || '',
-                                                                        nip: row.nip || '',
-                                                                    });
-                                                                    setPegawaiQuery('');
-                                                                    setEditKey({
-                                                                        no_rawat: row.no_rawat,
-                                                                        tgl_perawatan: row.tgl_perawatan,
-                                                                        jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                    });
-                                                                    setMessage(null);
-                                                                    setError(null);
-                                                                }}
-                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
-                                                                title="Edit pemeriksaan"
-                                                            >
-                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={async () => {
-                                                                    if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
-                                                                    try {
-                                                                        const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                                                        const res = await fetch(url, {
-                                                                            method: 'DELETE',
-                                                                            headers: {
-                                                                                'Content-Type': 'application/json',
-                                                                                'Accept': 'application/json',
-                                                                                'X-Requested-With': 'XMLHttpRequest',
-                                                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                                                            },
-                                                                            credentials: 'same-origin',
-                                                                            body: JSON.stringify({
-                                                                                no_rawat: row.no_rawat,
-                                                                                tgl_perawatan: row.tgl_perawatan,
-                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                            }),
-                                                                        });
-                                                                        const text = await res.text();
-                                                                        let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                                                        if (!res.ok) {
-                                                                            setError(json.message || 'Gagal menghapus pemeriksaan');
-                                                                            setMessage(null);
-                                                                            return;
+                        {loadingList ? (
+                            <div className="flex items-center justify-center py-8">
+                                <svg className="animate-spin h-6 w-6 text-indigo-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">Memuat riwayat pemeriksaan...</span>
+                            </div>
+                        ) : list.length === 0 ? (
+                            <div className="text-center py-12">
+                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada pemeriksaan</h3>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan pemeriksaan pertama.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden w-full">
+                                <div className="overflow-x-auto w-full max-w-full">
+                                    <table className="w-full text-sm table-fixed">
+                                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                            <tr className="text-left text-gray-600 dark:text-gray-300">
+                                                <th className="px-4 py-3 font-medium w-40">Tanggal / Jam</th>
+                                                <th className="px-4 py-3 font-medium w-40">S</th>
+                                                <th className="px-4 py-3 font-medium w-52">O</th>
+                                                <th className="px-4 py-3 font-medium w-40">A</th>
+                                                <th className="px-4 py-3 font-medium w-52">P</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {list.map((row, idx) => (
+                                                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                    <td className="px-4 py-3 text-gray-900 dark:text-white w-40 align-top">
+                                                        <div className="flex items-start justify-between gap-2 text-xs">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-medium">
+                                                                    {(() => {
+                                                                        const v = row.tgl_perawatan;
+                                                                        if (!v) return '-';
+                                                                        try {
+                                                                            const tz = getAppTimeZone();
+                                                                            const d = new Date(v);
+                                                                            if (isNaN(d.getTime())) return '-';
+                                                                            return d.toLocaleDateString('id-ID', {
+                                                                                timeZone: tz,
+                                                                                day: '2-digit',
+                                                                                month: 'short',
+                                                                                year: 'numeric'
+                                                                            });
+                                                                        } catch (_) {
+                                                                            return '-';
                                                                         }
-                                                                        setError(null);
-                                                                        setMessage(json.message || 'Pemeriksaan berhasil dihapus');
-                                                                        await fetchList();
-                                                                    } catch (e) {
-                                                                        setError(e.message || 'Terjadi kesalahan saat menghapus');
+                                                                    })()}
+                                                                </span>
+                                                                {viewMode === 'all' && (
+                                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                                                                        {row.no_rawat || '-'}
+                                                                    </span>
+                                                                )}
+                                                                <span className="font-mono text-[11px] text-gray-600 dark:text-gray-300">
+                                                                    {row.jam_rawat ? String(row.jam_rawat).substring(0, 5) : '-'}
+                                                                </span>
+                                                                <span className="text-[10px] text-gray-600 dark:text-gray-300 mt-0.5">
+                                                                    {pegawaiMap[String(row.nik || row.nip || '')] || row.nama_pegawai || row.nama || row.nip || row.nik || '-'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-col items-end space-y-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const normalize = (v) => (v === 'N/A' ? '' : (v || ''));
+                                                                        const d = new Date();
+                                                                        const tgl = d.toISOString().slice(0, 10);
+                                                                        const jam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                                                                        setFormData({
+                                                                            tgl_perawatan: tgl,
+                                                                            jam_rawat: jam,
+                                                                            suhu_tubuh: normalize(row.suhu_tubuh),
+                                                                            tensi: normalize(row.tensi),
+                                                                            nadi: normalize(row.nadi),
+                                                                            respirasi: normalize(row.respirasi),
+                                                                            tinggi: normalize(row.tinggi),
+                                                                            berat: normalize(row.berat),
+                                                                            spo2: normalize(row.spo2),
+                                                                            gcs: normalize(row.gcs),
+                                                                            kesadaran: row.kesadaran || 'Compos Mentis',
+                                                                            keluhan: row.keluhan || '',
+                                                                            pemeriksaan: row.pemeriksaan || '',
+                                                                            alergi: row.alergi || '',
+                                                                            lingkar_perut: normalize(row.lingkar_perut),
+                                                                            rtl: row.rtl || '',
+                                                                            penilaian: row.penilaian || '',
+                                                                            instruksi: row.instruksi || '',
+                                                                            evaluasi: row.evaluasi || '',
+                                                                            nip: row.nip || '',
+                                                                        });
+                                                                        setPegawaiQuery('');
+                                                                        setEditKey(null);
                                                                         setMessage(null);
-                                                                    }
-                                                                }}
-                                                                className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
-                                                                title="Hapus pemeriksaan"
-                                                            >
-                                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                            </button>
+                                                                        setError(null);
+                                                                    }}
+                                                                    className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors"
+                                                                    title="Salin ke pemeriksaan baru"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setFormData({
+                                                                            tgl_perawatan: row.tgl_perawatan,
+                                                                            jam_rawat: String(row.jam_rawat).substring(0, 5),
+                                                                            suhu_tubuh: row.suhu_tubuh || '',
+                                                                            tensi: row.tensi || '',
+                                                                            nadi: row.nadi || '',
+                                                                            respirasi: row.respirasi || '',
+                                                                            tinggi: row.tinggi || '',
+                                                                            berat: row.berat || '',
+                                                                            spo2: row.spo2 || '',
+                                                                            gcs: row.gcs || '',
+                                                                            kesadaran: row.kesadaran || 'Compos Mentis',
+                                                                            keluhan: row.keluhan || '',
+                                                                            pemeriksaan: row.pemeriksaan || '',
+                                                                            alergi: row.alergi || '',
+                                                                            lingkar_perut: row.lingkar_perut || '',
+                                                                            rtl: row.rtl || '',
+                                                                            penilaian: row.penilaian || '',
+                                                                            instruksi: row.instruksi || '',
+                                                                            evaluasi: row.evaluasi || '',
+                                                                            nip: row.nip || '',
+                                                                        });
+                                                                        setPegawaiQuery('');
+                                                                        setEditKey({
+                                                                            no_rawat: row.no_rawat,
+                                                                            tgl_perawatan: row.tgl_perawatan,
+                                                                            jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                        });
+                                                                        setMessage(null);
+                                                                        setError(null);
+                                                                    }}
+                                                                    className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-amber-700 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50 transition-colors"
+                                                                    title="Edit pemeriksaan"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={async () => {
+                                                                        if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
+                                                                        try {
+                                                                            const url = route('rawat-jalan.pemeriksaan-ralan.delete');
+                                                                            const res = await fetch(url, {
+                                                                                method: 'DELETE',
+                                                                                headers: {
+                                                                                    'Content-Type': 'application/json',
+                                                                                    'Accept': 'application/json',
+                                                                                    'X-Requested-With': 'XMLHttpRequest',
+                                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                                                                },
+                                                                                credentials: 'same-origin',
+                                                                                body: JSON.stringify({
+                                                                                    no_rawat: row.no_rawat,
+                                                                                    tgl_perawatan: row.tgl_perawatan,
+                                                                                    jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                                }),
+                                                                            });
+                                                                            const text = await res.text();
+                                                                            let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
+                                                                            if (!res.ok) {
+                                                                                setError(json.message || 'Gagal menghapus pemeriksaan');
+                                                                                setMessage(null);
+                                                                                return;
+                                                                            }
+                                                                            setError(null);
+                                                                            setMessage(json.message || 'Pemeriksaan berhasil dihapus');
+                                                                            await fetchList();
+                                                                        } catch (e) {
+                                                                            setError(e.message || 'Terjadi kesalahan saat menghapus');
+                                                                            setMessage(null);
+                                                                        }
+                                                                    }}
+                                                                    className="inline-flex items-center justify-center h-6 w-6 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 transition-colors"
+                                                                    title="Hapus pemeriksaan"
+                                                                >
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
-                                                    <div className="whitespace-normal break-words">
-                                                        {(() => {
-                                                            const sText = row.keluhan || row.pemeriksaan || row.penilaian || '';
-                                                            if (!sText) {
-                                                                return <span className="text-gray-400 italic">Tidak ada keluhan</span>;
-                                                            }
-                                                            return sText;
-                                                        })()}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
-                                                    <div className="space-y-1">
-                                                        <div className="space-y-1">
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-500">Suhu:</span>
-                                                                <span className="font-medium">
-                                                                    {(!row.suhu_tubuh || row.suhu_tubuh === 'N/A') ? '-' : row.suhu_tubuh}°C
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-500">Tensi:</span>
-                                                                <span className="font-medium">
-                                                                    {(!row.tensi || row.tensi === 'N/A') ? '-' : row.tensi}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-500">Nadi:</span>
-                                                                <span className="font-medium">
-                                                                    {(!row.nadi || row.nadi === 'N/A') ? '-' : row.nadi}/min
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-500">SpO2:</span>
-                                                                <span className="font-medium">
-                                                                    {(!row.spo2 || row.spo2 === 'N/A') ? '-' : row.spo2}%
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
                                                         <div className="whitespace-normal break-words">
                                                             {(() => {
-                                                                const usedPemeriksaanInS = !row.keluhan && !!row.pemeriksaan;
-                                                                const text = usedPemeriksaanInS ? '' : (row.pemeriksaan || '');
-                                                                if (!text) {
-                                                                    return <span className="text-gray-400 italic">Belum diperiksa</span>;
+                                                                const sText = row.keluhan || row.pemeriksaan || row.penilaian || '';
+                                                                if (!sText) {
+                                                                    return <span className="text-gray-400 italic">Tidak ada keluhan</span>;
                                                                 }
-                                                                return text;
+                                                                return sText;
                                                             })()}
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
-                                                    <div className="whitespace-normal break-words">
-                                                        {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
-                                                    <div className="space-y-1 whitespace-normal break-words">
-                                                        {row.rtl || row.instruksi || row.evaluasi ? (
-                                                            <>
-                                                                {row.rtl && <div>{row.rtl}</div>}
-                                                                {row.instruksi && <div>{row.instruksi}</div>}
-                                                                {row.evaluasi && <div>{row.evaluasi}</div>}
-                                                            </>
-                                                        ) : (
-                                                            <span className="text-gray-400 italic">Belum ada rencana</span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
+                                                        <div className="space-y-1">
+                                                            <div className="space-y-1">
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-gray-500">Suhu:</span>
+                                                                    <span className="font-medium">
+                                                                        {(!row.suhu_tubuh || row.suhu_tubuh === 'N/A') ? '-' : row.suhu_tubuh}°C
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-gray-500">Tensi:</span>
+                                                                    <span className="font-medium">
+                                                                        {(!row.tensi || row.tensi === 'N/A') ? '-' : row.tensi}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-gray-500">Nadi:</span>
+                                                                    <span className="font-medium">
+                                                                        {(!row.nadi || row.nadi === 'N/A') ? '-' : row.nadi}/min
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-gray-500">SpO2:</span>
+                                                                    <span className="font-medium">
+                                                                        {(!row.spo2 || row.spo2 === 'N/A') ? '-' : row.spo2}%
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="whitespace-normal break-words">
+                                                                {(() => {
+                                                                    const usedPemeriksaanInS = !row.keluhan && !!row.pemeriksaan;
+                                                                    const text = usedPemeriksaanInS ? '' : (row.pemeriksaan || '');
+                                                                    if (!text) {
+                                                                        return <span className="text-gray-400 italic">Belum diperiksa</span>;
+                                                                    }
+                                                                    return text;
+                                                                })()}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-40">
+                                                        <div className="whitespace-normal break-words">
+                                                            {row.penilaian || <span className="text-gray-400 italic">Belum dinilai</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 align-top text-xs w-52">
+                                                        <div className="space-y-1 whitespace-normal break-words">
+                                                            {row.rtl || row.instruksi || row.evaluasi ? (
+                                                                <>
+                                                                    {row.rtl && <div>{row.rtl}</div>}
+                                                                    {row.instruksi && <div>{row.instruksi}</div>}
+                                                                    {row.evaluasi && <div>{row.evaluasi}</div>}
+                                                                </>
+                                                            ) : (
+                                                                <span className="text-gray-400 italic">Belum ada rencana</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </>
+                        )}
+                    </>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

@@ -29,7 +29,7 @@ class TriaseUgdController extends Controller
     {
         $row = TriaseUgd::query()
             ->where('no_rawat', $no_rawat)
-            ->firstOrFail();
+            ->first();
         return response()->json(['data' => $row]);
     }
 

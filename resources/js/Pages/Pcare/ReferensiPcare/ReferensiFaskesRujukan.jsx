@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, BuildingOfficeIcon, MagnifyingGlassIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import SearchableSelect from '@/Components/SearchableSelect';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -37,13 +38,7 @@ export default function ReferensiFaskesRujukan() {
   const [data, setData] = useState({ response: { count: 0, list: [] }, metaData: { message: '', code: null } });
 
   // Tambahan: Spesialis/Subspesialis/Sarana cascading
-  const [spesialisList, setSpesialisList] = useState([]);
   const [kdSpesialis, setKdSpesialis] = useState('');
-  const [spQuery, setSpQuery] = useState('');
-  const [showSpDropdown, setShowSpDropdown] = useState(false);
-  const [activeSpIndex, setActiveSpIndex] = useState(0);
-  const [subSpList, setSubSpList] = useState([]);
-  const [saranaList, setSaranaList] = useState([]);
 
   // Form input
   const [kdSubSpesialis, setKdSubSpesialis] = useState('');
@@ -103,97 +98,20 @@ export default function ReferensiFaskesRujukan() {
     setPage(1);
   }, [query, perPage]);
 
-  // Derivasi: selectedSp & saran typeahead
-  const selectedSp = useMemo(() => spesialisList.find((sp) => sp.kdSpesialis === kdSpesialis), [spesialisList, kdSpesialis]);
-  const spesialisSuggestions = useMemo(() => {
-    const q = (spQuery || '').toLowerCase().trim();
-    if (!q) return spesialisList.slice(0, 8);
-    return spesialisList
-      .filter((sp) =>
-        (sp.kdSpesialis || '').toLowerCase().includes(q) ||
-        (sp.nmSpesialis || '').toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }, [spQuery, spesialisList]);
 
-  const handleSpKeyDown = (e) => {
-    if (e.key === 'ArrowDown') {
-      setShowSpDropdown(true);
-      setActiveSpIndex((i) => Math.min(i + 1, Math.max(0, spesialisSuggestions.length - 1)));
-    } else if (e.key === 'ArrowUp') {
-      setActiveSpIndex((i) => Math.max(0, i - 1));
-    } else if (e.key === 'Enter') {
-      const choice = spesialisSuggestions[activeSpIndex];
-      if (choice) {
-        setKdSpesialis(choice.kdSpesialis);
-        setSpQuery(choice.nmSpesialis);
-        setShowSpDropdown(false);
-      }
-    }
-  };
-
-  const loadSpesialis = async () => {
-    try {
-      const res = await fetch('/api/pcare/spesialis', { headers: { Accept: 'application/json' } });
-      const json = await res.json();
-      const list = json?.response?.list || [];
-      setSpesialisList(list);
-      if (!kdSpesialis && list.length > 0) {
-        setKdSpesialis(list[0]?.kdSpesialis || '');
-        setSpQuery(list[0]?.nmSpesialis || '');
-      }
-    } catch {
-      // ignore
-    }
-  };
-
-  const fetchSubSpesialis = async (code) => {
-    if (!code) return;
-    try {
-      const params = new URLSearchParams({ kdSpesialis: code });
-      const res = await fetch(`/api/pcare/spesialis/subspesialis?${params.toString()}`, { headers: { Accept: 'application/json' } });
-      const json = await res.json();
-      const list = json?.response?.list || [];
-      setSubSpList(list);
-    } catch {
-      // ignore
-    }
-  };
-
-  const fetchSarana = async () => {
-    try {
-      const res = await fetch(`/api/pcare/spesialis/sarana`, { headers: { Accept: 'application/json' } });
-      const json = await res.json();
-      const list = json?.response?.list || [];
-      setSaranaList(list);
-    } catch {
-      // ignore
-    }
-  };
-
-  useEffect(() => { loadSpesialis(); }, []);
 
   useEffect(() => {
-    // Ketika spesialis berubah, reset field berikutnya dan muat sub-spesialis
+    // Ketika spesialis berubah, reset field berikutnya
     setKdSubSpesialis('');
     setKdSarana('');
     setTglEstRujuk('');
-    if (kdSpesialis) fetchSubSpesialis(kdSpesialis);
   }, [kdSpesialis]);
 
   useEffect(() => {
-    // Ketika subspesialis dipilih, reset sarana dan tanggal, lalu muat sarana
+    // Ketika subspesialis dipilih, reset sarana dan tanggal
     setKdSarana('');
     setTglEstRujuk('');
-    if (kdSubSpesialis) fetchSarana();
   }, [kdSubSpesialis]);
-
-  useEffect(() => {
-    // Sinkronkan tampilan input dengan spesialis terpilih
-    if (kdSpesialis && selectedSp) {
-      setSpQuery(selectedSp.nmSpesialis || '');
-    }
-  }, [kdSpesialis, selectedSp]);
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
@@ -223,73 +141,42 @@ export default function ReferensiFaskesRujukan() {
       </motion.div>
 
       {/* Form Pencarian */}
-      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
+      <motion.div variants={itemVariants} className="relative rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          {/* Spesialis (typeahead) */}
+          {/* Spesialis */}
           <div className="relative md:col-span-4">
             <label className="block text-xs text-slate-500 mb-1">Spesialis</label>
-            <input
-              type="text"
-              value={spQuery}
-              onChange={(e) => { setSpQuery(e.target.value); setShowSpDropdown(true); setActiveSpIndex(0); }}
-              onKeyDown={handleSpKeyDown}
-              onFocus={() => setShowSpDropdown(true)}
-              onBlur={() => setTimeout(() => setShowSpDropdown(false), 120)}
-              placeholder="Ketik nama/kode spesialis"
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+            <SearchableSelect
+              source="spesialis"
+              value={kdSpesialis}
+              onChange={(val) => setKdSpesialis(val)}
+              placeholder="Pilih spesialis..."
             />
-            <AnimatePresence>
-              {showSpDropdown && spesialisSuggestions.length > 0 && (
-                <motion.ul initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute z-50 mt-1 w-full max-h-52 overflow-auto rounded border bg-white shadow">
-                  {spesialisSuggestions.map((sp, i) => (
-                    <li
-                      key={sp.kdSpesialis}
-                      className={`px-3 py-2 text-sm cursor-pointer ${i === activeSpIndex ? 'bg-indigo-50' : 'hover:bg-gray-50'}`}
-                      onMouseDown={(evt) => { evt.preventDefault(); setKdSpesialis(sp.kdSpesialis); setSpQuery(sp.nmSpesialis); setShowSpDropdown(false); }}
-                    >
-                      <span className="font-mono mr-2">{sp.kdSpesialis}</span>
-                      <span>{sp.nmSpesialis}</span>
-                    </li>
-                  ))}
-                </motion.ul>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Sub Spesialis (pilih setelah Spesialis) */}
+          {/* Sub Spesialis */}
           <div className="md:col-span-3">
             <label className="block text-xs text-slate-500 mb-1">Sub Spesialis</label>
-            <select
+            <SearchableSelect
+              source="subspesialis"
+              sourceParams={{ kdSpesialis }}
               value={kdSubSpesialis}
-              onChange={(e) => setKdSubSpesialis(e.target.value)}
-              disabled={!kdSpesialis || subSpList.length === 0}
-              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${!kdSpesialis || subSpList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-gray-300 dark:border-gray-600 text-slate-700'}`}
-            >
-              <option value="" disabled>Pilih sub spesialis…</option>
-              {subSpList.map((ss) => (
-                <option key={ss.kdSubSpesialis} value={ss.kdSubSpesialis}>
-                  {ss.nmSubSpesialis} ({ss.kdSubSpesialis})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setKdSubSpesialis(val)}
+              disabled={!kdSpesialis}
+              placeholder="Pilih sub spesialis..."
+            />
           </div>
 
-          {/* Sarana (aktif setelah Sub Spesialis terpilih) */}
+          {/* Sarana */}
           <div className="md:col-span-3">
             <label className="block text-xs text-slate-500 mb-1">Sarana</label>
-            <select
+            <SearchableSelect
+              source="sarana"
               value={kdSarana}
-              onChange={(e) => setKdSarana(e.target.value)}
-              disabled={!kdSubSpesialis || saranaList.length === 0}
-              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${!kdSubSpesialis || saranaList.length === 0 ? 'border-slate-200 text-slate-400' : 'border-gray-300 dark:border-gray-600 text-slate-700'}`}
-            >
-              <option value="" disabled>Pilih sarana…</option>
-              {saranaList.map((s) => (
-                <option key={s.kdSarana} value={s.kdSarana}>
-                  {s.nmSarana} ({s.kdSarana})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setKdSarana(val)}
+              disabled={!kdSubSpesialis}
+              placeholder="Pilih sarana..."
+            />
           </div>
 
           {/* Tanggal Estimasi Rujuk (aktif setelah Sarana terpilih) */}
@@ -443,15 +330,15 @@ export default function ReferensiFaskesRujukan() {
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value))}
               className="rounded-md border border-gray-300 dark:border-gray-600 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            <option value={9}>9</option>
-            <option value={12}>12</option>
-            <option value={18}>18</option>
-            <option value={24}>24</option>
-          </select>
+            >
+              <option value={9}>9</option>
+              <option value={12}>12</option>
+              <option value={18}>18</option>
+              <option value={24}>24</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
     </motion.div>
   );
 }

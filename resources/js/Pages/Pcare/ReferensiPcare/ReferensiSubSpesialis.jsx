@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SidebarBriding from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import SearchableSelect from '@/Components/SearchableSelect';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -20,70 +21,13 @@ const Badge = ({ text, color }) => (
 );
 
 export default function ReferensiSubSpesialis() {
-  const [spesialisList, setSpesialisList] = useState([]);
   const [kdSpesialis, setKdSpesialis] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState({ response: { count: 0, list: [] }, metaData: { message: '', code: null } });
 
-  // Tambahkan state untuk pencarian spesialis (typeahead)
-  const [spQuery, setSpQuery] = useState('');
-  const [showSpDropdown, setShowSpDropdown] = useState(false);
-  const [activeSpIndex, setActiveSpIndex] = useState(0);
   const hasResult = (data?.response?.list || []).length > 0;
   const total = data?.response?.count || 0;
-
-  const selectedSp = useMemo(() => spesialisList.find((sp) => sp.kdSpesialis === kdSpesialis), [spesialisList, kdSpesialis]);
-
-  // Saran spesialis berdasarkan ketikan (nama/kode)
-  const spesialisSuggestions = useMemo(() => {
-    const q = (spQuery || '').toLowerCase().trim();
-    if (!q) return spesialisList.slice(0, 8);
-    return spesialisList
-      .filter((sp) =>
-        (sp.kdSpesialis || '').toLowerCase().includes(q) ||
-        (sp.nmSpesialis || '').toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }, [spQuery, spesialisList]);
-
-  const handleSpKeyDown = (e) => {
-    if (e.key === 'ArrowDown') {
-      setShowSpDropdown(true);
-      setActiveSpIndex((i) => Math.min(i + 1, Math.max(0, spesialisSuggestions.length - 1)));
-    } else if (e.key === 'ArrowUp') {
-      setActiveSpIndex((i) => Math.max(0, i - 1));
-    } else if (e.key === 'Enter') {
-      const choice = spesialisSuggestions[activeSpIndex];
-      if (choice) {
-        setKdSpesialis(choice.kdSpesialis);
-        setSpQuery(choice.nmSpesialis);
-        setShowSpDropdown(false);
-      }
-    }
-  };
-
-  const loadSpesialis = async () => {
-    try {
-      const res = await fetch('/api/pcare/spesialis', { headers: { Accept: 'application/json' } });
-      const json = await res.json();
-      const list = json?.response?.list || [];
-      setSpesialisList(list);
-      if (!kdSpesialis && list.length > 0) {
-        setKdSpesialis(list[0]?.kdSpesialis || '');
-        setSpQuery(list[0]?.nmSpesialis || '');
-      }
-    } catch {
-      // ignore
-    }
-  };
-
-  // Sinkronkan tampilan input dengan spesialis terpilih
-  useEffect(() => {
-    if (kdSpesialis && selectedSp) {
-      setSpQuery(selectedSp.nmSpesialis || '');
-    }
-  }, [kdSpesialis, selectedSp]);
 
   const fetchSubSpesialis = async (code = kdSpesialis) => {
     if (!code) return;
@@ -103,7 +47,7 @@ export default function ReferensiSubSpesialis() {
   };
 
   useEffect(() => {
-    loadSpesialis();
+    // Initial load removed as SearchableSelect handles it or the effect below triggers it
   }, []);
 
   useEffect(() => {
@@ -113,8 +57,8 @@ export default function ReferensiSubSpesialis() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
-  {/* Header */}
-  <motion.div variants={itemVariants} className="mb-4">
+      {/* Header */}
+      <motion.div variants={itemVariants} className="mb-4">
         <motion.div
           variants={itemVariants}
           className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg"
@@ -136,79 +80,58 @@ export default function ReferensiSubSpesialis() {
             </div>
           </div>
         </motion.div>
-  </motion.div>
+      </motion.div>
 
       {/* Controls */}
-      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
+      <motion.div variants={itemVariants} className="relative rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-blue-500/5">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
-           <div className="relative md:col-span-6">
-             <label className="text-xs text-slate-500">Spesialis</label>
-             <input
-               value={spQuery}
-               onChange={(e) => { setSpQuery(e.target.value); setShowSpDropdown(true); setActiveSpIndex(0); }}
-               onKeyDown={handleSpKeyDown}
-               onFocus={() => setShowSpDropdown(true)}
-               onBlur={() => setTimeout(() => setShowSpDropdown(false), 120)}
-               className="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
-               placeholder="Ketik nama/kode spesialis"
-             />
-             <AnimatePresence>
-               {showSpDropdown && spesialisSuggestions.length > 0 && (
-                 <motion.ul initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="absolute z-50 mt-1 w-full max-h-52 overflow-auto rounded border bg-white shadow">
-                   {spesialisSuggestions.map((sp, i) => (
-                     <li
-                       key={sp.kdSpesialis}
-                       className={`px-3 py-2 text-sm cursor-pointer ${i === activeSpIndex ? 'bg-emerald-50' : 'hover:bg-gray-50'}`}
-                       onMouseDown={(evt) => { evt.preventDefault(); setKdSpesialis(sp.kdSpesialis); setSpQuery(sp.nmSpesialis); setShowSpDropdown(false); }}
-                     >
-                       <span className="font-mono mr-2">{sp.kdSpesialis}</span>
-                       <span>{sp.nmSpesialis}</span>
-                     </li>
-                   ))}
-                 </motion.ul>
-               )}
-             </AnimatePresence>
-           </div>
-           {/* Muat Ulang button removed: auto-fetch runs on kdSpesialis change */}
+          <div className="relative md:col-span-6">
+            <label className="text-xs text-slate-500">Spesialis</label>
+            <SearchableSelect
+              source="spesialis"
+              value={kdSpesialis}
+              onChange={(val) => setKdSpesialis(val)}
+              placeholder="Pilih spesialis..."
+              className="mt-1"
+            />
+          </div>
+          {/* Muat Ulang button removed: auto-fetch runs on kdSpesialis change */}
           <div className="md:col-span-2">
             <div className="rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-4 shadow-xl shadow-blue-500/5 h-full min-h-[88px] flex flex-col justify-center">
-               <div className="text-xs text-slate-500">Total</div>
-               <div className="mt-1 text-lg font-semibold text-slate-800">{total}</div>
-             </div>
-           </div>
+              <div className="text-xs text-slate-500">Total</div>
+              <div className="mt-1 text-lg font-semibold text-slate-800">{total}</div>
+            </div>
+          </div>
           <div className="md:col-span-2">
             <div className="rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-4 shadow-xl shadow-blue-500/5 h-full min-h-[88px] flex flex-col justify-center">
-               <div className="text-xs text-slate-500">Spesialis</div>
-               <div className="mt-1 text-sm text-slate-800">{kdSpesialis || '-'}</div>
-             </div>
-           </div>
+              <div className="text-xs text-slate-500">Spesialis</div>
+              <div className="mt-1 text-sm text-slate-800">{kdSpesialis || '-'}</div>
+            </div>
+          </div>
           <div className="md:col-span-2">
             <div className="rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-4 shadow-xl shadow-blue-500/5 h-full min-h-[88px] flex flex-col justify-center">
-               <div className="text-xs text-slate-500">Status</div>
-               <div className="mt-1 flex items-center gap-2">
-                 {loading ? (
-                   <>
-                     <ArrowPathIcon className="h-4 w-4 animate-spin text-cyan-600" />
-                     <span className="text-slate-700 text-sm">Memuat…</span>
-                   </>
-                 ) : error ? (
-                   <>
-                     <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
-                     <span className="text-red-700 text-sm">{error}</span>
-                   </>
-                 ) : (
-                   <>
-                     <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
-                     <span className="text-slate-700 text-sm">Siap</span>
-                   </>
-                 )}
-               </div>
-             </div>
-           </div>
+              <div className="text-xs text-slate-500">Status</div>
+              <div className="mt-1 flex items-center gap-2">
+                {loading ? (
+                  <>
+                    <ArrowPathIcon className="h-4 w-4 animate-spin text-cyan-600" />
+                    <span className="text-slate-700 text-sm">Memuat…</span>
+                  </>
+                ) : error ? (
+                  <>
+                    <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
+                    <span className="text-red-700 text-sm">{error}</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                    <span className="text-slate-700 text-sm">Siap</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        {selectedSp && (
-          <div className="mt-2 text-[11px] text-slate-500">Terpilih: <span className="font-semibold text-slate-700">{selectedSp.nmSpesialis}</span> ({selectedSp.kdSpesialis})</div>
-        )}
       </motion.div>
 
       {/* Status Bar (dipindahkan ke samping kanan tombol Muat Ulang) */}
