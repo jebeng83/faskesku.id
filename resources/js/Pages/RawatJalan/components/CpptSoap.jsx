@@ -510,7 +510,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [loadingList, setLoadingList] = useState(false);
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
-    const [pegawaiOptions, setPegawaiOptions] = useState([]);
     const [pegawaiMap, setPegawaiMap] = useState({});
     const [pegawaiQuery, setPegawaiQuery] = useState('');
     const [editKey, setEditKey] = useState(null); // { no_rawat, tgl_perawatan, jam_rawat }
@@ -1271,7 +1270,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             }
         };
         loadProviders();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rujukForm.kdSubSpesialis1, rujukForm.kdSarana, rujukForm.tglEstRujuk]);
 
     // Helper konversi tanggal untuk input HTML date
@@ -1631,7 +1629,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         } else {
             fetchAllByNoRm();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [noRawat, noRkmMedis, viewMode]);
 
     // Cek status pendaftaran PCare dari tabel pcare_pendaftaran
@@ -1718,27 +1715,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         console.warn('[CpptSoap] State changed: rujukanBerhasil =', rujukanBerhasil, ', pcareRujukanSubspesialis =', pcareRujukanSubspesialis ? 'exists' : 'null');
     }, [rujukanBerhasil, pcareRujukanSubspesialis]);
 
-    const searchPegawai = async (q) => {
-        const url = route('pegawai.search', { q });
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        const json = await res.json();
-        const list = json.data || [];
-        setPegawaiOptions(list);
-        list.forEach((it) => {
-            const id = String(it?.nik || '');
-            const nama = it?.nama || '';
-            if (id && nama) {
-                setPegawaiMap((prev) => (id in prev ? prev : { ...prev, [id]: nama }));
-            }
-        });
-    };
-
-    useEffect(() => {
-        if (pegawaiQuery.trim() === '') { setPegawaiOptions([]); return; }
-        const id = setTimeout(() => { searchPegawai(pegawaiQuery); }, 300);
-        return () => clearTimeout(id);
-    }, [pegawaiQuery]);
-
     return (
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
@@ -1811,38 +1787,33 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <div className="relative">
                                     <div className="min-w-0 flex flex-row items-center gap-1">
                                         <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
-                                        <input
-                                            type="text"
-                                            value={pegawaiQuery}
-                                            onChange={(e) => setPegawaiQuery(e.target.value)}
-                                            placeholder="Ketik nama atau NIK pegawai..."
-                                            className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                        />
+                                        <div className="w-full md:flex-1">
+                                            <SearchableSelect
+                                                source="pegawai"
+                                                value={formData.nip}
+                                                onChange={(val) => {
+                                                    setFormData((prev) => ({ ...prev, nip: val }));
+                                                }}
+                                                onSelect={(option) => {
+                                                    const val = option?.value;
+                                                    const label = option?.label || '';
+                                                    // Save label for persistence
+                                                    setPegawaiQuery(label);
+                                                    
+                                                    const labelParts = label.split('—');
+                                                    const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
+                                                    
+                                                    if (typeof onPemeriksaChange === 'function' && val) {
+                                                        onPemeriksaChange({ id: val, nama });
+                                                    }
+                                                }}
+                                                placeholder="Ketik nama atau NIK pegawai..."
+                                                searchPlaceholder="Cari pegawai..."
+                                                defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
+                                                className="!h-7 !px-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
+                                            />
+                                        </div>
                                     </div>
-                                    {pegawaiOptions.length > 0 && (
-                                        <div className="absolute z-50 mt-1 md:mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg">
-                                            {pegawaiOptions.map((p) => (
-                                                <button
-                                                    key={p.nik}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const nik = String(p.nik || '');
-                                                        const nama = p.nama || '';
-                                                        setFormData((prev) => ({ ...prev, nip: nik }));
-                                                        setPegawaiQuery((nama || '') + ' (' + nik + ')');
-                                                        setPegawaiOptions([]);
-                                                        if (typeof onPemeriksaChange === 'function' && nik) {
-                                                            onPemeriksaChange({ id: nik, nama });
-                                                        }
-                                                    }}
-                                                    className="w-full text-left px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                                                >
-                                                    <div className="font-medium text-gray-900 dark:text-white">{p.nama}</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">NIK: {p.nik}</div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
                                 </div>
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
@@ -3540,7 +3511,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                                         evaluasi: row.evaluasi || '',
                                                                         nip: row.nip || '',
                                                                     });
-                                                                    setPegawaiQuery('');
+                                                                    setPegawaiQuery(pegawaiMap[row.nip] || row.nama_pegawai || row.nama || '');
                                                                     setEditKey({
                                                                         no_rawat: row.no_rawat,
                                                                         tgl_perawatan: row.tgl_perawatan,
