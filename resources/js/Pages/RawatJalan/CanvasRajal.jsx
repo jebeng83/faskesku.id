@@ -2008,7 +2008,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                       </div>
                     )}
                     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
-                      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 lg:gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-4">
                         <div className="rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 shadow-sm p-4 overflow-x-hidden lg:col-span-3">
                           <div className="flex items-center gap-2 mb-2 text-indigo-800 dark:text-indigo-300">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -2034,7 +2034,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                           <p className="text-sm text-gray-600 dark:text-gray-300">Data pendaftaran belum tersedia.</p>
                         )}
                         </div>
-                        <div className="rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 shadow-sm p-4 lg:col-span-7">
+                        <div className="rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 shadow-sm p-4 lg:col-span-9">
                           <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

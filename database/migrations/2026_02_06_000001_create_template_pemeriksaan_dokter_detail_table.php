@@ -13,17 +13,18 @@ return new class extends Migration {
                 $table->charset = 'latin1';
                 $table->collation = 'latin1_swedish_ci';
 
-                $table->string('no_template', 32)->primary();
-                $table->string('nm_template', 255)->nullable();
-                $table->string('suhu_tubuh', 50)->nullable();
-                $table->string('tensi', 50)->nullable();
-                $table->string('nadi', 50)->nullable();
-                $table->string('respirasi', 50)->nullable();
-                $table->string('spo2', 50)->nullable();
-                $table->string('tinggi', 50)->nullable();
-                $table->string('berat', 50)->nullable();
-                $table->string('gcs', 50)->nullable();
-                $table->string('lingkar_perut', 50)->nullable();
+                $table->string('no_template', 20)->primary();
+                $table->string('nm_template', 25);
+                $table->string('suhu', 5)->nullable();
+                $table->string('tensi', 8)->nullable();
+                $table->string('nadi', 3)->nullable();
+                $table->string('respirasi', 3)->nullable();
+                $table->string('spo2', 3)->nullable();
+                $table->string('gcs', 3)->nullable();
+                $table->string('tinggi', 5)->nullable();
+                $table->string('berat', 5)->nullable();
+                $table->string('lingkar_perut', 5)->nullable();
+                $table->dateTime('created_at')->nullable();
 
                 $table->foreign('no_template')
                     ->references('no_template')
@@ -39,4 +40,3 @@ return new class extends Migration {
         Schema::dropIfExists('template_pemeriksaan_dokter_detail');
     }
 };
-

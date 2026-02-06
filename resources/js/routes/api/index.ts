@@ -3,6 +3,7 @@ import publicMethod from './public'
 import resep from './resep'
 import pcare from './pcare'
 import icare from './icare'
+import dev from './dev'
 import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
@@ -229,6 +230,7 @@ const api = {
     resep: Object.assign(resep, resep),
     pcare: Object.assign(pcare, pcare),
     icare: Object.assign(icare, icare),
+    dev: Object.assign(dev, dev),
     rawatJalan: Object.assign(rawatJalan, rawatJalan),
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),

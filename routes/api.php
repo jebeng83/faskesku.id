@@ -109,6 +109,167 @@ Route::prefix('icare')->group(function () {
         ->name('api.icare.proxy.test');
 });
 
+Route::match(['post'], '/dev/rawat-jalan/pemeriksaan-ralan', [RawatJalanController::class, 'storePemeriksaanRalan'])
+    ->withoutMiddleware([
+        'auth',
+        'auth:web',
+        'auth:sanctum',
+        \Illuminate\Auth\Middleware\Authenticate::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ])
+    ->name('api.dev.rawat-jalan.pemeriksaan-ralan.store');
+
+Route::match(['put', 'post'], '/dev/rawat-jalan/pemeriksaan-ralan/update', [RawatJalanController::class, 'updatePemeriksaanRalan'])
+    ->withoutMiddleware([
+        'auth',
+        'auth:web',
+        'auth:sanctum',
+        \Illuminate\Auth\Middleware\Authenticate::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ])
+    ->name('api.dev.rawat-jalan.pemeriksaan-ralan.update');
+
+Route::post('/dev/bootstrap/reg-periksa', function (Request $request) {
+    $noRawat = (string) ($request->input('no_rawat') ?: '2025/04/26/000001');
+    $nowDate = now()->toDateString();
+    $nowTime = now()->format('H:i:s');
+    $kdPjInput = strtoupper((string) ($request->input('kd_pj') ?: 'A09'));
+    \Illuminate\Support\Facades\DB::table('reg_periksa')->updateOrInsert(
+        ['no_rawat' => $noRawat],
+        [
+            'no_reg' => '001',
+            'tgl_registrasi' => $nowDate,
+            'jam_reg' => $nowTime,
+            'kd_dokter' => 'D0000004',
+            'no_rkm_medis' => '000006',
+            'kd_poli' => 'U0003',
+            'p_jawab' => '-',
+            'almt_pj' => '-',
+            'hubunganpj' => 'DIRI SENDIRI',
+            'biaya_reg' => 10000.0,
+            'stts' => 'Belum',
+            'stts_daftar' => 'Lama',
+            'status_lanjut' => 'Ralan',
+            'kd_pj' => $kdPjInput,
+            'umurdaftar' => 7,
+            'sttsumur' => 'Th',
+            'status_bayar' => 'Belum Bayar',
+            'status_poli' => 'Baru',
+            'keputusan' => '-',
+        ]
+    );
+    return response()->json(['ok' => true, 'no_rawat' => $noRawat]);
+})->withoutMiddleware([
+    'auth',
+    'auth:web',
+    'auth:sanctum',
+    \Illuminate\Auth\Middleware\Authenticate::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+])->name('api.dev.bootstrap.reg-periksa');
+
+Route::post('/dev/pcare/pendaftaran', [\App\Http\Controllers\Pcare\PcareController::class, 'addPendaftaran'])
+    ->withoutMiddleware([
+        'auth',
+        'auth:web',
+        'auth:sanctum',
+        \Illuminate\Auth\Middleware\Authenticate::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ])
+    ->name('api.dev.pcare.pendaftaran.store');
+
+Route::get('/dev/pcare/pendaftaran/rawat/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'getPendaftaranByRawat'])
+    ->where('no_rawat', '.*')
+    ->withoutMiddleware([
+        'auth',
+        'auth:web',
+        'auth:sanctum',
+        \Illuminate\Auth\Middleware\Authenticate::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ])
+    ->name('api.dev.pcare.pendaftaran.by-rawat');
+
+Route::post('/dev/bootstrap/alergi-master', function (Request $request) {
+    $ensureJenis = function (int $kode, string $nama) {
+        if (\Illuminate\Support\Facades\Schema::hasTable('jenis_alergi')) {
+            try {
+                \Illuminate\Support\Facades\DB::table('jenis_alergi')->updateOrInsert(
+                    ['kode_jenis' => $kode],
+                    ['nama_jenis' => $nama]
+                );
+            } catch (\Throwable $e) {}
+        }
+    };
+    $ensureJenis(1, 'Makanan');
+    $ensureJenis(2, 'Udara');
+    $ensureJenis(3, 'Obat');
+
+    if (\Illuminate\Support\Facades\Schema::hasTable('data_alergi')) {
+        $code = (string) ($request->input('kd_alergi') ?: 'ALG01');
+        $name = (string) ($request->input('nm_alergi') ?: 'Penicillin');
+        $kodeJenis = (int) ($request->input('kode_jenis') ?: 3);
+        try {
+            \Illuminate\Support\Facades\DB::table('data_alergi')->updateOrInsert(
+                ['kd_alergi' => $code],
+                ['nm_alergi' => $name, 'kode_jenis' => $kodeJenis]
+            );
+        } catch (\Throwable $e) {}
+    }
+    return response()->json(['ok' => true]);
+})->withoutMiddleware([
+    'auth',
+    'auth:web',
+    'auth:sanctum',
+    \Illuminate\Auth\Middleware\Authenticate::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+])->name('api.dev.bootstrap.alergi-master');
+
+Route::get('/dev/debug/alergi-pasien', function (Request $request) {
+    $noRM = (string) $request->query('no_rkm_medis', '');
+    $rows = \Illuminate\Support\Facades\DB::table('alergi_pasien')
+        ->where('no_rkm_medis', $noRM)
+        ->orderBy('kd_alergi')
+        ->get();
+    return response()->json(['count' => $rows->count(), 'data' => $rows]);
+})->withoutMiddleware([
+    'auth',
+    'auth:web',
+    'auth:sanctum',
+    \Illuminate\Auth\Middleware\Authenticate::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+])->name('api.dev.debug.alergi-pasien');
+
+Route::get('/dev/debug/pemeriksaan-ralan', function (Request $request) {
+    $noRawat = (string) $request->query('no_rawat', '');
+    $rows = \Illuminate\Support\Facades\DB::table('pemeriksaan_ralan')
+        ->where('no_rawat', $noRawat)
+        ->orderByDesc('tgl_perawatan')
+        ->orderByDesc('jam_rawat')
+        ->get();
+    return response()->json(['count' => $rows->count(), 'data' => $rows]);
+})->withoutMiddleware([
+    'auth',
+    'auth:web',
+    'auth:sanctum',
+    \Illuminate\Auth\Middleware\Authenticate::class,
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+])->name('api.dev.debug.pemeriksaan-ralan');
+
 // Public endpoint: SIP Pegawai yang akan habis dalam 30 hari (sanitized fields)
 Route::get('/public/sip-pegawai/expiring', function () {
     $now = now()->startOfDay();

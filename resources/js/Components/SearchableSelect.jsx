@@ -293,6 +293,7 @@ const REFERENSI_CONFIG = {
             return list.map((it) => ({
                 value: it?.kd_alergi || it?.kdAlergi || it?.kode || "",
                 label: it?.nm_alergi || it?.nmAlergi || it?.nama || "",
+                kode_jenis: it?.kode_jenis ?? null,
             }));
         },
     },
@@ -848,7 +849,7 @@ const SearchableSelect = ({
 
     // Get selected option display text
     const getSelectedDisplay = () => {
-        if (!value) return placeholder;
+        if (!value) return defaultDisplay || placeholder;
         // Jika nilai sudah ada tapi opsi belum dimuat (mis. sumber remote belum dibuka),
         // tampilkan defaultDisplay (jika disediakan) sebagai fallback agar "textbox" tetap menampilkan label.
         if (!selectedOption) {
@@ -1081,9 +1082,7 @@ const SearchableSelect = ({
                     } ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800" : ""} ${className}`}
             >
                 <span
-                    className={
-                        displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")
-                    }
+                    className={`${displayClassName || (value ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")} flex-1 min-w-0 truncate`}
                 >
                     {getSelectedDisplay()}
                 </span>
