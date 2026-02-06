@@ -54,6 +54,12 @@ export default function Resep({
     const [penyerahanLoading, setPenyerahanLoading] = useState({});
     const [activeTab, setActiveTab] = useState("resep"); // "resep" or "resep-racikan"
 
+    // State untuk Aturan Pakai Autocomplete
+    const [aturanOptions, setAturanOptions] = useState([]);
+    const [searchAturan, setSearchAturan] = useState({});
+    const [loadingAturan, setLoadingAturan] = useState(false);
+    const [showDropdownAturan, setShowDropdownAturan] = useState({});
+
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
         if (!kdPoli) {
@@ -81,6 +87,34 @@ export default function Resep({
             setObatOptions([]);
         } finally {
             setLoadingObat(false);
+        }
+    };
+
+    // Fetch aturan pakai dari API
+    const fetchAturan = async (search = "") => {
+        setLoadingAturan(true);
+        try {
+            const response = await axios.get("/api/aturan-pakai", {
+                params: {
+                    search,
+                    limit: 20,
+                },
+                withCredentials: true,
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            });
+            if (response?.data?.success) {
+                setAturanOptions(response.data.data || []);
+            } else {
+                setAturanOptions([]);
+            }
+        } catch (error) {
+            console.error("Error fetching aturan pakai:", error);
+            setAturanOptions([]);
+        } finally {
+            setLoadingAturan(false);
         }
     };
 
@@ -315,6 +349,46 @@ export default function Resep({
 
         return () => clearTimeout(timeoutId);
     }, [searchObat]);
+
+    // Effect untuk debounce search aturan pakai
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const activeSearchTerms = Object.values(searchAturan).filter(
+                (term) => term && term.length > 0
+            );
+
+            if (activeSearchTerms.length > 0) {
+                // Ambil term terakhir yang sedang diketik
+                const latestSearch =
+                    activeSearchTerms[activeSearchTerms.length - 1];
+                if (latestSearch.length >= 2) {
+                    fetchAturan(latestSearch);
+                } else if (latestSearch.length === 0) {
+                    fetchAturan();
+                }
+            } else {
+                fetchAturan();
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchAturan]);
+
+    // Effect untuk handle click outside dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest(".dropdown-container")) {
+                setShowDropdownAturan({});
+                // Juga tutup dropdown obat jika ada
+                setShowDropdown({});
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // Load obat saat dropdown dibuka
     useEffect(() => {
@@ -1045,21 +1119,81 @@ export default function Resep({
                                 </div>
 
                                 {/* Aturan Pakai */}
-                                <div className="col-span-4">
+                                <div className="col-span-4 relative dropdown-container">
                                     <input
                                         type="text"
                                         value={item.aturanPakai}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
                                             updateItem(
                                                 item.id,
                                                 "aturanPakai",
                                                 e.target.value
-                                            )
-                                        }
+                                            );
+                                            setSearchAturan((prev) => ({
+                                                ...prev,
+                                                [item.id]: e.target.value,
+                                            }));
+                                            setShowDropdownAturan((prev) => ({
+                                                ...prev,
+                                                [item.id]: true,
+                                            }));
+                                        }}
+                                        onFocus={() => {
+                                            setShowDropdownAturan((prev) => ({
+                                                ...prev,
+                                                [item.id]: true,
+                                            }));
+                                            if (!searchAturan[item.id]) {
+                                                fetchAturan();
+                                            }
+                                        }}
                                         className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
                                         placeholder="Aturan Pakai"
                                         required
                                     />
+
+                                    {/* Dropdown Aturan Pakai */}
+                                    {showDropdownAturan[item.id] && (
+                                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                            {loadingAturan ? (
+                                                <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                                                    Memuat...
+                                                </div>
+                                            ) : aturanOptions.length === 0 ? (
+                                                <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                                                    Tidak ada hasil
+                                                </div>
+                                            ) : (
+                                                aturanOptions.map(
+                                                    (opt, optIndex) => (
+                                                        <button
+                                                            type="button"
+                                                            key={`${opt.aturan}-${optIndex}`}
+                                                            onClick={() => {
+                                                                updateItem(
+                                                                    item.id,
+                                                                    "aturanPakai",
+                                                                    opt.aturan
+                                                                );
+                                                                setShowDropdownAturan(
+                                                                    (prev) => ({
+                                                                        ...prev,
+                                                                        [item.id]:
+                                                                            false,
+                                                                    })
+                                                                );
+                                                            }}
+                                                            className="w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0"
+                                                        >
+                                                            <div className="font-medium text-xs text-gray-900 dark:text-white">
+                                                                {opt.aturan}
+                                                            </div>
+                                                        </button>
+                                                    )
+                                                )
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
