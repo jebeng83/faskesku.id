@@ -1059,7 +1059,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                 searchPlaceholder="Cari diagnosa..."
                 displayKey="label"
                 valueKey="key"
-                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
+                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
                 dropdownClassName="bg-[oklch(98.5%_0_0)] border-[oklch(29.1%_0.149_302.717_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
                 searchInputClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(45.2%_0.211_324.591_/_0.5)] focus:ring-[oklch(84.1%_0_238_128.85)] focus:border-[oklch(45.2%_0.211_324.591)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
                 optionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
