@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import CariPermintaan from "@/Pages/farmasi/CariPermintaan";
@@ -257,7 +258,7 @@ export default function PermintaanObat() {
     }, [kdBangsalAsal, nmBangsalAsal, kdBangsalTujuan, nmBangsalTujuan]);
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Permintaan Obat" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Permintaan Obat" />
             <div className="space-y-6">
                 <div className="px-6 py-4">
@@ -558,6 +559,6 @@ export default function PermintaanObat() {
                     onSelect={handleSelectPermintaan}
                 />
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

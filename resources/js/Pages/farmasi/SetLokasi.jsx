@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 import { MapPin, Save, Database, Warehouse, CheckCircle2, Globe, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -90,7 +91,7 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
     }, [current, bangsal]);
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Pengaturan Lokasi Farmasi" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Pengaturan Lokasi Farmasi" />
 
             <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950/50 p-6 flex items-center justify-center" aria-busy={processing}>
@@ -408,6 +409,6 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
                     </div>
                 </motion.div>
             </Modal>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

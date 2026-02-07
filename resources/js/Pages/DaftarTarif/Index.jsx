@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
-import SidebarLaboratorium from '@/Layouts/SidebarLaboratorium';
-import SidebarRalan from '@/Layouts/SidebarRalan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarDaftarTarifMenu from '@/Components/SidebarDaftarTarifMenu';
 import laboratoriumRoutes from '@/routes/daftar-tarif/laboratorium';
 
 // Simple Badge component
@@ -3120,16 +3119,7 @@ export default function Index({ title, data, category, search, filters, poliklin
         { id: 'kamar', name: 'Kamar', render: renderKamarTable }
     ];
 
-    // Tentukan layout berdasarkan category
-    const useLaboratoriumLayout = category === 'laboratorium' || activeTab === 'laboratorium';
-    const useRalanLayout = category === 'rawat-jalan' || activeTab === 'rawat-jalan';
     
-    let Layout = AppLayout;
-    if (useLaboratoriumLayout) {
-        Layout = SidebarLaboratorium;
-    } else if (useRalanLayout) {
-        Layout = SidebarRalan;
-    }
 
     const content = (
         <>
@@ -3368,8 +3358,8 @@ export default function Index({ title, data, category, search, filters, poliklin
     );
 
     return (
-        <Layout title={title}>
+        <LayoutUtama title={title} left={<SidebarDaftarTarifMenu title="Master Tarif" />}>
             {content}
-        </Layout>
+        </LayoutUtama>
     );
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarKeuanganMenu from '@/Components/SidebarKeuanganMenu';
 
 // Utility: format currency IDR
 const formatIDR = (n) => {
@@ -190,6 +191,7 @@ export default function CashFlow() {
   const totals = data?.totals || { kas_awal: 0, penerimaan: 0, pengeluaran: 0, kas_akhir: 0 };
 
   return (
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <motion.div variants={itemVariants} className="mb-6">
@@ -297,6 +299,7 @@ export default function CashFlow() {
 
         
       </motion.div>
+      </LayoutUtama>
   );
 }
 
@@ -354,4 +357,4 @@ function SectionCard({ title, subtitle, items = [], positive = false, negative =
 }
 
 // Gunakan layout SidebarKeuangan agar konten tampil di area utama
-CashFlow.layout = (page) => <SidebarKeuangan title="Keuangan" children={page} />;
+ 

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PageHeader = ({ title, meta, right }) => (
@@ -137,7 +138,7 @@ export default function RiwayatTransaksiGudang() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Riwayat Transaksi Gudang" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Riwayat Transaksi Gudang" />
             <div className="space-y-6">
                 <PageHeader
@@ -376,6 +377,6 @@ export default function RiwayatTransaksiGudang() {
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

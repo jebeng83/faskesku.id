@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Head, Link, useForm, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 import SelectWithAdd from "@/Components/SelectWithAdd";
 import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import SearchableSelect from "@/Components/SearchableSelect";
@@ -714,9 +715,9 @@ export default function Create() {
     };
 
     return (
-        <LanjutanRegistrasiLayout
+        <LayoutUtama
             title="Registrasi Pasien"
-            menuConfig={{ activeTab: "pasien" }}
+            left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "pasien" }} />}
         >
             <Head title="Tambah Pasien" />
             <PatientCreateModal
@@ -2565,6 +2566,6 @@ export default function Create() {
                     </div>
                 </motion.div>
             )}
-        </LanjutanRegistrasiLayout>
+        </LayoutUtama>
     );
 }

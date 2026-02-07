@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 import axios from "axios";
 
 export default function Lanjutan() {
@@ -234,11 +235,9 @@ export default function Lanjutan() {
   };
 
   return (
-    <LanjutanRegistrasiLayout
+    <LayoutUtama
       title="Registrasi Pasien"
-      menuConfig={{
-        activeTab,
-      }}
+      left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab }} />}
     >
       <Head title="Lanjutan Registrasi Pasien" />
 
@@ -303,6 +302,6 @@ export default function Lanjutan() {
           {renderActiveTabContent()}
         </AnimatePresence>
       </motion.div>
-    </LanjutanRegistrasiLayout>
+    </LayoutUtama>
   );
 }

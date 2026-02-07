@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
@@ -1561,7 +1562,7 @@ const DaftarPermintaanResep = () => {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Daftar Permintaan Resep" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Daftar Permintaan Resep" />
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -3428,7 +3429,7 @@ const DaftarPermintaanResep = () => {
                     </div>
                 )}
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 };
 

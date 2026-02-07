@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 export default function ResepObat() {
     const [search, setSearch] = useState('');
@@ -160,7 +161,7 @@ export default function ResepObat() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Resep Obat" left={<SidebarFarmasiMenu title="Farmasi" /> }>
             <Head title="Resep Obat" />
 
             <div className="space-y-6 p-6">
@@ -390,6 +391,6 @@ export default function ResepObat() {
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

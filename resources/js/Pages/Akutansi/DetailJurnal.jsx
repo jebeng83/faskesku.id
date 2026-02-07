@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import axios from "axios";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import { Plus, RefreshCcw, Search } from "lucide-react";
 
 const Card = ({ title, children, right }) => (
@@ -208,7 +209,7 @@ export default function DetailJurnalPage() {
     };
 
     return (
-        <div>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Detail Jurnal" />
             <div className="space-y-6">
                 <Card
@@ -642,10 +643,8 @@ export default function DetailJurnalPage() {
                     </Card>
                 )}
             </div>
-        </div>
+        </LayoutUtama>
     );
 }
 
-DetailJurnalPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

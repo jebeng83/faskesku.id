@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import LanjutanRegistrasiSidebar from '@/Components/LanjutanRegistrasiSidebar';
 import { User, Edit, Info, Phone, FileText } from "lucide-react";
 
 export default function Show({ patient }) {
@@ -67,7 +68,7 @@ export default function Show({ patient }) {
         return () => { isMounted = false; };
     }, [patient.perusahaan_pasien, patient.suku_bangsa, patient.bahasa_pasien, patient.cacat_fisik]);
     return (
-        <LanjutanRegistrasiLayout title="Registrasi Pasien" menuConfig={{ activeTab: 'pasien' }}>
+        <LayoutUtama title="Registrasi Pasien" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: 'pasien' }} />}> 
             <Head title={`Detail Pasien - ${patient.nm_pasien}`} />
             <AnimatePresence>
                 {isOpen && (
@@ -313,6 +314,6 @@ export default function Show({ patient }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </LanjutanRegistrasiLayout>
+        </LayoutUtama>
     );
 }

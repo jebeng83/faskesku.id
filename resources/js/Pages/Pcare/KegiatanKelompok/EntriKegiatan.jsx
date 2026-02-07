@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 
 const containerVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -2137,10 +2138,10 @@ export default function EntriKegiatan() {
 }
 
 EntriKegiatan.layout = (page) => (
-    <LanjutanRegistrasiLayout
+    <LayoutUtama
         title="Kegiatan Kelompok PCare"
-        menuConfig={{ activeTab: "keg_kelompok_pcare" }}
+        left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "keg_kelompok_pcare" }} />}
     >
         {page}
-    </LanjutanRegistrasiLayout>
+    </LayoutUtama>
 );

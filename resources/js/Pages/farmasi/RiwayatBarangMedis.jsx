@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import SearchableSelect from "@/Components/SearchableSelect";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PageHeader = ({ title, meta, right }) => (
@@ -174,7 +175,7 @@ export default function RiwayatBarangMedis() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Riwayat Barang Medis" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Riwayat Barang Medis" />
             <div className="space-y-6">
                 <PageHeader title="Riwayat Barang Medis" meta={metaText} />
@@ -500,6 +501,6 @@ export default function RiwayatBarangMedis() {
                     </table>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

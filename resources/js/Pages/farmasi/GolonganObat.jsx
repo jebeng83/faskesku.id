@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 import usePermission from '@/hooks/usePermission';
 
 const PageHeader = () => (
@@ -145,6 +146,7 @@ export default function GolonganObatPage() {
   };
 
   return (
+    <LayoutUtama title="Golongan Obat" left={<SidebarFarmasiMenu title="Farmasi" /> }>
     <div>
       <Head title="Golongan Obat" />
       <div className="space-y-6">
@@ -272,7 +274,8 @@ export default function GolonganObatPage() {
         <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
       </div>
     </div>
+    </LayoutUtama>
   );
 }
 
-GolonganObatPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
+ 

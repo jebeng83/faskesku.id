@@ -388,7 +388,7 @@ const Footer = React.memo(function Footer() {
         { label: "Pendaftaran Pasien", href: "/registration/lanjutan" },
         { label: "Scan QR Kredensial", href: resolveScanWhatsAppUrl() },
         { label: "Perpustakaan (Dokumen)", href: "/docs" },
-        { label: "Berita Sistem", href: "/news" },
+        { label: "Berita Sistem", href: "/layout-utama" },
         { label: "Kehidupan Faskes", href: "/profile" },
         { label: "Map Faskes", href: "/master-data" },
     ];

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Head } from '@inertiajs/react';
-import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarKeuanganMenu from '@/Components/SidebarKeuanganMenu';
 import SearchableSelect from '@/Components/SearchableSelect';
 import { Info } from 'lucide-react';
 
@@ -162,7 +163,7 @@ export default function AkunPiutangPage() {
   }, [form.kd_rek, rekOptions]);
 
   return (
-    <div>
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Keuangan - Akun Piutang" />
       <div className="space-y-6">
         {/* Card 1: Form Input */}
@@ -323,8 +324,8 @@ export default function AkunPiutangPage() {
           </div>
         </Card>
       </div>
-    </div>
+    </LayoutUtama>
   );
 }
 
-AkunPiutangPage.layout = (page) => <SidebarKeuangan title="Keuangan" children={page} />;
+ 

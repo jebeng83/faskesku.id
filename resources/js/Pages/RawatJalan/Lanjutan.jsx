@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
 import CpptSoap from "./components/CpptSoap";
 import Resep from "./components/Resep";
@@ -744,12 +745,9 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     }, [autoSaveStatus]);
 
     return (
-        <LanjutanRalanLayout
-            title="Lanjutan Rawat Jalan"
-            menuConfig={{
-                activeTab,
-                onTabChange: handleTabChange,
-            }}
+        <LayoutUtama
+            title="Rawat Jalan"
+            left={<LanjutanRalanSidebar title="Lanjutan Rawat Jalan" context="ralan" menuConfig={{ activeTab, onTabChange: handleTabChange }} />}
         >
             <Head
                 title={`Lanjutan Rawat Jalan${params?.no_rawat ? " - " + params.no_rawat : ""
@@ -1653,6 +1651,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
                 </div>
             )}
-        </LanjutanRalanLayout>
+        </LayoutUtama>
     );
 }

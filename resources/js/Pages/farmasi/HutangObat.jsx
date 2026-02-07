@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import axios from "axios";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 function currency(n) {
@@ -175,7 +176,7 @@ export default function HutangObat() {
     }, [akunBayar]);
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Hutang Obat" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Hutang Obat" />
             <div className="p-6">
                 <div className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6">
@@ -685,6 +686,6 @@ export default function HutangObat() {
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

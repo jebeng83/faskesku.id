@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import SearchableSelect from "@/Components/SearchableSelect";
 
 export default function SisaStok() {
@@ -144,7 +145,7 @@ export default function SisaStok() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Sisa Stok" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Sisa Stok" />
             <div className="space-y-6">
                 <div className="px-6 py-4 mb-6 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 rounded-lg">
@@ -377,6 +378,6 @@ export default function SisaStok() {
                     </div>
                 )}
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

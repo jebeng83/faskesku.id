@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Head, Link } from "@inertiajs/react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Wallet,
@@ -241,7 +242,7 @@ export default function AkutansiHome() {
     const current = tabs.find((t) => t.key === activeTab);
 
     return (
-        <SidebarKeuangan title="Keuangan">
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Akutansi" />
             <div className="px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-6">
@@ -351,6 +352,6 @@ export default function AkutansiHome() {
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </SidebarKeuangan>
+        </LayoutUtama>
     );
 }

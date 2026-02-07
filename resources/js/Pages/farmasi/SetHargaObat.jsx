@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -287,7 +288,7 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
     }, [data.kode_brng, activeTab]);
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Pengaturan Harga Obat" left={<SidebarFarmasiMenu title="Farmasi" /> }>
             <Head title="Pengaturan Harga Obat" />
             <div className="p-6">
                 <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
@@ -650,6 +651,6 @@ export default function SetHargaObat({ hargaObat, schema, penjualanUmum, penjual
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

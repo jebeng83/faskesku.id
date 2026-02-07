@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarLaboratorium from "@/Layouts/SidebarLaboratorium";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarLaboratoriumMenu from "@/Components/SidebarLaboratoriumMenu";
 import Alert from "@/Components/Alert";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { ArrowLeft, Printer, ClipboardList, Save, X } from "lucide-react";
@@ -393,7 +394,7 @@ export default function Show({
 	// Render berdasarkan mode
 	if (mode === 'input-hasil' && permintaanLab) {
 		return (
-			<SidebarLaboratorium title="Input Hasil Pemeriksaan">
+			<LayoutUtama title="Input Hasil Pemeriksaan" left={<SidebarLaboratoriumMenu title="Laboratorium" />}>
 				<Head title={`Input Hasil - ${permintaanLab.noorder}`} />
 
 				{showAlert && (
@@ -806,7 +807,7 @@ export default function Show({
 					</form>
 				</motion.div>
 			</div>
-		</SidebarLaboratorium>
+        </LayoutUtama>
 	);
 	}
 
@@ -815,7 +816,7 @@ export default function Show({
 	const isPermintaanMode = !!permintaanLab;
 
 	return (
-		<SidebarLaboratorium title={isPermintaanMode ? "Detail Permintaan Laboratorium" : "Detail Pemeriksaan Laboratorium"}>
+		<LayoutUtama title={isPermintaanMode ? "Detail Permintaan Laboratorium" : "Detail Pemeriksaan Laboratorium"} left={<SidebarLaboratoriumMenu title="Laboratorium" />}>
 			<Head title={`Detail ${isPermintaanMode ? 'Permintaan' : 'Pemeriksaan'} - ${dataSource?.noorder || dataSource?.no_rawat}`} />
 
 			{showAlert && (
@@ -1317,6 +1318,6 @@ export default function Show({
 					)}
 				</motion.div>
 			</div>
-		</SidebarLaboratorium>
+		</LayoutUtama>
 	);
 }

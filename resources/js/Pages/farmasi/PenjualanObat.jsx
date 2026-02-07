@@ -60,7 +60,7 @@ export default function PenjualanObat({ auth, bangsal = [], _petugasList = [], a
         status: 'Lunas',
         kd_bangsal: bangsal[0]?.kd_bangsal || '',
         kd_rek: akunBayar[0]?.kd_rek || '',
-        nama_bayar: akunBayar[0]?.nm_rek || '',
+        nama_bayar: akunBayar[0]?.nama_bayar || '',
         bayar: 0,
     });
 
@@ -276,11 +276,7 @@ export default function PenjualanObat({ auth, bangsal = [], _petugasList = [], a
                 alert('Transaksi Berhasil Disimpan!');
                 fetchNewNota();
                 fetchRiwayat();
-                try {
-                    window.open(route('farmasi.penjualan.print', { nota_jual: nota }), '_blank');
-                } catch (err) {
-                    console.error('Gagal membuka halaman cetak:', err);
-                }
+                await openPrintNota(nota);
             },
             onError: (errors) => {
                 console.error('Submission errors:', errors);
@@ -289,8 +285,25 @@ export default function PenjualanObat({ auth, bangsal = [], _petugasList = [], a
         });
     };
 
+    const openPrintNota = async (nota) => {
+        const url = route('farmasi.penjualan.print', { nota_jual: nota });
+        for (let i = 0; i < 4; i++) {
+            try {
+                await axios.get(url);
+                break;
+            } catch (_err) {
+                await new Promise((r) => setTimeout(r, 250));
+            }
+        }
+        try {
+            window.open(url, '_blank');
+        } catch (err) {
+            console.error('Gagal membuka halaman cetak:', err);
+        }
+    };
+
     const handlePrint = (nota) => {
-        window.open(route('farmasi.penjualan.print', { nota_jual: nota }), '_blank');
+        openPrintNota(nota);
     };
 
     const formatCurrency = (val) => {
@@ -350,6 +363,7 @@ export default function PenjualanObat({ auth, bangsal = [], _petugasList = [], a
                                     <InputLabel value="No. Nota" className="text-xs font-bold uppercase text-gray-400 mb-1" />
                                     <TextInput
                                         value={data.nota_jual}
+                                        readOnly
                                         onChange={e => setData('nota_jual', e.target.value)}
                                         className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-emerald-500"
                                     />
@@ -609,12 +623,12 @@ export default function PenjualanObat({ auth, bangsal = [], _petugasList = [], a
                                             value={data.kd_rek}
                                             onChange={e => {
                                                 const selected = akunBayar.find(a => a.kd_rek === e.target.value);
-                                                setData(prev => ({ ...prev, kd_rek: e.target.value, nama_bayar: selected?.nm_rek || '' }));
+                                                setData(prev => ({ ...prev, kd_rek: e.target.value, nama_bayar: selected?.nama_bayar || '' }));
                                             }}
                                             className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-emerald-500 py-2.5 px-3 text-sm"
                                         >
                                             {uniqueAkunBayar.map(a => (
-                                                <option key={a.kd_rek} value={a.kd_rek}>{a.nm_rek}</option>
+                                                <option key={a.kd_rek} value={a.kd_rek}>{a.nama_bayar}</option>
                                             ))}
                                         </select>
                                     </div>

@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion } from "framer-motion";
-import SidebarLaboratorium from "@/Layouts/SidebarLaboratorium";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarLaboratoriumMenu from "@/Components/SidebarLaboratoriumMenu";
 import ResponsiveTable from "@/Components/ResponsiveTable";
 import ActionDropdown from "@/Components/ActionDropdown";
 import Pagination from "@/Components/Pagination";
@@ -920,7 +921,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         : [];
 
     return (
-        <SidebarLaboratorium title="Permintaan Laboratorium">
+        <LayoutUtama title="Permintaan Laboratorium" left={<SidebarLaboratoriumMenu title="Laboratorium" />}>
             <Head title="Permintaan Laboratorium" />
 
             {showAlert && (
@@ -1344,6 +1345,6 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                     </div>
                 </motion.div>
             </Modal>
-        </SidebarLaboratorium>
+        </LayoutUtama>
     );
 }

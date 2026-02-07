@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
-import SidebarRalan from '@/Layouts/SidebarRalan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import LanjutanRalanSidebar from '@/Components/LanjutanRalanSidebar';
 import { motion } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import axios from 'axios';
@@ -343,7 +344,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     };
 
     return (
-        <SidebarRalan>
+        <LayoutUtama
+            title="Rawat Jalan"
+            left={<LanjutanRalanSidebar title="Rawat Jalan" context="ralan" />}
+        >
             <Head title="Data Rawat Jalan" />
 
             <div className="px-4 sm:px-6 lg:px-8">
@@ -718,6 +722,6 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                     </motion.div>
                 )}
             </div>
-        </SidebarRalan>
+        </LayoutUtama>
     );
 }

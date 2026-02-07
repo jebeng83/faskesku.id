@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { Info, Save, RefreshCw } from "lucide-react";
 
@@ -567,7 +568,7 @@ export default function PengaturanRekeningPage() {
     );
 
     return (
-        <div>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Pengaturan Rekening/COA" />
 
             <div className="space-y-6">
@@ -671,10 +672,8 @@ export default function PengaturanRekeningPage() {
                     </div>
                 </Card>
             </div>
-        </div>
+        </LayoutUtama>
     );
 }
 
-PengaturanRekeningPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

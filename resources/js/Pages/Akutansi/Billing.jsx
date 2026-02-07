@@ -22,7 +22,8 @@ import {
     RefreshCw,
     CreditCard,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import SearchableSelect from "@/Components/SearchableSelect";
 import {
     todayDateString,
@@ -1377,6 +1378,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     }, [activeTab, noRawat, items.length]); // Trigger saat tab/noRawat/items berubah
 
     return (
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
         <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -2038,12 +2040,11 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 )}
             </AnimatePresence>
         </motion.div>
+        </LayoutUtama>
     );
 }
 
-BillingPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan">{page}</SidebarKeuangan>
-);
+ 
 
 /**
  * Tab: Pembayaran

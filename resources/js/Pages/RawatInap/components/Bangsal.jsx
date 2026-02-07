@@ -9,7 +9,8 @@ import Modal from "@/Components/Modal";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/Components/ui/Table";
 import toast from "@/tools/toast";
 import { Head } from "@inertiajs/react";
-import SidebarRawatInap from "@/Layouts/SidebarRawatInap";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarRawatInapMenu from "@/Components/SidebarRawatInapMenu";
 
 const variants = {
   container: { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } },
@@ -97,7 +98,7 @@ export default function Bangsal() {
   }, []);
 
   return (
-    <SidebarRawatInap title="Bangsal">
+    <LayoutUtama title="Bangsal" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
       <Head title="Bangsal" />
       <div className="space-y-4">
       <motion.div
@@ -319,6 +320,6 @@ export default function Bangsal() {
         </div>
       </Modal>
       </div>
-    </SidebarRawatInap>
+    </LayoutUtama>
   );
 }

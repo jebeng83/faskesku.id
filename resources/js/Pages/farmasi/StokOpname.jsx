@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Head, router } from "@inertiajs/react";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { todayDateString } from "@/tools/datetime";
 import { Loader2, Save, Search, Plus, Trash2, X } from "lucide-react";
 import axios from "axios";
@@ -477,7 +478,7 @@ export default function StokOpname() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Stok Opname" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Stok Opname" />
             <motion.div
                 className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
@@ -1517,6 +1518,6 @@ export default function StokOpname() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

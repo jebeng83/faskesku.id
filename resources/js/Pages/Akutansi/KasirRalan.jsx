@@ -18,7 +18,8 @@ import {
     ChevronDown,
     ChevronUp,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import { todayDateString, getAppTimeZone } from "@/tools/datetime";
 
 const containerVariants = {
@@ -324,6 +325,7 @@ export default function KasirRalanPage() {
     const statusBayarOptions = ["Semua", "Sudah Bayar", "Belum Bayar"];
 
     return (
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
         <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -848,9 +850,8 @@ export default function KasirRalanPage() {
                 </div>
             </motion.div>
         </motion.div>
+        </LayoutUtama>
     );
 }
 
-KasirRalanPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan">{page}</SidebarKeuangan>
-);
+ 

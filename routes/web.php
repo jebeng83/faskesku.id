@@ -626,6 +626,13 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    // Layout Utama: navbar + 2 panel (10:90)
+    Route::get('/layout-utama', function () {
+        return Inertia::render('LayoutUtama', [
+            'title' => 'Layout Utama',
+        ]);
+    })->name('layout-utama');
+
     Route::prefix('api')->group(function () {
         Route::get('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'index'])->name('api.racikan-template.index');
         Route::post('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'store'])->name('api.racikan-template.store');

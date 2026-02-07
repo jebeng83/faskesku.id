@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import SearchableSelect from "@/Components/SearchableSelect";
 import {
     Calendar,
@@ -148,7 +149,7 @@ export default function RekeningTahunPage() {
     };
 
     return (
-        <div>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Rekening Tahun" />
 
             <motion.div
@@ -471,10 +472,8 @@ export default function RekeningTahunPage() {
                     </div>
                 </Card>
             </motion.div>
-        </div>
+        </LayoutUtama>
     );
 }
 
-RekeningTahunPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

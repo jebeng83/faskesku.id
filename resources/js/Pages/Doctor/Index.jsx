@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Head } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 import DoctorModal from "@/Components/DoctorModal";
 import DoctorDetail from "@/Components/DoctorDetail";
 import { Plus, Search, Pencil, Trash, Stethoscope } from "lucide-react";
@@ -120,9 +121,9 @@ useEffect(() => {
 	};
 
   return (
-    <LanjutanRegistrasiLayout
+    <LayoutUtama
       title="Manajemen Dokter"
-      menuConfig={{ activeTab: "dokter" }}
+      left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "dokter" }} />}
     >
       <Head title="Manajemen Dokter" />
 
@@ -351,6 +352,6 @@ useEffect(() => {
           />
         )}
       </AnimatePresence>
-    </LanjutanRegistrasiLayout>
+    </LayoutUtama>
   );
 }

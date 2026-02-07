@@ -3,7 +3,8 @@ import axios from "axios";
 import { createPortal } from "react-dom";
 import { Head, Link, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 import Alert from "@/Components/Alert";
 import { Toaster } from "@/Components/ui";
 import PatientEditModal from "@/Components/PatientEditModal";
@@ -467,9 +468,9 @@ export default function Index({
 	}, [openDropdown, dropdownRect]);
 
     return (
-        <LanjutanRegistrasiLayout
+        <LayoutUtama
             title="Registrasi Pasien"
-            menuConfig={{ activeTab: "pasien" }}
+            left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "pasien" }} />}
         >
             <Head title="Data Pasien" />
 
@@ -1259,6 +1260,6 @@ export default function Index({
 					onSuccess={handleEditSuccess}
 				/>
 			)}
-        </LanjutanRegistrasiLayout>
+        </LayoutUtama>
     );
 }

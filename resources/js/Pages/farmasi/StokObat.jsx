@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 export default function StokObat() {
     const [search, setSearch] = useState('');
@@ -105,7 +106,7 @@ export default function StokObat() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Stok Obat" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Stok Obat" />
 
             <div className="space-y-6 p-6">
@@ -317,6 +318,6 @@ export default function StokObat() {
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

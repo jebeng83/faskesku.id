@@ -11,7 +11,8 @@ import {
     Info,
     Loader2,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import {
     Table,
     TableHeader,
@@ -138,8 +139,9 @@ export default function BukuBesarPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-64px)] p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Akutansi • Buku Besar" />
+            <div className="min-h-[calc(100vh-64px)] p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
 
             {/* Container variants for staggered entrance */}
             {(() => {
@@ -585,11 +587,9 @@ export default function BukuBesarPage() {
                     </motion.div>
                 );
             })()}
-        </div>
+            </div>
+        </LayoutUtama>
     );
 }
 
-// Gunakan layout SidebarKeuangan agar konsisten dengan modul Akutansi
-BukuBesarPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

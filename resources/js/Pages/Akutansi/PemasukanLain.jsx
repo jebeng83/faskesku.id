@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import Modal from "@/Components/Modal";
 import { Plus, Search as SearchIcon, User, ClipboardList, Wallet, Pencil, Trash2, XCircle } from "lucide-react";
 
@@ -215,7 +216,7 @@ export default function PemasukanLainPage() {
   };
 
   return (
-    <SidebarKeuangan>
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Keuangan - Pemasukan Lain" />
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="px-4 md:px-6 lg:px-12 xl:px-16 py-6 space-y-6">
         <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
@@ -551,6 +552,6 @@ export default function PemasukanLainPage() {
           )}
         </AnimatePresence>
       </motion.div>
-    </SidebarKeuangan>
+    </LayoutUtama>
   );
 }

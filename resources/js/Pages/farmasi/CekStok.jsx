@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { Search as SearchIcon, RefreshCcw, PackageOpen, Printer } from "lucide-react";
@@ -243,7 +244,7 @@ export default function CekStok() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Cek Stok Obat" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Cek Stok Obat" />
             <div className="space-y-6">
                 <div className="px-6 py-4">
@@ -449,6 +450,6 @@ export default function CekStok() {
                     </div>
                 </motion.div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

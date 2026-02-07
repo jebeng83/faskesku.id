@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowPathIcon,
@@ -1787,7 +1788,7 @@ export default function Registration({
     };
 
     return (
-        <LanjutanRegistrasiLayout title="Pendaftaran Pasien" menuConfig={{ activeTab: "registrasi" }}>
+        <LayoutUtama title="Pendaftaran Pasien" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "registrasi" }} />}>
             <Head title="Pendaftaran Pasien" />
             <Toaster toasts={toasts} onRemove={removeToast} />
             <ConfirmationAlert
@@ -4887,6 +4888,6 @@ export default function Registration({
                     setFormData((prev) => ({ ...prev, kd_pj: newItem.kd_pj }));
                 }}
             />
-        </LanjutanRegistrasiLayout>
+        </LayoutUtama>
     );
 }

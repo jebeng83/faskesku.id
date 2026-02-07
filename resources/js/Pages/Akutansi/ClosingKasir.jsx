@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import Modal from "@/Components/Modal";
 import { Calendar, Clock, Plus, Pencil, Trash2, RefreshCw, CheckCircle2, AlertTriangle } from "lucide-react";
 
@@ -293,7 +294,7 @@ export default function ClosingKasirPage() {
   );
 
   return (
-    <SidebarKeuangan title="Keuangan">
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Akutansi - Closing Kasir" />
       {pageHeader}
       {tableSection}
@@ -307,6 +308,6 @@ export default function ClosingKasirPage() {
           </motion.div>
         ))}
       </div>
-    </SidebarKeuangan>
+    </LayoutUtama>
   );
 }

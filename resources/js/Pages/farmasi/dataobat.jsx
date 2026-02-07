@@ -4,7 +4,8 @@ import axios from "axios";
 import { route } from "ziggy-js";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAnimationFrame } from "motion/react";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import usePermission from "@/hooks/usePermission";
 
 // Util: kunci harga yang didukung
@@ -1274,6 +1275,7 @@ export default function DataObatPage() {
     };
 
     return (
+        <LayoutUtama title="Data Obat" left={<SidebarFarmasiMenu title="Farmasi" /> }>
         <div>
             <Head title="Data Obat" />
             <div className="space-y-6">
@@ -1690,9 +1692,8 @@ export default function DataObatPage() {
                 />
             </div>
         </div>
+        </LayoutUtama>
     );
 }
 
-DataObatPage.layout = (page) => (
-    <SidebarFarmasi title="Farmasi" children={page} />
-);
+ 

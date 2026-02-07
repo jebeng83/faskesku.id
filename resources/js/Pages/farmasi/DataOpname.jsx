@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { toast } from "@/tools/toast";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
@@ -477,7 +478,7 @@ export default function DataOpname() {
     }
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Data Opname" left={<SidebarFarmasiMenu title="Farmasi" /> }>
             <Head title="Data Opname" />
             <div className="screen-only">
                 <div className="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 ring-1 ring-black/5">
@@ -1609,6 +1610,6 @@ export default function DataOpname() {
                     </tbody>
                 </table>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }
