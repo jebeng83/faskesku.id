@@ -18,7 +18,6 @@ import {
     Loader2,
     Save,
     Database,
-    Activity,
     ChevronDown
 } from "lucide-react";
 
