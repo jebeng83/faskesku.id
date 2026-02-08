@@ -42,7 +42,7 @@ frekuensiPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> 
 })
 
 /**
-* @see routes/web.php:692
+* @see routes/web.php:904
 * @route '/laporan/ralan/kunjungan'
 */
 export const kunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +56,7 @@ kunjungan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:692
+* @see routes/web.php:904
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.url = (options?: RouteQueryOptions) => {
@@ -64,7 +64,7 @@ kunjungan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:692
+* @see routes/web.php:904
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +73,7 @@ kunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:692
+* @see routes/web.php:904
 * @route '/laporan/ralan/kunjungan'
 */
 kunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

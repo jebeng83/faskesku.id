@@ -1,0 +1,103 @@
+import React, { useState, useMemo } from "react";
+import { Link, usePage } from "@inertiajs/react";
+import { route } from "ziggy-js";
+import { Gauge, BarChart2, Stethoscope, Bed, Activity, Users } from "lucide-react";
+import ralan from "@/routes/laporan/ralan";
+import ranap from "@/routes/laporan/ranap";
+
+export default function SidebarLaporanMenu({ title = "Laporan" }) {
+  const { url } = usePage();
+  const [openRalan, setOpenRalan] = useState(true);
+  const [openRanap, setOpenRanap] = useState(true);
+
+  const items = useMemo(
+    () => [
+      { label: "Dashboard", href: (() => { try { return route("dashboard", {}, false); } catch { return "/dashboard"; } })(), icon: <Gauge className="w-4 h-4" /> },
+      { label: "Home", href: (() => { try { return route("laporan.index", {}, false); } catch { return "/laporan"; } })(), icon: <BarChart2 className="w-4 h-4" /> },
+      {
+        label: "Laporan Rajal",
+        icon: <Stethoscope className="w-4 h-4" />,
+        children: [
+          { label: "Frekuensi Penyakit", href: ralan.frekuensiPenyakit.url(), icon: <Activity className="w-4 h-4" /> },
+          { label: "Kunjungan", href: ralan.kunjungan.url(), icon: <Users className="w-4 h-4" /> },
+        ],
+      },
+      {
+        label: "Laporan Ranap",
+        icon: <Bed className="w-4 h-4" />,
+        children: [
+          { label: "Frekuensi Penyakit", href: ranap.frekuensiPenyakit.url(), icon: <Activity className="w-4 h-4" /> },
+          { label: "Kunjungan", href: ranap.kunjungan.url(), icon: <Users className="w-4 h-4" /> },
+        ],
+      },
+    ],
+    []
+  );
+
+  const isActive = (href) => {
+    try {
+      const u = new URL(href, window.location.origin);
+      return (url || window.location.pathname).startsWith(u.pathname);
+    } catch {
+      return (url || window.location.pathname).startsWith(href);
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto p-3 text-white">
+      <div className="h-14 flex items-center px-3 gap-2">
+        <BarChart2 className="w-5 h-5" />
+        <span className="font-semibold truncate">{title}</span>
+      </div>
+      <nav className="px-2 py-2 space-y-1 text-white/90">
+        {items.map((item) => (
+          item.children ? (
+            <div key={item.label}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (item.label === "Laporan Rajal") setOpenRalan((v) => !v);
+                  else if (item.label === "Laporan Ranap") setOpenRanap((v) => !v);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+              >
+                <span className="text-white/90">{item.icon}</span>
+                <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white/70">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {(item.label === "Laporan Rajal" ? openRalan : openRanap) && (
+                <div className="ml-2 pl-3 border-l border-white/10 space-y-1 mt-1">
+                  {item.children.map((c) => (
+                    <Link
+                      key={c.label}
+                      href={c.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                        isActive(c.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
+                      }`}
+                    >
+                      <span className="text-white/90">{c.icon}</span>
+                      <span className="text-sm font-medium">{c.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
+              }`}
+            >
+              <span className="text-white/90">{item.icon}</span>
+              <span className="text-sm font-medium">{item.label}</span>
+            </Link>
+          )
+        ))}
+      </nav>
+    </div>
+  );
+}

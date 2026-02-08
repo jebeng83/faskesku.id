@@ -994,6 +994,54 @@ class SatuSehatController extends Controller
         // Pastikan managingOrganization benar
         $payload['managingOrganization'] = ['reference' => 'Organization/'.$data['id_organisasi_satusehat']];
 
+        // Pastikan mapping departemen ada terlebih dahulu untuk menghindari foreign key constraint violation
+        // Foreign key: satu_sehat_mapping_lokasi_ralan.id_organisasi_satusehat -> satu_sehat_mapping_departemen.id_organisasi_satusehat
+        if ($data['id_organisasi_satusehat'] !== $m->id_organisasi_satusehat) {
+            $departemenMapping = \App\Models\SatuSehatDepartemenMapping::where('id_organisasi_satusehat', $data['id_organisasi_satusehat'])->first();
+    
+            if (! $departemenMapping) {
+                // Pilih dep_id yang belum terpakai terlebih dahulu
+                $depId = null;
+    
+                $unmapped = \Illuminate\Support\Facades\DB::table('departemen as d')
+                    ->leftJoin('satu_sehat_mapping_departemen as m', 'm.dep_id', '=', 'd.dep_id')
+                    ->whereNull('m.id_organisasi_satusehat')
+                    ->select('d.dep_id')
+                    ->orderBy('d.dep_id')
+                    ->first();
+    
+                if ($unmapped) {
+                    $depId = $unmapped->dep_id;
+                } else {
+                    $existingMapping = \App\Models\SatuSehatDepartemenMapping::select('dep_id')->first();
+                    if ($existingMapping) {
+                        $depId = $existingMapping->dep_id;
+                    } else {
+                        $firstDept = \Illuminate\Support\Facades\DB::table('departemen')->select('dep_id')->orderBy('dep_id')->first();
+                        if ($firstDept) {
+                            $depId = $firstDept->dep_id;
+                        } else {
+                             // Fallback terakhir: jika tabel departemen kosong, insert dummy
+                             $depId = '-';
+                             \Illuminate\Support\Facades\DB::table('departemen')->insertOrIgnore(['dep_id' => '-', 'nama' => 'DEFAULT']);
+                        }
+                    }
+                }
+    
+                if ($depId) {
+                    try {
+                        \App\Models\SatuSehatDepartemenMapping::updateOrCreate(
+                            ['dep_id' => $depId],
+                            ['id_organisasi_satusehat' => $data['id_organisasi_satusehat']]
+                        );
+                    } catch (\Exception $e) {
+                         // Log error tapi biarkan lanjut, barangkali race condition sudah menangani
+                        \Illuminate\Support\Facades\Log::error('[SATUSEHAT] Gagal update mapping departemen otomatis', ['error' => $e->getMessage()]);
+                    }
+                }
+            }
+        }
+
         $update = $this->satusehatRequest('PUT', 'Location/'.$data['id_lokasi_satusehat'], $payload, ['prefer_representation' => true]);
         if (! $update['ok']) {
             return response()->json([

@@ -1,0 +1,43 @@
+
+> prebuild
+> node -e "const c=require('child_process'); const has=(m)=>{ try{ require.resolve(m); return true; } catch(e){ return false; } }; const skip=process.env.SKIP_QUALITY_CHECK==='1'; const isProd=process.env.NODE_ENV==='production'; if(skip){ console.warn('[prebuild] SKIP_QUALITY_CHECK=1, skipping quality checks'); process.exit(0); } if(isProd && (!has('eslint') || !has('eslint-plugin-react-hooks'))){ console.warn('[prebuild] Dev dependencies missing in production, skipping quality checks'); process.exit(0); } c.execSync('npm run quality:check',{stdio:'inherit'}); "
+
+
+> quality:check
+> npm run lint && npm run typecheck
+
+
+> lint
+> eslint resources/js --ext .js,.jsx,.ts,.tsx --no-inline-config
+
+
+/Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/resources/js/routes/api/satusehat/index.ts
+  301:7  error  'satusehat' is already defined  no-redeclare
+  301:7  error  'satusehat' is read-only        no-import-assign
+
+✖ 2 problems (2 errors, 0 warnings)
+
+node:child_process:1000
+    throw err;
+    ^
+
+Error: Command failed: npm run quality:check
+    at genericNodeError (node:internal/errors:998:15)
+    at wrappedFn (node:internal/errors:543:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at Object.execSync (node:child_process:997:15)
+    at [eval]:1:505
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:451:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:449:60)
+    at evalFunction (node:internal/process/execution:283:30) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 82733,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v25.2.1

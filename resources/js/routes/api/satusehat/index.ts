@@ -7,6 +7,7 @@ import patient from './patient'
 import rajal from './rajal'
 import mapping from './mapping'
 import ranap from './ranap'
+import practitionerMapping from './practitioner-mapping'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::token
 * @see app/Http/Controllers/SatuSehat/SatuSehatController.php:31
@@ -310,6 +311,7 @@ const satusehat = {
     ranap: Object.assign(ranap, ranap),
     create: Object.assign(create, create),
     get: Object.assign(get, get),
+    practitionerMapping: Object.assign(practitionerMapping, practitionerMapping),
 }
 
 export default satusehat

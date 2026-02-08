@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
-import SidebarLaporan from "@/Layouts/SidebarLaporan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarLaporanMenu from "@/Components/SidebarLaporanMenu";
 import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
 import ChartPoliMonthly from "@/Pages/DashboardComponents/ChartPoliMonthly";
 import { route } from "ziggy-js";
@@ -196,7 +197,7 @@ export default function LaporanHome({ summary }) {
     };
 
     return (
-        <SidebarLaporan title="Laporan">
+        <LayoutUtama title="Laporan" left={<SidebarLaporanMenu title="Laporan" />}> 
             <Head title="Laporan" />
 
             <div className="px-2 sm:px-4 lg:px-6">
@@ -597,6 +598,6 @@ export default function LaporanHome({ summary }) {
 
 
             </div>
-        </SidebarLaporan>
+        </LayoutUtama>
     );
 }

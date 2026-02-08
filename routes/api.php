@@ -48,6 +48,7 @@ use App\Http\Controllers\SDKI\KategoriSdkiController;
 use App\Http\Controllers\SDKI\SubKategoriSdkiController;
 use App\Http\Controllers\SDKI\KeluhanSubyektifController;
 use App\Http\Controllers\SDKI\DataObyektifController;
+use App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Http\Request;
@@ -894,6 +895,16 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('/mapping/lokasi-farmasi', [SatuSehatController::class, 'mappingLokasiFarmasiStore'])->name('api.satusehat.mapping.lokasi_farmasi.store');
         Route::put('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiUpdate'])->name('api.satusehat.mapping.lokasi_farmasi.update');
         Route::delete('/mapping/lokasi-farmasi/{kd_bangsal}', [SatuSehatController::class, 'mappingLokasiFarmasiDestroy'])->name('api.satusehat.mapping.lokasi_farmasi.destroy');
+        // CRUD Mapping Alergi Pasien
+        Route::prefix('mapping-alergi')->name('satusehat_mapping_alergi.')->group(function() {
+            Route::get('/substance', [SatuSehatAllergyMappingController::class, 'searchSubstance'])->name('substance');
+            Route::get('/manifestation', [SatuSehatAllergyMappingController::class, 'searchManifestation'])->name('manifestation');
+            Route::get('/data', [SatuSehatAllergyMappingController::class, 'getMappings'])->name('data');
+            Route::get('/lookup', [SatuSehatAllergyMappingController::class, 'lookup'])->name('lookup');
+            Route::post('/', [SatuSehatAllergyMappingController::class, 'store'])->name('store');
+            Route::delete('/{id}', [SatuSehatAllergyMappingController::class, 'destroy'])->name('destroy');
+        });
+
         // Generic resource relay
         // Batasi hanya ke resource FHIR umum agar tidak bentrok dengan endpoint khusus
         Route::post('/{resource}', [SatuSehatController::class, 'createResource'])

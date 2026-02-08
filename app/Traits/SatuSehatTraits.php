@@ -88,18 +88,22 @@ trait SatuSehatTraits
 
             return null;
         }
-        // Coba berbagai endpoint token agar kompatibel (v1: /accesstoken|/token, v2: /token)
+        // Coba berbagai endpoint token agar kompatibel
         $candidateUrls = [];
+        
+        // PRIORITAS 1: Sesuai dokumentasi terbaru (/accesstoken)
         $candidateUrls[] = rtrim($authBase, '/').'/accesstoken';
+        
+        // PRIORITAS 2: Fallback umum (/token)
         $candidateUrls[] = rtrim($authBase, '/').'/token';
-        // Tambahkan fallback v2 jika base menunjuk v1
-        if (str_ends_with($authBase, '/v1')) {
-            $candidateUrls[] = substr($authBase, 0, -3).'/v2/token';
-        }
-        // Jika base menunjuk v2, tambahkan fallback v1/accesstoken
-        if (str_ends_with($authBase, '/v2')) {
-            $candidateUrls[] = substr($authBase, 0, -3).'/v1/accesstoken';
-            $candidateUrls[] = substr($authBase, 0, -3).'/v1/token';
+        
+        // PRIORITAS 3: Fix common path issues (v1/v2 mismatch)
+        if (str_contains($authBase, '/v1')) {
+             // Jika config v1, coba v2/token (kadang dipakai di dev)
+             $candidateUrls[] = str_replace('/v1', '/v2', rtrim($authBase, '/')) . '/token';
+        } elseif (str_contains($authBase, '/v2')) {
+             // Jika config v2, coba v1/accesstoken (standar prod)
+             $candidateUrls[] = str_replace('/v2', '/v1', rtrim($authBase, '/')) . '/accesstoken';
         }
         // Hilangkan duplikasi
         $candidateUrls = array_values(array_unique($candidateUrls));
@@ -118,7 +122,11 @@ trait SatuSehatTraits
                 // Sesuai Playbook SATUSEHAT: grant_type dikirim sebagai query param,
                 // sedangkan client_id & client_secret di body form-encoded.
                 $urlWithQuery = $tokenUrl.'?grant_type=client_credentials';
-                $resp = Http::asForm()->acceptJson()->post($urlWithQuery, [
+                $resp = Http::asForm()
+                    ->timeout(5) // Timeout 5s
+                    ->connectTimeout(3) // Connect timeout 3s
+                    ->acceptJson()
+                    ->post($urlWithQuery, [
                     'client_id' => $clientId,
                     'client_secret' => $clientSecret,
                 ]);
@@ -232,7 +240,11 @@ trait SatuSehatTraits
         }
 
         try {
-            $req = Http::withToken($token)->withHeaders($headers);
+            $req = Http::withToken($token)
+                ->withHeaders($headers)
+                ->timeout(5) // Timeout 5 detik
+                ->connectTimeout(3);
+            
             if (! empty($query)) {
                 $req = $req->withOptions(['query' => $query]);
             }
@@ -260,6 +272,53 @@ trait SatuSehatTraits
             }
 
             $ok = $resp->successful();
+
+            // Auto-Logging ke satusehat_resources
+            if ($ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && isset($json['resourceType'])) {
+                try {
+                    $resourceType = $json['resourceType'];
+                    $satusehatId = $json['id'] ?? null;
+                    $localId = 'UNKNOWN';
+                    
+                    // 1. Cek explicit local_id dari options
+                    if (!empty($options['local_id'])) {
+                        $localId = $options['local_id'];
+                    } 
+                    // 2. Cek ekstrak local_id dari identifier request body
+                    elseif (!empty($body['identifier']) && is_array($body['identifier'])) {
+                         foreach ($body['identifier'] as $id) {
+                             if (isset($id['value'])) {
+                                 $localId = $id['value'];
+                                 break; 
+                             }
+                         }
+                    } 
+                    // 3. Atau dari response
+                    elseif (!empty($json['identifier']) && is_array($json['identifier'])) {
+                         foreach ($json['identifier'] as $id) {
+                             if (isset($id['value'])) {
+                                 $localId = $id['value'];
+                                 break; 
+                             }
+                         }
+                    }
+
+                    // Insert ke tabel log
+                    \Illuminate\Support\Facades\DB::table('satusehat_resources')->insert([
+                        'resource_type' => $resourceType,
+                        'local_id' => substr($localId, 0, 100),
+                        'satusehat_id' => $satusehatId,
+                        'fhir_payload' => json_encode($json),
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } catch (\Throwable $logEx) {
+                    // Silent fail for logging
+                    Log::warning('[SATUSEHAT] Gagal auto-log resource', ['error' => $logEx->getMessage()]);
+                }
+            }
 
             if (! $ok) {
                 Log::warning('[SATUSEHAT] Request gagal', [

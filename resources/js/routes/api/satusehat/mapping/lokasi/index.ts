@@ -131,7 +131,7 @@ update.put = (args: { kd_poli: string | number } | [kd_poli: string | number ] |
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1024
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 export const destroy = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1024
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 destroy.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ destroy.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::destroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1024
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 destroy.delete = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

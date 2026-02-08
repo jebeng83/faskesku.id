@@ -296,6 +296,7 @@ class RegistrationController extends Controller
             ], 500);
         }
 
+
         try {
             $kdPj = strtoupper(trim((string) ($registration->kd_pj ?? '')));
             if (in_array($kdPj, ['BPJ', 'PBI'], true)) {
@@ -350,6 +351,25 @@ class RegistrationController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+        
+        // ====== AUTO-CREATE ENCOUNTER DI SATU SEHAT (FASE 1) ======
+        $satuSehatEncounter = [
+            'status' => 'queued',
+            'message' => 'Encounter sedang diproses di background'
+        ];
+
+        try {
+            // Dispatch job agar berjalan di background (setelah response dikirim ke user)
+            \App\Jobs\SatuSehat\ProcessEncounterJob::dispatch($registration->no_rawat)->afterResponse();
+            
+            Log::info('[SATU SEHAT] Job created for encounter', ['no_rawat' => $registration->no_rawat]);
+        } catch (\Throwable $e) {
+            Log::error('[SATU SEHAT] Gagal dispatch encounter job', [
+                'no_rawat' => $registration->no_rawat ?? null,
+                'error' => $e->getMessage()
+            ]);
+            $satuSehatEncounter['status'] = 'error_queue';
+        }
 
         Log::info('[REGISTRATION DEBUG] Registration completed successfully', [
             'no_rawat' => $registration->no_rawat,
@@ -369,6 +389,7 @@ class RegistrationController extends Controller
                 'no_rkm_medis' => $registration->no_rkm_medis,
             ],
             'bpjs' => isset($bpjsSummary) ? $bpjsSummary : null,
+            'satusehat' => $satuSehatEncounter,
         ]);
     }
 

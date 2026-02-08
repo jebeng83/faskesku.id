@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:701
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:740
 * @route '/api/dev/rawat-jalan/pemeriksaan-ralan/update'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -50,7 +50,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:701
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:740
 * @route '/api/dev/rawat-jalan/pemeriksaan-ralan/update'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:701
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:740
 * @route '/api/dev/rawat-jalan/pemeriksaan-ralan/update'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -69,7 +69,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:701
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:740
 * @route '/api/dev/rawat-jalan/pemeriksaan-ralan/update'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

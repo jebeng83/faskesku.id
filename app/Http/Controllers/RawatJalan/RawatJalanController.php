@@ -668,6 +668,45 @@ class RawatJalanController extends Controller
             }
         }
 
+        // ====== AUTO-SEND VITAL SIGNS TO SATU SEHAT (ASYNC) ======
+        try {
+            // Dispatch job untuk kirim vital signs ke SATU SEHAT
+            \App\Jobs\SatuSehat\ProcessVitalSignsJob::dispatch(
+                $validated['no_rawat'],
+                $validated['tgl_perawatan'],
+                $validated['jam_rawat']
+            )->afterResponse();
+            
+            \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Job created for vital signs', [
+                'no_rawat' => $validated['no_rawat'],
+                'tgl_perawatan' => $validated['tgl_perawatan'],
+                'jam_rawat' => $validated['jam_rawat']
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal dispatch Vital Signs job ke SATU SEHAT', [
+                'no_rawat' => $validated['no_rawat'],
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // ====== AUTO-SEND ALLERGY INTOLERANCE TO SATU SEHAT (ASYNC) ======
+        try {
+            if (isset($alergiPasien)) {
+                \App\Jobs\SatuSehat\ProcessAllergyIntoleranceJob::dispatch(
+                    $validated['no_rawat']
+                )->afterResponse();
+                
+                \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Job created for AllergyIntolerance', [
+                    'no_rawat' => $validated['no_rawat']
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal dispatch AllergyIntolerance job ke SATU SEHAT', [
+                'no_rawat' => $validated['no_rawat'],
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return response()->json(['message' => 'Pemeriksaan tersimpan']);
     }
 
@@ -813,6 +852,45 @@ class RawatJalanController extends Controller
             }
         }
 
+        // ====== AUTO-SEND VITAL SIGNS TO SATU SEHAT (ASYNC) ======
+        try {
+            // Dispatch job untuk update vital signs ke SATU SEHAT
+            \App\Jobs\SatuSehat\ProcessVitalSignsJob::dispatch(
+                $key['no_rawat'],
+                $key['tgl_perawatan'],
+                $key['jam_rawat']
+            )->afterResponse();
+            
+            \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Job created for vital signs update', [
+                'no_rawat' => $key['no_rawat'],
+                'tgl_perawatan' => $key['tgl_perawatan'],
+                'jam_rawat' => $key['jam_rawat']
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal dispatch Vital Signs job update ke SATU SEHAT', [
+                'no_rawat' => $key['no_rawat'],
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // ====== AUTO-SEND ALLERGY INTOLERANCE TO SATU SEHAT (ASYNC) ======
+        try {
+            if (isset($validated['alergi_pasien'])) {
+                \App\Jobs\SatuSehat\ProcessAllergyIntoleranceJob::dispatch(
+                    $key['no_rawat']
+                )->afterResponse();
+                
+                \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Job created for AllergyIntolerance update', [
+                    'no_rawat' => $key['no_rawat']
+                ]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal dispatch AllergyIntolerance job ke SATU SEHAT', [
+                'no_rawat' => $key['no_rawat'],
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return response()->json(['message' => 'Pemeriksaan diperbarui']);
     }
 
@@ -906,6 +984,25 @@ class RawatJalanController extends Controller
             }
 
             DB::commit();
+
+        // Sync ke SATU SEHAT (Asynchronous via Job)
+        try {
+            foreach ($ordered as $item) {
+                // Dispatch job untuk setiap diagnosa
+                \App\Jobs\SatuSehat\ProcessConditionJob::dispatch($no_rawat, $item['kode'], 'Ralan')
+                    ->afterResponse();
+            }
+            
+            \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Jobs created for conditions', [
+                'no_rawat' => $no_rawat,
+                'count' => count($ordered)
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal dispatch Condition jobs ke SATU SEHAT', [
+                'no_rawat' => $no_rawat,
+                'error' => $e->getMessage()
+            ]);
+        }
 
             // Kembalikan daftar terbaru untuk ditampilkan di UI
             $rows = DB::table('diagnosa_pasien')
