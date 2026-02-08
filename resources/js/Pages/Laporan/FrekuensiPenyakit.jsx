@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Head } from '@inertiajs/react';
 import LayoutUtama from '@/Pages/LayoutUtama';
 import SidebarLaporanMenu from '@/Components/SidebarLaporanMenu';
-import { Calendar, Search, PieChart, BarChart, Loader2, Printer, Building2, Stethoscope, Wallet, Activity, X } from 'lucide-react';
-import { 
-    BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend, ResponsiveContainer, 
-    PieChart as RePieChart, Pie, Cell 
+import { Calendar, Search, PieChart, BarChart, Loader2, Printer, Building2, Stethoscope, Wallet, Activity, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend, ResponsiveContainer,
+    PieChart as RePieChart, Pie, Cell
 } from 'recharts';
 import axios from 'axios';
 import { route } from 'ziggy-js';
@@ -36,6 +36,8 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const handleResetFilters = () => {
         setStartDate(toDateInputValue(startOfMonth));
@@ -44,10 +46,12 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
         setDokter("");
         setPenjab("");
         setStatus("");
+        setCurrentPage(1);
     };
 
     const fetchData = async () => {
         setLoading(true);
+        setCurrentPage(1);
         try {
             const response = await axios.get(route('laporan.ralan.frekuensi-penyakit.data'), {
                 params: {
@@ -89,8 +93,15 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
         return data.slice(0, 10);
     }, [data]);
 
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        return data.slice(startIndex, startIndex + rowsPerPage);
+    }, [data, currentPage, rowsPerPage]);
+
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+
     return (
-        <LayoutUtama title="Laporan" left={<SidebarLaporanMenu title="Laporan" />}> 
+        <LayoutUtama title="Laporan" left={<SidebarLaporanMenu title="Laporan" />}>
             <Head title="Frekuensi Penyakit Ralan" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6 print:p-0">
@@ -103,7 +114,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                     <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Frekuensi Penyakit Ralan</h1>
                     <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">Laporan frekuensi penyakit rawat jalan berdasarkan diagnosa utama pasien.</p>
                 </motion.div>
-                
+
                 {/* Print Header */}
                 <div className="hidden print:block mb-4 text-center">
                     <h2 className="text-xl font-bold text-gray-900">Laporan Frekuensi Penyakit Rawat Jalan</h2>
@@ -285,7 +296,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis type="number" />
                                         <YAxis dataKey="kd_penyakit" type="category" width={80} />
-                                        <ReTooltip 
+                                        <ReTooltip
                                             contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#fff' }}
                                             formatter={(value, name, props) => [value, props.payload.penyakit]}
                                         />
@@ -365,9 +376,11 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                                 </td>
                                             </tr>
                                         ) : (
-                                            data.map((item, index) => (
-                                                <tr key={item.kd_penyakit}>
-                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">{index + 1}</td>
+                                            paginatedData.map((item, index) => (
+                                                <tr key={item.kd_penyakit} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                                        {(currentPage - 1) * rowsPerPage + index + 1}
+                                                    </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{item.kd_penyakit}</td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{item.penyakit}</td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500 dark:text-gray-400 font-semibold">{item.jumlah}</td>
@@ -385,6 +398,99 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     </tfoot>
                                 </table>
                             </div>
+
+                            {/* Pagination Controls */}
+                            {data.length > 0 && (
+                                <div className="mt-4 flex items-center justify-between px-4 py-3 sm:px-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="flex flex-1 justify-between sm:hidden">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300">
+                                                Menampilkan <span className="font-medium">{(currentPage - 1) * rowsPerPage + 1}</span> sampai{' '}
+                                                <span className="font-medium">{Math.min(currentPage * rowsPerPage, data.length)}</span> dari{' '}
+                                                <span className="font-medium">{data.length}</span> penyakit
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <select
+                                                value={rowsPerPage}
+                                                onChange={(e) => {
+                                                    setRowsPerPage(Number(e.target.value));
+                                                    setCurrentPage(1);
+                                                }}
+                                                className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 py-1"
+                                            >
+                                                {[10, 25, 50, 100].map(size => (
+                                                    <option key={size} value={size}>{size} per halaman</option>
+                                                ))}
+                                            </select>
+                                            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={currentPage === 1}
+                                                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-600 dark:hover:bg-gray-800"
+                                                >
+                                                    <span className="sr-only">Previous</span>
+                                                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                                </button>
+
+                                                {[...Array(totalPages)].map((_, i) => {
+                                                    const pageNum = i + 1;
+                                                    // Show limited page numbers if too many
+                                                    if (
+                                                        pageNum === 1 ||
+                                                        pageNum === totalPages ||
+                                                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                                                    ) {
+                                                        return (
+                                                            <button
+                                                                key={pageNum}
+                                                                onClick={() => setCurrentPage(pageNum)}
+                                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${currentPage === pageNum
+                                                                        ? 'z-10 bg-blue-600 text-white focus-visible:outline-blue-600'
+                                                                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-800'
+                                                                    }`}
+                                                            >
+                                                                {pageNum}
+                                                            </button>
+                                                        );
+                                                    } else if (
+                                                        (pageNum === 2 && currentPage > 4) ||
+                                                        (pageNum === totalPages - 1 && currentPage < totalPages - 3)
+                                                    ) {
+                                                        return <span key={pageNum} className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-gray-400 dark:ring-gray-600">...</span>;
+                                                    }
+                                                    return null;
+                                                })}
+
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                                    disabled={currentPage === totalPages}
+                                                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-600 dark:hover:bg-gray-800"
+                                                >
+                                                    <span className="sr-only">Next</span>
+                                                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                                </button>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
