@@ -690,7 +690,8 @@ export default function UGD() {
             fetchData();
             return;
           } catch {}
-          toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          // toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          window.location.reload();
           return;
         }
       } catch {}
@@ -780,7 +781,8 @@ export default function UGD() {
             toast.success('Pasien masuk kamar inap berhasil');
             return;
           } catch {}
-          toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          // toast.error('Sesi telah berakhir. Muat ulang halaman dan coba lagi.');
+          window.location.reload();
           return;
         }
       } catch {}

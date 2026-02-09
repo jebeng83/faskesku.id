@@ -38,8 +38,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     });
     const [selectedNoRawat, setSelectedNoRawat] = useState(params?.no_rawat || rawatJalan?.no_rawat || "");
     const [soapModalOpen, setSoapModalOpen] = useState(false);
-    const [berkasLainModalOpen, setBerkasLainModalOpen] = useState(false);
-    const [berkasLainTab, setBerkasLainTab] = useState("awal");
     const [soapModalLoading, setSoapModalLoading] = useState(false);
     const [soapModalError, setSoapModalError] = useState("");
     const [soapModalItems, setSoapModalItems] = useState([]);
@@ -972,13 +970,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     </div>
                                     <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <button
-                                                onClick={() => setBerkasLainModalOpen(true)}
-                                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
-                                                title="Tampilkan Berkas Lain"
-                                            >
-                                                Berkas Lain
-                                            </button>
                                             <button
                                                 onClick={handlePanggilPasien}
                                                 disabled={poliCalling}

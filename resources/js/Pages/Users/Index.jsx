@@ -1359,9 +1359,11 @@ export default function Index() {
                                                     fetchUsers();
                                                 } catch (error) {
                                                     const status = error?.response?.status;
-                                                    const msg = status === 419
-                                                        ? 'Session/CSRF expired. Silakan refresh halaman lalu coba lagi.'
-                                                        : (error?.response?.data?.message || 'Error');
+                                                    if (status === 419) {
+                                                        window.location.reload();
+                                                        return;
+                                                    }
+                                                    const msg = error?.response?.data?.message || 'Error';
                                                     alert("Gagal menyalin hak akses: " + msg);
                                                 }
                                             }}

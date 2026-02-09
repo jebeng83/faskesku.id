@@ -977,7 +977,9 @@ export default function CanvasSurat({ patient, defaultDate, token = "", noRawat 
                                 setVerifyResult(data);
                                 setSaveStatus({ type: 'success', message: 'Data tersimpan' });
                               }
-                            } catch (_) {}
+                            } catch (_) {
+                              if (e?.response?.status === 419) window.location.reload();
+                            }
                           }
                         } catch (_) {}
                       } catch (_) {

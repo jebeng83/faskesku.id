@@ -325,6 +325,10 @@ export default function LayananPcare() {
           body: JSON.stringify(payload),
         });
       }
+      if (res.status === 419) {
+        window.location.reload();
+        return;
+      }
       const text = await res.text();
       let json; try { json = text ? JSON.parse(text) : {}; } catch { json = {}; }
       if (res.ok) {

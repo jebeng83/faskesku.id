@@ -179,7 +179,8 @@ window.axios.interceptors.response.use(
                 return window.axios.request(retryConfig);
             } catch (e) {
                 console.error('[Axios Interceptor] ❌ Failed to refresh CSRF token and retry:', e);
-                // Jika refresh+retry gagal, teruskan error aslinya
+                // Jika refresh+retry gagal, reload halaman
+                window.location.reload();
                 return Promise.reject(error);
             }
         }

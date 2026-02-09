@@ -1360,7 +1360,7 @@ export default function Registration({
                         retryConfig.headers['X-CSRF-TOKEN'] = newToken;
                     }
                     
-                    let retryPayload = { ...formData };
+                    const retryPayload = { ...formData };
                     if (!retryPayload.almt_pj || String(retryPayload.almt_pj).trim() === '') {
                         retryPayload.almt_pj = selectedPatient.alamat || 'Alamat tidak diketahui';
                     }
@@ -1372,7 +1372,7 @@ export default function Registration({
                     }
                     
                     // Panggil ulang request
-                    let retryRes;
+                    // let retryRes;
                     if (!isEditMode) {
                         let retryUrl = `/registration/${encodeURIComponent(selectedPatient.no_rkm_medis)}/register`;
                         try {
@@ -1383,7 +1383,7 @@ export default function Registration({
                             }
                         } catch (_) {}
                         
-                        retryRes = await axios.post(retryUrl, retryPayload, retryConfig);
+                        await axios.post(retryUrl, retryPayload, retryConfig);
                     } else {
                         // Re-construct URL for edit mode
                         const edit = editReg;
@@ -1409,11 +1409,11 @@ export default function Registration({
                             status_bayar: edit.status_bayar || 'Belum Bayar',
                             status_poli: edit.status_poli || (poliStatus?.status_poli || 'Baru'),
                         };
-                        retryRes = await axios.put(finalUrl, putPayload, retryConfig);
+                        await axios.put(finalUrl, putPayload, retryConfig);
                     }
                     
                     // Jika sampai sini, berarti sukses
-                    console.log('[Registration] Manual recovery successful!');
+                    // console.log('[Registration] Manual recovery successful!');
                     
                     // Proses response sukses (copy logic dari blok try utama)
                     // Karena ini duplikasi logic yang panjang, kita reload halaman saja agar user melihat data terbaru
@@ -1423,15 +1423,14 @@ export default function Registration({
                     
                 } catch (retryError) {
                     console.error('[Registration] Manual recovery failed:', retryError);
-                    const errorMessage = error?.response?.data?.message || error?.message || 'Session expired. Silakan refresh halaman dan coba lagi.';
                     
-                    // Gunakan toast, bukan alert
-                    toast(errorMessage, "error");
+                    // Hilangkan peringatan error, langsung reload halaman
+                    // toast("Sesi diperbarui, memuat ulang...", "info"); // Optional: beri info user
                     
                     // Refresh halaman untuk mendapatkan session baru
                     setTimeout(() => {
                         window.location.reload();
-                    }, 2000);
+                    }, 500);
                     return;
                 }
             } else if (error?.response?.status === 500) {

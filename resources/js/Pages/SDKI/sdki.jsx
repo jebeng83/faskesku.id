@@ -642,9 +642,7 @@ export default function SDKIIndex() {
         pushToast({ type: "error", title: "Kode Sudah Ada", message: errorMessage });
         toast.error(errorMessage);
       } else if (res.status === 419) {
-        // CSRF token expired
-        pushToast({ type: "error", title: "Session Expired", message: "Silakan refresh halaman dan coba lagi" });
-        toast.error("Session expired. Silakan refresh halaman.");
+        window.location.reload();
       } else {
         const errorMessage = responseData.message || `Gagal menyimpan SDKI (Status ${res.status})`;
         pushToast({ type: "error", title: "Gagal", message: errorMessage });
@@ -1021,8 +1019,8 @@ export default function SDKIIndex() {
                         await loadKategori();
                         toast.success(kategoriEditId ? "Kategori berhasil diupdate" : "Kategori berhasil disimpan");
                       } else if (res.status === 419) {
-                        toast.error("Session expired. Silakan refresh halaman.");
-                      } else {
+        window.location.reload();
+      } else {
                         const errorData = await res.json().catch(() => ({}));
                         toast.error(errorData.message || `Gagal ${kategoriEditId ? 'mengupdate' : 'menyimpan'} kategori (${res.status})`);
                       }
@@ -1119,8 +1117,8 @@ export default function SDKIIndex() {
                                     if (res.ok) {
                                       await loadKategori();
                                     } else if (res.status === 419) {
-                                      toast.error("Session expired. Silakan refresh halaman.");
-                                    } else {
+        window.location.reload();
+      } else {
                                       const errorData = await res.json().catch(() => ({}));
                                       toast.error(errorData.message || `Gagal menghapus kategori (${res.status})`);
                                     }
@@ -1212,8 +1210,8 @@ export default function SDKIIndex() {
                         await loadSubkategori();
                         toast.success(subkategoriEditId ? "Subkategori berhasil diupdate" : "Subkategori berhasil disimpan");
                       } else if (res.status === 419) {
-                        toast.error("Session expired. Silakan refresh halaman.");
-                      } else {
+        window.location.reload();
+      } else {
                         const errorData = await res.json().catch(() => ({}));
                         toast.error(errorData.message || `Gagal ${subkategoriEditId ? 'mengupdate' : 'menyimpan'} subkategori (${res.status})`);
                       }
@@ -1317,8 +1315,8 @@ export default function SDKIIndex() {
                                     if (res.ok) {
                                       await loadSubkategori();
                                     } else if (res.status === 419) {
-                                      toast.error("Session expired. Silakan refresh halaman.");
-                                    } else {
+        window.location.reload();
+      } else {
                                       const errorData = await res.json().catch(() => ({}));
                                       toast.error(errorData.message || `Gagal menghapus subkategori (${res.status})`);
                                     }
@@ -1448,8 +1446,8 @@ export default function SDKIIndex() {
                       setKeluhanSubyektifEditId(null);
                       keluhanSubyektifCodeGeneratedRef.current = false; // Reset flag setelah submit berhasil
                     } else if (res.status === 419) {
-                      toast.error("Session expired. Silakan refresh halaman.");
-                    } else {
+        window.location.reload();
+      } else {
                       const errorData = await res.json().catch(() => ({}));
                       toast.error(errorData.message || `Gagal ${keluhanSubyektifEditId ? 'mengupdate' : 'menyimpan'} keluhan subyektif (${res.status})`);
                     }
@@ -1535,8 +1533,8 @@ export default function SDKIIndex() {
                                         await loadKeluhanSubyektif();
                                         toast.success("Keluhan subyektif berhasil dihapus");
                                       } else if (res.status === 419) {
-                                        toast.error("Session expired. Silakan refresh halaman.");
-                                      } else {
+        window.location.reload();
+      } else {
                                         const errorData = await res.json().catch(() => ({}));
                                         toast.error(errorData.message || `Gagal menghapus keluhan subyektif (${res.status})`);
                                       }
@@ -1676,8 +1674,8 @@ export default function SDKIIndex() {
                       await loadDataObyektif();
                       toast.success(dataObyektifEditId ? "Data obyektif berhasil diupdate" : "Data obyektif berhasil disimpan");
                     } else if (res.status === 419) {
-                      toast.error("Session expired. Silakan refresh halaman.");
-                    } else {
+        window.location.reload();
+      } else {
                       const errorData = await res.json().catch(() => ({}));
                       toast.error(errorData.message || `Gagal ${dataObyektifEditId ? 'mengupdate' : 'menyimpan'} data obyektif (${res.status})`);
                     }
@@ -1764,8 +1762,8 @@ export default function SDKIIndex() {
                                         await loadDataObyektif();
                                         toast.success("Data obyektif berhasil dihapus");
                                       } else if (res.status === 419) {
-                                        toast.error("Session expired. Silakan refresh halaman.");
-                                      } else {
+        window.location.reload();
+      } else {
                                         const errorData = await res.json().catch(() => ({}));
                                         toast.error(errorData.message || `Gagal menghapus data obyektif (${res.status})`);
                                       }
