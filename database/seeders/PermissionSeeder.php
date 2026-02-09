@@ -13,6 +13,9 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         // Create permissions
         $permissions = [
             // Patient Management
