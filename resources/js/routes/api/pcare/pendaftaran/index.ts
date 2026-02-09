@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2522
+* @see app/Http/Controllers/Pcare/PcareController.php:2557
 * @route '/api/pcare/pendaftaran'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -50,7 +50,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2522
+* @see app/Http/Controllers/Pcare/PcareController.php:2557
 * @route '/api/pcare/pendaftaran'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:2522
+* @see app/Http/Controllers/Pcare/PcareController.php:2557
 * @route '/api/pcare/pendaftaran'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

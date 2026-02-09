@@ -421,9 +421,17 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
         if (pcareRes.status === 200 || pcareRes.status === 201) {
           const skipped = !!pcareJson.skipped;
           if (skipped) {
+            const alreadyRegistered = !!pcareJson.already_registered;
             const skipMsg = (pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : 'Pendaftaran PCare dilewati (Non-BPJS)';
             setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
-            setShowBridging(false);
+            
+            // Jika sudah terdaftar (skipped karena duplikat), tetap tampilkan bridging info
+            if (alreadyRegistered) {
+              setShowBridging(true);
+            } else {
+              setShowBridging(false);
+            }
+
             try { if (typeof onPcareUpdated === 'function') onPcareUpdated(); } catch {}
           } else {
             const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut') ? (pcareJson.response.message || '') : '';

@@ -2334,6 +2334,41 @@ class PcareController extends Controller
                 ],
             ], 500);
         }
+
+        // Cek apakah sudah pernah didaftarkan dan sukses (status 'Terkirim')
+        // Mencegah duplikasi data pendaftaran ke BPJS
+        try {
+            $existingPendaftaran = DB::table('pcare_pendaftaran')
+                ->where('no_rawat', $noRawat)
+                ->where('status', 'Terkirim')
+                ->first();
+
+            if ($existingPendaftaran) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->info('Lewati PCare pendaftaran: Sudah terdaftar sebelumnya', [
+                    'no_rawat' => $noRawat,
+                    'noUrut' => $existingPendaftaran->noUrut,
+                    'tglDaftar' => $existingPendaftaran->tglDaftar,
+                ]);
+
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Pendaftaran sudah pernah dikirim ke BPJS.',
+                        'code' => 200,
+                    ],
+                    'response' => [
+                        'message' => $existingPendaftaran->noUrut,
+                        'noUrut' => $existingPendaftaran->noUrut,
+                        'field' => 'noUrut'
+                    ],
+                    'skipped' => true,
+                    'already_registered' => true
+                ], 200);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error checking existing pcare_pendaftaran: ' . $e->getMessage());
+            // Lanjut proses jika check gagal, atau return error? Aman lanjut tapi log error.
+        }
+
         $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
         if (! $pasien) {
             return response()->json([
