@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:836
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:916
 * @route '/rawat-jalan/status'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:836
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:916
 * @route '/rawat-jalan/status'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::update
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:836
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:916
 * @route '/rawat-jalan/status'
 */
 update.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
