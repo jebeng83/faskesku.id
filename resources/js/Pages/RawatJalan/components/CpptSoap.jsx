@@ -1161,14 +1161,22 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 if (pcareRes.ok) {
                     // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
                     const skipped = !!(pcareJson && pcareJson.skipped);
+                    const alreadyRegistered = !!(pcareJson && pcareJson.already_registered);
+
                     if (skipped) {
                         const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
                             ? pcareJson.metaData.message
                             : 'Pendaftaran PCare dilewati (Non-BPJS)';
                         // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
                         setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
-                        // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS
-                        setShowBridging(false);
+                        
+                        // Jika skipped karena sudah terdaftar, TETAP tampilkan bridging button
+                        if (alreadyRegistered) {
+                             setShowBridging(true);
+                        } else {
+                             // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS (misal pasien umum)
+                             setShowBridging(false);
+                        }
                     } else if (pcareRes.status === 201 || pcareRes.status === 200) {
                         // Sukses kirim ke BPJS PCare
                         const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')

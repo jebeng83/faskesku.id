@@ -17,6 +17,8 @@ import {
     MapPinIcon,
 } from "@heroicons/react/24/outline";
 import axios from "axios";
+import ConfirmationAlert from "@/Components/ConfirmationAlert";
+import { Toaster } from "@/Components/ui";
 import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
 import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
@@ -1175,8 +1177,8 @@ export default function Registration({
                     // Jika status selain 200, tampilkan popup respon BPJS
                     if (httpStatus !== 200) {
                         // Tetap tampilkan alert utama dulu karena registrasi lokal sukses
-                        alert(mainMessage);
-                        showMainAlert = false;
+                        // alert(mainMessage);
+                        // showMainAlert = false;
 
                         openBpjsPopup({
                             status: httpStatus,
@@ -1256,9 +1258,9 @@ export default function Registration({
                     }
                 }
 
-                if (showMainAlert) {
-                    alert(mainMessage);
-                }
+                // if (showMainAlert) {
+                //    alert(mainMessage);
+                // }
 
                 // Reset form dan modal terlebih dahulu
                 setIsModalOpen(false);
