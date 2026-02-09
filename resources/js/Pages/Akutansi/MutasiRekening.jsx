@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import {
     Calendar,
     Info,
@@ -185,7 +186,8 @@ export default function MutasiRekeningPage() {
     }, [serverFilters, periode, thn, selectedMonth]);
 
     return (
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
+            <div className="px-4 sm:px-6 lg:px-8 py-6">
             <Head title="Mutasi Rekening" />
             <motion.div
                 initial={{ opacity: 0 }}
@@ -508,10 +510,9 @@ export default function MutasiRekeningPage() {
                     </span>
                 </div>
             </Card>
-        </div>
+            </div>
+        </LayoutUtama>
     );
 }
 
-MutasiRekeningPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

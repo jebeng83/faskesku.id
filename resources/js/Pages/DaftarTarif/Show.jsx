@@ -1,7 +1,8 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarDaftarTarifMenu from '@/Components/SidebarDaftarTarifMenu';
 
 export default function Show({ tarif, category, title }) {
     const formatCurrency = (amount) => {
@@ -24,7 +25,7 @@ export default function Show({ tarif, category, title }) {
     };
 
     return (
-        <AppLayout>
+        <LayoutUtama title={title || 'Detail Tarif'} left={<SidebarDaftarTarifMenu title="Master Tarif" />}>
             <Head title={title} />
 
             <div className="py-6">
@@ -299,6 +300,6 @@ export default function Show({ tarif, category, title }) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </LayoutUtama>
     );
 }

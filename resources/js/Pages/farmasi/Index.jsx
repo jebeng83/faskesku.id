@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ClipboardDocumentListIcon,
@@ -330,7 +331,7 @@ export default function FarmasiIndex() {
     const current = tabs.find((t) => t.key === activeTab);
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Farmasi" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Farmasi" />
 
             {/* Page Header */}
@@ -452,6 +453,6 @@ export default function FarmasiIndex() {
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

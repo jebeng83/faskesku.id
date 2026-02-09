@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
-import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarKeuanganMenu from '@/Components/SidebarKeuanganMenu';
 import { BookOpen, Calendar, Clock, Info, Plus, Trash2 } from 'lucide-react';
 
 const Card = ({ title, children, right }) => (
@@ -160,7 +161,7 @@ export default function JurnalPenyesuaianPage() {
   };
 
   return (
-    <SidebarKeuangan>
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Keuangan - Jurnal Penyesuaian" />
 
       <div className="px-4 md:px-6 lg:px-8 py-4">
@@ -277,6 +278,6 @@ export default function JurnalPenyesuaianPage() {
           </Card>
         </div>
       </div>
-    </SidebarKeuangan>
+    </LayoutUtama>
   );
 }

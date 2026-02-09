@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
-import SidebarRalan from '@/Layouts/SidebarRalan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarDaftarTarifMenu from '@/Components/SidebarDaftarTarifMenu';
 
 export default function Create({ category = 'rawat-jalan', polikliniks, bangsals, penjaabs, kategoris }) {
     const { url } = usePage();
@@ -11,7 +11,6 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
     const urlParams = new URLSearchParams(url.split('?')[1] || '');
     const categoryFromUrl = urlParams.get('category') || category;
     
-    // Tentukan layout berdasarkan category
     const useRalanLayout = categoryFromUrl === 'rawat-jalan';
     
     // State untuk modal kategori
@@ -1636,25 +1635,9 @@ export default function Create({ category = 'rawat-jalan', polikliniks, bangsals
         </>
     );
 
-    // Return dengan layout yang sesuai
-    if (useRalanLayout) {
-        return (
-            <SidebarRalan title="Rawat Jalan">
-                {content}
-            </SidebarRalan>
-        );
-    }
-
     return (
-        <AppLayout
-            title={getCategoryTitle()}
-            renderHeader={() => (
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    {getCategoryTitle()}
-                </h2>
-            )}
-        >
+        <LayoutUtama title={getCategoryTitle()} left={<SidebarDaftarTarifMenu title="Master Tarif" />}>
             {content}
-        </AppLayout>
+        </LayoutUtama>
     );
 }

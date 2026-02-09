@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 
 export default function ObatFastMoving() {
   const [items, setItems] = useState([]);
@@ -37,7 +38,7 @@ export default function ObatFastMoving() {
   }, []);
 
   return (
-    <SidebarFarmasi title="10 Obat Fast Moving">
+    <LayoutUtama title="10 Obat Fast Moving" left={<SidebarFarmasiMenu title="Farmasi" /> }>
       <Head title="10 Obat Fast Moving" />
       <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -141,6 +142,6 @@ export default function ObatFastMoving() {
           </div>
         )}
       </div>
-    </SidebarFarmasi>
+    </LayoutUtama>
   );
 }

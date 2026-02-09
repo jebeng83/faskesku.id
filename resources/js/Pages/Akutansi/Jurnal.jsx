@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
-import SidebarKeuangan from '@/Layouts/SidebarKeuangan';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarKeuanganMenu from '@/Components/SidebarKeuanganMenu';
 import { BookOpen, Calendar, Clock, Info, Plus, RefreshCcw, Search, Trash2 } from 'lucide-react';
 import usePermission from '@/hooks/usePermission';
 
@@ -244,7 +245,7 @@ export default function JurnalPage() {
   };
 
   return (
-    <div>
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Keuangan - Jurnal" />
       <div className="space-y-6">
         {/* Card: Filter & Actions */}
@@ -580,8 +581,8 @@ export default function JurnalPage() {
         )}
 
       </div>
-    </div>
+    </LayoutUtama>
   );
 }
 
-JurnalPage.layout = (page) => <SidebarKeuangan title="Keuangan" children={page} />;
+ 

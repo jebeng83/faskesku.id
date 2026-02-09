@@ -18,7 +18,7 @@ import resend from './resend'
 import massSend from './mass-send'
 import setting from './setting'
 /**
-* @see routes/web.php:2271
+* @see routes/web.php:2819
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,7 +32,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2271
+* @see routes/web.php:2819
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -40,7 +40,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2271
+* @see routes/web.php:2819
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,7 +49,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2271
+* @see routes/web.php:2819
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -58,7 +58,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2290
+* @see routes/web.php:2838
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -72,7 +72,7 @@ monitoring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2290
+* @see routes/web.php:2838
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -80,7 +80,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2290
+* @see routes/web.php:2838
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -89,7 +89,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2290
+* @see routes/web.php:2838
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -98,7 +98,7 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2298
+* @see routes/web.php:2846
 * @route '/pcare/data-pendaftaran'
 */
 export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ dataPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2298
+* @see routes/web.php:2846
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -120,7 +120,7 @@ dataPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2298
+* @see routes/web.php:2846
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -129,7 +129,7 @@ dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:2298
+* @see routes/web.php:2846
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -138,7 +138,7 @@ dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:2302
+* @see routes/web.php:2850
 * @route '/pcare/data-kunjungan'
 */
 export const dataKunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -152,7 +152,7 @@ dataKunjungan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2302
+* @see routes/web.php:2850
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.url = (options?: RouteQueryOptions) => {
@@ -160,7 +160,7 @@ dataKunjungan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2302
+* @see routes/web.php:2850
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -169,7 +169,7 @@ dataKunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2302
+* @see routes/web.php:2850
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -240,7 +240,7 @@ cetakRujukan.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 })
 
 /**
-* @see routes/web.php:2403
+* @see routes/web.php:2951
 * @route '/pcare/form-pendaftaran'
 */
 export const formPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,7 +254,7 @@ formPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2403
+* @see routes/web.php:2951
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -262,7 +262,7 @@ formPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2403
+* @see routes/web.php:2951
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -271,7 +271,7 @@ formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:2403
+* @see routes/web.php:2951
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

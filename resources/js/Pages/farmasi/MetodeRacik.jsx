@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white shadow-lg">
@@ -165,6 +166,7 @@ export default function MetodeRacikPage() {
   };
 
   return (
+    <LayoutUtama title="Metode Racik" left={<SidebarFarmasiMenu title="Farmasi" /> }>
     <div>
       <Head title="Metode Racik" />
       <div className="space-y-6">
@@ -305,7 +307,8 @@ export default function MetodeRacikPage() {
         <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
       </div>
     </div>
+    </LayoutUtama>
   );
 }
 
-MetodeRacikPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
+ 

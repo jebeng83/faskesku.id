@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Head } from '@inertiajs/react';
-import SidebarLaporan from '@/Layouts/SidebarLaporan';
-import { Calendar, Search, PieChart, BarChart, Loader2, Printer, Building2, Stethoscope, Wallet, Activity, X } from 'lucide-react';
-import { 
-    BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend, ResponsiveContainer, 
-    PieChart as RePieChart, Pie, Cell 
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarLaporanMenu from '@/Components/SidebarLaporanMenu';
+import { Calendar, Search, PieChart, BarChart, Loader2, Printer, Building2, Stethoscope, Wallet, Activity, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Legend, ResponsiveContainer,
+    PieChart as RePieChart, Pie, Cell
 } from 'recharts';
 import axios from 'axios';
 import { route } from 'ziggy-js';
@@ -34,6 +36,8 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const handleResetFilters = () => {
         setStartDate(toDateInputValue(startOfMonth));
@@ -42,10 +46,12 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
         setDokter("");
         setPenjab("");
         setStatus("");
+        setCurrentPage(1);
     };
 
     const fetchData = async () => {
         setLoading(true);
+        setCurrentPage(1);
         try {
             const response = await axios.get(route('laporan.ralan.frekuensi-penyakit.data'), {
                 params: {
@@ -87,20 +93,28 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
         return data.slice(0, 10);
     }, [data]);
 
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        return data.slice(startIndex, startIndex + rowsPerPage);
+    }, [data, currentPage, rowsPerPage]);
+
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+
     return (
-        <SidebarLaporan title="Laporan">
+        <LayoutUtama title="Laporan" left={<SidebarLaporanMenu title="Laporan" />}>
             <Head title="Frekuensi Penyakit Ralan" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6 print:p-0">
-                <div className="sm:flex sm:items-center print:hidden">
-                    <div className="sm:flex-auto">
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Frekuensi Penyakit Ralan</h1>
-                        <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                            Laporan frekuensi penyakit rawat jalan berdasarkan diagnosa utama pasien.
-                        </p>
-                    </div>
-                </div>
-                
+                <motion.div
+                    className="print:hidden relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Frekuensi Penyakit Ralan</h1>
+                    <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">Laporan frekuensi penyakit rawat jalan berdasarkan diagnosa utama pasien.</p>
+                </motion.div>
+
                 {/* Print Header */}
                 <div className="hidden print:block mb-4 text-center">
                     <h2 className="text-xl font-bold text-gray-900">Laporan Frekuensi Penyakit Rawat Jalan</h2>
@@ -108,8 +122,8 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                 </div>
 
                 {/* Filters */}
-                <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm mb-6 print:hidden">
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+                <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm ring-1 ring-gray-200/70 dark:ring-gray-700/60 shadow-sm mb-6 print:hidden">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
                     <div className="p-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Start Date */}
@@ -125,7 +139,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
@@ -143,7 +157,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
@@ -160,7 +174,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     <select
                                         value={poli}
                                         onChange={(e) => setPoli(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     >
                                         <option value="">Semua Poliklinik</option>
                                         {listPoli.map((p) => (
@@ -182,7 +196,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     <select
                                         value={dokter}
                                         onChange={(e) => setDokter(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     >
                                         <option value="">Semua Dokter</option>
                                         {listDokter.map((d) => (
@@ -204,7 +218,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     <select
                                         value={penjab}
                                         onChange={(e) => setPenjab(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     >
                                         <option value="">Semua Cara Bayar</option>
                                         {listPenjab.map((p) => (
@@ -226,7 +240,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     <select
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                                        className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                                     >
                                         <option value="">Semua Status</option>
                                         {listStatus.map((s) => (
@@ -242,7 +256,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                             <button
                                 type="button"
                                 onClick={handleResetFilters}
-                                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                className="inline-flex items-center gap-2 rounded-lg bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-300/70 dark:ring-gray-700/60 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/90 dark:hover:bg-gray-700/90 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                                 Reset
@@ -250,7 +264,8 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                             <button
                                 type="button"
                                 onClick={handlePrint}
-                                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                aria-label="Cetak Laporan"
+                                className="inline-flex items-center gap-2 rounded-lg bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-300/70 dark:ring-gray-700/60 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/90 dark:hover:bg-gray-700/90 transition-colors"
                             >
                                 <Printer className="h-4 w-4" />
                                 Print
@@ -281,7 +296,7 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis type="number" />
                                         <YAxis dataKey="kd_penyakit" type="category" width={80} />
-                                        <ReTooltip 
+                                        <ReTooltip
                                             contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#fff' }}
                                             formatter={(value, name, props) => [value, props.payload.penyakit]}
                                         />
@@ -361,9 +376,11 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                                 </td>
                                             </tr>
                                         ) : (
-                                            data.map((item, index) => (
-                                                <tr key={item.kd_penyakit}>
-                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">{index + 1}</td>
+                                            paginatedData.map((item, index) => (
+                                                <tr key={item.kd_penyakit} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                                                        {(currentPage - 1) * rowsPerPage + index + 1}
+                                                    </td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{item.kd_penyakit}</td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{item.penyakit}</td>
                                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500 dark:text-gray-400 font-semibold">{item.jumlah}</td>
@@ -381,10 +398,103 @@ export default function FrekuensiPenyakitRalan({ listPoli = [], listDokter = [],
                                     </tfoot>
                                 </table>
                             </div>
+
+                            {/* Pagination Controls */}
+                            {data.length > 0 && (
+                                <div className="mt-4 flex items-center justify-between px-4 py-3 sm:px-6 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                                    <div className="flex flex-1 justify-between sm:hidden">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300">
+                                                Menampilkan <span className="font-medium">{(currentPage - 1) * rowsPerPage + 1}</span> sampai{' '}
+                                                <span className="font-medium">{Math.min(currentPage * rowsPerPage, data.length)}</span> dari{' '}
+                                                <span className="font-medium">{data.length}</span> penyakit
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <select
+                                                value={rowsPerPage}
+                                                onChange={(e) => {
+                                                    setRowsPerPage(Number(e.target.value));
+                                                    setCurrentPage(1);
+                                                }}
+                                                className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-sm focus:ring-blue-500 focus:border-blue-500 py-1"
+                                            >
+                                                {[10, 25, 50, 100].map(size => (
+                                                    <option key={size} value={size}>{size} per halaman</option>
+                                                ))}
+                                            </select>
+                                            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={currentPage === 1}
+                                                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-600 dark:hover:bg-gray-800"
+                                                >
+                                                    <span className="sr-only">Previous</span>
+                                                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                                </button>
+
+                                                {[...Array(totalPages)].map((_, i) => {
+                                                    const pageNum = i + 1;
+                                                    // Show limited page numbers if too many
+                                                    if (
+                                                        pageNum === 1 ||
+                                                        pageNum === totalPages ||
+                                                        (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                                                    ) {
+                                                        return (
+                                                            <button
+                                                                key={pageNum}
+                                                                onClick={() => setCurrentPage(pageNum)}
+                                                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${currentPage === pageNum
+                                                                        ? 'z-10 bg-blue-600 text-white focus-visible:outline-blue-600'
+                                                                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-800'
+                                                                    }`}
+                                                            >
+                                                                {pageNum}
+                                                            </button>
+                                                        );
+                                                    } else if (
+                                                        (pageNum === 2 && currentPage > 4) ||
+                                                        (pageNum === totalPages - 1 && currentPage < totalPages - 3)
+                                                    ) {
+                                                        return <span key={pageNum} className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-gray-400 dark:ring-gray-600">...</span>;
+                                                    }
+                                                    return null;
+                                                })}
+
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                                    disabled={currentPage === totalPages}
+                                                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-gray-600 dark:hover:bg-gray-800"
+                                                >
+                                                    <span className="sr-only">Next</span>
+                                                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                                                </button>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-        </SidebarLaporan>
+        </LayoutUtama>
     );
 }

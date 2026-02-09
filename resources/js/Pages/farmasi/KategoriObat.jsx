@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
@@ -143,6 +144,7 @@ export default function KategoriObatPage() {
   };
 
   return (
+    <LayoutUtama title="Kategori Obat" left={<SidebarFarmasiMenu title="Farmasi" /> }>
     <div>
       <Head title="Kategori Obat" />
       <div className="space-y-6">
@@ -264,7 +266,8 @@ export default function KategoriObatPage() {
         <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
       </div>
     </div>
+    </LayoutUtama>
   );
 }
 
-KategoriObatPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
+ 

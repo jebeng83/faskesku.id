@@ -642,6 +642,13 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    // Layout Utama: navbar + 2 panel (10:90)
+    Route::get('/layout-utama', function () {
+        return Inertia::render('LayoutUtama', [
+            'title' => 'Layout Utama',
+        ]);
+    })->name('layout-utama');
+
     Route::prefix('api')->group(function () {
         Route::get('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'index'])->name('api.racikan-template.index');
         Route::post('/racikan-template', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'store'])->name('api.racikan-template.store');
@@ -893,37 +900,578 @@ Route::middleware('auth')->group(function () {
 
     // Laporan Ralan
     Route::get('/laporan/ralan/frekuensi-penyakit', function () {
-        return Inertia::render('Laporan/FrekuensiPenyakit');
+        $listPoli = [];
+        $listDokter = [];
+        $listPenjab = [];
+        $listStatus = ['Baru', 'Lama'];
+
+        if (Schema::hasTable('poliklinik')) {
+            try {
+                $rows = DB::table('poliklinik')
+                    ->select('kd_poli', 'nm_poli', 'status')
+                    ->where('status', '1')
+                    ->orderBy('nm_poli')
+                    ->get();
+                $listPoli = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_poli' => $r->kd_poli,
+                        'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_poli ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listPoli = [];
+            }
+        }
+
+        if (Schema::hasTable('dokter')) {
+            try {
+                $rows = DB::table('dokter')
+                    ->select('kd_dokter', 'nm_dokter', 'status')
+                    ->where('status', '1')
+                    ->orderBy('nm_dokter')
+                    ->get();
+                $listDokter = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_dokter' => $r->kd_dokter,
+                        'nm_dokter' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_dokter ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listDokter = [];
+            }
+        }
+
+        if (Schema::hasTable('penjab')) {
+            try {
+                $rows = DB::table('penjab')
+                    ->select('kd_pj', 'png_jawab', 'status')
+                    ->where('status', '1')
+                    ->orderBy('png_jawab')
+                    ->get();
+                $listPenjab = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_pj' => $r->kd_pj,
+                        'png_jawab' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->png_jawab ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listPenjab = [];
+            }
+        }
+
+        return Inertia::render('Laporan/FrekuensiPenyakit', [
+            'listPoli' => $listPoli,
+            'listDokter' => $listDokter,
+            'listPenjab' => $listPenjab,
+            'listStatus' => $listStatus,
+        ]);
     })->name('laporan.ralan.frekuensi-penyakit');
 
     Route::get('/laporan/ralan/frekuensi-penyakit/data', function () {
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+        $poli = (string) request()->query('poli', '');
+        $dokter = (string) request()->query('dokter', '');
+        $penjab = (string) request()->query('penjab', '');
+        $status = (string) request()->query('status', ''); // Baru/Lama
+
+        $rows = collect();
+        $total = 0;
+
+        if (Schema::hasTable('diagnosa_pasien') && Schema::hasTable('penyakit') && Schema::hasTable('reg_periksa')) {
+            try {
+                $dateColumn = null;
+                foreach (['tgl_registrasi', 'tgl_periksa', 'tgl_masuk'] as $candidate) {
+                    if (Schema::hasColumn('reg_periksa', $candidate)) {
+                        $dateColumn = $candidate;
+                        break;
+                    }
+                }
+
+                $q = DB::table('diagnosa_pasien as dp')
+                    ->join('penyakit as p', 'p.kd_penyakit', '=', 'dp.kd_penyakit')
+                    ->join('reg_periksa as r', 'r.no_rawat', '=', 'dp.no_rawat')
+                    ->where('dp.status', 'Ralan')
+                    ->where('dp.prioritas', 1);
+
+                if ($dateColumn && $startDate) {
+                    $q->whereDate("r.$dateColumn", '>=', $startDate);
+                }
+                if ($dateColumn && $endDate) {
+                    $q->whereDate("r.$dateColumn", '<=', $endDate);
+                }
+                if ($poli !== '') {
+                    $q->where('r.kd_poli', $poli);
+                }
+                if ($dokter !== '') {
+                    $q->where('r.kd_dokter', $dokter);
+                }
+                if ($penjab !== '') {
+                    $q->where('r.kd_pj', $penjab);
+                }
+                if ($status !== '') {
+                    if (Schema::hasColumn('diagnosa_pasien', 'status_penyakit')) {
+                        $q->where('dp.status_penyakit', $status);
+                    } elseif (Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                        $q->where('r.stts_daftar', $status);
+                    }
+                }
+
+                $q = $q->select('dp.kd_penyakit', 'p.nm_penyakit', DB::raw('COUNT(*) as jumlah'))
+                    ->groupBy('dp.kd_penyakit', 'p.nm_penyakit')
+                    ->orderByDesc('jumlah');
+
+                $result = $q->get();
+                $total = (int) $result->sum('jumlah');
+                $rows = collect($result)->map(function ($r) use ($total) {
+                    $nm = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_penyakit ?? ''));
+                    $jumlah = (int) ($r->jumlah ?? 0);
+                    $pct = $total > 0 ? round(($jumlah / $total) * 100, 2) : 0;
+                    return [
+                        'kd_penyakit' => $r->kd_penyakit,
+                        'penyakit' => $nm,
+                        'jumlah' => $jumlah,
+                        'persentase' => $pct,
+                    ];
+                });
+            } catch (\Throwable $e) {
+                $rows = collect();
+                $total = 0;
+            }
+        }
+
         return response()->json([
-            'data' => [],
-            'total' => 0,
+            'data' => $rows->values()->all(),
+            'total' => $total,
         ]);
     })->name('laporan.ralan.frekuensi-penyakit.data');
 
     Route::get('/laporan/ralan/frekuensi-penyakit/print', function () {
-        return response('<html><body><h1>Frekuensi Penyakit Ralan</h1><p>Belum ada data.</p></body></html>');
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+        $poli = (string) request()->query('poli', '');
+        $dokter = (string) request()->query('dokter', '');
+        $penjab = (string) request()->query('penjab', '');
+        $status = (string) request()->query('status', '');
+
+        $rows = collect();
+        if (Schema::hasTable('reg_periksa') && Schema::hasTable('diagnosa_pasien')) {
+            try {
+                $base = DB::table('reg_periksa as r')
+                    ->join('diagnosa_pasien as dp', function ($join) {
+                        $join->on('dp.no_rawat', '=', 'r.no_rawat')
+                            ->where('dp.status', 'Ralan');
+                    })
+                    ->join('penyakit as p', 'p.kd_penyakit', '=', 'dp.kd_penyakit')
+                    ->leftJoin('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+                    ->leftJoin('poliklinik as pl', 'pl.kd_poli', '=', 'r.kd_poli')
+                    ->leftJoin('pasien as ps', 'ps.no_rkm_medis', '=', 'r.no_rkm_medis');
+
+                if ($startDate) {
+                    $base->whereDate('r.tgl_registrasi', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $base->whereDate('r.tgl_registrasi', '<=', $endDate);
+                }
+                if ($poli !== '') {
+                    $base->where('r.kd_poli', $poli);
+                }
+                if ($dokter !== '') {
+                    $base->where('r.kd_dokter', $dokter);
+                }
+                if ($penjab !== '') {
+                    $base->where('r.kd_pj', $penjab);
+                }
+                if ($status !== '' && Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                    $base->where('r.stts_daftar', $status);
+                }
+
+                $rows = $base
+                    ->select([
+                        'dp.kd_penyakit',
+                        DB::raw('COUNT(*) as jumlah'),
+                        DB::raw('MIN(p.nm_penyakit) as nm_penyakit'),
+                    ])
+                    ->groupBy('dp.kd_penyakit')
+                    ->orderByDesc('jumlah')
+                    ->get();
+            } catch (\Throwable $e) {
+                $rows = collect();
+            }
+        }
+
+        $total = (int) $rows->sum('jumlah');
+        $title = 'Laporan Frekuensi Penyakit Rawat Jalan';
+        $period = ($startDate && $endDate) ? ($startDate . ' s.d. ' . $endDate) : 'Semua Periode';
+
+        $html = '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
+        $html .= '<title>' . htmlspecialchars($title) . '</title>';
+        $html .= '<style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";color:#0f172a;margin:24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:14px;margin:0 0 16px;color:#334155}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{font-size:12px;padding:8px;border-bottom:1px solid #e2e8f0}th{background:#f8fafc;text-align:left;color:#0f172a}tr:nth-child(even){background:#f9fafb}tfoot td{font-weight:600} .badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#eef2ff;color:#3730a3;font-size:12px} .header{padding:16px;border:1px solid #e2e8f0;border-radius:12px;background:linear-gradient(90deg,rgba(239,246,255,.8),rgba(238,242,255,.8));} .meta{display:flex;gap:8px;align-items:center;margin-top:6px} .meta span{font-size:12px;color:#475569} @media print{body{margin:0;padding:16px}} </style></head><body>';
+        $html .= '<div class="header"><h1>' . htmlspecialchars($title) . '</h1><div class="meta"><span>Periode: ' . htmlspecialchars($period) . '</span><span class="badge">Ralan</span></div></div>';
+
+        $html .= '<table><thead><tr><th style="width:48px">No</th><th style="width:120px">Kode</th><th>Penyakit</th><th style="width:120px">Jumlah</th><th style="width:140px">Persentase</th></tr></thead><tbody>';
+        $i = 0;
+        foreach ($rows as $r) {
+            $i++;
+            $kode = (string) ($r->kd_penyakit ?? '-');
+            $nm = (string) ($r->nm_penyakit ?? '-');
+            $jml = (int) ($r->jumlah ?? 0);
+            $pct = $total > 0 ? number_format(($jml / $total) * 100, 2) . '%' : '0%';
+            $html .= '<tr><td>' . $i . '</td><td>' . htmlspecialchars($kode) . '</td><td>' . htmlspecialchars($nm) . '</td><td>' . $jml . '</td><td>' . $pct . '</td></tr>';
+        }
+        $html .= '</tbody><tfoot><tr><td colspan="3">Total</td><td>' . $total . '</td><td></td></tr></tfoot></table>';
+
+        $html .= '</body></html>';
+
+        return response($html);
     })->name('laporan.ralan.frekuensi-penyakit.print');
 
     Route::get('/laporan/ralan/kunjungan', function () {
-        return Inertia::render('Laporan/Kunjungan');
+        $listPoli = [];
+        $listDokter = [];
+        $listPenjab = [];
+
+        if (Schema::hasTable('poliklinik')) {
+            try {
+                $rows = DB::table('poliklinik')
+                    ->select('kd_poli', 'nm_poli', 'status')
+                    ->where('status', '1')
+                    ->orderBy('nm_poli')
+                    ->get();
+                $listPoli = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_poli' => $r->kd_poli,
+                        'nm_poli' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_poli ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listPoli = [];
+            }
+        }
+
+        if (Schema::hasTable('dokter')) {
+            try {
+                $rows = DB::table('dokter')
+                    ->select('kd_dokter', 'nm_dokter', 'status')
+                    ->where('status', '1')
+                    ->orderBy('nm_dokter')
+                    ->get();
+                $listDokter = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_dokter' => $r->kd_dokter,
+                        'nm_dokter' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_dokter ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listDokter = [];
+            }
+        }
+
+        if (Schema::hasTable('penjab')) {
+            try {
+                $rows = DB::table('penjab')
+                    ->select('kd_pj', 'png_jawab', 'status')
+                    ->where('status', '1')
+                    ->orderBy('png_jawab')
+                    ->get();
+                $listPenjab = collect($rows)->map(function ($r) {
+                    return [
+                        'kd_pj' => $r->kd_pj,
+                        'png_jawab' => preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->png_jawab ?? '')),
+                    ];
+                })->all();
+            } catch (\Throwable $e) {
+                $listPenjab = [];
+            }
+        }
+
+        return Inertia::render('Laporan/Kunjungan', [
+            'listPoli' => $listPoli,
+            'listDokter' => $listDokter,
+            'listPenjab' => $listPenjab,
+        ]);
     })->name('laporan.ralan.kunjungan');
 
     Route::get('/laporan/ralan/kunjungan/data', function () {
+        $page = max(1, (int) request()->query('page', 1));
+        $perPage = max(1, (int) request()->query('per_page', 50));
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+        $poli = (string) request()->query('poli', '');
+        $dokter = (string) request()->query('dokter', '');
+        $penjab = (string) request()->query('penjab', '');
+        $status = (string) request()->query('status', '');
+        $excludeBatal = request()->boolean('exclude_batal', false);
+        $q = trim((string) request()->query('q', ''));
+        $kabupaten = trim((string) request()->query('kabupaten', ''));
+        $kecamatan = trim((string) request()->query('kecamatan', ''));
+        $kelurahan = trim((string) request()->query('kelurahan', ''));
+        $sortBy = (string) request()->query('sort_by', '');
+        $sortDir = strtolower((string) request()->query('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        $data = collect();
+        $total = 0;
+        $currentPage = $page;
+        $lastPage = 1;
+        $from = 0;
+        $to = 0;
+
+        if (Schema::hasTable('reg_periksa') && Schema::hasTable('dokter') && Schema::hasTable('poliklinik')) {
+            try {
+                $dateColumn = null;
+                foreach (['tgl_registrasi'] as $candidate) {
+                    if (Schema::hasColumn('reg_periksa', $candidate)) {
+                        $dateColumn = $candidate;
+                        break;
+                    }
+                }
+
+                $base = DB::table('reg_periksa as r')
+                    ->join('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+                    ->join('poliklinik as pl', 'pl.kd_poli', '=', 'r.kd_poli')
+                    ->leftJoin('pasien as ps', 'ps.no_rkm_medis', '=', 'r.no_rkm_medis')
+                    ->leftJoin('diagnosa_pasien as dp', function ($join) {
+                        $join->on('dp.no_rawat', '=', 'r.no_rawat')
+                            ->where('dp.status', 'Ralan')
+                            ->where('dp.prioritas', 1);
+                    })
+                    ->leftJoin('penyakit as p', 'p.kd_penyakit', '=', 'dp.kd_penyakit')
+                    ->leftJoin('penjab as pj', 'pj.kd_pj', '=', 'r.kd_pj');
+
+                if ($excludeBatal && Schema::hasColumn('reg_periksa', 'stts')) {
+                    $base->where('r.stts', '<>', 'Batal');
+                }
+                if ($dateColumn && $startDate) {
+                    $base->whereDate("r.$dateColumn", '>=', $startDate);
+                }
+                if ($dateColumn && $endDate) {
+                    $base->whereDate("r.$dateColumn", '<=', $endDate);
+                }
+                if ($poli !== '') {
+                    $base->where('r.kd_poli', $poli);
+                }
+                if ($dokter !== '') {
+                    $base->where('r.kd_dokter', $dokter);
+                }
+                if ($penjab !== '') {
+                    $base->where('r.kd_pj', $penjab);
+                }
+                if ($status !== '' && Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                    $base->where('r.stts_daftar', $status);
+                }
+                if ($q !== '') {
+                    $base->where(function ($w) use ($q) {
+                        $w->where('ps.nm_pasien', 'like', "%{$q}%")
+                            ->orWhere('ps.alamat', 'like', "%{$q}%")
+                            ->orWhere('r.no_rkm_medis', 'like', "%{$q}%")
+                            ->orWhere('d.nm_dokter', 'like', "%{$q}%")
+                            ->orWhere('pl.nm_poli', 'like', "%{$q}%");
+                    });
+                }
+                if ($kabupaten !== '' && Schema::hasColumn('pasien', 'kabupatenpj')) {
+                    $base->where('ps.kabupatenpj', 'like', "%{$kabupaten}%");
+                }
+                if ($kecamatan !== '' && Schema::hasColumn('pasien', 'kecamatanpj')) {
+                    $base->where('ps.kecamatanpj', 'like', "%{$kecamatan}%");
+                }
+                if ($kelurahan !== '' && Schema::hasColumn('pasien', 'kelurahanpj')) {
+                    $base->where('ps.kelurahanpj', 'like', "%{$kelurahan}%");
+                }
+
+                $sortMap = [
+                    'tgl_registrasi' => 'r.tgl_registrasi',
+                    'no_rawat' => 'r.no_rawat',
+                    'nm_pasien' => 'ps.nm_pasien',
+                    'no_rkm_medis' => 'r.no_rkm_medis',
+                    'jk' => 'ps.jk',
+                    'umur' => 'ps.umur',
+                    'nm_dokter' => 'd.nm_dokter',
+                    'nm_poli' => 'pl.nm_poli',
+                    'penjab' => 'pj.png_jawab',
+                    'alamat' => 'ps.alamat',
+                    'stts_daftar' => 'r.stts_daftar',
+                    'kd_penyakit' => 'dp.kd_penyakit',
+                    'nm_penyakit' => 'p.nm_penyakit',
+                ];
+                if ($sortBy !== '' && isset($sortMap[$sortBy])) {
+                    $base->orderBy($sortMap[$sortBy], $sortDir);
+                } else {
+                    $base->orderBy('r.tgl_registrasi', 'desc');
+                }
+
+                $countQuery = clone $base;
+                $total = (int) $countQuery->count();
+                $lastPage = max(1, (int) ceil($total / $perPage));
+                $currentPage = min($page, $lastPage);
+                $offset = ($currentPage - 1) * $perPage;
+
+                $rows = $base
+                    ->select([
+                        'r.tgl_registrasi',
+                        'r.no_rawat',
+                        'r.no_rkm_medis',
+                        'r.stts_daftar',
+                        'd.nm_dokter',
+                        'pl.nm_poli',
+                        'pj.png_jawab',
+                        'ps.nm_pasien',
+                        'ps.jk',
+                        'ps.umur',
+                        'ps.alamat',
+                        'dp.kd_penyakit',
+                        'p.nm_penyakit',
+                    ])
+                    ->offset($offset)
+                    ->limit($perPage)
+                    ->get();
+
+                $data = collect($rows)->map(function ($r) {
+                    $nm_pasien = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_pasien ?? ''));
+                    $nm_dokter = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_dokter ?? ''));
+                    $nm_poli = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_poli ?? ''));
+                    $alamat = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->alamat ?? ''));
+                    $png_jawab = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->png_jawab ?? ''));
+                    $nm_penyakit = preg_replace('/[\x00-\x1F\x7F]/u', '', (string) ($r->nm_penyakit ?? ''));
+                    return [
+                        'tgl_registrasi' => $r->tgl_registrasi,
+                        'no_rawat' => $r->no_rawat,
+                        'no_rkm_medis' => $r->no_rkm_medis,
+                        'stts_daftar' => $r->stts_daftar,
+                        'nm_dokter' => $nm_dokter,
+                        'nm_poli' => $nm_poli,
+                        'penjab' => $png_jawab,
+                        'png_jawab' => $png_jawab,
+                        'nm_pasien' => $nm_pasien,
+                        'jk' => $r->jk,
+                        'umur' => $r->umur,
+                        'alamat' => $alamat,
+                        'kd_penyakit' => $r->kd_penyakit,
+                        'nm_penyakit' => $nm_penyakit,
+                    ];
+                });
+
+                $from = $total > 0 ? $offset + 1 : 0;
+                $to = $total > 0 ? min($offset + $perPage, $total) : 0;
+            } catch (\Throwable $e) {
+                $data = collect();
+                $total = 0;
+                $currentPage = 1;
+                $lastPage = 1;
+                $from = 0;
+                $to = 0;
+            }
+        }
+
         return response()->json([
-            'data' => [],
-            'current_page' => 1,
-            'last_page' => 1,
-            'total' => 0,
-            'from' => 0,
-            'to' => 0,
+            'data' => $data->values()->all(),
+            'current_page' => $currentPage,
+            'last_page' => $lastPage,
+            'total' => $total,
+            'from' => $from,
+            'to' => $to,
         ]);
     })->name('laporan.ralan.kunjungan.data');
 
     Route::get('/laporan/ralan/kunjungan/print', function () {
-        return response('<html><body><h1>Kunjungan Ralan</h1><p>Belum ada data.</p></body></html>');
+        $startDate = request()->query('start_date');
+        $endDate = request()->query('end_date');
+        $poli = (string) request()->query('poli', '');
+        $dokter = (string) request()->query('dokter', '');
+        $penjab = (string) request()->query('penjab', '');
+        $status = (string) request()->query('status', '');
+        $excludeBatal = request()->boolean('exclude_batal', false);
+
+        $rows = collect();
+        if (Schema::hasTable('reg_periksa') && Schema::hasTable('dokter') && Schema::hasTable('poliklinik')) {
+            try {
+                $base = DB::table('reg_periksa as r')
+                    ->join('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+                    ->join('poliklinik as pl', 'pl.kd_poli', '=', 'r.kd_poli')
+                    ->leftJoin('pasien as ps', 'ps.no_rkm_medis', '=', 'r.no_rkm_medis')
+                    ->leftJoin('diagnosa_pasien as dp', function ($join) {
+                        $join->on('dp.no_rawat', '=', 'r.no_rawat')
+                            ->where('dp.status', 'Ralan')
+                            ->where('dp.prioritas', 1);
+                    })
+                    ->leftJoin('penyakit as p', 'p.kd_penyakit', '=', 'dp.kd_penyakit')
+                    ->leftJoin('penjab as pj', 'pj.kd_pj', '=', 'r.kd_pj');
+
+                if ($excludeBatal && Schema::hasColumn('reg_periksa', 'stts')) {
+                    $base->where('r.stts', '<>', 'Batal');
+                }
+                if ($startDate) {
+                    $base->whereDate('r.tgl_registrasi', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $base->whereDate('r.tgl_registrasi', '<=', $endDate);
+                }
+                if ($poli !== '') {
+                    $base->where('r.kd_poli', $poli);
+                }
+                if ($dokter !== '') {
+                    $base->where('r.kd_dokter', $dokter);
+                }
+                if ($penjab !== '') {
+                    $base->where('r.kd_pj', $penjab);
+                }
+                if ($status !== '' && Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                    $base->where('r.stts_daftar', $status);
+                }
+
+                $rows = $base
+                    ->select([
+                        'r.tgl_registrasi',
+                        'r.no_rawat',
+                        'r.no_rkm_medis',
+                        'r.stts_daftar',
+                        'd.nm_dokter',
+                        'pl.nm_poli',
+                        'pj.png_jawab',
+                        'ps.nm_pasien',
+                        'ps.jk',
+                        'ps.umur',
+                        'ps.alamat',
+                        'dp.kd_penyakit',
+                        'p.nm_penyakit',
+                    ])
+                    ->orderBy('r.tgl_registrasi', 'desc')
+                    ->limit(1000)
+                    ->get();
+            } catch (\Throwable $e) {
+                $rows = collect();
+            }
+        }
+
+        $title = 'Laporan Kunjungan Rawat Jalan';
+        $period = ($startDate && $endDate) ? ($startDate . ' s.d. ' . $endDate) : 'Semua Periode';
+
+        $html = '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
+        $html .= '<title>' . htmlspecialchars($title) . '</title>';
+        $html .= '<style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";color:#0f172a;margin:24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:14px;margin:0 0 16px;color:#334155}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{font-size:12px;padding:8px;border-bottom:1px solid #e2e8f0}th{background:#f8fafc;text-align:left;color:#0f172a}tr:nth-child(even){background:#f9fafb} .badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#eef2ff;color:#3730a3;font-size:12px} .header{padding:16px;border:1px solid #e2e8f0;border-radius:12px;background:linear-gradient(90deg,rgba(239,246,255,.8),rgba(238,242,255,.8));} .meta{display:flex;gap:8px;align-items:center;margin-top:6px} .meta span{font-size:12px;color:#475569} @media print{body{margin:0;padding:16px}} </style></head><body>';
+        $html .= '<div class="header"><h1>' . htmlspecialchars($title) . '</h1><div class="meta"><span>Periode: ' . htmlspecialchars($period) . '</span><span class="badge">Ralan</span></div></div>';
+
+        $html .= '<table><thead><tr><th>Tanggal</th><th>No Rawat</th><th>No RM</th><th>Pasien</th><th>JK</th><th>Umur</th><th>Dokter</th><th>Poli</th><th>Cara Bayar</th><th>Status</th><th>Kode Diagnosa</th><th>Diagnosa</th></tr></thead><tbody>';
+        foreach ($rows as $r) {
+            $html .= '<tr>'
+                . '<td>' . htmlspecialchars((string) ($r->tgl_registrasi ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->no_rawat ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->no_rkm_medis ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->nm_pasien ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->jk ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->umur ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->nm_dokter ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->nm_poli ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->png_jawab ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->stts_daftar ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->kd_penyakit ?? '')) . '</td>'
+                . '<td>' . htmlspecialchars((string) ($r->nm_penyakit ?? '')) . '</td>'
+                . '</tr>';
+        }
+        $html .= '</tbody></table>';
+
+        $html .= '</body></html>';
+
+        return response($html);
     })->name('laporan.ralan.kunjungan.print');
 
     // Laporan Ranap (stub sementara)
@@ -2669,3 +3217,35 @@ Route::post('/farmasi/set-penjualan', [SetHargaObatController::class, 'storePenj
 Route::delete('/farmasi/set-penjualan/{kdjns}', [SetHargaObatController::class, 'destroyPenjualanPerJenis'])
     ->name('set-penjualan.destroy')
     ->middleware('permission:farmasi.set-penjualan.destroy');
+
+// SATU SEHAT ROUTES
+Route::middleware(['auth'])->prefix('api/satusehat')->name('api.satusehat.')->group(function () {
+    // Practitioner Mapping
+    Route::get('/practitioner-mapping', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'index'])->name('practitioner-mapping.index');
+    Route::get('/practitioner-mapping/pegawai-list', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'getPegawaiList'])->name('practitioner-mapping.pegawai-list');
+    Route::post('/practitioner-mapping/search-create', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'searchAndCreate'])->name('practitioner-mapping.search-create');
+    Route::put('/practitioner-mapping/{id}', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'update'])->name('practitioner-mapping.update');
+    Route::delete('/practitioner-mapping/{id}', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'destroy'])->name('practitioner-mapping.destroy');
+
+
+
+    
+    // Proxy ke Practitioner search (jika diperlukan oleh component Practitioner.jsx)
+    // Note: Practitioner.jsx uses /api/satusehat/practitioner endpoint which we assume handled here or elsewhere.
+    // If Practitioner.jsx uses /api/satusehat/practitioner for direct search without saving, we might need a route for that too.
+    // Since searchAndCreate does both, maybe we can reuse similar logic?
+    // But Practitioner.jsx seems to just search. 
+    // Let's add a pure search route if needed, or let's assuming Practitioner.jsx might need adjustment or we add a generic proxy.
+    // For now I will add a generic search route if it doesn't exist.
+    // Proxy ke Practitioner search
+    Route::get('/practitioner', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'searchOnly'])->name('practitioner.search');
+});
+
+// SATU SEHAT PAGE ROUTES
+Route::middleware(['auth'])->group(function () {
+    Route::get('/satusehat/mapping-practitioner', function () {
+        return Inertia::render('SatuSehat/Prerequisites/MappingPractitioner');
+    })->name('satusehat.mapping-practitioner');
+
+    Route::get('/satusehat/mapping-alergi', [\App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::class, 'index'])->name('satusehat_mapping_alergi.index');
+});

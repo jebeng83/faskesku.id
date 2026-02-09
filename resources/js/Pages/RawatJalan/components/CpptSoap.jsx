@@ -1999,7 +1999,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
                                 <div className="min-w-0 flex flex-row items-center gap-1">
                                     <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full md:flex-1 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full sm:w-40 md:w-66 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                         {kesadaranOptions.map((opt) => (
                                             <option key={opt} value={opt}>{opt}</option>
                                         ))}
@@ -2031,7 +2031,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                 placeholder="Ketik nama atau NIK pegawai..."
                                                 searchPlaceholder="Cari pegawai..."
                                                 defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
-                                                className="!h-7 !px-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
+                                                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-67 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
                                             />
                                         </div>
                                     </div>
@@ -2054,7 +2054,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             placeholder="Pilih alergi..."
                                             searchPlaceholder="Cari alergi..."
                                             defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
-                                            className="!h-7 !px-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
+                                            className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-68 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
                                             displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'}
                                         />
                                         <button
@@ -2069,7 +2069,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     </div>
                                 </div>
                                 <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Template :</label>
                                     <div className="w-full md:flex-1">
                                         <div className="flex flex-col sm:flex-row sm:items-center gap-1">
                                             <div className="w-full sm:w-40 md:w-40">

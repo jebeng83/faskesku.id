@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import Modal from "@/Components/Modal";
 import { Calendar, Search, Printer, DollarSign, User, Clock } from "lucide-react";
 import { todayDateString } from "@/tools/datetime";
@@ -262,7 +263,7 @@ export default function RekapUangPershiftPage() {
   );
 
   return (
-    <SidebarKeuangan title="Keuangan">
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Akutansi - Rekap Uang per Shift" />
       {pageHeader}
       {filterSection}
@@ -276,6 +277,6 @@ export default function RekapUangPershiftPage() {
           </motion.div>
         ))}
       </div>
-    </SidebarKeuangan>
+    </LayoutUtama>
   );
 }

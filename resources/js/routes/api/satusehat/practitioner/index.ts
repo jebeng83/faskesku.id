@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1700
+* @see \App\Http\Controllers\SatuSehat\PractitionerMappingController::search
+* @see app/Http/Controllers/SatuSehat/PractitionerMappingController.php:57
 * @route '/api/satusehat/practitioner'
 */
 export const search = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ search.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1700
+* @see \App\Http\Controllers\SatuSehat\PractitionerMappingController::search
+* @see app/Http/Controllers/SatuSehat/PractitionerMappingController.php:57
 * @route '/api/satusehat/practitioner'
 */
 search.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ search.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1700
+* @see \App\Http\Controllers\SatuSehat\PractitionerMappingController::search
+* @see app/Http/Controllers/SatuSehat/PractitionerMappingController.php:57
 * @route '/api/satusehat/practitioner'
 */
 search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ search.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatController::search
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1700
+* @see \App\Http\Controllers\SatuSehat\PractitionerMappingController::search
+* @see app/Http/Controllers/SatuSehat/PractitionerMappingController.php:57
 * @route '/api/satusehat/practitioner'
 */
 search.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

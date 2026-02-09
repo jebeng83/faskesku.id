@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import LanjutanRegistrasiSidebar from '@/Components/LanjutanRegistrasiSidebar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -274,7 +275,7 @@ export default function CekPesertaPcareNik() {
 
 // Render dalam LanjutanRegistrasiLayout
 CekPesertaPcareNik.layout = (page) => (
-  <LanjutanRegistrasiLayout title="Layanan PCare" menuConfig={{ activeTab: 'cek_peserta_bpjs' }}>
+  <LayoutUtama title="Layanan PCare" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: 'cek_peserta_bpjs' }} />}> 
     {page}
-  </LanjutanRegistrasiLayout>
+  </LayoutUtama>
 );

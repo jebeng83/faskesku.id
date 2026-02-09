@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Head } from "@inertiajs/react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import { motion, AnimatePresence } from "framer-motion";
 import { Wallet, Plus, Edit2, Trash2, Search as SearchIcon, XCircle, ClipboardList } from "lucide-react";
 import axios from "axios";
@@ -333,7 +334,7 @@ export default function PengeluaranHarian() {
   useEffect(() => { fetchList(); }, [page, perPage]);
 
   return (
-    <SidebarKeuangan title="Keuangan">
+    <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
       <Head title="Pengeluaran Harian" />
       <div className="px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -770,6 +771,6 @@ export default function PengeluaranHarian() {
           </div>
         </motion.div>
       </div>
-    </SidebarKeuangan>
+    </LayoutUtama>
   );
 }

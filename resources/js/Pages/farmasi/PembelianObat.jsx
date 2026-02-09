@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Head, usePage } from "@inertiajs/react";
-import SidebarFarmasi from "@/Layouts/SidebarFarmasi";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarFarmasiMenu from "@/Components/SidebarFarmasiMenu";
 import { toast } from "@/tools/toast";
 import Button from "@/Components/ui/Button";
 import Input from "@/Components/ui/Input";
@@ -694,7 +695,7 @@ export default function PembelianObat() {
     };
 
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Pembelian Obat" left={<SidebarFarmasiMenu title="Farmasi" />}>
             <Head title="Pembelian Obat" />
             <div className="screen-only">
                 <div className="px-6 py-4 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 ring-1 ring-black/5">
@@ -1541,6 +1542,6 @@ export default function PembelianObat() {
                     )}
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

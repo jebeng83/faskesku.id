@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 const PageHeader = () => (
   <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-6 text-white shadow-lg">
@@ -116,6 +117,7 @@ export default function SatuanBarangPage() {
   const onChangePerPage = (e) => { const val = Number(e.target.value); setPerPage(val); router.get(route('farmasi.satuan-barang.index'), { q: query, perPage: val }, { preserveState: true, replace: true }); };
 
   return (
+    <LayoutUtama title="Satuan Barang" left={<SidebarFarmasiMenu title="Farmasi" /> }>
     <div>
       <Head title="Satuan Barang" />
       <div className="space-y-6">
@@ -209,7 +211,8 @@ export default function SatuanBarangPage() {
         <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
       </div>
     </div>
+    </LayoutUtama>
   );
 }
 
-SatuanBarangPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
+ 

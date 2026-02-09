@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import AppLayout from '@/Layouts/AppLayout';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarDaftarTarifMenu from '@/Components/SidebarDaftarTarifMenu';
 
 export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, kategoris, category = 'rawat-jalan' }) {
     const { data, setData, processing, errors } = useForm({
@@ -193,14 +194,7 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
     };
 
     return (
-        <AppLayout
-            title="Edit Tarif"
-            renderHeader={() => (
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Edit Tarif Perawatan
-                </h2>
-            )}
-        >
+        <LayoutUtama title="Edit Tarif" left={<SidebarDaftarTarifMenu title="Master Tarif" />}>
             <Head title="Edit Tarif" />
 
             <div className="py-12">
@@ -648,6 +642,6 @@ export default function Edit({ jnsPerawatan, polikliniks, bangsals, penjaabs, ka
                     </form>
                 </div>
             </div>
-        </AppLayout>
+        </LayoutUtama>
     );
 }

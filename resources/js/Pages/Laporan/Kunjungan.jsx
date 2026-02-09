@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Head } from "@inertiajs/react";
-import SidebarLaporan from "@/Layouts/SidebarLaporan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarLaporanMenu from "@/Components/SidebarLaporanMenu";
 import { Calendar, Filter, Loader2, Search, X, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Printer } from "lucide-react";
 
 function toDateInputValue(date) {
@@ -162,23 +164,22 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
   };
 
   return (
-    <SidebarLaporan title="Laporan">
+    <LayoutUtama title="Laporan" left={<SidebarLaporanMenu title="Laporan" />}> 
       <Head title="Kunjungan Ralan" />
 
       <div className="px-2 sm:px-4 lg:px-6">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-          <div className="min-w-[220px]">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-              Kunjungan Ralan
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Daftar kunjungan rawat jalan dengan filter periode dan kriteria.
-            </p>
-          </div>
-        </div>
+        <motion.div
+          className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-4"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Kunjungan Ralan</h1>
+          <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">Daftar kunjungan rawat jalan dengan filter periode dan kriteria.</p>
+        </motion.div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm mb-6">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+        <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm ring-1 ring-gray-200/70 dark:ring-gray-700/60 shadow-sm mb-6">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
           <div className="p-4 space-y-4">
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -195,7 +196,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -211,7 +212,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -228,7 +229,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                   <select
                     value={poli}
                     onChange={(e) => setPoli(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white appearance-none"
                   >
                     <option value="">Semua Poli</option>
                     {listPoli.map((item) => (
@@ -250,7 +251,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                   <select
                     value={dokter}
                     onChange={(e) => setDokter(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white appearance-none"
                   >
                     <option value="">Semua Dokter</option>
                     {listDokter.map((item) => (
@@ -274,7 +275,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                   <select
                     value={penjab}
                     onChange={(e) => setPenjab(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 appearance-none"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white appearance-none"
                   >
                     <option value="">Semua Cara Bayar</option>
                     {listPenjab.map((item) => (
@@ -293,7 +294,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none px-3 py-2 text-sm text-gray-900 dark:text-white"
                   >
                     <option value="">Semua</option>
                     <option value="Baru">Baru</option>
@@ -313,21 +314,21 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={kabupaten}
                     onChange={(e) => setKabupaten(e.target.value)}
                     placeholder="Kabupaten"
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none px-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                   <input
                     type="text"
                     value={kecamatan}
                     onChange={(e) => setKecamatan(e.target.value)}
                     placeholder="Kecamatan"
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none px-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                   <input
                     type="text"
                     value={kelurahan}
                     onChange={(e) => setKelurahan(e.target.value)}
                     placeholder="Kelurahan"
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none px-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -346,7 +347,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                     placeholder="Poli, dokter, no RM, nama, alamat"
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500"
+                    className="w-full rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 focus:outline-none pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -369,7 +370,7 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-300/70 dark:ring-gray-700/60 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/90 dark:hover:bg-gray-700/90 transition-colors"
               >
                 <X className="h-4 w-4" />
                 Reset
@@ -377,7 +378,8 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Cetak Laporan"
+                className="inline-flex items-center gap-2 rounded-lg bg-white/90 dark:bg-gray-800/90 ring-1 ring-gray-300/70 dark:ring-gray-700/60 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/90 dark:hover:bg-gray-700/90 transition-colors"
               >
                 <Printer className="h-4 w-4" />
                 Print
@@ -806,6 +808,6 @@ export default function KunjunganRalan({ listPoli = [], listDokter = [], listPen
           )}
         </div>
       </div>
-    </SidebarLaporan>
+    </LayoutUtama>
   );
 }

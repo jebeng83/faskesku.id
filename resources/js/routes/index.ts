@@ -158,7 +158,47 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1172
+* @see routes/web.php:646
+* @route '/layout-utama'
+*/
+export const layoutUtama = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: layoutUtama.url(options),
+    method: 'get',
+})
+
+layoutUtama.definition = {
+    methods: ["get","head"],
+    url: '/layout-utama',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:646
+* @route '/layout-utama'
+*/
+layoutUtama.url = (options?: RouteQueryOptions) => {
+    return layoutUtama.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:646
+* @route '/layout-utama'
+*/
+layoutUtama.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: layoutUtama.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:646
+* @route '/layout-utama'
+*/
+layoutUtama.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: layoutUtama.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:1720
 * @route '/docs/{section?}'
 */
 export const docs = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +212,7 @@ docs.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1172
+* @see routes/web.php:1720
 * @route '/docs/{section?}'
 */
 docs.url = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -202,7 +242,7 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
 }
 
 /**
-* @see routes/web.php:1172
+* @see routes/web.php:1720
 * @route '/docs/{section?}'
 */
 docs.get = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -211,7 +251,7 @@ docs.get = (args?: { section?: string | number } | [section: string | number ] |
 })
 
 /**
-* @see routes/web.php:1172
+* @see routes/web.php:1720
 * @route '/docs/{section?}'
 */
 docs.head = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

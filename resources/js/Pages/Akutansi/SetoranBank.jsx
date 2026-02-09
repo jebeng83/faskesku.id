@@ -12,7 +12,8 @@ import {
     CheckCircle2,
     AlertCircle,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import {
     Table,
     TableHeader,
@@ -255,7 +256,7 @@ export default function SetoranBankPage() {
     };
 
     return (
-        <SidebarKeuangan>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Setoran Bank" />
             <div className="py-6">
                 <motion.div
@@ -654,10 +655,8 @@ export default function SetoranBankPage() {
                     </motion.div>
                 </motion.div>
             </div>
-        </SidebarKeuangan>
+        </LayoutUtama>
     );
 }
 
-SetoranBankPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

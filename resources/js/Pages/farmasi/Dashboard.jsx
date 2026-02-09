@@ -1,10 +1,11 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 
 export default function FarmasiDashboard() {
     return (
-        <SidebarFarmasi title="Farmasi">
+        <LayoutUtama title="Dashboard Farmasi" left={<SidebarFarmasiMenu title="Farmasi" /> }>
             <Head title="Dashboard Farmasi" />
 
             <div className="space-y-6 p-6">
@@ -209,6 +210,6 @@ export default function FarmasiDashboard() {
                     </div>
                 </div>
             </div>
-        </SidebarFarmasi>
+        </LayoutUtama>
     );
 }

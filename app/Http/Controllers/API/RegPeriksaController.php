@@ -436,6 +436,21 @@ class RegPeriksaController extends Controller
                 'status_bayar' => $request->status_bayar,
             ]);
 
+            // Integrasi SATU SEHAT: Finish Encounter jika status bayar = Sudah Bayar
+            if ($request->status_bayar === 'Sudah Bayar') {
+                try {
+                    // Gunakan app() helper untuk resolve dependency
+                    $encounterService = app(\App\Services\SatuSehat\EncounterService::class);
+                    $encounterService->finishEncounter($noRawat);
+                } catch (\Throwable $e) {
+                    // Log error tapi jangan gagalkan response ke frontend
+                    Log::error("Gagal finish encounter SATU SEHAT saat update status bayar", [
+                        'no_rawat' => $noRawat,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $regPeriksaModel,

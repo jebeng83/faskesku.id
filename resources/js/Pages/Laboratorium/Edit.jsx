@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import AppLayout from "@/Layouts/AppLayout";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarLaboratoriumMenu from "@/Components/SidebarLaboratoriumMenu";
 import Button from "@/Components/Button";
 import SearchableSelect from "@/Components/SearchableSelect";
 import Alert from "@/Components/Alert";
@@ -70,7 +71,7 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 	}));
 
 	return (
-		<AppLayout>
+		<LayoutUtama title="Edit Pemeriksaan Laboratorium" left={<SidebarLaboratoriumMenu title="Laboratorium" />}>
 			<Head title="Edit Pemeriksaan Laboratorium" />
 
 			{showAlert && (
@@ -299,6 +300,6 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 					</div>
 				</div>
 			</div>
-		</AppLayout>
+		</LayoutUtama>
 	);
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
-import SidebarRawatInap from '@/Layouts/SidebarRawatInap';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarRawatInapMenu from '@/Components/SidebarRawatInapMenu';
 import RiwayatPemeriksaan from './components/RiwayatPemeriksaan';
 import CpptSoap from '../RawatJalan/components/CpptSoap';
 import Resep from './components/Resep';
@@ -68,7 +69,7 @@ export default function Lanjutan({ rawatInap, params }) {
     };
 
     return (
-        <SidebarRawatInap title="Lanjutan Rawat Inap">
+        <LayoutUtama title="Lanjutan Rawat Inap" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
             <Head title={`Lanjutan Rawat Inap${params?.no_rawat ? ' - ' + params.no_rawat : ''}`} />
             <div className="px-4 sm:px-6 lg:px-8 py-6">
                 {/* Header */}
@@ -203,6 +204,6 @@ export default function Lanjutan({ rawatInap, params }) {
                     </div>
                 </div>
             </div>
-        </SidebarRawatInap>
+        </LayoutUtama>
     );
 }

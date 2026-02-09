@@ -9,7 +9,8 @@ import Modal from "@/Components/Modal";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/Components/ui/Table";
 import toast from "@/tools/toast";
 import { Head } from "@inertiajs/react";
-import SidebarRawatInap from "@/Layouts/SidebarRawatInap";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarRawatInapMenu from "@/Components/SidebarRawatInapMenu";
 
 const variants = {
   container: { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } },
@@ -181,7 +182,7 @@ export default function Kamar() {
   }, []);
 
   return (
-    <SidebarRawatInap title="Kamar">
+    <LayoutUtama title="Kamar" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
       <Head title="Kamar" />
       <div className="space-y-4">
         <motion.div
@@ -515,6 +516,6 @@ export default function Kamar() {
           </div>
         </Modal>
       </div>
-    </SidebarRawatInap>
+    </LayoutUtama>
   );
 }

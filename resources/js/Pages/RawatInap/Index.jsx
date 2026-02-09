@@ -3,7 +3,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, RefreshCw, Globe } from 'lucide-react';
-import SidebarRawatInap from '@/Layouts/SidebarRawatInap';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarRawatInapMenu from '@/Components/SidebarRawatInapMenu';
 
 export default function Index(props = {}) {
     const { rawatInap = { data: [], meta: {} }, filters = {}, sttsPulangOptions = [] } = props;
@@ -85,7 +86,7 @@ export default function Index(props = {}) {
     };
 
     return (
-        <SidebarRawatInap>
+        <LayoutUtama title="Rawat Inap" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
             <Head title="Rawat Inap" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -302,6 +303,6 @@ export default function Index(props = {}) {
                     </div>
                 )}
             </div>
-        </SidebarRawatInap>
+        </LayoutUtama>
     );
 }

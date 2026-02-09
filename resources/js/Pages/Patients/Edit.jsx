@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import LanjutanRegistrasiLayout from '@/Layouts/LanjutanRegistrasiLayout';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import LanjutanRegistrasiSidebar from '@/Components/LanjutanRegistrasiSidebar';
 import PatientEditModal from '@/Components/PatientEditModal';
 
 export default function Edit({ patient }) {
@@ -12,9 +13,9 @@ export default function Edit({ patient }) {
     };
 
     return (
-        <LanjutanRegistrasiLayout title="Registrasi Pasien" menuConfig={{ activeTab: 'pasien' }}>
+        <LayoutUtama title="Registrasi Pasien" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: 'pasien' }} />}> 
             <Head title={`Edit Pasien - ${patient?.nm_pasien || ''}`} />
             <PatientEditModal isOpen={isOpen} onClose={handleClose} patient={patient} onSuccess={() => {}} />
-        </LanjutanRegistrasiLayout>
+        </LayoutUtama>
     );
 }

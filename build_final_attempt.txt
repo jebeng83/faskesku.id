@@ -1,0 +1,40 @@
+
+> prebuild
+> node -e "const c=require('child_process'); const has=(m)=>{ try{ require.resolve(m); return true; } catch(e){ return false; } }; const skip=process.env.SKIP_QUALITY_CHECK==='1'; const isProd=process.env.NODE_ENV==='production'; if(skip){ console.warn('[prebuild] SKIP_QUALITY_CHECK=1, skipping quality checks'); process.exit(0); } if(isProd && (!has('eslint') || !has('eslint-plugin-react-hooks'))){ console.warn('[prebuild] Dev dependencies missing in production, skipping quality checks'); process.exit(0); } c.execSync('npm run quality:check',{stdio:'inherit'}); "
+
+
+> quality:check
+> npm run lint && npm run typecheck
+
+
+> lint
+> eslint resources/js --ext .js,.jsx,.ts,.tsx --no-inline-config
+
+
+> typecheck
+> tsc -p tsconfig.json --noEmit
+
+
+> build
+> vite build
+
+vite v7.3.0 building client environment for production...
+[plugin @laravel/vite-plugin-wayfinder] Types generated for actions, routes
+transforming...
+✓ 4424 modules transformed.
+✗ Build failed in 5.14s
+error during build:
+[vite]: Rollup failed to resolve import "react-select" from "/Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/resources/js/Pages/SatuSehat/Prerequisites/MappingAlergiPasien.jsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteLog (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/vite/dist/node/chunks/config.js:33634:57)
+    at file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/vite/dist/node/chunks/config.js:33668:73
+    at onwarn (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/@vitejs/plugin-react/dist/index.js:55:7)
+    at file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/vite/dist/node/chunks/config.js:33668:28
+    at onRollupLog (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/vite/dist/node/chunks/config.js:33663:63)
+    at onLog (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/vite/dist/node/chunks/config.js:33466:4)
+    at file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/rollup/dist/es/shared/node-entry.js:20936:32
+    at Object.logger [as onLog] (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/rollup/dist/es/shared/node-entry.js:22822:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/rollup/dist/es/shared/node-entry.js:21566:26)
+    at file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/node_modules/rollup/dist/es/shared/node-entry.js:21524:26

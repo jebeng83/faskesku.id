@@ -24,6 +24,8 @@ import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
 import { toast } from "@/tools/toast";
 import Badge from "@/Components/ui/Badge";
 import TriaseUGD from "./TriaseUGD";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarRawatInapMenu from "@/Components/SidebarRawatInapMenu";
 
 export default function UGD() {
   const [query, setQuery] = useState("");
@@ -852,6 +854,7 @@ export default function UGD() {
   };
 
   return (
+    <LayoutUtama title="IGD" left={<SidebarRawatInapMenu title="IGD" />}> 
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       {header}
 
@@ -1329,5 +1332,6 @@ export default function UGD() {
         />
       </Modal>
     </motion.div>
+    </LayoutUtama>
   );
 }

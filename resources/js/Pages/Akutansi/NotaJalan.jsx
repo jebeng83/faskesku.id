@@ -8,7 +8,8 @@ import {
     Loader2,
     AlertCircle,
 } from "lucide-react";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 
 const currency = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -124,6 +125,7 @@ export default function NotaJalanPage() {
     } = data;
 
     return (
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
             {/* Header dengan tombol aksi - tidak dicetak */}
             <div className="max-w-4xl mx-auto px-4 mb-6 print:hidden">
@@ -742,9 +744,8 @@ export default function NotaJalanPage() {
                 }
             `}</style>
         </div>
+        </LayoutUtama>
     );
 }
 
-NotaJalanPage.layout = (page) => (
-    <SidebarKeuangan title="Cetak Nota Jalan">{page}</SidebarKeuangan>
-);
+ 

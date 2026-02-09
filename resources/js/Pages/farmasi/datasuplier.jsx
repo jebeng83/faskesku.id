@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SidebarFarmasi from '@/Layouts/SidebarFarmasi';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import SidebarFarmasiMenu from '@/Components/SidebarFarmasiMenu';
 import { Pencil, Trash2 } from 'lucide-react';
 
 const PageHeader = () => (
@@ -196,6 +197,7 @@ export default function DataSuplierPage() {
   };
 
   return (
+    <LayoutUtama title="Data Suplier" left={<SidebarFarmasiMenu title="Farmasi" /> }>
     <div>
       <Head title="Data Suplier" />
       <div className="space-y-6">
@@ -401,8 +403,8 @@ export default function DataSuplierPage() {
         <ConfirmDelete open={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={performDelete} item={selected} />
       </div>
     </div>
+    </LayoutUtama>
   );
 }
 
-// Pastikan halaman berada di dalam AppLayout utama
-DataSuplierPage.layout = (page) => <SidebarFarmasi title="Farmasi" children={page} />;
+ 

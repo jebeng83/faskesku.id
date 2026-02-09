@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import {
     Scale,
     Search as SearchIcon,
@@ -417,7 +418,7 @@ export default function NeracaPage() {
     }, [itemsN, modalAkhir]);
 
     return (
-        <div>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Laporan Keuangan" />
 
             <motion.div
@@ -1285,10 +1286,8 @@ export default function NeracaPage() {
                     </>
                 )}
             </motion.div>
-        </div>
+        </LayoutUtama>
     );
 }
 
-NeracaPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

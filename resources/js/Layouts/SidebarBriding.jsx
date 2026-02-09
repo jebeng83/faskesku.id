@@ -12,6 +12,7 @@ import {
   HeartPulse,
   User,
   BadgeInfo,
+  ShieldAlert,
 } from "lucide-react";
 import usePermission from "@/hooks/usePermission";
 
@@ -62,6 +63,14 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
         "satusehat.interoperabilitas.rajal.encounter",
         "/satusehat/interoperabilitas/rajal/encounter"
       ),
+      ssMapPractitioner: safeRoute(
+        "satusehat.mapping-practitioner",
+        "/satusehat/mapping-practitioner"
+      ),
+      ssMapAlergi: safeRoute(
+        "satusehat_mapping_alergi.index",
+        "/satusehat/mapping-alergi"
+      ),
     }),
     []
   );
@@ -88,6 +97,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       { href: paths.ssLocFarmasi, label: "Mapping Location Farmasi", icon: NotebookTabs, permission: "satusehat.index" },
       { href: paths.ssLocRanap, label: "Mapping Location Ranap", icon: NotebookTabs, permission: "satusehat.index" },
       { href: paths.ssPrPractitioner, label: "Referensi Practitioner", icon: BadgeInfo, permission: "satusehat.index" },
+      { href: paths.ssMapPractitioner, label: "Mapping Dokter Satu Sehat", icon: Stethoscope, permission: "satusehat.index" },
+      { href: paths.ssMapAlergi, label: "Mapping Alergi", icon: ShieldAlert, permission: "satusehat.index" },
       { href: paths.ssPrPatient, label: "Referensi Pasien", icon: User, permission: "satusehat.index" },
       { href: paths.ssInteropRajalEncounter, label: "Encounter Rajal", icon: HeartPulse, permission: "satusehat.index" },
     ].filter((l) => !l.permission || can(l.permission)),
@@ -105,9 +116,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <aside className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${
-        isSidebarOpen ? "w-64 translate-x-0" : isSidebarCollapsed ? "w-16 -translate-x-full lg:translate-x-0" : "w-64 -translate-x-full lg:translate-x-0"
-      }`}>
+      <aside className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${isSidebarOpen ? "w-64 translate-x-0" : isSidebarCollapsed ? "w-16 -translate-x-full lg:translate-x-0" : "w-64 -translate-x-full lg:translate-x-0"
+        }`}>
         <div className="h-14 flex items-center px-3 gap-2 text-white">
           <Squares2X2Icon className="w-5 h-5" />
           {!isSidebarCollapsed && (
@@ -119,9 +129,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
             <Link
               key={it.label}
               href={it.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(it.href) ? "bg-white/15 text-white" : "hover:bg-white/10"
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(it.href) ? "bg-white/15 text-white" : "hover:bg-white/10"
+                }`}
             >
               <it.icon className="w-5 h-5" />
               {!isSidebarCollapsed && <span className="text-sm">{it.label}</span>}
@@ -136,9 +145,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
               <Link
                 key={l.href}
                 href={l.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                  isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                  }`}
               >
                 <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
                 {!isSidebarCollapsed && <span className="text-sm">{l.label}</span>}
@@ -153,15 +161,14 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
                 key={l.href}
                 href={l.href}
                 aria-label={l.label}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                  isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
-                }`}
+                className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                  }`}
               >
                 <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
                 {!isSidebarCollapsed && <span className="text-sm">{l.label}</span>}
               </Link>
             ))}
-        </div>
+          </div>
         </nav>
       </aside>
 
@@ -173,13 +180,12 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       )}
 
       <header
-        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
-          isSidebarOpen
-            ? "left-64 right-0"
-            : isSidebarCollapsed
+        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${isSidebarOpen
+          ? "left-64 right-0"
+          : isSidebarCollapsed
             ? "left-0 right-0 lg:left-16"
             : "left-0 right-0 lg:left-64"
-        }`}
+          }`}
       >
         <div className="h-full flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -224,9 +230,8 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       </header>
 
       <main
-        className={`pt-14 transition-all duration-300 ${
-          isSidebarOpen ? "lg:ml-64" : isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
-        }`}
+        className={`pt-14 transition-all duration-300 ${isSidebarOpen ? "lg:ml-64" : isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+          }`}
       >
         <div className={`${wide ? "px-2 sm:px-4" : "max-w-7xl mx-auto px-2 sm:px-4"} py-6`}>{children}</div>
       </main>

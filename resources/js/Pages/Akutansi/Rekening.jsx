@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import SidebarKeuangan from "@/Layouts/SidebarKeuangan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
 import { Info, ChevronDown, ChevronRight } from "lucide-react";
 import Switch from "@/Components/Switch";
 
@@ -280,7 +281,7 @@ export default function RekeningPage() {
     };
 
     return (
-        <div>
+        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
             <Head title="Keuangan - Rekening" />
             <div className="space-y-6">
                 {/* Card 1: Form Input */}
@@ -808,7 +809,7 @@ export default function RekeningPage() {
                     </Card>
                 )}
             </div>
-        </div>
+        </LayoutUtama>
     );
 }
 
@@ -880,6 +881,4 @@ function TreeRow({ node, level }) {
     );
 }
 
-RekeningPage.layout = (page) => (
-    <SidebarKeuangan title="Keuangan" children={page} />
-);
+ 

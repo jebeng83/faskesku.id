@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import Modal from "@/Components/Modal";
-import LanjutanRalanLayout from "@/Layouts/LanjutanRalanLayout";
-import { FileText, ClipboardCheck, Activity, FileSignature, FolderOpen, X } from "lucide-react";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
 import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
 import CpptSoap from "./components/CpptSoap";
 import Resep from "./components/Resep";
@@ -747,12 +746,9 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     }, [autoSaveStatus]);
 
     return (
-        <LanjutanRalanLayout
-            title="Lanjutan Rawat Jalan"
-            menuConfig={{
-                activeTab,
-                onTabChange: handleTabChange,
-            }}
+        <LayoutUtama
+            title="Rawat Jalan"
+            left={<LanjutanRalanSidebar title="Lanjutan Rawat Jalan" context="ralan" menuConfig={{ activeTab, onTabChange: handleTabChange }} />}
         >
             <Head
                 title={`Lanjutan Rawat Jalan${params?.no_rawat ? " - " + params.no_rawat : ""
@@ -1666,156 +1662,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
                 </div>
             )}
-            {/* Berkas Lain Modal */}
-            <Modal show={berkasLainModalOpen} onClose={() => setBerkasLainModalOpen(false)} size="xxl" headerClassName="hidden">
-                <div className="relative overflow-hidden bg-transparent rounded-xl">
-                    {/* Header Decorative Background */}
-                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-indigo-600 to-blue-500 opacity-10 dark:opacity-20 pointer-events-none"></div>
-                    
-                    {/* Header Content */}
-                    <div className="relative px-6 pt-8 pb-2 flex items-start justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl border border-indigo-100 dark:border-indigo-800 shadow-sm">
-                                <FolderOpen className="w-8 h-8 text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
-                                    Berkas Rekam Medis
-                                </h2>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                    Pilih dokumen klinis yang ingin ditampilkan
-                                </p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={() => setBerkasLainModalOpen(false)}
-                            className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="px-6 pb-6 relative z-10">
-                         <div className="flex space-x-1 bg-transparent p-1 rounded-lg w-fit">
-                             <button
-                                 onClick={() => setBerkasLainTab("awal")}
-                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                                     berkasLainTab === "awal"
-                                         ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                                         : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-600/50"
-                                 }`}
-                             >
-                                 Berkas Awal
-                             </button>
-                             <button
-                                 onClick={() => setBerkasLainTab("tambahan")}
-                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                                     berkasLainTab === "tambahan"
-                                         ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-300 shadow-sm"
-                                         : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-600/50"
-                                 }`}
-                             >
-                                 Berkas Tambahan
-                             </button>
-                         </div>
-                    </div>
-
-                    {/* Grid Content */}
-                    <div className="px-6 pb-8 min-h-[300px]">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {berkasLainTab === "awal" && (
-                                <>
-                                    {/* Card Triase */}
-                                    <button className="group relative flex items-start p-4 gap-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:shadow-emerald-100 dark:hover:shadow-none transition-all duration-300 text-left w-full">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
-                                            <Activity className="w-6 h-6 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                                Triase IGD
-                                            </h3>
-                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                Penilaian kegawatdaruratan dan tanda vital awal
-                                            </p>
-                                        </div>
-                                    </button>
-
-                                    {/* Card Informed Consent */}
-                                    <button className="group relative flex items-start p-4 gap-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-amber-300 dark:hover:border-amber-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:shadow-amber-100 dark:hover:shadow-none transition-all duration-300 text-left w-full">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30 transition-colors">
-                                            <FileSignature className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform duration-300" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                                                Informed Consent
-                                            </h3>
-                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                Persetujuan tindakan medis dan dokumen legal
-                                            </p>
-                                        </div>
-                                    </button>
-                                </>
-                            )}
-
-                            {berkasLainTab === "tambahan" && (
-                                <>
-                                    {/* Card CPPT */}
-                                    <button
-                                        onClick={() => {
-                                            setBerkasLainModalOpen(false);
-                                            openSoapHistoryModal();
-                                        }}
-                                        className="group relative flex items-start p-4 gap-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:shadow-indigo-100 dark:hover:shadow-none transition-all duration-300 text-left w-full"
-                                    >
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                                            <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                CPPT
-                                            </h3>
-                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                Catatan Perkembangan Pasien Terintegrasi (SOAP)
-                                            </p>
-                                        </div>
-                                    </button>
-
-                                    {/* Card Resume Medis */}
-                                    <button className="group relative flex items-start p-4 gap-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 bg-white dark:bg-gray-800 hover:shadow-lg hover:shadow-purple-100 dark:hover:shadow-none transition-all duration-300 text-left w-full">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
-                                            <ClipboardCheck className="w-6 h-6 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                                Resume Medis
-                                            </h3>
-                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                                                Ringkasan riwayat perawatan dan diagnosa pasien
-                                            </p>
-                                        </div>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    
-                    {/* Footer */}
-                    <div className="bg-gray-50 dark:bg-gray-700/30 px-6 py-4 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                            Faskesku.id &copy; 2026
-                        </span>
-                        <button
-                            type="button"
-                            className="inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all"
-                            onClick={() => setBerkasLainModalOpen(false)}
-                        >
-                            Tutup
-                        </button>
-                    </div>
-                </div>
-            </Modal>
-
-        </LanjutanRalanLayout>
+        </LayoutUtama>
     );
 }

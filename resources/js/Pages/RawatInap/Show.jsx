@@ -1,11 +1,12 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import SidebarRawatInap from "@/Layouts/SidebarRawatInap";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import SidebarRawatInapMenu from "@/Components/SidebarRawatInapMenu";
 
 export default function Show({ title = "Detail Rawat Inap" }) {
   return (
-    <SidebarRawatInap title={title}>
+    <LayoutUtama title={title} left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
       <Head title={title} />
       <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
@@ -21,7 +22,6 @@ export default function Show({ title = "Detail Rawat Inap" }) {
           </div>
         </div>
       </div>
-    </SidebarRawatInap>
+    </LayoutUtama>
   );
 }
-
