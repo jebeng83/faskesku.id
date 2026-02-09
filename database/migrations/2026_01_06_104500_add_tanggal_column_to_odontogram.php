@@ -13,7 +13,11 @@ return new class extends Migration
         }
 
         if (! Schema::hasColumn('odontogram', 'tanggal')) {
-            DB::statement('ALTER TABLE `odontogram` ADD COLUMN `tanggal` DATE NULL AFTER `no_rkm_medis`');
+            if (DB::connection()->getDriverName() === 'sqlite') {
+                DB::statement('ALTER TABLE `odontogram` ADD COLUMN `tanggal` DATE NULL');
+            } else {
+                DB::statement('ALTER TABLE `odontogram` ADD COLUMN `tanggal` DATE NULL AFTER `no_rkm_medis`');
+            }
         }
 
         try {
