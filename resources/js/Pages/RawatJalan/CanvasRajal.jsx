@@ -2173,7 +2173,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                               </div>
                             </div>
                           )}
-                          <div className="flex justify-end hidden">
+                          <div className="hidden">
                             <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview || (rujukanActive && !rujukForm.kdppk)} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
                               {sendingKunjungan ? (
                                 <>

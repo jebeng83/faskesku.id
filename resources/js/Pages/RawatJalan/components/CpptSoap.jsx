@@ -7,8 +7,8 @@ import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser, Activity, FileText, HelpCircle, Plus, Save } from 'lucide-react';
-import axios from 'axios';
+import { Eraser, Activity, FileText, HelpCircle } from 'lucide-react';
+import toast from '@/tools/toast';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -727,11 +727,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 window.location.href = route('rawat-jalan.index');
             } else {
                 const json = await res.json();
-                alert(json.message || 'Gagal memperbarui status');
+                toast.error(json.message || 'Gagal memperbarui status');
             }
         } catch (e) {
             console.error(e);
-            alert('Terjadi kesalahan saat menghubungi server');
+            toast.error('Terjadi kesalahan saat menghubungi server');
         } finally {
             setExitLoading(false);
             setExitModalOpen(false);
@@ -2667,13 +2667,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     try {
                                         win = window.open('', 'CetakRujukan', 'width=900,height=1000');
                                         if (!win || win.closed || typeof win.closed === 'undefined') {
-                                            alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
+                                            toast.error('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
                                             return;
                                         }
                                         console.warn('[CpptSoap] Window opened successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error opening window:', e);
-                                        alert('Gagal membuka window cetak. Error: ' + (e.message || e));
+                                        toast.error('Gagal membuka window cetak. Error: ' + (e.message || e));
                                         return;
                                     }
                                     
@@ -2856,14 +2856,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         console.warn('[CpptSoap] HTML written successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error writing to window:', e);
-                                        alert('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
+                                        toast.error('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
                                         if (win && !win.closed) {
                                             win.close();
                                         }
                                     }
                                 } catch (e) {
                                     console.error('[CpptSoap] Error in Cetak Rujukan:', e);
-                                    alert('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
+                                    toast.error('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
                                 }
                             }}
                             className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"

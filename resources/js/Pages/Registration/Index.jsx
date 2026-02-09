@@ -1223,7 +1223,7 @@ export default function Registration({
                              // SUCCESS: Gabungkan pesan sukses BPJS ke alert utama
                              const antrean = mjResData.response?.antrean || mjResData.response || {};
                              const noAntrean = antrean.nomorantrean || antrean.noantrean || '-';
-                             const angkaAntrean = antrean.angkaantrean || '-';
+                             // const angkaAntrean = antrean.angkaantrean || '-';
                              const estimasi = antrean.estimasi || antrean.estimasidilayani || '';
                              
                              let bpjsMsg = `\n\nAmbil antrean JKN berhasil.\nNo Antrean: ${noAntrean}`;
