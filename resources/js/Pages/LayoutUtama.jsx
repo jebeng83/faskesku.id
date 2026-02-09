@@ -10,6 +10,8 @@ import {
   CreditCard,
   User,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import DropdownMenu, { DropdownItem, DropdownDivider } from "@/Components/DropdownMenu";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
@@ -17,9 +19,11 @@ import { route } from "ziggy-js";
 
 export default function LayoutUtama({ title = "Layout Utama", left, children }) {
   const [activeView, _setActiveView] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { auth } = usePage().props || {};
   const [employeeName, setEmployeeName] = useState(null);
   const nik = auth?.user?.nik || auth?.user?.nip || null;
+
   useEffect(() => {
     if (!auth || auth?.user?.nama) return;
     if (!nik) return;
@@ -34,58 +38,63 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
       })
       .catch(() => {});
   }, [nik]);
+
   const displayName = employeeName || auth?.user?.nama || auth?.user?.name || auth?.user?.username || "User";
   const initial = (displayName || "U").charAt(0).toUpperCase();
   const email = auth?.user?.email || "";
+
+  const navLinks = [
+    { href: route("registration.index"), label: "Pendaftaran", icon: UserPlus },
+    { href: route("rawat-jalan.index"), label: "Rawat Jalan", icon: Stethoscope },
+    { href: route("igd.index"), label: "UGD", icon: Ambulance },
+    { href: "/laboratorium/permintaan-lab", label: "Laborat", icon: FlaskConical },
+    { href: "/farmasi/permintaan-resep", label: "Farmasi", icon: Pill },
+    { href: "/laporan", label: "Laporan", icon: ChartNoAxesColumn },
+    { href: "/akutansi/kasir-ralan", label: "Kasir", icon: CreditCard },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
       <Head title={title} />
       <header className="fixed top-0 inset-x-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50">
-        <div className="relative h-full flex items-center px-4">
+        <div className="relative h-full flex items-center px-4 justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">F</div>
-            <div className="font-semibold text-gray-900 dark:text-white">{title}</div>
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+              F
+            </div>
+            <div className="font-semibold text-gray-900 dark:text-white hidden sm:block">{title}</div>
           </div>
-          <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-              <Link href={route("registration.index")} className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <UserPlus className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Pendaftaran</span>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+              >
+                <link.icon className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
+                <span>{link.label}</span>
               </Link>
-              <Link href={route("rawat-jalan.index")} className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <Stethoscope className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Rawat Jalan</span>
-              </Link>
-                    <Link href={route("igd.index")} className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <Ambulance className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>UGD</span>
-              </Link>
-              <Link href="/laboratorium/permintaan-lab" className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <FlaskConical className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Laborat</span>
-              </Link>
-              <Link href="/farmasi/permintaan-resep" className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <Pill className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Farmasi</span>
-              </Link>
-              <Link href="/laporan" className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <ChartNoAxesColumn className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Laporan</span>
-              </Link>
-              <Link href="/akutansi/kasir-ralan" className="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
-                <CreditCard className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
-                <span>Kasir</span>
-              </Link>
+            ))}
           </nav>
+
           <DropdownMenu
             className="ml-auto"
             trigger={
               <button className="flex items-center gap-3 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">{initial}</span>
                 </div>
                 <div className="hidden sm:block text-left">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{displayName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{email}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{displayName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{email}</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -113,25 +122,70 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
         </div>
       </header>
 
-      <main className="pt-14">
-        <div className="grid grid-cols-[15%_85%] h-[calc(100vh-3.5rem)]">
-          <aside className="bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white border-r border-blue-400/20">
-            <div className="h-full overflow-y-auto p-3">
-              {left}
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
+          <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col">
+            <div className="h-14 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
+              <span className="font-bold text-lg text-gray-900 dark:text-white">Menu</span>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              {/* Module Menu (Left Prop) */}
+              {left && (
+                 <div className="mb-2">
+                    <div className="bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white p-3 rounded-b-xl mx-2 shadow-lg">
+                      {left}
+                    </div>
+                 </div>
+              )}
+
+              {/* Navigation Links */}
+              <div className="p-3 space-y-1">
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                   Aplikasi
+                </div>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <link.icon className="w-5 h-5" />
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           </aside>
-          <section className="h-full overflow-y-auto">
-            <div className="p-4">
-              {activeView === "registrasi" ? (
-                <LanjutanRegistrasiLayout title="Registrasi Pasien">
-                  <div />
-                </LanjutanRegistrasiLayout>
-              ) : (
-                children
-              )}
-            </div>
-          </section>
         </div>
+      )}
+
+      <main className="pt-14 flex-1 flex overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block w-64 flex-shrink-0 bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white border-r border-blue-400/20 overflow-y-auto">
+          <div className="h-full p-3">
+            {left}
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <section className="flex-1 overflow-y-auto min-w-0 bg-gray-50 dark:bg-gray-950">
+          <div className="p-4 md:p-6 lg:p-8 max-w-[1920px] mx-auto">
+            {activeView === "registrasi" ? (
+              <LanjutanRegistrasiLayout title="Registrasi Pasien">
+                <div />
+              </LanjutanRegistrasiLayout>
+            ) : (
+              children
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );

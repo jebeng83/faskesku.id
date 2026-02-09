@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
 import usePermission from "@/hooks/usePermission";
+import MobileBottomNav from "@/Components/MobileBottomNav";
 
 // Sidebar khusus modul Farmasi, konsisten dengan pola LanjutanRalanLayout/SidebarRalan
 export default function SidebarFarmasi({ title = "Farmasi", children }) {
@@ -574,7 +575,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
         <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-40 transition-all duration-300 ${isSidebarOpen
+                className={`fixed top-0 left-0 h-full bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black shadow-2xl border-r border-blue-500/20 dark:border-blue-800 z-[60] transition-all duration-300 ${isSidebarOpen
                     ? "w-64 translate-x-0"
                     : isSidebarCollapsed
                         ? "w-16 -translate-x-full lg:translate-x-0"
@@ -726,7 +727,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
             {/* Mobile sidebar overlay */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                    className="fixed inset-0 bg-black bg-opacity-50 z-[55] lg:hidden"
                     onClick={handleSidebarOverlayClick}
                 />
             )}
@@ -734,7 +735,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
             {/* Top Navigation Bar - Fixed Header */}
             <header
                 className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${isSidebarOpen
-                    ? "left-64 right-0"
+                    ? "left-0 lg:left-64 right-0"
                     : isSidebarCollapsed
                         ? "left-0 right-0 lg:left-16"
                         : "left-0 right-0 lg:left-64"
