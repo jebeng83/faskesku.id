@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import CopyResep from "./CopyResep";
 import {
     todayDateString,
@@ -59,6 +60,12 @@ export default function Resep({
     const [searchAturan, setSearchAturan] = useState({});
     const [loadingAturan, setLoadingAturan] = useState(false);
     const [showDropdownAturan, setShowDropdownAturan] = useState({});
+    
+    // State untuk Modal Master Aturan Pakai
+    const [showMasterAturanModal, setShowMasterAturanModal] = useState(false);
+    const [masterAturanInput, setMasterAturanInput] = useState("");
+    const [masterAturanSaving, setMasterAturanSaving] = useState(false);
+    const [masterAturanItemId, setMasterAturanItemId] = useState(null);
 
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
@@ -115,6 +122,40 @@ export default function Resep({
             setAturanOptions([]);
         } finally {
             setLoadingAturan(false);
+        }
+    };
+
+    const saveMasterAturan = async () => {
+        const val = (masterAturanInput || "").trim();
+        if (val === "") return;
+        setMasterAturanSaving(true);
+        try {
+            const response = await axios.post(
+                "/api/aturan-pakai/public-store",
+                { aturan: val },
+                {
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            if (response?.data?.success) {
+                setAturanOptions((prev) => {
+                    const exists = (prev || []).some(
+                        (o) => (o.aturan || "") === val
+                    );
+                    return exists ? prev : [{ aturan: val }, ...(prev || [])];
+                });
+                if (masterAturanItemId) {
+                    updateItem(masterAturanItemId, "aturanPakai", val);
+                }
+                setShowMasterAturanModal(false);
+                setMasterAturanItemId(null);
+            }
+        } catch (_) {
+        } finally {
+            setMasterAturanSaving(false);
         }
     };
 
@@ -1147,53 +1188,105 @@ export default function Resep({
                                                 fetchAturan();
                                             }
                                         }}
-                                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
+                                        className="w-full py-2.5 px-3 pr-10 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
                                         placeholder="Aturan Pakai"
                                         required
                                     />
 
-                                    {/* Dropdown Aturan Pakai */}
-                                    {showDropdownAturan[item.id] && (
-                                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                            {loadingAturan ? (
-                                                <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                                                    Memuat...
-                                                </div>
-                                            ) : aturanOptions.length === 0 ? (
-                                                <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                                                    Tidak ada hasil
-                                                </div>
-                                            ) : (
-                                                aturanOptions.map(
-                                                    (opt, optIndex) => (
-                                                        <button
-                                                            type="button"
-                                                            key={`${opt.aturan}-${optIndex}`}
-                                                            onClick={() => {
-                                                                updateItem(
-                                                                    item.id,
-                                                                    "aturanPakai",
-                                                                    opt.aturan
-                                                                );
-                                                                setShowDropdownAturan(
-                                                                    (prev) => ({
-                                                                        ...prev,
-                                                                        [item.id]:
-                                                                            false,
-                                                                    })
-                                                                );
-                                                            }}
-                                                            className="w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0"
-                                                        >
-                                                            <div className="font-medium text-xs text-gray-900 dark:text-white">
-                                                                {opt.aturan}
-                                                            </div>
-                                                        </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setMasterAturanItemId(item.id);
+                                            setMasterAturanInput(
+                                                item.aturanPakai ||
+                                                    searchAturan[item.id] ||
+                                                    ""
+                                            );
+                                            setShowMasterAturanModal(true);
+                                        }}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-8 h-8 rounded-md text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors"
+                                        aria-label="Tambah master aturan pakai"
+                                        title="Simpan ke Master Aturan Pakai"
+                                    >
+                                        <svg
+                                            className="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                            />
+                                        </svg>
+                                    </button>
+
+                                    <AnimatePresence initial={false}>
+                                        {showDropdownAturan[item.id] && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 6 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 6 }}
+                                                transition={{ duration: 0.18 }}
+                                                className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-xl max-h-60 overflow-y-auto"
+                                            >
+                                                {loadingAturan ? (
+                                                    <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                                                        Memuat...
+                                                    </div>
+                                                ) : aturanOptions.length === 0 ? (
+                                                    <div className="p-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                                                        Tidak ada hasil
+                                                    </div>
+                                                ) : (
+                                                    aturanOptions.map(
+                                                        (opt, optIndex) => (
+                                                            <motion.button
+                                                                type="button"
+                                                                key={`${opt.aturan}-${optIndex}`}
+                                                                onClick={() => {
+                                                                    updateItem(
+                                                                        item.id,
+                                                                        "aturanPakai",
+                                                                        opt.aturan
+                                                                    );
+                                                                    setShowDropdownAturan(
+                                                                        (prev) => ({
+                                                                            ...prev,
+                                                                            [item.id]:
+                                                                                false,
+                                                                        })
+                                                                    );
+                                                                }}
+                                                                initial={{
+                                                                    opacity: 0,
+                                                                    y: 4,
+                                                                }}
+                                                                animate={{
+                                                                    opacity: 1,
+                                                                    y: 0,
+                                                                }}
+                                                                exit={{
+                                                                    opacity: 0,
+                                                                    y: 4,
+                                                                }}
+                                                                transition={{
+                                                                    duration: 0.14,
+                                                                }}
+                                                                className="w-full text-left px-3 py-2 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0"
+                                                            >
+                                                                <div className="font-medium text-xs text-gray-900 dark:text-white">
+                                                                    {opt.aturan}
+                                                                </div>
+                                                            </motion.button>
+                                                        )
                                                     )
-                                                )
-                                            )}
-                                        </div>
-                                    )}
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
@@ -1966,6 +2059,65 @@ export default function Resep({
                     </div>
                 </div>
             )}
+
+            <AnimatePresence initial={false}>
+                {showMasterAturanModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.18 }}
+                            className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-4 m-4"
+                        >
+                            <div className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+                                Tambah Master Aturan Pakai
+                            </div>
+                            <input
+                                type="text"
+                                value={masterAturanInput}
+                                onChange={(e) =>
+                                    setMasterAturanInput(e.target.value)
+                                }
+                                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                                placeholder="Masukkan aturan pakai"
+                                autoFocus
+                            />
+                            <div className="mt-4 flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowMasterAturanModal(false);
+                                        setMasterAturanItemId(null);
+                                    }}
+                                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={saveMasterAturan}
+                                    disabled={
+                                        masterAturanSaving ||
+                                        (masterAturanInput || "").trim() === ""
+                                    }
+                                    className="px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {masterAturanSaving
+                                        ? "Menyimpan..."
+                                        : "Simpan"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Copy Resep Modal */}
             <CopyResep
