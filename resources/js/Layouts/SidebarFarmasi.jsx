@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
 import usePermission from "@/hooks/usePermission";
-import MobileBottomNav from "@/Components/MobileBottomNav";
 
 // Sidebar khusus modul Farmasi, konsisten dengan pola LanjutanRalanLayout/SidebarRalan
 export default function SidebarFarmasi({ title = "Farmasi", children }) {
