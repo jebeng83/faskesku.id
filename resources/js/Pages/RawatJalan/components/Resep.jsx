@@ -55,20 +55,16 @@ export default function Resep({
     const [penyerahanLoading, setPenyerahanLoading] = useState({});
     const [activeTab, setActiveTab] = useState("resep"); // "resep" or "resep-racikan"
 
-<<<<<<< HEAD
     const formatAturanPakai = (t) => {
         const s = (t || "").toString().trim();
         return s || "-";
     };
 
-=======
     // State untuk Aturan Pakai Autocomplete
->>>>>>> cleo
     const [aturanOptions, setAturanOptions] = useState([]);
     const [searchAturan, setSearchAturan] = useState({});
     const [loadingAturan, setLoadingAturan] = useState(false);
     const [showDropdownAturan, setShowDropdownAturan] = useState({});
-<<<<<<< HEAD
 
     const [racikanGroups, setRacikanGroups] = useState([]);
     const [activeRacikId, setActiveRacikId] = useState(null);
@@ -81,14 +77,12 @@ export default function Resep({
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [isSavingTemplate, setIsSavingTemplate] = useState(false);
     const [templateQuery, setTemplateQuery] = useState("");
-=======
-    
+
     // State untuk Modal Master Aturan Pakai
     const [showMasterAturanModal, setShowMasterAturanModal] = useState(false);
     const [masterAturanInput, setMasterAturanInput] = useState("");
     const [masterAturanSaving, setMasterAturanSaving] = useState(false);
     const [masterAturanItemId, setMasterAturanItemId] = useState(null);
->>>>>>> cleo
 
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
@@ -218,22 +212,6 @@ export default function Resep({
         }
     };
 
-    const fetchAturan = async (search = "") => {
-        setLoadingAturan(true);
-        try {
-            const response = await axios.get("/api/aturan-pakai", {
-                params: { search, limit: 20 },
-                withCredentials: true,
-                headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
-            });
-            if (response?.data?.success) setAturanOptions(response.data.data || []);
-            else setAturanOptions([]);
-        } catch (_) {
-            setAturanOptions([]);
-        } finally {
-            setLoadingAturan(false);
-        }
-    };
 
     const fetchMetodeRacik = async () => {
         try {
@@ -1523,18 +1501,6 @@ export default function Resep({
                                         type="text"
                                         value={item.aturanPakai}
                                         onChange={(e) => {
-<<<<<<< HEAD
-                                            const val = e.target.value;
-                                            updateItem(item.id, "aturanPakai", val);
-                                            setSearchAturan((prev) => ({ ...prev, [item.id]: val }));
-                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true }));
-                                        }}
-                                        onFocus={() => {
-                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: true }));
-                                            if (!searchAturan[item.id]) fetchAturan();
-                                        }}
-                                        className="w-full py-2.5 px-3 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
-=======
                                             updateItem(
                                                 item.id,
                                                 "aturanPakai",
@@ -1559,35 +1525,10 @@ export default function Resep({
                                             }
                                         }}
                                         className="w-full py-2.5 px-3 pr-10 rounded-lg border-2 border-gray-400 dark:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:shadow-md transition-all"
->>>>>>> cleo
                                         placeholder="Aturan Pakai"
                                         required
                                     />
 
-<<<<<<< HEAD
-                                    {showDropdownAturan[item.id] && (
-                                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                            {loadingAturan ? (
-                                                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Memuat…</div>
-                                            ) : (aturanOptions || []).length > 0 ? (
-                                                (aturanOptions || []).map((opt, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        onClick={() => {
-                                                            updateItem(item.id, "aturanPakai", opt.aturan || "");
-                                                            setShowDropdownAturan((prev) => ({ ...prev, [item.id]: false }));
-                                                        }}
-                                                        className="px-4 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0"
-                                                    >
-                                                        <div className="text-sm text-gray-900 dark:text-white">{opt.aturan}</div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">Tidak ada data</div>
-                                            )}
-                                        </div>
-                                    )}
-=======
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1682,7 +1623,6 @@ export default function Resep({
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
->>>>>>> cleo
                                 </div>
 
                                 {/* Tombol Hapus - hanya untuk baris kedua dan seterusnya */}
