@@ -406,6 +406,58 @@ createBundle.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::autoComposition
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:0
+* @route '/api/satusehat/rajal/composition/auto/{no_rawat}'
+*/
+export const autoComposition = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: autoComposition.url(args, options),
+    method: 'post',
+})
+
+autoComposition.definition = {
+    methods: ["post"],
+    url: '/api/satusehat/rajal/composition/auto/{no_rawat}',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::autoComposition
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:0
+* @route '/api/satusehat/rajal/composition/auto/{no_rawat}'
+*/
+autoComposition.url = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { no_rawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            no_rawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        no_rawat: args.no_rawat,
+    }
+
+    return autoComposition.definition.url
+            .replace('{no_rawat}', parsedArgs.no_rawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::autoComposition
+* @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:0
+* @route '/api/satusehat/rajal/composition/auto/{no_rawat}'
+*/
+autoComposition.post = (args: { no_rawat: string | number } | [no_rawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: autoComposition.url(args, options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController::pipelineByRawat
 * @see app/Http/Controllers/SatuSehat/PelayananRawatJalan/SatuSehatRajalController.php:796
 * @route '/api/satusehat/rajal/pipeline/by-rawat/{no_rawat}'
@@ -457,6 +509,6 @@ pipelineByRawat.post = (args: { no_rawat: string | number } | [no_rawat: string 
     method: 'post',
 })
 
-const SatuSehatRajalController = { createEncounter, updateEncounterByRawat, encounterIdByRawat, encounterTableDescribe, diagnosaPasienDescribe, createCondition, createObservation, createProcedure, createComposition, createBundle, pipelineByRawat }
+const SatuSehatRajalController = { createEncounter, updateEncounterByRawat, encounterIdByRawat, encounterTableDescribe, diagnosaPasienDescribe, createCondition, createObservation, createProcedure, createComposition, createBundle, autoComposition, pipelineByRawat }
 
 export default SatuSehatRajalController

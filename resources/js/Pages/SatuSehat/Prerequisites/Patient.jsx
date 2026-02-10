@@ -39,12 +39,20 @@ export default function Patient() {
     try {
       const url = `/api/satusehat/patient?nik=${encodeURIComponent(String(nik).trim())}`;
       const res = await fetch(url, { headers: { Accept: "application/json" } });
-      const json = await res.json();
+      const raw = await res.text();
+      let json = null;
+      try {
+        json = raw ? JSON.parse(raw) : null;
+      } catch {
+        json = null;
+      }
       if (!res.ok || json?.ok === false) {
-        addToast("danger", "Gagal mencari Patient", json?.message || json?.error || `Status: ${res.status}`);
+        const baseMsg = json?.message || json?.error || (raw && !json ? raw : null);
+        const statusMsg = res.status === 401 ? "Status: 401. Token SATUSEHAT gagal didapat." : `Status: ${res.status}`;
+        addToast("danger", "Gagal mencari Patient", baseMsg || statusMsg);
         return;
       }
-      const first = Array.isArray(json.list) && json.list.length > 0 ? json.list[0] : null;
+      const first = Array.isArray(json?.list) && json.list.length > 0 ? json.list[0] : null;
       if (!first) {
         addToast("warning", "Tidak ditemukan", "Tidak ada Pasien dengan NIK tersebut");
       }

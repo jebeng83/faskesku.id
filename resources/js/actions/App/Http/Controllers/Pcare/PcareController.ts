@@ -1519,12 +1519,12 @@ addMcu.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 * @see app/Http/Controllers/Pcare/PcareController.php:2921
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
-export const getSkriningPeserta = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getSkriningPeserta.url(args, options),
+const getSkriningPeserta2bd594012855ef878a2991df385e8686 = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta2bd594012855ef878a2991df385e8686.url(args, options),
     method: 'get',
 })
 
-getSkriningPeserta.definition = {
+getSkriningPeserta2bd594012855ef878a2991df385e8686.definition = {
     methods: ["get","head"],
     url: '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}',
 } satisfies RouteDefinition<["get","head"]>
@@ -1534,7 +1534,7 @@ getSkriningPeserta.definition = {
 * @see app/Http/Controllers/Pcare/PcareController.php:2921
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
-getSkriningPeserta.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
+getSkriningPeserta2bd594012855ef878a2991df385e8686.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             nomorPeserta: args[0],
@@ -1551,7 +1551,7 @@ getSkriningPeserta.url = (args: { nomorPeserta: string | number, start: string |
         limit: args.limit,
     }
 
-    return getSkriningPeserta.definition.url
+    return getSkriningPeserta2bd594012855ef878a2991df385e8686.definition.url
             .replace('{nomorPeserta}', parsedArgs.nomorPeserta.toString())
             .replace('{start}', parsedArgs.start.toString())
             .replace('{limit}', parsedArgs.limit.toString())
@@ -1563,8 +1563,8 @@ getSkriningPeserta.url = (args: { nomorPeserta: string | number, start: string |
 * @see app/Http/Controllers/Pcare/PcareController.php:2921
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
-getSkriningPeserta.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: getSkriningPeserta.url(args, options),
+getSkriningPeserta2bd594012855ef878a2991df385e8686.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta2bd594012855ef878a2991df385e8686.url(args, options),
     method: 'get',
 })
 
@@ -1573,8 +1573,313 @@ getSkriningPeserta.get = (args: { nomorPeserta: string | number, start: string |
 * @see app/Http/Controllers/Pcare/PcareController.php:2921
 * @route '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
 */
-getSkriningPeserta.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: getSkriningPeserta.url(args, options),
+getSkriningPeserta2bd594012855ef878a2991df385e8686.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getSkriningPeserta2bd594012855ef878a2991df385e8686.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}'
+*/
+const getSkriningPeserta24ac6d27e2092e292bc87968e37a263b = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.url(args, options),
+    method: 'get',
+})
+
+getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            nomorPeserta: args[0],
+            start: args[1],
+            limit: args[2],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        nomorPeserta: args.nomorPeserta,
+        start: args.start,
+        limit: args.limit,
+    }
+
+    return getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.definition.url
+            .replace('{nomorPeserta}', parsedArgs.nomorPeserta.toString())
+            .replace('{start}', parsedArgs.start.toString())
+            .replace('{limit}', parsedArgs.limit.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getSkriningPeserta24ac6d27e2092e292bc87968e37a263b.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
+*/
+const getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29 = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.url(args, options),
+    method: 'get',
+})
+
+getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            nomorPeserta: args[0],
+            start: args[1],
+            limit: args[2],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        nomorPeserta: args.nomorPeserta,
+        start: args.start,
+        limit: args.limit,
+    }
+
+    return getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.definition.url
+            .replace('{nomorPeserta}', parsedArgs.nomorPeserta.toString())
+            .replace('{start}', parsedArgs.start.toString())
+            .replace('{limit}', parsedArgs.limit.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPeserta
+* @see app/Http/Controllers/Pcare/PcareController.php:2921
+* @route '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}'
+*/
+getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29.url(args, options),
+    method: 'head',
+})
+
+export const getSkriningPeserta = {
+    '/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}': getSkriningPeserta2bd594012855ef878a2991df385e8686,
+    '/api/pcare/skrining/peserta/test/{nomorPeserta}/{start}/{limit}': getSkriningPeserta24ac6d27e2092e292bc87968e37a263b,
+    '/pcare/api/pcare/skrining/peserta/{nomorPeserta}/{start}/{limit}': getSkriningPeserta4a96206c3482ea8d3a32e137bbfd4e29,
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+const getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.url(args, options),
+    method: 'get',
+})
+
+getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/skrining/peserta-list/{start}/{limit}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.url = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            start: args[0],
+            limit: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        start: args.start,
+        limit: args.limit,
+    }
+
+    return getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.definition.url
+            .replace('{start}', parsedArgs.start.toString())
+            .replace('{limit}', parsedArgs.limit.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.get = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.head = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+const getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.url(args, options),
+    method: 'get',
+})
+
+getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.url = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            start: args[0],
+            limit: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        start: args.start,
+        limit: args.limit,
+    }
+
+    return getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.definition.url
+            .replace('{start}', parsedArgs.start.toString())
+            .replace('{limit}', parsedArgs.limit.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.get = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getSkriningPesertaDefault
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}'
+*/
+getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.head = (args: { start: string | number, limit: string | number } | [start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce.url(args, options),
+    method: 'head',
+})
+
+export const getSkriningPesertaDefault = {
+    '/api/pcare/skrining/peserta-list/{start}/{limit}': getSkriningPesertaDefault1f335df698b55071468fbeeabb51ac8f,
+    '/pcare/api/pcare/skrining/peserta-list/{start}/{limit}': getSkriningPesertaDefaultfa8c56565111168a59f0238e24df21ce,
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getRekapSkrining
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+export const getRekapSkrining = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRekapSkrining.url(options),
+    method: 'get',
+})
+
+getRekapSkrining.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/skrining/rekap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getRekapSkrining
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+getRekapSkrining.url = (options?: RouteQueryOptions) => {
+    return getRekapSkrining.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getRekapSkrining
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+getRekapSkrining.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getRekapSkrining.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getRekapSkrining
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+getRekapSkrining.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getRekapSkrining.url(options),
     method: 'head',
 })
 
@@ -2425,6 +2730,50 @@ getReferensiSrk0a498150a70b48aa4525e6405ac3981f.head = (options?: RouteQueryOpti
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::getReferensiSrk
 * @see app/Http/Controllers/Pcare/PcareController.php:3361
+* @route '/pcare/api/pcare/skrining/rekap'
+*/
+const getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.url(options),
+    method: 'get',
+})
+
+getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.definition = {
+    methods: ["get","head"],
+    url: '/pcare/api/pcare/skrining/rekap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getReferensiSrk
+* @see app/Http/Controllers/Pcare/PcareController.php:3361
+* @route '/pcare/api/pcare/skrining/rekap'
+*/
+getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.url = (options?: RouteQueryOptions) => {
+    return getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getReferensiSrk
+* @see app/Http/Controllers/Pcare/PcareController.php:3361
+* @route '/pcare/api/pcare/skrining/rekap'
+*/
+getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getReferensiSrk
+* @see app/Http/Controllers/Pcare/PcareController.php:3361
+* @route '/pcare/api/pcare/skrining/rekap'
+*/
+getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::getReferensiSrk
+* @see app/Http/Controllers/Pcare/PcareController.php:3361
 * @route '/pcare/api/srk/rekap/test'
 */
 const getReferensiSrk5f7b803eac4d83b88151e0047f7cc159 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -2468,6 +2817,7 @@ getReferensiSrk5f7b803eac4d83b88151e0047f7cc159.head = (options?: RouteQueryOpti
 
 export const getReferensiSrk = {
     '/pcare/api/srk/rekap': getReferensiSrk0a498150a70b48aa4525e6405ac3981f,
+    '/pcare/api/pcare/skrining/rekap': getReferensiSrk00e8aee51a48a1a74e3cbebf21fde67b,
     '/pcare/api/srk/rekap/test': getReferensiSrk5f7b803eac4d83b88151e0047f7cc159,
 }
 
@@ -3432,6 +3782,6 @@ deletePesertaKegiatan.delete = (args: { eduId: string | number, noKartu: string 
     method: 'delete',
 })
 
-const PcareController = { getDiagnosa, addPendaftaran, getPendaftaranByRawat, ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, deletePendaftaran, getMcu, addMcu, getSkriningPeserta, getProlanisDm, getProlanisHt, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, getReferensiSrk, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
+const PcareController = { getDiagnosa, addPendaftaran, getPendaftaranByRawat, ping, proxy, getDokter, getFaskes, getPoli, getKesadaran, getDpho, getTindakan, getProvider, getSpesialis, getSubSpesialis, getSarana, getKhusus, getPrognosa, getAlergi, getStatusPulang, getFaskesRujukanSubSpesialis, pesertaByNoKartu, deletePendaftaran, getMcu, addMcu, getSkriningPeserta, getSkriningPesertaDefault, getRekapSkrining, getProlanisDm, getProlanisHt, getRujukanSubspesialisByRawat, getKabupatenConfig, searchDokterRs, searchPoliklinikRs, searchObatRs, getMappingPoli, storeMappingPoli, deleteMappingPoli, getMappingDokter, storeMappingDokter, deleteMappingDokter, getMappingObat, storeMappingObat, deleteMappingObat, getReferensiSrk, pesertaByNik, kirimKunjunganSehat, monitoringSummary, monitoringAttempts, pendaftaranSummary, pendaftaranList, monitoringRaw, bpjsLogList, bpjsLogByRawat, resendByNoRawat, massSend, getPeserta, getClubProlanis, getKegiatanKelompok, addKegiatanKelompok, updateKegiatanKelompok, deleteKegiatanKelompok, getPesertaKegiatan, addPesertaKegiatan, deletePesertaKegiatan }
 
 export default PcareController

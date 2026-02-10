@@ -64,8 +64,53 @@ peserta.head = (args: { nomorPeserta: string | number, start: string | number, l
     method: 'head',
 })
 
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::rekap
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+export const rekap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rekap.url(options),
+    method: 'get',
+})
+
+rekap.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/skrining/rekap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::rekap
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+rekap.url = (options?: RouteQueryOptions) => {
+    return rekap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::rekap
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+rekap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rekap.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareController::rekap
+* @see app/Http/Controllers/Pcare/PcareController.php:0
+* @route '/api/pcare/skrining/rekap'
+*/
+rekap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: rekap.url(options),
+    method: 'head',
+})
+
 const skrining = {
     peserta: Object.assign(peserta, peserta13f34f),
+    rekap: Object.assign(rekap, rekap),
 }
 
 export default skrining
