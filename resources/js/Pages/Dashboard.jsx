@@ -27,6 +27,7 @@ import {
     BarChart2,
 } from "lucide-react";
 import { route } from "ziggy-js";
+import usePermission from "@/hooks/usePermission";
 
 // Lazy-loaded components (code splitting) for heavy sections
 const ChartPoliMonthlyLazy = React.lazy(() =>
@@ -199,16 +200,6 @@ const TopNavbar = React.memo(function TopNavbar() {
                             <Pill className="w-4 h-4 transition-transform group-hover:scale-110" />
                             <span className="relative">
                                 Farmasi
-                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
-                            </span>
-                        </Link>
-                        <Link
-                            href={route("laporan.index")}
-                            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
-                        >
-                            <BarChart2 className="w-4 h-4 transition-transform group-hover:scale-110" />
-                            <span className="relative">
-                                Laporan
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
                             </span>
                         </Link>
@@ -543,6 +534,7 @@ const Footer = React.memo(function Footer() {
 
 export default function Dashboard() {
     const { props } = usePage();
+    const { permissions, can, canAny } = usePermission();
     // Ambil nama instansi dari props yang tersedia
     const namaInstansi =
         props?.settings?.nama_instansi ||
@@ -960,6 +952,19 @@ export default function Dashboard() {
                 icon: <Wallet className="w-5 h-5" />,
             },
             {
+                key: "laporan",
+                label: "Laporan",
+                href: safeRoute("laporan.index"),
+                icon: <BarChart2 className="w-5 h-5" />,
+                permission: [
+                    "laporan.index",
+                    "view-reports",
+                    "generate-reports",
+                    "export-reports",
+                    "group.laporan.access",
+                ],
+            },
+            {
                 key: "settings",
                 label: "Pengaturan",
                 href: safeRoute("profile.home", "/profile/home"),
@@ -967,6 +972,16 @@ export default function Dashboard() {
             },
         ],
         []
+    );
+    const filteredShortcuts = useMemo(
+        () =>
+            shortcuts.filter((item) => {
+                if (!item.permission) return true;
+                if (Array.isArray(item.permission))
+                    return canAny(...item.permission);
+                return can(item.permission);
+            }),
+        [shortcuts, permissions, can, canAny]
     );
 
     // Stats dinamis yang menggunakan hasil dari endpoint
@@ -1307,7 +1322,7 @@ export default function Dashboard() {
 
                                 {/* Navigasi cepat di bawahnya—ukuran tombol diperkecil agar jarak antar tombol lebih terlihat */}
                                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-5 justify-items-center">
-                                    {shortcuts.map((s) => (
+                                    {filteredShortcuts.map((s) => (
                                         <Link
                                             key={s.key}
                                             href={s.href}

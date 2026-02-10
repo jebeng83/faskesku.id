@@ -1248,6 +1248,14 @@ class PermissionTableSeeder extends Seeder
             'created_at' => '2025-10-27 09:02:38',
             'updated_at' => '2025-10-27 09:02:38',
           ),
+          154 => 
+          array (
+            'id' => 157,
+            'name' => 'laporan.index',
+            'guard_name' => 'web',
+            'created_at' => '2026-02-10 00:00:00',
+            'updated_at' => '2026-02-10 00:00:00',
+          ),
         ));
         Schema::enableForeignKeyConstraints();
     }

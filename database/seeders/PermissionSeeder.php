@@ -295,6 +295,7 @@ class PermissionSeeder extends Seeder
             'laporan.home',
             'laporan.frekuensi-penyakit',
             'laporan.kunjungan',
+            'laporan.index',
 
             'master-data.menu-utama',
 

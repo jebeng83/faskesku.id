@@ -660,6 +660,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/racikan-template/{no_template}', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'destroy'])->name('api.racikan-template.destroy');
     });
 
+    Route::middleware('permission:laporan.index')->group(function () {
     // Pusat Laporan
     Route::get('/laporan', function (Request $request) {
         $period = $request->query('period', 'today'); // Default to today
@@ -1616,6 +1617,7 @@ Route::middleware('auth')->group(function () {
 
         return response()->json($getStats($type, $period));
     })->name('laporan.stats');
+    });
 
     Route::get('/tools/scan-whatsapp-credentials', function () {
         return Inertia::render('Tools/ScanWhatsAppCredentials');
