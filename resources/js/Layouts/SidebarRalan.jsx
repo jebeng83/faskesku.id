@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import '../../css/rawat-jalan.css';
 import { Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt } from 'lucide-react';
+import { Stethoscope, Hospital, Gauge, HeartPulse, ChevronDown, ChevronRight, Receipt, FileText } from 'lucide-react';
 import useTheme from '@/hooks/useTheme';
 import usePermission from '@/hooks/usePermission';
 
@@ -83,6 +83,11 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
           href: route('satusehat.interoperabilitas.rajal.encounter'),
           icon: <HeartPulse className="w-4 h-4" />,
           permission: 'satusehat.index',
+        },
+        {
+          label: 'Data Surat',
+          href: route('rawat-jalan.surat-sehat.index'),
+          icon: <FileText className="w-4 h-4" />,
         },
       ],
     },

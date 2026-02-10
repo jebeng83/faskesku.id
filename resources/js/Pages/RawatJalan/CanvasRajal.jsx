@@ -1717,10 +1717,10 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                               if (noRawat) {
                                 try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 160)); } catch (_) {}
                                 try {
-                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                                 } catch (_) {
                                   try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 140)); } catch (_) {}
-                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Sudah' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                                 }
                               }
                             } catch (_) {}
@@ -1756,10 +1756,10 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                               if (noRawat) {
                                 try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 160)); } catch (_) {}
                                 try {
-                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                                 } catch (_) {
                                   try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); await new Promise((r) => setTimeout(r, 140)); } catch (_) {}
-                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined } });
+                                  await axios({ method: 'PUT', url: `/api/reg-periksa/${encodeURIComponent(noRawat)}/status`, data: { stts: 'Belum' }, withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                                 }
                               }
                             } catch (_) {}
@@ -2173,7 +2173,7 @@ export default function CanvasRajal({ token = "", noRkmMedis = "", noRawat = "",
                               </div>
                             </div>
                           )}
-                          <div className="flex justify-end hidden">
+                          <div className="hidden">
                             <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview || (rujukanActive && !rujukForm.kdppk)} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center">
                               {sendingKunjungan ? (
                                 <>

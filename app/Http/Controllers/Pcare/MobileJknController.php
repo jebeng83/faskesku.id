@@ -309,6 +309,22 @@ class MobileJknController extends Controller
                 if (is_array($meta)) {
                     $code = (int) ($meta['code'] ?? 200);
                     $httpStatus = $code === 200 ? 200 : 400;
+                    
+                    // Fallback: Jika BPJS tidak mengembalikan data antrean (misal hanya sukses),
+                    // suntikkan data yang kita kirim agar frontend tetap bisa menampilkan nomor antrean.
+                    if (!isset($parsed['response']) || !is_array($parsed['response'])) {
+                         // Jika response null/string, inisialisasi array
+                         $parsed['response'] = is_array($parsed['response'] ?? null) ? $parsed['response'] : [];
+                    }
+                    // Pastikan nomorantrean ada
+                    if (empty($parsed['response']['nomorantrean'])) {
+                         $parsed['response']['nomorantrean'] = $nomorAntrean;
+                    }
+                    // Pastikan angkaantrean ada
+                    if (empty($parsed['response']['angkaantrean'])) {
+                         $parsed['response']['angkaantrean'] = $angkaAntrean;
+                    }
+
                     Log::info('MobileJKN addAntrean response (normalized)', [
                         'metadata' => $meta,
                         'http_status' => $httpStatus,
@@ -731,6 +747,38 @@ class MobileJknController extends Controller
             $status = (int) $request->input('status');
             $tanggalPeriksa = date('Y-m-d');
 
+            // Cek No Rawat terlebih dahulu
+            $reg = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $noRkmMedis)
+                ->where('kd_poli', $kdPoli)
+                ->where('tgl_registrasi', $tanggalPeriksa)
+                ->orderByDesc('jam_reg')
+                ->first();
+            $noRawat = $reg?->no_rawat ?? null;
+
+            // Cek apakah sudah pernah panggil antrian sukses untuk no_rawat ini
+            if ($noRawat && Schema::hasTable('pcare_bpjs_log')) {
+                $alreadyCalled = DB::table('pcare_bpjs_log')
+                    ->where('no_rawat', $noRawat)
+                    ->where('endpoint', 'Panggil Antrian')
+                    ->where('status', 'success')
+                    ->exists();
+                
+                if ($alreadyCalled) {
+                     \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean skipped: already called successfully', [
+                        'no_rawat' => $noRawat
+                    ]);
+                    
+                    return response()->json([
+                        'metadata' => [
+                            'code' => 200,
+                            'message' => 'OK (Skipped - Already Processed)',
+                        ],
+                        'response' => null
+                    ], 200);
+                }
+            }
+
             // Early log: record incoming request even if it fails early (patient/mapping not found)
             \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean request received', [
                 'no_rkm_medis' => $noRkmMedis,
@@ -790,15 +838,23 @@ class MobileJknController extends Controller
                 ], 400);
             }
 
-            $waktuMs = (int) round(microtime(true) * 1000);
-            $timestampOverride = (string) floor($waktuMs / 1000);
+            // Waktu sekarang (UTC)
+            $now = microtime(true);
+            
+            // Header X-Timestamp tetap gunakan UTC (standar signature BPJS)
+            // Biarkan null agar BpjsTraits generate otomatis atau kita set eksplisit
+            $timestampOverride = (string) floor($now);
+
+            // Waktu payload body gunakan UTC (sama dengan X-Timestamp)
+            // Standar epoch time adalah UTC. Mengirim WIB (UTC+7) akan dianggap masa depan oleh server.
+            $waktuPayload = (int) round($now * 1000);
 
             $payload = [
                 'tanggalperiksa' => $tanggalPeriksa,
                 'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
                 'nomorkartu' => (string) ($pasien->no_peserta ?? ''),
                 'status' => $status,
-                'waktu' => $waktuMs,
+                'waktu' => $waktuPayload,
             ];
 
             // Logging terstruktur sebelum request
@@ -808,7 +864,8 @@ class MobileJknController extends Controller
                 'kd_poli_pcare' => $mapPoli->kd_poli_pcare ?? null,
                 'tanggalperiksa' => $tanggalPeriksa,
                 'status' => $status,
-                'waktu_ms' => $waktuMs,
+                'waktu_ms' => $waktuPayload,
+                'waktu_utc' => (int)($now * 1000), // Log pembanding
             ]);
 
             // Debug payload yang akan dikirim ke Mobile JKN
@@ -828,13 +885,7 @@ class MobileJknController extends Controller
             $body = $response->body();
             $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
 
-            $reg = DB::table('reg_periksa')
-                ->where('no_rkm_medis', $noRkmMedis)
-                ->where('kd_poli', $kdPoli)
-                ->where('tgl_registrasi', $tanggalPeriksa)
-                ->orderByDesc('jam_reg')
-                ->first();
-            $noRawat = $reg?->no_rawat ?? null;
+            // no_rawat sudah diambil di awal fungsi
             $durationMs = (int) round((microtime(true) - $start) * 1000);
             $maskedCard = '';
             try {
@@ -847,7 +898,7 @@ class MobileJknController extends Controller
                 'tanggalperiksa' => $tanggalPeriksa,
                 'kodepoli' => (string) ($mapPoli->kd_poli_pcare ?? ''),
                 'status' => $status,
-                'waktu' => $waktuMs,
+                'waktu' => $waktuPayload,
                 'nomorkartu_masked' => $maskedCard,
             ];
             $meta = is_array($parsed) ? ($parsed['metadata'] ?? ($parsed['metaData'] ?? [])) : [];

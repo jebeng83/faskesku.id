@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 
-export default function OdontogramForm({ noRawat = '' }) {
+export default function OdontogramForm({ noRawat = '', noRkmMedis: initialNoRkmMedis = '', kdPoli: _kdPoli = '' }) {
   const [fdi, setFdi] = useState('')
   const [kondisiOptions, setKondisiOptions] = useState([])
   const [kondisi, setKondisi] = useState('')
@@ -16,7 +16,11 @@ export default function OdontogramForm({ noRawat = '' }) {
   const [rincian, setRincian] = useState([]) // list of { elemen_gigi, kondisi:{id,kode,nama}, diagnosa:{kode,nama}, tindakan:{kode,nama} }
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saveStatus, setSaveStatus] = useState(null) // { type: 'success'|'error', message }
-  const [noRkmMedis, setNoRkmMedis] = useState('')
+  const [noRkmMedis, setNoRkmMedis] = useState(initialNoRkmMedis)
+
+  useEffect(() => {
+    setNoRkmMedis(initialNoRkmMedis)
+  }, [initialNoRkmMedis])
 
   useEffect(() => {
     if (saveStatus?.message) {
@@ -77,7 +81,14 @@ export default function OdontogramForm({ noRawat = '' }) {
   useEffect(() => {
     ;(async () => {
       try {
-        if (!noRawat) { setNoRkmMedis(''); return }
+        if (!noRawat) { 
+            if (!initialNoRkmMedis) setNoRkmMedis(''); 
+            return 
+        }
+        // If we already have noRkmMedis from props, we might skip this, 
+        // but let's keep it for safety or if noRkmMedis prop is empty
+        if (initialNoRkmMedis) return;
+
         const regRes = await axios.get('/api/reg-periksa/by-rawat', {
           params: { no_rawat: noRawat },
           withCredentials: true,

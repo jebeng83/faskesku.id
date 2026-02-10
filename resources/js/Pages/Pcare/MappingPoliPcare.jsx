@@ -184,10 +184,9 @@ export default function MappingPoliPcare() {
         kd_poli_pcare: selectedBpjs.kdPoli,
         nm_poli_pcare: selectedBpjs.nmPoli || selectedBpjs.nama || '',
       };
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       const res = await fetch('/pcare/api/mapping/poli', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
         body: JSON.stringify(payload),
       });
@@ -235,10 +234,9 @@ export default function MappingPoliPcare() {
     setSaving(true);
     setSaveMsg('');
     try {
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       const res = await fetch('/pcare/api/mapping/poli', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
         body: JSON.stringify({ kd_poli_rs: row.kd_poli_rs, kd_poli_pcare: row.kd_poli_pcare }),
       });

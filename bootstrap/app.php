@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ensure method spoofing is enabled
         $middleware->validateCsrfTokens(except: [
             '/api/whatsapp/send',
+            '/api/pcare/*', // Exclude PCare routes from CSRF to prevent 419 errors on long-lived pages
         ]);
 
         $middleware->alias([

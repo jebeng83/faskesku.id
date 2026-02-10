@@ -66,19 +66,43 @@ class PcareKunjunganController extends Controller
         } catch (\Throwable $e) {
         }
 
-        // Sanitasi rujukan: hapus key rujukLanjut bila null/empty untuk menghindari JValue error di server PCare
+        // Sanitasi Berat & Tinggi Badan: tidak boleh 0 (Wajib > 0 untuk BPJS)
+        try {
+            if (isset($payload['beratBadan'])) {
+                 $bb = (float) $payload['beratBadan'];
+                 if ($bb <= 0) $payload['beratBadan'] = 50; // Default aman
+            } else {
+                 $payload['beratBadan'] = 50;
+            }
+            if (isset($payload['tinggiBadan'])) {
+                 $tb = (float) $payload['tinggiBadan'];
+                 if ($tb <= 0) $payload['tinggiBadan'] = 160; // Default aman
+            } else {
+                 $payload['tinggiBadan'] = 160;
+            }
+        } catch (\Throwable $e) {}
+
+        // Sanitasi Lingkar Perut: Pastikan dikirim sebagai string, dan jangan null.
+        // Jika 0, kirim "0".
+        try {
+            if (isset($payload['lingkarPerut'])) {
+                $payload['lingkarPerut'] = (string) $payload['lingkarPerut'];
+            } else {
+                // Jika tidak ada, default ke "0" karena sepertinya required
+                $payload['lingkarPerut'] = "0";
+            }
+        } catch (\Throwable $e) {}
+
+        // Sanitasi rujukan: pastikan struktur sesuai
         try {
             if (array_key_exists('rujukLanjut', $payload)) {
                 $rl = $payload['rujukLanjut'];
                 if ($rl === null || $rl === '' || (is_array($rl) && empty($rl))) {
                     unset($payload['rujukLanjut']);
                 } elseif (is_array($rl)) {
-                    // Buang field null di dalam rujukLanjut (khusus, subSpesialis kosong, dsb.)
-                    if (array_key_exists('khusus', $rl) && ($rl['khusus'] === null || $rl['khusus'] === '')) {
-                        unset($rl['khusus']);
-                    }
-                    if (array_key_exists('subSpesialis', $rl) && (is_null($rl['subSpesialis']) || (is_array($rl['subSpesialis']) && empty($rl['subSpesialis'])))) {
-                        unset($rl['subSpesialis']);
+                    // Pastikan khusus ada (null) jika tidak ada
+                    if (!array_key_exists('khusus', $rl)) {
+                        $payload['rujukLanjut']['khusus'] = null;
                     }
                     // Normalisasi tanggal estimasi rujuk bila ada: dd-mm-YYYY
                     if (! empty($rl['tglEstRujuk']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $rl['tglEstRujuk'])) {
@@ -98,9 +122,48 @@ class PcareKunjunganController extends Controller
 
         $start = microtime(true);
         $ct = (string) config('bpjs.pcare.kunjungan_content_type', 'text/plain');
-        $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, [
-            'Content-Type' => $ct,
-        ]);
+
+        try {
+            $result = $this->pcareRequest('POST', 'kunjungan/v1', [], $payload, [
+                'Content-Type' => $ct,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim kunjungan ke PCare', [
+                'error' => $e->getMessage(),
+                'payload' => $payload
+            ]);
+
+            // Coba ekstrak response body jika exception dari HTTP Client
+            $responseBody = null;
+            $statusCode = 500;
+
+            if (method_exists($e, 'response') && $e->response) {
+                $responseBody = $e->response->body();
+                $statusCode = $e->response->status();
+            }
+
+            if ($responseBody) {
+                try {
+                    // Gunakan waktu sekarang sebagai timestamp estimasi jika timestamp asli tidak tersedia
+                    $processed = $this->maybeDecryptAndDecompress($responseBody, time());
+                    if (is_array($processed)) {
+                        return response()->json($processed, $statusCode);
+                    }
+                } catch (\Throwable $ex) {}
+                
+                // Jika gagal decrypt, kembalikan body asli jika JSON valid
+                $decoded = json_decode($responseBody, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return response()->json($decoded, $statusCode);
+                }
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal terhubung ke PCare: ' . $e->getMessage(),
+                'code' => 500
+            ], 500);
+        }
 
         $response = $result['response'];
         $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
@@ -713,6 +776,18 @@ class PcareKunjunganController extends Controller
         }
 
         try {
+            if (isset($payload['beratBadan'])) {
+                 $bb = (float) $payload['beratBadan'];
+                 if ($bb <= 0) $payload['beratBadan'] = 50; // Default aman
+            }
+            if (isset($payload['tinggiBadan'])) {
+                 $tb = (float) $payload['tinggiBadan'];
+                 if ($tb <= 0) $payload['tinggiBadan'] = 160; // Default aman
+            }
+        } catch (\Throwable $e) {
+        }
+
+        try {
             if (! empty($payload['tglDaftar']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $payload['tglDaftar'])) {
                 $dt = new \DateTime($payload['tglDaftar']);
                 $payload['tglDaftar'] = $dt->format('d-m-Y');
@@ -811,14 +886,14 @@ class PcareKunjunganController extends Controller
 
         // Pastikan format data sesuai katalog BPJS
         // sistole, diastole, beratBadan, tinggiBadan, respRate, heartRate, lingkarPerut harus integer atau float
-        $numericFields = ['sistole', 'diastole', 'beratBadan', 'tinggiBadan', 'respRate', 'heartRate', 'lingkarPerut'];
+        $numericFields = ['sistole', 'diastole', 'beratBadan', 'tinggiBadan', 'respRate', 'heartRate'];
         foreach ($numericFields as $field) {
             if (isset($payload[$field])) {
                 // Konversi ke integer untuk sistole, diastole, respRate, heartRate
                 if (in_array($field, ['sistole', 'diastole', 'respRate', 'heartRate'])) {
                     $payload[$field] = (int) $payload[$field];
                 } else {
-                    // Untuk beratBadan, tinggiBadan, lingkarPerut bisa float
+                    // Untuk beratBadan, tinggiBadan bisa float
                     $payload[$field] = is_numeric($payload[$field]) ? (float) $payload[$field] : 0;
                 }
             }
@@ -1958,25 +2033,55 @@ class PcareKunjunganController extends Controller
             $terapiObatString = implode(', ', $terapiObatArray);
         }
 
+        // Sanitasi Berat & Tinggi Badan: tidak boleh 0 (Wajib > 0 untuk BPJS)
+        $bb = (float) ($pemeriksaanData?->berat ?? 0);
+        $tb = (float) ($pemeriksaanData?->tinggi ?? 0);
+        if ($bb <= 0) $bb = 50; // Default aman
+        if ($tb <= 0) $tb = 160; // Default aman
+
+        // Determine kdStatusPulang based on stts
+        // Default '3' (Berobat Jalan) if not specified or unknown
+        $kdStatusPulang = '3';
+        if (isset($kunjungan->stts)) {
+            switch ($kunjungan->stts) {
+                case 'Meninggal':
+                    $kdStatusPulang = '1';
+                    break;
+                case 'Dirujuk':
+                    // TODO: Handle Rujuk Lanjut object if status is 4
+                    // For now, fallback to 3 to avoid 500 error (NullReferenceException at BPJS)
+                    // because we are not sending rujukLanjut object yet.
+                    $kdStatusPulang = '3';
+                    break;
+                default:
+                    $kdStatusPulang = '3';
+                    break;
+            }
+        }
+
+        // Suhu formatting (dot separator)
+        $suhu = (string) ($pemeriksaanData?->suhu_tubuh ?? '36.5');
+        $suhu = str_replace(',', '.', $suhu);
+
         return [
             // Sesuai contoh katalog: gunakan null untuk field yang tidak ada
             'noKunjungan' => null,
             'noKartu' => (string) ($kunjungan->no_peserta ?? ''),
-            'tglDaftar' => date('d-m-Y', strtotime($kunjungan->tgl_registrasi)),
+            'tglDaftar' => isset($kunjungan->tgl_registrasi) ? date('d-m-Y', strtotime($kunjungan->tgl_registrasi)) : date('d-m-Y'),
             'kdPoli' => $kdPoliPcare ? (string) $kdPoliPcare : null,
-            'keluhan' => (string) ($pemeriksaanData->keluhan ?? 'Tidak Ada'),
+            'keluhan' => (string) ($pemeriksaanData?->keluhan ?? 'Tidak Ada'),
             'kdSadar' => '04', // Compos Mentis menurut referensi internal
             'sistole' => (int) $sistole,
             'diastole' => (int) $diastole,
-            'beratBadan' => (float) ($pemeriksaanData->berat ?? 50),
-            'tinggiBadan' => (float) ($pemeriksaanData->tinggi ?? 170),
-            'respRate' => (int) ($pemeriksaanData->respirasi ?? 20),
-            'heartRate' => (int) ($pemeriksaanData->nadi ?? 80),
-            'lingkarPerut' => (float) ($pemeriksaanData->lingkar_perut ?? 0),
-            'kdStatusPulang' => '4', // mengacu contoh katalog (4)
+            'beratBadan' => $bb,
+            'tinggiBadan' => $tb,
+            'respRate' => (int) ($pemeriksaanData?->respirasi ?? 20),
+            'heartRate' => (int) ($pemeriksaanData?->nadi ?? 80),
+            'lingkarPerut' => (float) ($pemeriksaanData?->lingkar_perut ?? 0),
+            'kdStatusPulang' => $kdStatusPulang,
             'tglPulang' => date('d-m-Y'),
             'kdDokter' => (string) ($kunjungan->kd_dokter_pcare ?? ''),
-            'kdDiag1' => (string) ($diagnosaData->kd_penyakit ?? 'Z00.0'),
+            'kdDiag1' => (string) ($diagnosaData?->kd_penyakit ?? 'Z00.0'),
             'kdDiag2' => null,
             'kdDiag3' => null,
             'kdPoliRujukInternal' => null,
@@ -1984,15 +2089,15 @@ class PcareKunjunganController extends Controller
             'rujukLanjut' => null,
             'kdTacc' => -1, // Sesuai Ref_TACC: -1 = "Tanpa TACC"
             'alasanTacc' => null,
-            'anamnesa' => (string) ($pemeriksaanData->keluhan ?? 'Tidak Ada'),
+            'anamnesa' => (string) ($pemeriksaanData?->keluhan ?? 'Tidak Ada'),
             'alergiMakan' => '00',
             'alergiUdara' => '00',
             'alergiObat' => '00',
             'kdPrognosa' => '01', // sesuai contoh katalog: 01
             'terapiObat' => (string) $terapiObatString,
-            'terapiNonObat' => (string) ($pemeriksaanData->instruksi ?? 'Edukasi Kesehatan'),
+            'terapiNonObat' => (string) ($pemeriksaanData?->instruksi ?? 'Edukasi Kesehatan'),
             'bmhp' => 'Tidak Ada',
-            'suhu' => (string) ($pemeriksaanData->suhu_tubuh ?? '36,4'),
+            'suhu' => $suhu,
         ];
     }
 

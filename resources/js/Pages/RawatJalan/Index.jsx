@@ -245,12 +245,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         router.get(route('rawat-jalan.surat-sehat', noRawAt));
     };
 
-    const handleSuratSakit = (noRawAt) => {
-        router.get(route('rawat-jalan.surat-sakit', noRawAt));
-    };
-
-    const handleAwalKeperawatanUmum = (noRawAt) => {
-        router.get(route('rawat-jalan.awal-keperawatan-umum', noRawAt));
+    const handleAwalKeperawatanUmum = (_noRawat) => {
+        // TODO: Implement navigation to Awal Keperawatan Umum
+        // console.log("Awal Keperawatan Umum:", noRawat);
+        alert("Fitur Awal Keperawatan Umum belum tersedia.");
     };
 
     const toBase64Url = (obj) => {
@@ -545,13 +543,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                         onClick={() => handleSuratSehat(item.no_rawat)}
                                                         icon={<DocumentCheckIcon className="w-4 h-4" />}
                                                     >
-                                                        Surat Sehat
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        onClick={() => handleSuratSakit(item.no_rawat)}
-                                                        icon={<DocumentTextIcon className="w-4 h-4" />}
-                                                    >
-                                                        Surat Sakit
+                                                        Buat Surat
                                                     </DropdownItem>
                                                     <DropdownItem
                                                         onClick={() => handleAwalKeperawatanUmum(item.no_rawat)}

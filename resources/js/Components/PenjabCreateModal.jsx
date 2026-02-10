@@ -92,15 +92,10 @@ export default function PenjabCreateModal({ isOpen, onClose, onSuccess }) {
 		setIsSubmitting(true);
 
 		try {
-			const csrfToken = document
-				.querySelector('meta[name="csrf-token"]')
-				?.getAttribute("content");
-
 			const response = await fetch("/api/penjab", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {}),
 				},
 				body: JSON.stringify(data),
 			});

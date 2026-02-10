@@ -27,7 +27,7 @@ export default function SidebarFarmasiMenu({ title = "Farmasi" }) {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-3 text-white">
+    <div className="text-white">
       <div className="h-14 flex items-center px-3 gap-2">
         <Pill className="w-5 h-5" />
         <span className="font-semibold truncate">{title}</span>

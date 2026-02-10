@@ -54,7 +54,7 @@ export default function Modal({
     children,
     size = "md",
     className = "",
-    zIndex = 50,
+    zIndex = 1050,
     headerClassName = "",
     titleClassName = "",
     showTopGradient = false,
@@ -132,7 +132,7 @@ export default function Modal({
 								<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
 							)}
 							{/* Header */}
-							<div className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4 ${headerClassName}`}>
+							<div className={`flex items-center justify-between px-6 py-2 ${headerClassName}`}>
 								<h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${titleClassName}`}>
 									{title}
 								</h3>

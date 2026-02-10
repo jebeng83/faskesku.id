@@ -2774,34 +2774,206 @@ export default function Index({ title, data, category, search, filters, poliklin
                     {selectedLab ? (
                         selectedLab?.template_laboratorium?.length ? (
                             <ul className="divide-y divide-gray-200">
-                                {selectedLab.template_laboratorium.map((tmpl, idx) => (
-                                    <li
-                                        key={idx}
-                                        className={`py-2 px-2 sm:px-3 bg-blue-50`}
-                                    >
-                                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 items-start">
-                                            <div>
-                                                <div className="text-sm font-semibold text-gray-900">{tmpl.Pemeriksaan || tmpl.item_pemeriksaan}</div>
-                                                {showTemplateDetails && (
-                                                    <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-700">
-                                                        {typeof tmpl.bagian_rs !== 'undefined' && <div className="flex justify-between"><span>Bagian RS</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_rs)}</span></div>}
-                                                        {typeof tmpl.bhp !== 'undefined' && <div className="flex justify-between"><span>BHP</span><span className="text-gray-900">{formatCurrency(tmpl.bhp)}</span></div>}
-                                                        {typeof tmpl.bagian_perujuk !== 'undefined' && <div className="flex justify-between"><span>Bagian Perujuk</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_perujuk)}</span></div>}
-                                                        {typeof tmpl.bagian_dokter !== 'undefined' && <div className="flex justify-between"><span>Bagian Dokter</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_dokter)}</span></div>}
-                                                        {typeof tmpl.bagian_laborat !== 'undefined' && <div className="flex justify-between"><span>Bagian Laborat</span><span className="text-gray-900">{formatCurrency(tmpl.bagian_laborat)}</span></div>}
-                                                        {typeof tmpl.kso !== 'undefined' && tmpl.kso !== null && <div className="flex justify-between"><span>KSO</span><span className="text-gray-900">{formatCurrency(tmpl.kso)}</span></div>}
-                                                        {typeof tmpl.menejemen !== 'undefined' && tmpl.menejemen !== null && <div className="flex justify-between"><span>Menejemen</span><span className="text-gray-900">{formatCurrency(tmpl.menejemen)}</span></div>}
+                                {selectedLab.template_laboratorium.map((tmpl, idx) => {
+                                    const satuanValue =
+                                        typeof tmpl.satuan !== "undefined" &&
+                                        tmpl.satuan !== null &&
+                                        String(tmpl.satuan).trim() !== ""
+                                            ? tmpl.satuan
+                                            : "-";
+                                    const satuanSuffix =
+                                        satuanValue && satuanValue !== "-"
+                                            ? ` ${satuanValue}`
+                                            : "";
+                                    const ldValue =
+                                        typeof tmpl.nilai_rujukan_ld !==
+                                        "undefined"
+                                            ? tmpl.nilai_rujukan_ld
+                                            : typeof tmpl.ld !== "undefined"
+                                            ? tmpl.ld
+                                            : "-";
+                                    const laValue =
+                                        typeof tmpl.nilai_rujukan_la !==
+                                        "undefined"
+                                            ? tmpl.nilai_rujukan_la
+                                            : typeof tmpl.la !== "undefined"
+                                            ? tmpl.la
+                                            : "-";
+                                    const pdValue =
+                                        typeof tmpl.nilai_rujukan_pd !==
+                                        "undefined"
+                                            ? tmpl.nilai_rujukan_pd
+                                            : typeof tmpl.pd !== "undefined"
+                                            ? tmpl.pd
+                                            : "-";
+                                    const paValue =
+                                        typeof tmpl.nilai_rujukan_pa !==
+                                        "undefined"
+                                            ? tmpl.nilai_rujukan_pa
+                                            : typeof tmpl.pa !== "undefined"
+                                            ? tmpl.pa
+                                            : "-";
+                                    return (
+                                        <li
+                                            key={idx}
+                                            className={`py-2 px-2 sm:px-3`}
+                                        >
+                                            <div className="grid grid-cols-1 gap-2 items-start bg-blue-50 rounded-lg p-3">
+                                                <div>
+                                                    <div className="text-sm font-semibold text-gray-900">
+                                                        {tmpl.Pemeriksaan ||
+                                                            tmpl.item_pemeriksaan}
                                                     </div>
-                                                )}
+                                                    <div className="mt-2 grid grid-cols-1 gap-2 text-xs text-gray-700">
+                                                        <div>
+                                                            <div className="text-[11px] font-semibold text-gray-800 uppercase">
+                                                                Nilai Rujukan
+                                                            </div>
+                                                            <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        LD
+                                                                        (Laki-laki
+                                                                        Dewasa)
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {`${ldValue}${satuanSuffix}`}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        LA
+                                                                        (Laki-laki
+                                                                        Anak)
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {`${laValue}${satuanSuffix}`}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        PD
+                                                                        (Perempuan
+                                                                        Dewasa)
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {`${pdValue}${satuanSuffix}`}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        PA
+                                                                        (Perempuan
+                                                                        Anak)
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {`${paValue}${satuanSuffix}`}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-[11px] font-semibold text-gray-800 uppercase">
+                                                                Nominal
+                                                            </div>
+                                                            <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Bagian
+                                                                        RS
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.bagian_rs ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>BHP</span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.bhp ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Bagian
+                                                                        Perujuk
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.bagian_perujuk ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Bagian
+                                                                        Dokter
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.bagian_dokter ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Bagian
+                                                                        Laborat
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.bagian_laborat ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>KSO</span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.kso ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Menejemen
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.menejemen ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <span>
+                                                                        Biaya
+                                                                        Item
+                                                                    </span>
+                                                                    <span className="text-gray-900">
+                                                                        {formatCurrency(
+                                                                            tmpl.biaya_item ??
+                                                                                0
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="text-right sm:pr-1">
-                                                {typeof tmpl.biaya_item !== 'undefined' && (
-                                                    <div className="text-sm sm:text-base font-semibold text-gray-900">{formatCurrency(tmpl.biaya_item)}</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         ) : (
                             <div className="text-sm text-gray-500">Belum ada template untuk tarif ini.</div>

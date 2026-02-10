@@ -295,6 +295,7 @@ class PermissionSeeder extends Seeder
             'laporan.home',
             'laporan.frekuensi-penyakit',
             'laporan.kunjungan',
+            'laporan.index',
 
             'master-data.menu-utama',
 
@@ -350,6 +351,76 @@ class PermissionSeeder extends Seeder
             'triase-ugd.show',
             'triase-ugd.update',
             'triase-ugd.destroy',
+
+            // --- Missing Permissions Added from Localhost ---
+            // Bank & Bidang
+            'bank.create', 'bank.delete', 'bank.edit', 'bank.view',
+            'bidang.create', 'bidang.delete', 'bidang.edit', 'bidang.view',
+            
+            // Bridging
+            'bridging.bpjs.index', 'bridging.index', 'bridging.satu-sehat.index',
+
+            // Group Access
+            'group.farmasi.access', 'group.keuangan.access', 'group.laboratorium.access', 
+            'group.laporan.access', 'group.masterdata.access', 'group.pcare.access', 
+            'group.pengaturan.access', 'group.radiologi.access', 'group.rawatjalan.access', 
+            'group.satusehat.access',
+
+            // Farmasi Master Data (CRUD)
+            'golongan-obat.create', 'golongan-obat.delete', 'golongan-obat.edit', 'golongan-obat.view',
+            'industri-farmasi.create', 'industri-farmasi.delete', 'industri-farmasi.edit', 'industri-farmasi.view',
+            'kategori-obat.create', 'kategori-obat.delete', 'kategori-obat.edit', 'kategori-obat.view',
+            'satuan-barang.create', 'satuan-barang.delete', 'satuan-barang.edit', 'satuan-barang.view',
+            'stok-opname.create', 'stok-opname.delete', 'stok-opname.edit', 'stok-opname.view',
+            'pembelian.create', 'pembelian.delete', 'pembelian.edit', 'pembelian.view',
+            'penjualan.create', 'penjualan.delete', 'penjualan.edit', 'penjualan.view',
+
+            // Jabatan
+            'jabatan.create', 'jabatan.delete', 'jabatan.edit', 'jabatan.view',
+            'jenjang-jabatan.create', 'jenjang-jabatan.delete', 'jenjang-jabatan.edit', 'jenjang-jabatan.view',
+
+            // PCare Referensi & Settings
+            'pcare.referensi.diagnosa', 'pcare.referensi.dpho', 'pcare.referensi.faskes-rujukan', 
+            'pcare.referensi.kesadaran', 'pcare.referensi.khusus', 'pcare.referensi.mobilejkn.dokter.index', 
+            'pcare.referensi.poli', 'pcare.referensi.provider', 'pcare.referensi.sarana', 
+            'pcare.referensi.spesialis', 'pcare.referensi.subspesialis',
+            'pcare.setting.mobilejkn.index',
+
+            // Profile
+            'profile.edit',
+
+            // Rawat Jalan CRUD
+            'rawat-jalan.create', 'rawat-jalan.delete', 'rawat-jalan.edit', 'rawat-jalan.view',
+
+            // Data Barang
+            'data-barang.create', 'data-barang.delete', 'data-barang.edit', 'data-barang.view',
+
+            // Departemen
+            'departemen.create', 'departemen.delete', 'departemen.edit', 'departemen.view',
+
+            // Employee (Menu specific)
+            'employee.create', 'employee.delete', 'employee.edit',
+
+            // Patient (Menu specific)
+            'patient.create', 'patient.delete', 'patient.edit',
+
+            // Permission (Menu specific)
+            'permission.create', 'permission.delete', 'permission.edit',
+
+            // Reg Periksa
+            'reg-periksa.create', 'reg-periksa.delete', 'reg-periksa.edit',
+
+            // Setting
+            'setting.view',
+
+            // Staf
+            'staf.create', 'staf.delete', 'staf.edit', 'staf.view',
+
+            // Supplier
+            'supplier.create', 'supplier.delete', 'supplier.edit', 'supplier.view',
+
+            // User (Menu specific)
+            'user.create', 'user.delete', 'user.edit',
         ];
 
         foreach ($permissions as $permission) {

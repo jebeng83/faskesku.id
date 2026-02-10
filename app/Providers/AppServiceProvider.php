@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Queue;
@@ -131,6 +132,17 @@ class AppServiceProvider extends ServiceProvider
             });
         } catch (\Throwable $e) {
             Log::warning('Failed to register Queue failing listener: '.$e->getMessage());
+        }
+
+        try {
+            Gate::before(function ($user) {
+                if ($user && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+                    return true;
+                }
+                return null;
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to register admin gate override: '.$e->getMessage());
         }
     }
 }

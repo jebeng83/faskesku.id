@@ -32,13 +32,12 @@ try {
 // Get CSRF token from meta tag
 const token = document.head.querySelector('meta[name="csrf-token"]');
 
-if (token) {
-    window.axios.defaults.headers.common["X-CSRF-TOKEN"] = token.content;
-    // Opsi: jejak ringan untuk memastikan token terpasang
-    // console.debug("Axios CSRF token set", token.content?.slice(0, 10) + "...");
-} else {
-    console.error(
-        "CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token"
+// NOTE: Jangan set X-CSRF-TOKEN secara default dari meta tag
+// karena bisa menyebabkan stale token issue pada SPA (Inertia).
+// Biarkan Axios menangani token via XSRF-TOKEN cookie secara otomatis.
+if (!token) {
+    console.warn(
+        "CSRF token meta tag not found. Ensure pages include <meta name='csrf-token' content='{{ csrf_token() }}'>"
     );
 }
 // Inject CSRF header untuk semua request fetch same-origin yang berpotensi mengubah state
@@ -72,17 +71,31 @@ if (token) {
         try {
             if (isSameOrigin(input) && needsCsrf(init.method)) {
                 const headers = new Headers(init.headers || {});
-                const meta = document.head.querySelector('meta[name="csrf-token"]');
-                const metaToken = meta ? meta.getAttribute('content') : null;
+                // Prioritize Cookie for CSRF Token to avoid stale meta tag issue
                 const p = '; ' + document.cookie;
                 const r = p.split('; XSRF-TOKEN=');
                 const cookieToken = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : null;
-                if (!headers.has('X-CSRF-TOKEN') && metaToken) {
-                    headers.set('X-CSRF-TOKEN', metaToken);
+                
+                // Fallback to meta tag ONLY if cookie is missing
+                const meta = document.head.querySelector('meta[name="csrf-token"]');
+                const metaToken = meta ? meta.getAttribute('content') : null;
+
+                // Set X-XSRF-TOKEN if cookie exists (Preferred)
+                if (cookieToken) {
+                     if (!headers.has('X-XSRF-TOKEN')) {
+                        headers.set('X-XSRF-TOKEN', cookieToken);
+                     }
+                     // Also set X-CSRF-TOKEN to cookie value for compatibility
+                     if (!headers.has('X-CSRF-TOKEN')) {
+                        headers.set('X-CSRF-TOKEN', cookieToken);
+                     }
+                } else if (metaToken) {
+                    // Fallback to meta token if no cookie
+                    if (!headers.has('X-CSRF-TOKEN')) {
+                        headers.set('X-CSRF-TOKEN', metaToken);
+                    }
                 }
-                if (!headers.has('X-XSRF-TOKEN') && cookieToken) {
-                    headers.set('X-XSRF-TOKEN', cookieToken);
-                }
+
                 if (!headers.has('X-Requested-With')) {
                     headers.set('X-Requested-With', 'XMLHttpRequest');
                 }
@@ -107,15 +120,20 @@ if (token) {
 const refreshCsrfToken = async () => {
     try {
         await window.axios.get('/sanctum/csrf-cookie', { withCredentials: true });
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        // Tunggu lebih lama untuk memastikan cookie tersimpan di browser
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        
         const p = '; ' + document.cookie;
         const r = p.split('; XSRF-TOKEN=');
         const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
+        
         if (c) {
             window.axios.defaults.headers.common['X-CSRF-TOKEN'] = c;
             window.axios.defaults.headers.common['X-XSRF-TOKEN'] = c;
             return c;
         }
+        
+        // Fallback ke meta tag jika cookie gagal dibaca
         const mt = document.head.querySelector('meta[name="csrf-token"]');
         const t = mt?.content || '';
         if (t) {
@@ -147,11 +165,25 @@ window.axios.interceptors.response.use(
         // Hindari loop retry tak terbatas
         const alreadyRetried = error?.config?.headers?.["X-CSRF-RETRY"] === "1";
 
+        // Jika sudah pernah retry dan masih error 419, reload halaman
+        if ((is419 || isCsrfMismatchString || isCsrfMismatchJson) && alreadyRetried) {
+            console.warn('[Axios Interceptor] ❌ Retry failed with 419, reloading page...');
+            window.location.reload();
+            return Promise.reject(error);
+        }
+
         if ((is419 || isCsrfMismatchString || isCsrfMismatchJson) && !alreadyRetried) {
             try {
                 console.warn('[Axios Interceptor] 🔄 CSRF token expired, refreshing and retrying...');
                 const newToken = await refreshCsrfToken();
                 
+                // Jika gagal mendapatkan token baru, reload halaman
+                if (!newToken) {
+                     console.warn('[Axios Interceptor] ❌ Failed to get new token, reloading page...');
+                     window.location.reload();
+                     return Promise.reject(error);
+                }
+
                 // Update meta tag jika ada
                 const metaToken = document.head.querySelector('meta[name="csrf-token"]');
                 if (metaToken && newToken) {
@@ -164,14 +196,8 @@ window.axios.interceptors.response.use(
                         ...(error.config?.headers || {}),
                         "X-CSRF-RETRY": "1",
                         // Perbarui header token dengan token yang baru
-                        "X-CSRF-TOKEN": newToken || 
-                            document.head.querySelector('meta[name="csrf-token"]')?.content ||
-                            window.axios.defaults.headers.common["X-CSRF-TOKEN"] ||
-                            "",
-                        "X-XSRF-TOKEN": newToken || 
-                            document.head.querySelector('meta[name="csrf-token"]')?.content ||
-                            window.axios.defaults.headers.common["X-XSRF-TOKEN"] ||
-                            "",
+                        "X-CSRF-TOKEN": newToken,
+                        "X-XSRF-TOKEN": newToken,
                     },
                 };
                 
@@ -179,7 +205,8 @@ window.axios.interceptors.response.use(
                 return window.axios.request(retryConfig);
             } catch (e) {
                 console.error('[Axios Interceptor] ❌ Failed to refresh CSRF token and retry:', e);
-                // Jika refresh+retry gagal, teruskan error aslinya
+                // Jika refresh+retry gagal, reload halaman
+                window.location.reload();
                 return Promise.reject(error);
             }
         }

@@ -817,6 +817,10 @@ const SearchableSelect = ({
     const [remoteOptions, setRemoteOptions] = useState([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
     const [remoteError, setRemoteError] = useState("");
+    const [focusedIndex, setFocusedIndex] = useState(-1);
+    const listRef = useRef(null);
+    const optionRefs = useRef([]);
+
     const abortRef = useRef(null);
 
     const useRemote = !!source && !!REFERENSI_CONFIG[source];
@@ -846,6 +850,56 @@ const SearchableSelect = ({
         const displayValue = (displayValueRaw ?? "").toString();
         return displayValue.toLowerCase().includes(searchTerm.toLowerCase());
     });
+
+    // Reset focused index when options change
+    useEffect(() => {
+        setFocusedIndex(-1);
+    }, [filteredOptions.length, searchTerm]);
+
+    // Scroll focused item into view
+    useEffect(() => {
+        if (focusedIndex >= 0 && optionRefs.current[focusedIndex]) {
+            optionRefs.current[focusedIndex].scrollIntoView({
+                block: "nearest",
+            });
+        }
+    }, [focusedIndex]);
+
+    const handleKeyDown = (e) => {
+        if (!isOpen) {
+            if (e.key === "Enter" || e.key === "ArrowDown") {
+                setIsOpen(true);
+                e.preventDefault();
+            }
+            return;
+        }
+
+        switch (e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+                setFocusedIndex((prev) =>
+                    prev < filteredOptions.length - 1 ? prev + 1 : prev
+                );
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+                break;
+            case "Enter":
+                e.preventDefault();
+                if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
+                    handleSelect(filteredOptions[focusedIndex]);
+                }
+                break;
+            case "Escape":
+                e.preventDefault();
+                setIsOpen(false);
+                setSearchTerm("");
+                break;
+            default:
+                break;
+        }
+    };
 
     // Get selected option display text
     const getSelectedDisplay = () => {
@@ -1070,6 +1124,7 @@ const SearchableSelect = ({
         <div
             className={`relative ${isOpen ? "z-[2000]" : "z-50"}`}
             ref={dropdownRef}
+            onKeyDown={handleKeyDown}
         >
             {/* Selected value display */}
             <button
@@ -1130,7 +1185,7 @@ const SearchableSelect = ({
                         </div>
 
                         {/* Options list */}
-                        <div className="max-h-48 overflow-y-auto">
+                        <div className="max-h-48 overflow-y-auto" ref={listRef}>
                             {useRemote && remoteLoading && (
                                 <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                                     Memuat…
@@ -1153,18 +1208,33 @@ const SearchableSelect = ({
                                             ? option
                                             : option[key];
                                     const isSelected = optionValue === value;
+                                    const isFocused = index === focusedIndex;
 
                                     const unselectedClasses = optionClassName || "text-gray-900 dark:text-white";
                                     const selectedClasses = selectedOptionClassName || "bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300";
+                                    const focusedClasses = "bg-gray-100 dark:bg-gray-600"; // Style for focused item via keyboard
+                                    
                                     const unselectedHover = optionHoverClassName || "hover:bg-gray-100 dark:hover:bg-gray-600";
                                     const selectedHover = selectedOptionHoverClassName || unselectedHover;
+
+                                    let finalClasses = unselectedClasses;
+                                    if (isSelected) {
+                                        finalClasses = `${selectedClasses} ${selectedHover}`;
+                                    } else {
+                                        finalClasses = `${unselectedClasses} ${unselectedHover}`;
+                                    }
+                                    if (isFocused && !isSelected) {
+                                        finalClasses = `${finalClasses} ${focusedClasses}`;
+                                    }
+
                                     return (
                                         <button
                                             key={index}
+                                            ref={el => optionRefs.current[index] = el}
                                             type="button"
                                             onClick={() => handleSelect(option)}
-                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${isSelected ? selectedHover : unselectedHover
-                                                } ${isSelected ? selectedClasses : unselectedClasses}`}
+                                            onMouseEnter={() => setFocusedIndex(index)}
+                                            className={`w-full px-3 py-2 text-left text-sm transition-colors ${finalClasses}`}
                                         >
                                             <div className="flex flex-col">
                                                 <div>{optionDisplay}</div>

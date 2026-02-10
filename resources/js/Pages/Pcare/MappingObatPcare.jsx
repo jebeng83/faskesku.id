@@ -186,10 +186,9 @@ export default function MappingObatPcare() {
         kode_brng_pcare: selectedBpjs.kdObat,
         nama_brng_pcare: selectedBpjs.nmObat || '',
       };
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       const res = await fetch('/pcare/api/mapping/obat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
         body: JSON.stringify(payload),
       });
@@ -238,10 +237,9 @@ export default function MappingObatPcare() {
     setSaving(true);
     setSaveMsg('');
     try {
-      const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       const res = await fetch('/pcare/api/mapping/obat', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'same-origin',
         body: JSON.stringify({ kode_brng: row.kode_brng, kode_brng_pcare: row.kode_brng_pcare }),
       });

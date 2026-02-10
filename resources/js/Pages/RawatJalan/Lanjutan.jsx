@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import { ChevronDown, FileText, Upload, File } from 'lucide-react';
 import LayoutUtama from "@/Pages/LayoutUtama";
 import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
-import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
+import RiwayatPerawatan from "./components/RiwayatPerawatan";
 import CpptSoap from "./components/CpptSoap";
+import Modal from "@/Components/Modal";
 import Resep from "./components/Resep";
 import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
@@ -45,6 +47,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapViewMode, setSoapViewMode] = useState('table');
     const [soapShowAll, setSoapShowAll] = useState(false);
     const [soapPage, setSoapPage] = useState(1);
+    const [berkasModalOpen, setBerkasModalOpen] = useState(false);
     const [skriningVisual, setSkriningVisual] = useState(null);
     const [loadingSkriningVisual, setLoadingSkriningVisual] = useState(false);
     const [poliCalling, setPoliCalling] = useState(false);
@@ -550,7 +553,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         new Date(a.tgl_registrasi || 0)
                 );
             if (!showAll) {
-                arr = arr.slice(0, 5);
+                arr = arr.slice(0, 6);
             }
             setSoapShowAll(showAll);
             const results = await Promise.all(
@@ -661,7 +664,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             } catch (_) { }
         };
         loadPegawaiNames();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [soapModalItems]);
 
     useEffect(() => {
@@ -679,12 +681,11 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     };
 
     const SOAP_PAGE_SIZE = 5;
-    const soapTotalRows = soapModalItems.reduce((acc, h) => {
-        if (Array.isArray(h?.entries)) {
-            return acc + h.entries.length;
-        }
-        return acc;
-    }, 0);
+    const soapTotalRows = soapModalItems.reduce(
+        (acc, curr) =>
+            acc + (Array.isArray(curr.entries) ? curr.entries.length : 0),
+        0
+    );
     const soapTotalPages = Math.max(
         1,
         Math.ceil(soapTotalRows / SOAP_PAGE_SIZE || 1)
@@ -808,7 +809,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                 {/* Note: Sidebar (first column) is handled by LanjutanRalanLayout */}
                 <div className={`grid grid-cols-1 ${openAcc.pemeriksaan ? 'lg:grid-cols-12' : 'lg:grid-cols-1'} gap-6 w-full max-w-full min-w-0 overflow-x-hidden items-stretch`}>
                     {/* Left Column - Riwayat Perawatan (scrollable) */}
-                    <div className={`transition-all duration-300 w-full max-w-full min-w-0 lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-5' : 'hidden lg:hidden'}`}>
+                    <div className={`transition-all duration-300 w-full max-w-full min-w-0 lg:overflow-auto self-start ${openAcc.pemeriksaan ? 'lg:col-span-3' : 'hidden lg:hidden'}`}>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden transition-all duration-300 flex flex-col">
                             <div className={`bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${openAcc.pemeriksaan ? "px-4 py-3" : "px-2 py-3"
                                 }`}>
@@ -952,7 +953,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
                                                 return (
                                                     <div
-                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${isBpjs
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${isBpjs
                                                             ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
                                                             : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
                                                             }`}
@@ -972,13 +973,6 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     </div>
                                     <div className="mt-2 mb-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1.5">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <button
-                                                onClick={openSoapHistoryModal}
-                                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded border border-blue-200"
-                                                title="Tampilkan Riwayat SOAP"
-                                            >
-                                                CPPT
-                                            </button>
                                             <button
                                                 onClick={handlePanggilPasien}
                                                 disabled={poliCalling}
@@ -1003,6 +997,80 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 Surat
                                             </button>
+                                            <button 
+                                                onClick={() => setBerkasModalOpen(true)}
+                                                className="text-xs px-3 py-1.5 rounded border bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200 flex items-center gap-1"
+                                            >
+                                                Berkas Lain
+                                                <ChevronDown className="w-3 h-3" />
+                                            </button>
+
+                                     {/* Berkas Lain Modal */}
+                                     <Modal
+                                        show={berkasModalOpen}
+                                        onClose={() => setBerkasModalOpen(false)}
+                                        title="Menu Berkas Lain"
+                                        size="sm"
+                                     >
+                                        <div className="p-4 grid grid-cols-1 gap-3">
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Upload Berkas dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                                    <Upload className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Upload Berkas</div>
+                                                    <div className="text-xs text-gray-500">Unggah dokumen pendukung</div>
+                                                </div>
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Lihat Berkas dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                                    <FileText className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Lihat Berkas</div>
+                                                    <div className="text-xs text-gray-500">Lihat riwayat berkas pasien</div>
+                                                </div>
+                                            </button>
+
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Resume Medis dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-green-50 rounded-lg text-green-600">
+                                                    <File className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Resume Medis</div>
+                                                    <div className="text-xs text-gray-500">Buat atau lihat resume medis</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                        <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+                                            <button
+                                                type="button"
+                                                onClick={() => setBerkasModalOpen(false)}
+                                                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                            >
+                                                Tutup
+                                            </button>
+                                        </div>
+                                     </Modal>
                                         </div>
                                     </div>
                                 </div>
@@ -1066,7 +1134,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     </div>
 
                     {/* Right Column - Input Form Content (50%) */}
-                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-7' : ''} flex flex-col h-full`}>
+                    <div className={`transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0 ${openAcc.pemeriksaan ? 'lg:col-span-9' : ''} flex flex-col h-full`}>
                         {!openAcc.pemeriksaan && (
                             <div className="flex justify-end mb-2">
                                 <button
@@ -1207,9 +1275,19 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 Semua record
                                             </button>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                                                {soapModalItems.length} record
-                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => openSoapHistoryModal(false)}
+                                                aria-pressed={!soapShowAll}
+                                                className={`text-xs px-3 py-1 rounded border transition-colors ${
+                                                    !soapShowAll
+                                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                                        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600'
+                                                }`}
+                                                title="Tampilkan 6 riwayat terakhir"
+                                            >
+                                                6 Record
+                                            </button>
                                             <div className="flex items-center gap-1">
                                                 <button
                                                     type="button"

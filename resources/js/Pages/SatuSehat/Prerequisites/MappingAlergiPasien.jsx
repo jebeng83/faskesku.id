@@ -153,8 +153,7 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
             const res = await fetch("/api/satusehat/mapping-alergi", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(formData)
             });
@@ -197,10 +196,7 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
         if (!confirm("Hapus mapping ini?")) return;
         try {
             const res = await fetch(`/api/satusehat/mapping-alergi/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
-                }
+                method: "DELETE"
             });
             if (res.ok) {
                 addToast("success", "Terhapus", "Mapping berhasil dihapus");

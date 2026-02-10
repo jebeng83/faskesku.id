@@ -42,16 +42,9 @@ export default function SettingBridingMobileJkn({ setting, flash }) {
     const onReset = (e) => {
         e.preventDefault();
         if (confirm("Yakin ingin mereset pengaturan Mobile JKN?")) {
-            window
-                .fetch(route("pcare.setting.mobilejkn.destroy"), {
-                    method: "DELETE",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        Accept: "application/json",
-                    },
-                })
+            // Gunakan axios untuk handling token otomatis
+            window.axios
+                .delete(route("pcare.setting.mobilejkn.destroy"))
                 .then(() => {
                     reset();
                     window.location.reload();

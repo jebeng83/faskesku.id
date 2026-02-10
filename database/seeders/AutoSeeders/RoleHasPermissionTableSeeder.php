@@ -841,6 +841,11 @@ class RoleHasPermissionTableSeeder extends Seeder
             'permission_id' => 141,
             'role_id' => 1,
           ),
+          165 => 
+          array (
+            'permission_id' => 157,
+            'role_id' => 1,
+          ),
         ));
         Schema::enableForeignKeyConstraints();
     }

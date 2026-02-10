@@ -306,28 +306,44 @@ class RegistrationController extends Controller
                 $start = microtime(true);
                 try {
                     if ($acquired) {
-                        $endpointUrl = url('/api/mobilejkn/antrean/add');
-                        $response = Http::withHeaders([
-                            'Accept' => 'application/json',
-                            'X-Requested-With' => 'XMLHttpRequest',
-                        ])->post($endpointUrl, [
+                        // Call MobileJknController directly to avoid HTTP self-request deadlock
+                        $mobileJknRequest = new \Illuminate\Http\Request();
+                        $mobileJknRequest->replace([
                             'no_rkm_medis' => $registration->no_rkm_medis,
                             'kd_poli' => $registration->kd_poli,
                             'kd_dokter' => $registration->kd_dokter,
                             'tanggalperiksa' => $registration->tgl_registrasi,
                             'no_reg' => $registration->no_reg,
                         ]);
+                        $mobileJknRequest->setUserResolver(function () use ($request) {
+                            return $request->user();
+                        });
+
+                        $mobileJknController = new \App\Http\Controllers\Pcare\MobileJknController();
+                        $response = $mobileJknController->addAntrean($mobileJknRequest);
+
                         $durationMs = (int) round((microtime(true) - $start) * 1000);
-                        $rawBody = $response->body();
-                        $json = $response->json();
+
+                        // Handle JsonResponse or regular Response
+                        if ($response instanceof \Illuminate\Http\JsonResponse) {
+                            $rawBody = $response->getContent();
+                            $json = $response->getData(true); // as array
+                            $httpStatus = $response->getStatusCode();
+                        } else {
+                            $rawBody = $response->getContent();
+                            $json = json_decode($rawBody, true);
+                            $httpStatus = $response->getStatusCode();
+                        }
+
                         $meta = is_array($json) ? ($json['metadata'] ?? ($json['metaData'] ?? [])) : [];
                         $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
                         $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : null;
                         $bpjsInfo = [
-                            'http_status' => $response->status(),
+                            'http_status' => $httpStatus,
                             'meta_code' => $metaCode,
                             'meta_message' => $metaMessage,
                             'duration_ms' => $durationMs,
+                            'response' => $json, // Include full response
                         ];
                         $bpjsSummary = $bpjsInfo;
                     } else {
@@ -607,6 +623,7 @@ class RegistrationController extends Controller
             ->join('poliklinik', 'poliklinik.kd_poli', '=', 'reg_periksa.kd_poli')
             ->selectRaw('MONTH(reg_periksa.tgl_registrasi) as month, reg_periksa.kd_poli as kd_poli, poliklinik.nm_poli as nm_poli, COUNT(*) as total')
             ->whereYear('reg_periksa.tgl_registrasi', $year)
+            ->where('reg_periksa.stts', '!=', 'Batal')
             ->groupBy('month', 'reg_periksa.kd_poli', 'poliklinik.nm_poli')
             ->get();
 

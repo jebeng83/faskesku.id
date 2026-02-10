@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Inertia\Response;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PermintaanLabController extends Controller
@@ -31,33 +32,38 @@ class PermintaanLabController extends Controller
      */
     public function index(Request $request)
     {
-        // Optimasi: Batasi eager loading untuk menghindari memory issue
-        // Hanya load relasi yang benar-benar diperlukan, hindari nested terlalu dalam
         $query = PermintaanLab::with([
-            'regPeriksa:no_rawat,no_rkm_medis,kd_poli,kd_pj',
-            'regPeriksa.patient:no_rkm_medis,nm_pasien',
-            'regPeriksa.poliklinik:kd_poli,nm_poli',
-            'regPeriksa.penjab:kd_pj,png_jawab',
-            'dokter:kd_dokter,nm_dokter',
-            'detailPermintaan:noorder,kd_jenis_prw,id_template,stts_bayar',
+            'regPeriksa.patient',
+            'regPeriksa.poliklinik',
+            'regPeriksa.penjab',
+            'dokter',
+            // Eager-load detail permintaan beserta templatenya
+            'detailPermintaan.templateLaboratorium',
+            'detailPermintaan.jnsPerawatanLab',
         ]);
 
+        $start = $request->get('start_date');
+        $end = $request->get('end_date');
+        $tanggal = $request->get('tanggal');
+
         // Filter berdasarkan tanggal
-        if ($request->filled('tanggal')) {
-            $query->byTanggalPermintaan($request->tanggal);
+        if ($tanggal) {
+            $query->byTanggalPermintaan($tanggal);
         }
 
         // Filter berdasarkan rentang tanggal (start_date, end_date)
-        if ($request->filled('start_date') || $request->filled('end_date')) {
-            $start = $request->query('start_date');
-            $end = $request->query('end_date');
-            if ($start && $end) {
-                $query->whereBetween('tgl_permintaan', [$start, $end]);
-            } elseif ($start) {
-                $query->whereDate('tgl_permintaan', '>=', $start);
-            } elseif ($end) {
-                $query->whereDate('tgl_permintaan', '<=', $end);
-            }
+        if (! $tanggal && ! $start && ! $end) {
+            $today = Carbon::today()->toDateString();
+            $start = $today;
+            $end = $today;
+        }
+
+        if ($start && $end) {
+            $query->whereBetween('tgl_permintaan', [$start, $end]);
+        } elseif ($start) {
+            $query->whereDate('tgl_permintaan', '>=', $start);
+        } elseif ($end) {
+            $query->whereDate('tgl_permintaan', '<=', $end);
         }
 
         // Filter berdasarkan status
@@ -82,79 +88,22 @@ class PermintaanLabController extends Controller
             });
         }
 
-        try {
-            // Batasi pagination untuk menghindari memory issue
-            $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
-                ->orderBy('jam_permintaan', 'desc')
-                ->paginate(10); // Kurangi dari 15 ke 10 untuk mengurangi memory usage
+        $permintaanLab = $query->orderBy('tgl_permintaan', 'desc')
+            ->orderBy('jam_permintaan', 'desc')
+            ->paginate(15)
+            ->withQueryString();
 
-            // Optimasi: Pre-load semua DetailPeriksaLab yang diperlukan untuk menghindari N+1 query
-            $noRawatList = $permintaanLab->getCollection()->pluck('no_rawat')->unique()->filter()->values();
-            $allDetailPeriksaLab = collect();
-
-            if ($noRawatList->isNotEmpty() && $noRawatList->count() > 0) {
-                // Batasi jumlah no_rawat yang di-query untuk menghindari memory issue
-                $noRawatArray = $noRawatList->take(100)->toArray();
-
-                try {
-                    $allDetailPeriksaLab = \App\Models\DetailPeriksaLab::whereIn('no_rawat', $noRawatArray)
-                        ->whereNotNull('nilai')
-                        ->where('nilai', '!=', '')
-                        ->select('no_rawat', 'kd_jenis_prw', 'id_template')
-                        ->get()
-                        ->groupBy('no_rawat');
-                } catch (\Exception $e) {
-                    Log::warning('[PermintaanLabController] Error loading DetailPeriksaLab', [
-                        'error' => $e->getMessage(),
-                        'noRawatCount' => count($noRawatArray),
-                    ]);
-                    $allDetailPeriksaLab = collect();
-                }
+        // Tambahkan informasi has_hasil untuk setiap permintaan
+        // Pastikan detailPermintaan sudah dimuat untuk setiap item
+        $permintaanLab->getCollection()->transform(function ($item) {
+            // Pastikan relasi detailPermintaan sudah dimuat
+            if (! $item->relationLoaded('detailPermintaan')) {
+                $item->load('detailPermintaan');
             }
+            $item->has_hasil = $item->hasHasilTersedia();
 
-            // Tambahkan informasi has_hasil untuk setiap permintaan
-            // Pastikan detailPermintaan sudah dimuat dari eager loading sebelumnya
-            $permintaanLab->getCollection()->transform(function ($item) use ($allDetailPeriksaLab) {
-                // detailPermintaan sudah dimuat dari eager loading di query awal
-                // Tidak perlu load lagi untuk menghindari memory issue
-
-                try {
-                    // Pastikan detailPermintaan sudah dimuat, jika belum skip perhitungan
-                    if (! $item->relationLoaded('detailPermintaan')) {
-                        $item->has_hasil = false;
-                        return $item;
-                    }
-
-                    // Gunakan cached data untuk menghindari query berulang
-                    $detailPeriksaLabForItem = $allDetailPeriksaLab->get($item->no_rawat, collect());
-                    $item->has_hasil = $item->hasHasilTersediaOptimized($detailPeriksaLabForItem);
-                } catch (\Throwable $e) {
-                    // Jika terjadi error, set has_hasil ke false untuk menghindari crash
-                    Log::warning('[PermintaanLabController] Error calculating has_hasil', [
-                        'error' => $e->getMessage(),
-                        'noorder' => $item->noorder ?? 'unknown',
-                    ]);
-                    $item->has_hasil = false;
-                }
-
-                return $item;
-            });
-        } catch (\Throwable $e) {
-            Log::error('[PermintaanLabController::index] Error', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Return empty pagination jika terjadi error untuk menghindari crash
-            $permintaanLab = new \Illuminate\Pagination\LengthAwarePaginator(
-                collect(),
-                0,
-                10,
-                1
-            );
-        }
+            return $item;
+        });
 
         // Get list of doctors for filter dropdown
         $dokters = \App\Models\Dokter::select('kd_dokter', 'nm_dokter')
@@ -164,7 +113,14 @@ class PermintaanLabController extends Controller
         return Inertia::render('Laboratorium/Index', [
             'permintaanLab' => $permintaanLab,
             'dokters' => $dokters,
-            'filters' => $request->only(['tanggal', 'start_date', 'end_date', 'status', 'dokter', 'search']),
+            'filters' => [
+                'tanggal' => $tanggal,
+                'start_date' => $start,
+                'end_date' => $end,
+                'status' => $request->get('status'),
+                'dokter' => $request->get('dokter'),
+                'search' => $request->get('search'),
+            ],
         ]);
     }
 
@@ -216,14 +172,6 @@ class PermintaanLabController extends Controller
         ]);
 
         if ($validator->fails()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validasi gagal',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -289,16 +237,7 @@ class PermintaanLabController extends Controller
 
             DB::commit();
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'noorder' => $permintaanLab->noorder,
-                    ],
-                    'message' => 'Permintaan laboratorium berhasil dibuat',
-                ], 201);
-            }
-
+            // Return Inertia response with success message
             return redirect()->back()->with('success', 'Permintaan laboratorium berhasil dibuat dengan nomor order: '.$permintaanLab->noorder);
         } catch (\Exception $e) {
             DB::rollback();
@@ -307,13 +246,6 @@ class PermintaanLabController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage(),
-                ], 500);
-            }
 
             return redirect()->back()->withErrors(['error' => 'Gagal menyimpan permintaan laboratorium: '.$e->getMessage()])->withInput();
         }
@@ -1196,6 +1128,13 @@ class PermintaanLabController extends Controller
                             // Gunakan kombinasi tgl_periksa dan jam terbaru untuk setiap id_template
                             $hasilPemeriksaan = DB::table('detail_periksa_lab')
                                 ->join('template_laboratorium', 'detail_periksa_lab.id_template', '=', 'template_laboratorium.id_template')
+                                ->join('jns_perawatan_lab', 'detail_periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
+                                ->join('periksa_lab', function ($join) {
+                                    $join->on('detail_periksa_lab.no_rawat', '=', 'periksa_lab.no_rawat')
+                                        ->on('detail_periksa_lab.kd_jenis_prw', '=', 'periksa_lab.kd_jenis_prw')
+                                        ->on('detail_periksa_lab.tgl_periksa', '=', 'periksa_lab.tgl_periksa')
+                                        ->on('detail_periksa_lab.jam', '=', 'periksa_lab.jam');
+                                })
                                 ->where('detail_periksa_lab.no_rawat', $permintaan->no_rawat)
                                 ->where('detail_periksa_lab.kd_jenis_prw', $detail->kd_jenis_prw)
                                 ->whereNotNull('detail_periksa_lab.nilai')
@@ -1208,7 +1147,10 @@ class PermintaanLabController extends Controller
                                     'detail_periksa_lab.tgl_periksa',
                                     'detail_periksa_lab.jam',
                                     'template_laboratorium.Pemeriksaan as pemeriksaan',
-                                    'template_laboratorium.satuan'
+                                    'template_laboratorium.satuan',
+                                    'jns_perawatan_lab.nm_perawatan as jenis_pemeriksaan',
+                                    'periksa_lab.status as status_rawat',
+                                    'periksa_lab.kategori as kategori_pemeriksaan'
                                 )
                                 ->orderBy('detail_periksa_lab.tgl_periksa', 'desc')
                                 ->orderBy('detail_periksa_lab.jam', 'desc')
@@ -1221,6 +1163,9 @@ class PermintaanLabController extends Controller
                                 ->values()
                                 ->map(function ($hasil) {
                                     return [
+                                        'jenis_pemeriksaan' => $hasil->jenis_pemeriksaan ?? '',
+                                        'status_rawat' => $hasil->status_rawat ?? null,
+                                        'kategori_pemeriksaan' => $hasil->kategori_pemeriksaan ?? null,
                                         'id_template' => $hasil->id_template,
                                         'pemeriksaan' => $hasil->pemeriksaan ?? '',
                                         'nilai' => $hasil->nilai ?? '',
@@ -1270,8 +1215,8 @@ class PermintaanLabController extends Controller
     public function getLabTests(Request $request): JsonResponse
     {
         try {
-            $search = $request->query('search', '');
-            $kelas = $request->query('kelas', '');
+            $search = $request->get('search', '');
+            $kelas = $request->get('kelas', '');
 
             $query = JnsPerawatanLab::where('status', '1');
 
@@ -1306,7 +1251,7 @@ class PermintaanLabController extends Controller
     public function getTemplates(Request $request, $kdJenisPrw = null): JsonResponse
     {
         try {
-            $kdJenisPrw = $kdJenisPrw ?? $request->query('kd_jenis_prw');
+            $kdJenisPrw = $kdJenisPrw ?? $request->get('kd_jenis_prw');
 
             if (! $kdJenisPrw) {
                 return response()->json([

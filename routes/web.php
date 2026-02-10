@@ -64,6 +64,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -148,6 +149,14 @@ Route::get('/antrian/loket', function () {
 // Surat: preview HTML (public untuk preview)
 Route::get('/surat/preview', [SuratController::class, 'preview'])
     ->name('surat.preview');
+
+// Public validation for Surat Keterangan Sehat (berbasis no_surat)
+Route::get('/surat-sehat', [RawatJalanController::class, 'publicSuratSehat'])
+    ->name('public.surat-sehat.show');
+
+// Public validation for Surat Keterangan Sakit (berbasis no_surat)
+Route::get('/surat-sakit', [RawatJalanController::class, 'publicSuratSakit'])
+    ->name('public.surat-sakit.show');
 
 Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
@@ -600,7 +609,14 @@ Route::get('rawat-jalan/surat-sakit/{no_rawat}/verify', [RawatJalanController::c
     ->where('no_rawat', '.*');
 
 Route::get('rawat-jalan/surat-sakit/next-no-surat', [RawatJalanController::class, 'nextNoSuratSakit'])
-    ->name('rawat-jalan.surat-sakit.next-no-surat');
+        ->name('rawat-jalan.surat-sakit.next-no-surat');
+    Route::get('rawat-jalan/surat-sakit/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSakit'])
+        ->name('rawat-jalan.surat-sakit.check-duplicate');
+
+    Route::get('rawat-jalan/surat-sehat/next-no-surat', [RawatJalanController::class, 'nextNoSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.next-no-surat');
+    Route::get('rawat-jalan/surat-sehat/check-duplicate', [RawatJalanController::class, 'checkDuplicateSuratSehat'])
+        ->name('rawat-jalan.surat-sehat.check-duplicate');
 
 Route::get('rawat-jalan/surat-sakit/nomor/{no_surat}', [RawatJalanController::class, 'suratSakitByNomor'])
     ->name('rawat-jalan.surat-sakit.by-nomor')
@@ -622,6 +638,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/keep-alive', function () {
+        return response()->noContent();
+    })->name('keep-alive');
+
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
@@ -640,34 +660,244 @@ Route::middleware('auth')->group(function () {
         Route::delete('/racikan-template/{no_template}', [\App\Http\Controllers\Farmasi\TemplateRacikanController::class, 'destroy'])->name('api.racikan-template.destroy');
     });
 
+    Route::middleware('permission:laporan.index')->group(function () {
     // Pusat Laporan
-    Route::get('/laporan', function () {
+    Route::get('/laporan', function (Request $request) {
+        $period = $request->query('period', 'today'); // Default to today
+
+        // Helper function (closure) to calculate stats for a given type and period
+        // Note: In a real refactor, move this to a Service class to avoid duplication with /laporan/stats
+        $getStats = function ($type, $period) {
+            $now = \Carbon\Carbon::now();
+            
+            if ($period === 'week') {
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfWeek();
+                $prevStart = $now->copy()->subWeek()->startOfWeek();
+                $prevEnd = $now->copy()->subWeek()->endOfWeek();
+                $daysDivisor = 7;
+            } elseif ($period === 'month') {
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+                $prevStart = $now->copy()->subMonth()->startOfMonth();
+                $prevEnd = $now->copy()->subMonth()->endOfMonth();
+                $daysDivisor = $now->daysInMonth;
+            } elseif ($period === 'year') {
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfYear();
+                $prevStart = $now->copy()->subYear()->startOfYear();
+                $prevEnd = $now->copy()->subYear()->endOfYear();
+                $daysDivisor = 365;
+            } else { // today
+                $start = $now->copy()->startOfDay();
+                $end = $now->copy()->endOfDay();
+                $prevStart = $now->copy()->subDay()->startOfDay();
+                $prevEnd = $now->copy()->subDay()->endOfDay();
+                $daysDivisor = 1;
+            }
+
+            // Helper for Ralan/IGD
+            if ($type === 'ralan' || $type === 'igd') {
+                $isIgd = $type === 'igd';
+                $q = function () use ($isIgd) {
+                    $query = \App\Models\RegPeriksa::query();
+                    if ($isIgd) {
+                        $query->where('kd_poli', 'IGDK');
+                    } else {
+                        $query->where('kd_poli', '!=', 'IGDK');
+                    }
+                    $query->where('stts', '!=', 'Batal');
+                    return $query;
+                };
+
+                $total = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])->count();
+                $baru = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                            ->where('stts_daftar', 'Baru')->count();
+                $lama = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                            ->where('stts_daftar', 'Lama')->count();
+                
+                $lanjutRanap = 0;
+                $pulang = 0;
+                if ($isIgd) {
+                    $lanjutRanap = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                                ->where('status_lanjut', 'Ranap')->count();
+                    $pulang = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                                ->where('status_lanjut', 'Ralan')->count();
+                }
+
+                $prevTotal = $q()->whereBetween('tgl_registrasi', [$prevStart->toDateString(), $prevEnd->toDateString()])->count();
+                $delta = $prevTotal > 0 ? (($total - $prevTotal) / $prevTotal) * 100 : 0;
+                
+                // Average daily
+                $avgDaily = $daysDivisor > 0 ? $total / $daysDivisor : 0;
+
+                return [
+                    'total' => $total,
+                    'baru' => $baru,
+                    'lama' => $lama,
+                    'lanjut_ranap' => $lanjutRanap,
+                    'pulang' => $pulang,
+                    'avg_daily' => round($avgDaily, 1),
+                    'delta_pct' => round($delta, 1),
+                ];
+            } 
+            
+            // Helper for Ranap
+            if ($type === 'ranap') {
+                $ranapTotal = DB::table('kamar_inap')
+                    ->whereBetween('tgl_masuk', [$start->toDateString(), $end->toDateString()])
+                    ->count();
+                    
+                $ranapPrevTotal = DB::table('kamar_inap')
+                    ->whereBetween('tgl_masuk', [$prevStart->toDateString(), $prevEnd->toDateString()])
+                    ->count();
+                    
+                $ranapDelta = $ranapPrevTotal > 0 ? (($ranapTotal - $ranapPrevTotal) / $ranapPrevTotal) * 100 : 0;
+        
+                $ranapKeluar = DB::table('kamar_inap')
+                    ->whereBetween('tgl_keluar', [$start->toDateString(), $end->toDateString()])
+                    ->where('stts_pulang', '!=', 'Pindah Kamar')
+                    ->count();
+        
+                // Active patients (not discharged)
+                $activeRanap = DB::table('kamar_inap')
+                    ->where('stts_pulang', '-')
+                    ->count();
+                    
+                $totalBeds = DB::table('kamar')
+                    ->where('statusdata', '1')
+                    ->count();
+                    
+                $okupansi = $totalBeds > 0 ? ($activeRanap / $totalBeds) * 100 : 0;
+        
+                $avgLos = DB::table('kamar_inap')
+                    ->whereBetween('tgl_keluar', [$start->toDateString(), $end->toDateString()])
+                    ->where('stts_pulang', '!=', 'Pindah Kamar')
+                    ->avg('lama');
+
+                return [
+                    'total' => $ranapTotal,
+                    'masuk' => $ranapTotal,
+                    'keluar' => $ranapKeluar,
+                    'okupansi_pct' => round($okupansi, 1),
+                    'bed_total' => $totalBeds,
+                    'avg_los_days' => round($avgLos ?? 0, 1),
+                    'delta_pct' => round($ranapDelta, 1),
+                ];
+            }
+            
+            return [];
+        };
+
+        $chartPeriod = $request->query('chart_period', 'week');
+
+        $getVisitTrend = function ($period) {
+            $now = \Carbon\Carbon::now();
+            $dates = [];
+
+            if ($period === 'year') {
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfYear();
+                for ($date = $start->copy(); $date->lte($end); $date->addMonth()) {
+                    $dates[$date->format('Y-m')] = [
+                        'tanggal' => $date->format('Y-m'),
+                        'rawat_jalan' => 0,
+                        'rawat_inap' => 0,
+                        'igd' => 0
+                    ];
+                }
+            } elseif ($period === 'month') {
+                 $start = $now->copy()->subDays(29);
+                 $end = $now->copy();
+                 for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                    $dates[$date->format('Y-m-d')] = [
+                        'tanggal' => $date->format('Y-m-d'),
+                        'rawat_jalan' => 0,
+                        'rawat_inap' => 0,
+                        'igd' => 0
+                    ];
+                }
+            } else { // week
+                 $start = $now->copy()->subDays(6);
+                 $end = $now->copy();
+                 for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                    $dates[$date->format('Y-m-d')] = [
+                        'tanggal' => $date->format('Y-m-d'),
+                        'rawat_jalan' => 0,
+                        'rawat_inap' => 0,
+                        'igd' => 0
+                    ];
+                }
+            }
+
+            // Rawat Jalan & IGD
+            $regs = \App\Models\RegPeriksa::query()
+                ->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                ->where('stts', '!=', 'Batal')
+                ->selectRaw('tgl_registrasi as tgl, kd_poli, count(*) as total')
+                ->groupBy('tgl', 'kd_poli')
+                ->get();
+
+            foreach ($regs as $row) {
+                $d = $row->tgl;
+                if ($period === 'year') $d = substr($d, 0, 7);
+                if (isset($dates[$d])) {
+                    if ($row->kd_poli === 'IGDK') {
+                        $dates[$d]['igd'] += $row->total;
+                    } else {
+                        $dates[$d]['rawat_jalan'] += $row->total;
+                    }
+                }
+            }
+
+            // Rawat Inap
+            $ranaps = \Illuminate\Support\Facades\DB::table('kamar_inap')
+                ->whereBetween('tgl_masuk', [$start->toDateString(), $end->toDateString()])
+                ->selectRaw('tgl_masuk as tgl, count(*) as total')
+                ->groupBy('tgl')
+                ->get();
+            
+            foreach ($ranaps as $row) {
+                 $d = $row->tgl;
+                 if ($period === 'year') $d = substr($d, 0, 7);
+                 if (isset($dates[$d])) {
+                    $dates[$d]['rawat_inap'] += $row->total;
+                }
+            }
+
+            return array_values($dates);
+        };
+
+        // Cara Bayar Stats (Today)
+        $caraBayarStats = \App\Models\RegPeriksa::query()
+            ->join('penjab', 'reg_periksa.kd_pj', '=', 'penjab.kd_pj')
+            ->whereDate('reg_periksa.tgl_registrasi', \Carbon\Carbon::today())
+            ->where('reg_periksa.stts', '!=', 'Batal')
+            ->selectRaw('penjab.png_jawab, count(*) as total')
+            ->groupBy('penjab.png_jawab')
+            ->orderByDesc('total')
+            ->get();
+        
+        // Poli Stats (Today)
+        $poliStats = \App\Models\RegPeriksa::query()
+            ->join('poliklinik', 'reg_periksa.kd_poli', '=', 'poliklinik.kd_poli')
+            ->whereDate('reg_periksa.tgl_registrasi', \Carbon\Carbon::today())
+            ->where('reg_periksa.stts', '!=', 'Batal')
+            ->selectRaw('poliklinik.nm_poli, count(*) as total_kunjungan')
+            ->groupBy('poliklinik.nm_poli')
+            ->orderByDesc('total_kunjungan')
+            ->limit(10)
+            ->get();
+
         return Inertia::render('Laporan/Home', [
             'summary' => [
-                'rawat_jalan' => [
-                    'total' => 0,
-                    'baru' => 0,
-                    'lama' => 0,
-                    'avg_daily' => 0,
-                    'delta_pct' => 0,
-                ],
-                'rawat_inap' => [
-                    'total' => 0,
-                    'masuk' => 0,
-                    'keluar' => 0,
-                    'okupansi_pct' => 0,
-                    'bed_total' => 0,
-                    'avg_los_days' => 0,
-                    'delta_pct' => 0,
-                ],
-                'igd' => [
-                    'total' => 0,
-                    'baru' => 0,
-                    'lama' => 0,
-                    'avg_daily' => 0,
-                    'delta_pct' => 0,
-                ],
-                'chart_period' => 'week',
+                'rawat_jalan' => $getStats('ralan', $period),
+                'rawat_inap' => $getStats('ranap', $period),
+                'igd' => $getStats('igd', $period),
+                'visit_trend' => $getVisitTrend($chartPeriod),
+                'cara_bayar_stats' => $caraBayarStats,
+                'poli_stats' => $poliStats,
+                'chart_period' => $period,
                 'updated_at' => now()->format('H:i'),
             ],
         ]);
@@ -1257,35 +1487,137 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Laporan/Home');
     })->name('laporan.ranap.frekuensi-penyakit');
 
-    // Endpoint sederhana untuk statistik laporan (placeholder)
-    Route::get('/laporan/stats', function () {
-        $type = request()->query('type');
-        $period = request()->query('period');
-        $base = [
-            'total' => 0,
-            'baru' => 0,
-            'lama' => 0,
-            'avg_daily' => 0,
-            'delta_pct' => 0,
-        ];
-        if ($type === 'ranap') {
-            $data = [
-                'total' => 0,
-                'masuk' => 0,
-                'keluar' => 0,
-                'okupansi_pct' => 0,
-                'bed_total' => 0,
-                'avg_los_days' => 0,
-                'delta_pct' => 0,
-            ];
-        } elseif ($type === 'igd') {
-            $data = $base;
-        } else { // ralan default
-            $data = $base;
-        }
+    // Endpoint statistik laporan
+    Route::get('/laporan/stats', function (Request $request) {
+        $type = $request->query('type');
+        $period = $request->query('period', 'today');
+        
+        // Reuse logic (duplicated for closure scope simplicity in routes file)
+        $getStats = function ($type, $period) {
+            $now = \Carbon\Carbon::now();
+            
+            if ($period === 'week') {
+                $start = $now->copy()->startOfWeek();
+                $end = $now->copy()->endOfWeek();
+                $prevStart = $now->copy()->subWeek()->startOfWeek();
+                $prevEnd = $now->copy()->subWeek()->endOfWeek();
+                $daysDivisor = 7;
+            } elseif ($period === 'month') {
+                $start = $now->copy()->startOfMonth();
+                $end = $now->copy()->endOfMonth();
+                $prevStart = $now->copy()->subMonth()->startOfMonth();
+                $prevEnd = $now->copy()->subMonth()->endOfMonth();
+                $daysDivisor = $now->daysInMonth;
+            } elseif ($period === 'year') {
+                $start = $now->copy()->startOfYear();
+                $end = $now->copy()->endOfYear();
+                $prevStart = $now->copy()->subYear()->startOfYear();
+                $prevEnd = $now->copy()->subYear()->endOfYear();
+                $daysDivisor = 365;
+            } else { // today
+                $start = $now->copy()->startOfDay();
+                $end = $now->copy()->endOfDay();
+                $prevStart = $now->copy()->subDay()->startOfDay();
+                $prevEnd = $now->copy()->subDay()->endOfDay();
+                $daysDivisor = 1;
+            }
 
-        return response()->json($data);
+            // Helper for Ralan/IGD
+            if ($type === 'ralan' || $type === 'igd') {
+                $isIgd = $type === 'igd';
+                $q = function () use ($isIgd) {
+                    $query = \App\Models\RegPeriksa::query();
+                    if ($isIgd) {
+                        $query->where('kd_poli', 'IGDK');
+                    } else {
+                        $query->where('kd_poli', '!=', 'IGDK');
+                    }
+                    $query->where('stts', '!=', 'Batal');
+                    return $query;
+                };
+
+                $total = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])->count();
+                $baru = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                            ->where('stts_daftar', 'Baru')->count();
+                $lama = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                            ->where('stts_daftar', 'Lama')->count();
+                
+                $lanjutRanap = 0;
+                $pulang = 0;
+                if ($isIgd) {
+                    $lanjutRanap = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                                ->where('status_lanjut', 'Ranap')->count();
+                    $pulang = $q()->whereBetween('tgl_registrasi', [$start->toDateString(), $end->toDateString()])
+                                ->where('status_lanjut', 'Ralan')->count();
+                }
+                
+                $prevTotal = $q()->whereBetween('tgl_registrasi', [$prevStart->toDateString(), $prevEnd->toDateString()])->count();
+                $delta = $prevTotal > 0 ? (($total - $prevTotal) / $prevTotal) * 100 : 0;
+                
+                // Average daily
+                $avgDaily = $daysDivisor > 0 ? $total / $daysDivisor : 0;
+
+                return [
+                    'total' => $total,
+                    'baru' => $baru,
+                    'lama' => $lama,
+                    'lanjut_ranap' => $lanjutRanap,
+                    'pulang' => $pulang,
+                    'avg_daily' => round($avgDaily, 1),
+                    'delta_pct' => round($delta, 1),
+                ];
+            } 
+            
+            // Helper for Ranap
+            if ($type === 'ranap') {
+                $ranapTotal = DB::table('kamar_inap')
+                    ->whereBetween('tgl_masuk', [$start->toDateString(), $end->toDateString()])
+                    ->count();
+                    
+                $ranapPrevTotal = DB::table('kamar_inap')
+                    ->whereBetween('tgl_masuk', [$prevStart->toDateString(), $prevEnd->toDateString()])
+                    ->count();
+                    
+                $ranapDelta = $ranapPrevTotal > 0 ? (($ranapTotal - $ranapPrevTotal) / $ranapPrevTotal) * 100 : 0;
+        
+                $ranapKeluar = DB::table('kamar_inap')
+                    ->whereBetween('tgl_keluar', [$start->toDateString(), $end->toDateString()])
+                    ->where('stts_pulang', '!=', 'Pindah Kamar')
+                    ->count();
+        
+                // Active patients (not discharged)
+                $activeRanap = DB::table('kamar_inap')
+                    ->where('stts_pulang', '-')
+                    ->count();
+                    
+                $totalBeds = DB::table('kamar')
+                    ->where('statusdata', '1')
+                    ->count();
+                    
+                $okupansi = $totalBeds > 0 ? ($activeRanap / $totalBeds) * 100 : 0;
+        
+                $avgLos = DB::table('kamar_inap')
+                    ->whereBetween('tgl_keluar', [$start->toDateString(), $end->toDateString()])
+                    ->where('stts_pulang', '!=', 'Pindah Kamar')
+                    ->avg('lama');
+
+                return [
+                    'total' => $ranapTotal,
+                    'masuk' => $ranapTotal,
+                    'keluar' => $ranapKeluar,
+                    'okupansi_pct' => round($okupansi, 1),
+                    'bed_total' => $totalBeds,
+                    'avg_los_days' => round($avgLos ?? 0, 1),
+                    'delta_pct' => round($ranapDelta, 1),
+                ];
+            }
+            
+            return [];
+        };
+
+        return response()->json($getStats($type, $period));
     })->name('laporan.stats');
+    });
 
     Route::get('/tools/scan-whatsapp-credentials', function () {
         return Inertia::render('Tools/ScanWhatsAppCredentials');
@@ -1917,10 +2249,193 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-jalan-statistics', [RawatJalanController::class, 'getStatistics'])->name('rawat-jalan.statistics');
 
     // Surat Sehat dan Surat Sakit routes
+    Route::get('rawat-jalan/surat-sehat', function (Request $request) {
+        $tab = (string) $request->query('tab', 'sehat');
+        $search = trim((string) $request->query('search', ''));
+        $startDate = (string) $request->query('start_date', '');
+        $endDate = (string) $request->query('end_date', '');
+
+        $suratSehat = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        $suratSakit = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        if (Schema::hasTable('surat_keterangan_sehat')) {
+            $querySehat = DB::table('surat_keterangan_sehat')
+                ->leftJoin('reg_periksa', 'surat_keterangan_sehat.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'surat_keterangan_sehat.no_surat',
+                    'surat_keterangan_sehat.no_rawat',
+                    'surat_keterangan_sehat.tanggalsurat',
+                    'surat_keterangan_sehat.berat',
+                    'surat_keterangan_sehat.tinggi',
+                    'surat_keterangan_sehat.tensi',
+                    'surat_keterangan_sehat.suhu',
+                    'surat_keterangan_sehat.butawarna',
+                    'surat_keterangan_sehat.keperluan',
+                    'surat_keterangan_sehat.kesimpulan',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySehat->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('surat_keterangan_sehat.no_surat', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.no_rawat', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.keperluan', 'like', $like)
+                        ->orWhere('surat_keterangan_sehat.kesimpulan', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySehat->whereBetween('surat_keterangan_sehat.tanggalsurat', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySehat->where('surat_keterangan_sehat.tanggalsurat', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySehat->where('surat_keterangan_sehat.tanggalsurat', '<=', $endDate);
+            }
+
+            $suratSehat = $querySehat
+                ->orderBy('surat_keterangan_sehat.tanggalsurat', 'desc')
+                ->orderBy('surat_keterangan_sehat.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        if (Schema::hasTable('suratsakit')) {
+            $querySakit = DB::table('suratsakit')
+                ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'suratsakit.no_surat',
+                    'suratsakit.no_rawat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySakit->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('suratsakit.no_surat', 'like', $like)
+                        ->orWhere('suratsakit.no_rawat', 'like', $like)
+                        ->orWhere('suratsakit.lamasakit', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySakit->whereBetween('suratsakit.tanggalawal', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '<=', $endDate);
+            }
+
+            $suratSakit = $querySakit
+                ->orderBy('suratsakit.tanggalawal', 'desc')
+                ->orderBy('suratsakit.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSehatList', [
+            'suratSehat' => $suratSehat,
+            'suratSakit' => $suratSakit,
+            'tab' => $tab,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    })->name('rawat-jalan.surat-sehat.index');
+
     Route::get('rawat-jalan/surat-sehat/{no_rawat}', [RawatJalanController::class, 'suratSehat'])
         ->name('rawat-jalan.surat-sehat')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sehat', [RawatJalanController::class, 'storeSuratSehat'])->name('rawat-jalan.surat-sehat.store');
+
+    Route::get('rawat-jalan/surat-sakit', function (Request $request) {
+        $search = trim((string) $request->query('search', ''));
+        $startDate = (string) $request->query('start_date', '');
+        $endDate = (string) $request->query('end_date', '');
+
+        $suratSakit = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+
+        if (Schema::hasTable('suratsakit')) {
+            $querySakit = DB::table('suratsakit')
+                ->leftJoin('reg_periksa', 'suratsakit.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'suratsakit.no_surat',
+                    'suratsakit.no_rawat',
+                    'suratsakit.tanggalawal',
+                    'suratsakit.tanggalakhir',
+                    'suratsakit.lamasakit',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $querySakit->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('suratsakit.no_surat', 'like', $like)
+                        ->orWhere('suratsakit.no_rawat', 'like', $like)
+                        ->orWhere('suratsakit.lamasakit', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $querySakit->whereBetween('suratsakit.tanggalawal', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $querySakit->where('suratsakit.tanggalawal', '<=', $endDate);
+            }
+
+            $suratSakit = $querySakit
+                ->orderBy('suratsakit.tanggalawal', 'desc')
+                ->orderBy('suratsakit.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        return Inertia::render('RawatJalan/components/SuratSakitList', [
+            'suratSakit' => $suratSakit,
+            'filters' => [
+                'search' => $search,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+        ]);
+    })->name('rawat-jalan.surat-sakit.index');
+
     // moved to public routes above
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
         ->name('rawat-jalan.surat-sakit')
@@ -1941,6 +2456,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('rawat-jalan/penilaian-awal-keperawatan-ralan/{no_rawat}', [RawatJalanController::class, 'destroyPenilaianAwalKeperawatanRalan'])
         ->name('penilaian-awal-keperawatan-ralan.destroy')
         ->where('no_rawat', '.*');
+
+    // Update status periksa
+    Route::post('rawat-jalan/status', [RawatJalanController::class, 'updateStatus'])->name('rawat-jalan.status.update');
 
     // API routes untuk obat
     Route::get('api/obat', [ObatController::class, 'getObatByPoli'])->name('api.obat.index');
@@ -2335,6 +2853,12 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/MonitoringPcare');
         })->name('data-pendaftaran');
 
+        Route::get('/data-kunjungan', function () {
+            return Inertia::render('Pcare/MonitoringPcare');
+        })->name('data-kunjungan');
+
+        Route::get('/cetak-rujukan/{no_rawat}', [\App\Http\Controllers\Pcare\PcareController::class, 'cetakRujukan'])->name('cetak-rujukan')->where('no_rawat', '.*');
+
         // Referensi Diagnosa page (Inertia)
         Route::get('/referensi/diagnosa', function () {
             return Inertia::render('Pcare/ReferensiPcare/ReferensiDiagnosa');
@@ -2429,6 +2953,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/data-peserta-by-nik', function () {
             return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
         })->name('layanan.cek-peserta-nik');
+
+        Route::get('/form-pendaftaran', function () {
+            return Inertia::render('Pcare/LayananPcare/LayananPcare');
+        })->name('form-pendaftaran');
 
         // Layanan PCare: Form terpadu (3 card: Peserta+SOAP, Kunjungan, Rujukan)
         Route::get('/layanan', function () {

@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 /**
  * Controller untuk bridging BPJS PCare.
@@ -41,6 +44,108 @@ class PcareController extends Controller
             ],
             'headers' => $headers,
         ]);
+    }
+
+    public function cetakRujukan($no_rawat)
+    {
+        $pendaftaran = DB::table('pcare_pendaftaran')->where('no_rawat', $no_rawat)->first();
+        if (!$pendaftaran) {
+            abort(404, 'Data pendaftaran tidak ditemukan');
+        }
+
+        $rujukan = null;
+        if (Schema::hasTable('pcare_rujuk_subspesialis')) {
+            $rujukan = DB::table('pcare_rujuk_subspesialis')->where('no_rawat', $no_rawat)->first();
+        }
+
+        // Ambil data pasien untuk detail tambahan (jk, tgl lahir)
+        $pasien = DB::table('pasien')->where('no_rkm_medis', $pendaftaran->no_rkm_medis)->first();
+
+        // Ambil setting instansi
+        $setting = DB::table('setting')->first();
+        
+        // Generate Barcode dari No Rujukan
+        $noRujukan = $rujukan->noKunjungan ?? '-';
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = base64_encode($generator->getBarcode($noRujukan, $generator::TYPE_CODE_128));
+
+        // Logo BPJS
+        $logoPath = public_path('img/BPJS_Kesehatan_logo.png');
+        $logoBase64 = null;
+        if (file_exists($logoPath)) {
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/png;base64,' . base64_encode($logoData);
+        }
+
+        // Format Tanggal dan Umur
+        $tglLahir = $pasien->tgl_lahir ? date('d-M-Y', strtotime($pasien->tgl_lahir)) : '-';
+        $umur = $pasien->tgl_lahir ? date_diff(date_create($pasien->tgl_lahir), date_create('today'))->y : '-';
+        $tglRencana = isset($rujukan->tglEstRujuk) ? date('d-M-Y', strtotime($rujukan->tglEstRujuk)) : '-';
+        $tglBerlaku = isset($rujukan->tglEstRujuk) ? date('d-M-Y', strtotime($rujukan->tglEstRujuk . ' + 90 days')) : '-';
+        $tglSurat = date('d F Y');
+        $kabupaten = env('BPJS_PCARE_KABUPATEN', $setting->kabupaten ?? 'Kabupaten');
+        $kedeputian = env('BPJS_PCARE_KEDEPUTIAN', 'KEDEPUTIAN WILAYAH VII');
+        $nmDokter = $rujukan->nmDokter ?? '-';
+
+        // Data tambahan dengan fallback
+        $catatan = '-';
+        
+        // Jadwal Praktek Logic
+        $jadwal = 'Sesuai Jadwal Dokter Rumah Sakit';
+        
+        // Diagnosa Fallback
+        $diagnosa = $rujukan->nmDiag1 ?? '-';
+        if ($diagnosa === '-' || empty($diagnosa)) {
+             $diagDb = DB::table('diagnosa_pasien')
+                ->join('penyakit', 'diagnosa_pasien.kd_penyakit', '=', 'penyakit.kd_penyakit')
+                ->where('diagnosa_pasien.no_rawat', $no_rawat)
+                ->where('diagnosa_pasien.prioritas', '1')
+                ->value('penyakit.nm_penyakit');
+             $diagnosa = $diagDb ?? '-';
+        }
+
+        // Terapi Fallback
+        $terapi = $rujukan->terapi ?? '-';
+        if ($terapi === '-' || empty($terapi)) {
+            $terapiObatData = DB::table('resep_obat')
+                ->join('resep_dokter', 'resep_obat.no_resep', '=', 'resep_dokter.no_resep')
+                ->join('databarang', 'resep_dokter.kode_brng', '=', 'databarang.kode_brng')
+                ->where('resep_obat.no_rawat', $no_rawat)
+                ->select('databarang.nama_brng', 'resep_dokter.jml', 'resep_dokter.aturan_pakai')
+                ->get();
+            
+            if ($terapiObatData->isNotEmpty()) {
+                $terapiObatArray = [];
+                foreach ($terapiObatData as $obat) {
+                    $terapiObatArray[] = $obat->nama_brng.' '.$obat->jml.' ['.$obat->aturan_pakai.']';
+                }
+                $terapi = implode(', ', $terapiObatArray);
+            }
+        }
+
+        $pdf = Pdf::loadView('pcare.cetak-rujukan', compact(
+            'pendaftaran', 
+            'rujukan', 
+            'pasien', 
+            'setting', 
+            'barcode', 
+            'logoBase64',
+            'tglLahir',
+            'umur',
+            'tglRencana',
+            'tglBerlaku',
+            'tglSurat',
+            'kabupaten',
+            'kedeputian',
+            'nmDokter',
+            'catatan',
+            'jadwal',
+            'diagnosa',
+            'terapi'
+        ));
+        $pdf->setPaper('A4', 'portrait');
+        $fileName = 'Surat_Rujukan_' . str_replace(['/', '\\'], '_', $no_rawat) . '.pdf';
+        return $pdf->stream($fileName);
     }
 
     /**
@@ -1828,16 +1933,33 @@ class PcareController extends Controller
                 return response()->json(['data' => []]);
             }
             $q = DB::table('pcare_pendaftaran as p')->select([
-                'p.no_rawat',
-                'p.tglDaftar',
-                'p.no_rkm_medis',
-                'p.nm_pasien',
-                'p.kdPoli',
-                'p.nmPoli',
-                'p.status',
-                'p.noUrut',
-            ]);
-            $hasReg = Schema::hasTable('reg_periksa');
+                    'p.no_rawat',
+                    'p.tglDaftar',
+                    'p.no_rkm_medis',
+                    'p.nm_pasien',
+                    'p.kdPoli',
+                    'p.nmPoli',
+                    'p.status',
+                    'p.noUrut',
+                ]);
+
+                // Join dengan tabel pcare_rujuk_subspesialis jika ada
+                if (Schema::hasTable('pcare_rujuk_subspesialis')) {
+                    $q->leftJoin('pcare_rujuk_subspesialis as prs', 'prs.no_rawat', '=', 'p.no_rawat');
+                    $q->addSelect([
+                        'prs.noKunjungan as rujukan_noKunjungan',
+                        'prs.nmPPK as rujukan_nmPPK',
+                        'prs.nmSubSpesialis as rujukan_nmSubSpesialis',
+                        'prs.tglEstRujuk as rujukan_tglEstRujuk'
+                    ]);
+                } else {
+                    $q->addSelect(DB::raw('"" as rujukan_noKunjungan'));
+                    $q->addSelect(DB::raw('"" as rujukan_nmPPK'));
+                    $q->addSelect(DB::raw('"" as rujukan_nmSubSpesialis'));
+                    $q->addSelect(DB::raw('"" as rujukan_tglEstRujuk'));
+                }
+
+                $hasReg = Schema::hasTable('reg_periksa');
             if ($hasReg) {
                 $q = $q->leftJoin('reg_periksa as r', 'r.no_rawat', '=', 'p.no_rawat');
                 if (Schema::hasColumn('reg_periksa', 'response_pcare')) {
@@ -1880,12 +2002,18 @@ class PcareController extends Controller
                     'kdPoli' => (string) ($r->kdPoli ?? ''),
                     'nmPoli' => (string) ($r->nmPoli ?? ''),
                     'noUrut' => $nu,
-                    'dokter' => '',
-                    'status' => (string) ($r->status ?? ''),
-                ];
-            }
+                        'dokter' => '',
+                        'status' => (string) ($r->status ?? ''),
+                        'rujukan' => [
+                            'noKunjungan' => (string) ($r->rujukan_noKunjungan ?? ''),
+                            'nmPPK' => (string) ($r->rujukan_nmPPK ?? ''),
+                            'nmSubSpesialis' => (string) ($r->rujukan_nmSubSpesialis ?? ''),
+                            'tglEstRujuk' => (string) ($r->rujukan_tglEstRujuk ?? ''),
+                        ],
+                    ];
+                }
 
-            return response()->json(['data' => $out]);
+                return response()->json(['data' => $out]);
         } catch (\Throwable $e) {
             try {
                 \Illuminate\Support\Facades\Log::channel('bpjs')->error('pendaftaranList error', [
@@ -2206,6 +2334,41 @@ class PcareController extends Controller
                 ],
             ], 500);
         }
+
+        // Cek apakah sudah pernah didaftarkan dan sukses (status 'Terkirim')
+        // Mencegah duplikasi data pendaftaran ke BPJS
+        try {
+            $existingPendaftaran = DB::table('pcare_pendaftaran')
+                ->where('no_rawat', $noRawat)
+                ->where('status', 'Terkirim')
+                ->first();
+
+            if ($existingPendaftaran) {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->info('Lewati PCare pendaftaran: Sudah terdaftar sebelumnya', [
+                    'no_rawat' => $noRawat,
+                    'noUrut' => $existingPendaftaran->noUrut,
+                    'tglDaftar' => $existingPendaftaran->tglDaftar,
+                ]);
+
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Pendaftaran sudah pernah dikirim ke BPJS.',
+                        'code' => 200,
+                    ],
+                    'response' => [
+                        'message' => $existingPendaftaran->noUrut,
+                        'noUrut' => $existingPendaftaran->noUrut,
+                        'field' => 'noUrut'
+                    ],
+                    'skipped' => true,
+                    'already_registered' => true
+                ], 200);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error checking existing pcare_pendaftaran: ' . $e->getMessage());
+            // Lanjut proses jika check gagal, atau return error? Aman lanjut tapi log error.
+        }
+
         $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
         if (! $pasien) {
             return response()->json([
@@ -2552,38 +2715,122 @@ class PcareController extends Controller
         $start = (int) $request->query('start', 0);
         $limit = (int) $request->query('limit', 25);
 
-        $cfg = $this->pcareConfig();
-        $base = rtrim($cfg['base_url'] ?? '', '/');
-
-        // Default keyword untuk empty string
-        $keyword = $q === '' ? '-' : $q; // beberapa katalog PCare menggunakan '-' untuk all
-
-        // Deteksi v3 berdasarkan base URL
-        $isV3 = str_contains($base, 'pcare-rest-v3.0');
-
-        if ($isV3) {
-            // v3 menggunakan query parameter
-            $endpoint = 'diagnosa';
-            $query = [
-                'keyword' => $keyword,
-                'offset' => $start,
-                'limit' => $limit,
-            ];
-            $result = $this->pcareRequest('GET', $endpoint, $query);
-        } else {
-            // legacy menggunakan path segment
-            $endpoint = 'diagnosa/'.urlencode($keyword).'/'.$start.'/'.$limit;
-            $result = $this->pcareRequest('GET', $endpoint);
+        // 1. Cari data lokal (Penyakit)
+        $localResults = [];
+        try {
+            if ($q !== '') {
+                $localResults = \App\Models\Penyakit::where('kd_penyakit', 'like', "%{$q}%")
+                    ->orWhere('nm_penyakit', 'like', "%{$q}%")
+                    ->limit($limit)
+                    ->get()
+                    ->map(function ($item) {
+                        return [
+                            'kdDiag' => $item->kd_penyakit,
+                            'nmDiag' => $item->nm_penyakit,
+                            'nonSpesialis' => true,
+                            'source' => 'local',
+                        ];
+                    })
+                    ->toArray();
+            }
+        } catch (\Throwable $e) {
+            // Abaikan error database lokal, lanjut ke BPJS
+            Log::error('Error searching local penyakit: '.$e->getMessage());
         }
 
-        $response = $result['response'];
-        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+        // 2. Cari data BPJS
+        $bpjsResults = [];
+        $bpjsStatus = 200;
+        $bpjsMessage = 'OK';
+        $isBpjsOffline = false;
 
-        if (! is_array($processed)) {
-            $processed = ['raw' => $processed];
+        try {
+            $cfg = $this->pcareConfig();
+            $base = rtrim($cfg['base_url'] ?? '', '/');
+
+            // Default keyword untuk empty string
+            $keyword = $q === '' ? '-' : $q; // beberapa katalog PCare menggunakan '-' untuk all
+
+            // Deteksi v3 berdasarkan base URL
+            $isV3 = str_contains($base, 'pcare-rest-v3.0');
+
+            if ($isV3) {
+                // v3 menggunakan query parameter
+                $endpoint = 'diagnosa';
+                $query = [
+                    'keyword' => $keyword,
+                    'offset' => $start,
+                    'limit' => $limit,
+                ];
+                $result = $this->pcareRequest('GET', $endpoint, $query);
+            } else {
+                // legacy menggunakan path segment
+                $endpoint = 'diagnosa/'.urlencode($keyword).'/'.$start.'/'.$limit;
+                $result = $this->pcareRequest('GET', $endpoint);
+            }
+
+            $response = $result['response'];
+            $bpjsStatus = $response->status();
+            
+            if ($bpjsStatus >= 200 && $bpjsStatus < 300) {
+                $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+                
+                if (! is_array($processed)) {
+                    $processed = ['raw' => $processed];
+                }
+
+                // Normalisasi struktur list dari BPJS
+                if (isset($processed['response']['list']) && is_array($processed['response']['list'])) {
+                    $bpjsResults = $processed['response']['list'];
+                } elseif (isset($processed['list']) && is_array($processed['list'])) {
+                    $bpjsResults = $processed['list'];
+                }
+            } else {
+                $isBpjsOffline = true;
+                $bpjsMessage = 'BPJS Error: Status ' . $bpjsStatus;
+            }
+
+        } catch (\Throwable $e) {
+            $isBpjsOffline = true;
+            $bpjsMessage = 'BPJS Connection Error: ' . $e->getMessage();
+            // Lanjut untuk mengembalikan data lokal
         }
 
-        return response()->json($processed, $response->status());
+        // 3. Gabungkan Hasil (Local + BPJS)
+        // Tandai source BPJS
+        $bpjsResults = array_map(function ($item) {
+            $item['source'] = 'bpjs';
+            return $item;
+        }, $bpjsResults);
+
+        // Gabungkan: Local priority (atau bisa diubah logicnya)
+        // Kita merge unik by kdDiag
+        $merged = $localResults;
+        $existingCodes = array_column($localResults, 'kdDiag');
+
+        foreach ($bpjsResults as $bpjsItem) {
+            $kode = $bpjsItem['kdDiag'] ?? $bpjsItem['kode'] ?? '';
+            if (!in_array($kode, $existingCodes)) {
+                $merged[] = $bpjsItem;
+                $existingCodes[] = $kode;
+            }
+        }
+
+        // Format response agar kompatibel dengan frontend yang mengharapkan { response: { list: [] } } atau flat
+        // Kita kembalikan struktur standar PCare wrapper kita tapi dengan data hybrid
+        $finalData = [
+            'metaData' => [
+                'code' => $isBpjsOffline ? 201 : 200, // 201 warning jika BPJS mati? Atau tetap 200
+                'message' => $isBpjsOffline ? "Data dari Database Lokal (Koneksi BPJS Bermasalah: $bpjsMessage)" : 'OK',
+                'bpjs_offline' => $isBpjsOffline,
+            ],
+            'response' => [
+                'list' => $merged,
+                'count' => count($merged)
+            ]
+        ];
+
+        return response()->json($finalData, 200);
     }
 
     public function getDpho(Request $request)

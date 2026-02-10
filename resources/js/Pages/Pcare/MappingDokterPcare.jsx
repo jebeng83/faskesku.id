@@ -80,11 +80,6 @@ export default function MappingDokterPcare() {
     const rsDebounceRef = useRef(null);
     const bpjsDebounceRef = useRef(null);
 
-    const csrfToken = useMemo(() => {
-        const el = document.querySelector("meta[name=csrf-token]");
-        return el ? el.getAttribute("content") : "";
-    }, []);
-
     // Pagination state
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
@@ -285,7 +280,6 @@ export default function MappingDokterPcare() {
                 headers: {
                     "Content-Type": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-TOKEN": csrfToken,
                 },
                 credentials: "same-origin",
                 body: JSON.stringify(payload),
@@ -332,7 +326,6 @@ export default function MappingDokterPcare() {
                 headers: {
                     "Content-Type": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-TOKEN": csrfToken,
                 },
                 credentials: "same-origin",
                 body: JSON.stringify({

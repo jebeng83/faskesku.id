@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
@@ -7,8 +8,8 @@ import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser, Activity, FileText, HelpCircle, Plus, Save } from 'lucide-react';
-import axios from 'axios';
+import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, User, MessageCircle, Stethoscope, Thermometer, Heart, Wind, Percent, Ruler, Scale, Brain, CircleDot, Pill } from 'lucide-react';
+import toast from '@/tools/toast';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -709,29 +710,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         const newStatus = choice === 'ya' ? 'Sudah' : 'Belum';
 
         try {
-            const res = await fetch(route('rawat-jalan.status.update'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({
-                    no_rawat: noRawat,
-                    stts: newStatus
-                })
+            await axios.post(route('rawat-jalan.status.update'), {
+                no_rawat: noRawat,
+                stts: newStatus
             });
-
-            if (res.ok) {
-                // Redirect langsung tanpa alert
-                window.location.href = route('rawat-jalan.index');
-            } else {
-                const json = await res.json();
-                alert(json.message || 'Gagal memperbarui status');
-            }
+            // Redirect langsung tanpa alert
+            window.location.href = route('rawat-jalan.index');
         } catch (e) {
             console.error(e);
-            alert('Terjadi kesalahan saat menghubungi server');
+            const json = e.response ? e.response.data : null;
+            toast.error(json?.message || 'Gagal memperbarui status');
         } finally {
             setExitLoading(false);
             setExitModalOpen(false);
@@ -884,35 +872,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
         payload.noKunjungan = noKunjunganCandidate;
         try {
-            const res = await fetch('/api/pcare/kunjungan', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'include',
-                body: JSON.stringify(payload),
-            });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (res.ok) {
-                const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
-                setKunjunganResult({ success: true, message: msg });
-            } else {
-                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal edit Kunjungan (${res.status})`;
-                setKunjunganResult({ success: false, message: errMsg });
-            }
+            const res = await axios.put('/api/pcare/kunjungan', payload);
+            const json = res.data;
+            const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+            setKunjunganResult({ success: true, message: msg });
         } catch (e) {
-            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+            const json = e.response ? e.response.data : null;
+            const errMsg = (json && json.metaData && json.metaData.message) 
+                ? json.metaData.message 
+                : (e.message || 'Gagal edit Kunjungan');
+            setKunjunganResult({ success: false, message: errMsg });
         } finally {
             setSendingKunjungan(false);
         }
     };
 
     const [selectedTemplate, setSelectedTemplate] = useState('');
+
     const stripTTV = (text) => {
         if (!text) return '';
         let s = String(text);
@@ -1048,6 +1024,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             nadi: '',
             respirasi: '',
             spo2: '',
+            tinggi: '',
+            berat: '',
+            gcs: '',
+            kesadaran: 'Compos Mentis',
+            lingkar_perut: '',
             keluhan: '',
             pemeriksaan: '',
             penilaian: '',
@@ -1085,6 +1066,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     normalizedFormData[key] = '-';
                 }
             });
+            const kesadaranRaw = (normalizedFormData.kesadaran ?? '').toString().trim();
+            if (kesadaranRaw === '' || kesadaranRaw.toLowerCase() === 'compos mentis') {
+                normalizedFormData.kesadaran = 'Compos Mentis';
+            }
             const jenisInt = alergiJenis ? parseInt(alergiJenis, 10) : null;
             const hasAlergiData = !!(noRkmMedis && kdAlergi && String(kdAlergi).trim() !== '' && String(kdAlergi).trim() !== '-' && jenisInt);
             const alergiPayload = hasAlergiData ? {
@@ -1095,26 +1080,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const payload = creating
                 ? { ...normalizedFormData, no_rawat: noRawat, t: token, ...(hasAlergiData && { alergi_pasien: alergiPayload }) }
                 : { ...normalizedFormData, key: editKey, ...(hasAlergiData && { alergi_pasien: alergiPayload }) };
-            const res = await fetch(url, {
-                method: creating ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(payload),
+            const res = await axios({
+                method: creating ? 'post' : 'put',
+                url: url,
+                data: payload
             });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (!res.ok) {
-                const msg = (json && (json.message || (json.errors && Object.values(json.errors).flat().join(', ')))) || `Gagal menyimpan (${res.status})`;
-                setError(msg);
-                setMessage(null);
-                return;
-            }
+            const json = res.data;
             setError(null);
             setMessage(json.message || (creating ? 'Pemeriksaan tersimpan' : 'Pemeriksaan diperbarui'));
             await fetchList();
@@ -1143,55 +1114,58 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     berat: payload.berat,
                     tinggi: payload.tinggi,
                 };
-                const pcareRes = await fetch(pcareUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(pcarePayload),
-                });
-                const pcareText = await pcareRes.text();
-                let pcareJson;
-                try { pcareJson = pcareText ? JSON.parse(pcareText) : {}; } catch (_) { pcareJson = {}; }
-                if (pcareRes.ok) {
-                    // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
-                    const skipped = !!(pcareJson && pcareJson.skipped);
-                    if (skipped) {
-                        const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : 'Pendaftaran PCare dilewati (Non-BPJS)';
-                        // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
-                        setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
-                        // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS
-                        setShowBridging(false);
-                    } else if (pcareRes.status === 201 || pcareRes.status === 200) {
-                        // Sukses kirim ke BPJS PCare
-                        const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
-                            ? (pcareJson.response.message || '')
-                            : '';
-                        setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
-                        setShowBridging(true);
+                const pcareRes = await axios.post(pcareUrl, pcarePayload);
+                const pcareJson = pcareRes.data;
+                
+                // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
+                const skipped = !!(pcareJson && pcareJson.skipped);
+                const alreadyRegistered = !!(pcareJson && pcareJson.already_registered);
+
+                if (skipped) {
+                    const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                        ? pcareJson.metaData.message
+                        : 'Pendaftaran PCare dilewati (Non-BPJS)';
+                    // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
+                    setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
+                    
+                    // Jika skipped karena sudah terdaftar, TETAP tampilkan bridging button
+                    if (alreadyRegistered) {
+                            setShowBridging(true);
                     } else {
-                        const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : `Gagal pendaftaran PCare (${pcareRes.status})`;
-                        setError(errMsg);
-                        setShowBridging(false);
+                            // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS (misal pasien umum)
+                            setShowBridging(false);
                     }
+                } else if (pcareRes.status === 201 || pcareRes.status === 200) {
+                    // Sukses kirim ke BPJS PCare
+                    const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
+                        ? (pcareJson.response.message || '')
+                        : '';
+                    setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
+                    setShowBridging(true);
                 } else {
-                    const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
+                    const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                        ? pcareJson.metaData.message
+                        : `Gagal pendaftaran PCare (${pcareRes.status})`;
                     setError(errMsg);
                     setShowBridging(false);
                 }
             } catch (e) {
-                setError(`Gagal koneksi ke PCare: ${e.message || e}`);
+                const pcareJson = e.response ? e.response.data : null;
+                const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) 
+                     ? pcareJson.metaData.message 
+                     : `Gagal pendaftaran PCare (${e.response ? e.response.status : (e.message || 'Error')})`;
+                
+                if (e.response) {
+                     setError(errMsg);
+                     setShowBridging(false);
+                } else {
+                     setError(`Gagal koneksi ke PCare: ${e.message || e}`);
+                }
             }
         } catch (e) {
-            setError(e.message || 'Terjadi kesalahan saat menyimpan');
+            const json = e.response ? e.response.data : null;
+            const msg = (json && (json.message || (json.errors && Object.values(json.errors).flat().join(', ')))) || e.message || 'Terjadi kesalahan saat menyimpan';
+            setError(msg);
             setMessage(null);
         } finally {
             setIsSubmitting(false);
@@ -1343,12 +1317,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 const json = await res.json();
                 if (json && json.success) {
                     const payload = json.payload || {};
+                    const kdSadar = '01';
+                    const nmSadar = 'Compos mentis';
                     // Terapkan nilai default untuk bidang-bidang referensi PCare jika belum ada
                     const withDefaults = {
                         ...payload,
                         // Kesadaran
-                        kdSadar: payload.kdSadar ?? '01',
-                        nmSadar: payload.nmSadar ?? 'Compos mentis',
+                        kdSadar,
+                        nmSadar,
                         // Status Pulang (default: 3 = Berobat Jalan)
                         kdStatusPulang: payload.kdStatusPulang ?? '3',
                         nmStatusPulang: payload.nmStatusPulang ?? '',
@@ -1673,61 +1649,54 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try {
             // Tampilkan payload di console untuk debug
             try { console.warn('[PCare] Payload akan dikirim', payload); } catch (_) {}
-            const res = await fetch('/api/pcare/kunjungan', {
-                method: 'POST',
+            const res = await axios.post('/api/pcare/kunjungan', payload, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                credentials: 'include',
-                body: JSON.stringify(payload),
             });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (res.ok) {
-                const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
-                // Simpan informasi untuk cetak rujukan bila rujukan aktif
-                const noKunj = extractNoKunjungan(json);
-                setLastNoKunjungan(noKunj);
-                setLastKunjunganPayload(payload);
-                // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
-                if (payload.rujukLanjut && noRawat) {
-                    try {
-                        const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
-                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        });
-                        const rujukJson = await rujukRes.json();
-                        const rujukData = rujukJson.data || null;
-                        
-                        // Jika response OK dan ada data, set state rujukan
-                        if (rujukRes.ok && rujukData) {
-                            setRujukanBerhasil(true);
-                            setPcareRujukanSubspesialis(rujukData);
-                            if (rujukData.noKunjungan) {
-                                setLastNoKunjungan(rujukData.noKunjungan);
-                            }
-                        } else if (payload.rujukLanjut) {
-                            // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
-                            setRujukanBerhasil(true);
+            const json = res?.data || {};
+            const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
+            // Simpan informasi untuk cetak rujukan bila rujukan aktif
+            const noKunj = extractNoKunjungan(json);
+            setLastNoKunjungan(noKunj);
+            setLastKunjunganPayload(payload);
+            // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
+            if (payload.rujukLanjut && noRawat) {
+                try {
+                    const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        credentials: 'include',
+                    });
+                    const rujukJson = await rujukRes.json();
+                    const rujukData = rujukJson.data || null;
+                    
+                    // Jika response OK dan ada data, set state rujukan
+                    if (rujukRes.ok && rujukData) {
+                        setRujukanBerhasil(true);
+                        setPcareRujukanSubspesialis(rujukData);
+                        if (rujukData.noKunjungan) {
+                            setLastNoKunjungan(rujukData.noKunjungan);
                         }
-                    } catch {
-                        // Jika error cek tabel, tetap set berdasarkan payload
-                if (payload.rujukLanjut) {
-                    setRujukanBerhasil(true);
-                        }
+                    } else if (payload.rujukLanjut) {
+                        // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
+                        setRujukanBerhasil(true);
+                    }
+                } catch {
+                    // Jika error cek tabel, tetap set berdasarkan payload
+            if (payload.rujukLanjut) {
+                setRujukanBerhasil(true);
                     }
                 }
-                setKunjunganResult({ success: true, message: msg });
-            } else {
-                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal kirim Kunjungan (${res.status})`;
-                setKunjunganResult({ success: false, message: errMsg });
             }
+            setKunjunganResult({ success: true, message: msg });
         } catch (e) {
-            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+            const status = e?.response?.status;
+            const json = e?.response?.data || {};
+            const errMsg = json?.metaData?.message || json?.message || (status ? `Gagal kirim Kunjungan (${status})` : `Error: ${e.message || e}`);
+            setKunjunganResult({ success: false, message: errMsg });
         } finally {
             setSendingKunjungan(false);
         }
@@ -1938,109 +1907,104 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     return (
         <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
+            <form onSubmit={handleSubmit} className="space-y-4 bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden h-full flex flex-col">
+                <div className="h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-blue-500"></div>
+                <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                            <FileText className="w-5 h-5 text-blue-700" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
+                            <h3 className="text-lg font-semibold text-gray-900">CPPT / SOAP</h3>
+                            <p className="text-sm text-gray-500 font-normal">Catatan Perkembangan Pasien</p>
                         </div>
-                        <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Tanggal Perawatan
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <div>
+                                <label htmlFor="tgl_perawatan" className="text-[10px] font-medium text-gray-500 mb-1 block">
+                                    Tanggal
                                 </label>
-                                <input
-                                    id="tgl_perawatan"
-                                    type="date"
-                                    name="tgl_perawatan"
-                                    value={formData.tgl_perawatan}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+                                <div className="relative">
+                                    <Calendar className="absolute left-2 top-2 w-3.5 h-3.5 text-gray-400" />
+                                    <input
+                                        id="tgl_perawatan"
+                                        type="date"
+                                        name="tgl_perawatan"
+                                        value={formData.tgl_perawatan}
+                                        onChange={handleChange}
+                                        className="text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                    />
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Jam Rawat
+                            <div>
+                                <label htmlFor="jam_rawat" className="text-[10px] font-medium text-gray-500 mb-1 block">
+                                    Jam
                                 </label>
-                                <input
-                                    id="jam_rawat"
-                                    type="time"
-                                    name="jam_rawat"
-                                    value={formData.jam_rawat}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+                                <div className="relative">
+                                    <Clock className="absolute left-2 top-2 w-3.5 h-3.5 text-gray-400" />
+                                    <input
+                                        id="jam_rawat"
+                                        type="time"
+                                        name="jam_rawat"
+                                        value={formData.jam_rawat}
+                                        onChange={handleChange}
+                                        className="text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="p-2 md:p-3 flex-1 overflow-y-auto">
-                <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    <div className="grid grid-cols-1 gap-4">
                     {/* Kolom Utama */}
                     <div className="order-2 md:order-1 space-y-2 min-w-0">
                         {/* Informasi Dasar */}
-                        <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full sm:w-40 md:w-66 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <div className="space-y-3 bg-gray-50/60 border border-gray-100 rounded-xl p-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <CircleDot className="w-3 h-3 text-amber-600" />
+                                        Kesadaran
+                                    </label>
+                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full text-xs h-8 px-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors">
                                         {kesadaranOptions.map((opt) => (
                                             <option key={opt} value={opt}>{opt}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="relative">
-                                    <div className="min-w-0 flex flex-row items-center gap-1">
-                                        <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
-                                        <div className="w-full md:flex-1">
-                                            <SearchableSelect
-                                                source="pegawai"
-                                                value={formData.nip}
-                                                onChange={(val) => {
-                                                    setFormData((prev) => ({ ...prev, nip: val }));
-                                                }}
-                                                onSelect={(option) => {
-                                                    const val = option?.value;
-                                                    const label = option?.label || '';
-                                                    // Save label for persistence
-                                                    setPegawaiQuery(label);
-                                                    
-                                                    const labelParts = label.split('—');
-                                                    const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
-                                                    
-                                                    if (typeof onPemeriksaChange === 'function' && val) {
-                                                        onPemeriksaChange({ id: val, nama });
-                                                    }
-                                                }}
-                                                placeholder="Ketik nama atau NIK pegawai..."
-                                                searchPlaceholder="Cari pegawai..."
-                                                defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
-                                                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-67 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
-                                        Alergi :
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <User className="w-3 h-3 text-blue-600" />
+                                        Pemeriksa
                                     </label>
-                                    <div className="w-full md:flex-1 relative pr-8">
+                                    <SearchableSelect
+                                        source="pegawai"
+                                        value={formData.nip}
+                                        onChange={(val) => {
+                                            setFormData((prev) => ({ ...prev, nip: val }));
+                                        }}
+                                        onSelect={(option) => {
+                                            const val = option?.value;
+                                            const label = option?.label || '';
+                                            setPegawaiQuery(label);
+                                            
+                                            const labelParts = label.split('—');
+                                            const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
+                                            
+                                            if (typeof onPemeriksaChange === 'function' && val) {
+                                                onPemeriksaChange({ id: val, nama });
+                                            }
+                                        }}
+                                        placeholder="Ketik nama atau NIK pegawai..."
+                                        searchPlaceholder="Cari pegawai..."
+                                        defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
+                                        className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <MessageCircle className="w-3 h-3 text-red-500" />
+                                        Alergi
+                                    </label>
+                                    <div className="relative w-full">
                                         <SearchableSelect
                                             source="alergi_local"
                                             value={kdAlergi}
@@ -2054,195 +2018,243 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             placeholder="Pilih alergi..."
                                             searchPlaceholder="Cari alergi..."
                                             defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
-                                            className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-68 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
-                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'}
+                                            className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600' : 'text-gray-800'}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setAlergiModalOpen(true)}
-                                            className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-[2001]"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                                             aria-label="Tambah Data Alergi"
                                             title="Tambah Data Alergi"
                                         >
-                                            <Plus className="w-4 h-4" />
+                                            <Plus className="w-3.5 h-3.5 text-gray-600" />
                                         </button>
                                     </div>
                                 </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <div className="w-full md:flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                            <div className="w-full sm:w-40 md:w-40">
-                                                <SearchableSelect
-                                                    options={templateOptions}
-                                                    value={selectedTemplate}
-                                                    onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                                                    placeholder="Pilih template..."
-                                                    searchPlaceholder="Cari diagnosa..."
-                                                    displayKey="label"
-                                                    valueKey="key"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={clearTemplateFields}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                                aria-label="Bersihkan Form"
-                                                title="Bersihkan"
-                                            >
-                                                <Eraser className="w-4 h-4" />
-                                            </button>
-                                            <div className="w-full sm:w-44 md:w-44">
-                                                <SearchableSelect
-                                                    options={dbTemplateOptions}
-                                                    value={selectedDbTemplate}
-                                                    onChange={(val) => { applyDbTemplate(val); }}
-                                                    placeholder="Template Manual"
-                                                    searchPlaceholder="Cari template..."
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={openNmTemplateModal}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shrink-0"
-                                                title="Simpan/Update Template"
-                                                aria-label="Simpan/Update Template"
-                                                disabled={templateSaving}
-                                            >
-                                                <Save className="w-4 h-4" />
-                                            </button>
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <HelpCircle className="w-3 h-3 text-indigo-600" />
+                                        Template
+                                    </label>
+                                    <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="w-full sm:w-40 md:w-40">
+                                            <SearchableSelect
+                                                options={templateOptions}
+                                                value={selectedTemplate}
+                                                onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                                                placeholder="Pilih template..."
+                                                searchPlaceholder="Cari diagnosa..."
+                                                displayKey="label"
+                                                valueKey="key"
+                                                className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            />
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={clearTemplateFields}
+                                            className="inline-flex items-center w-auto self-start sm:self-auto p-1.5 text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                                            aria-label="Bersihkan Form"
+                                            title="Bersihkan"
+                                        >
+                                            <Eraser className="w-3.5 h-3.5" />
+                                        </button>
+                                        <div className="w-full sm:w-44 md:w-44">
+                                            <SearchableSelect
+                                                options={dbTemplateOptions}
+                                                value={selectedDbTemplate}
+                                                onChange={(val) => { applyDbTemplate(val); }}
+                                                placeholder="Template Manual"
+                                                searchPlaceholder="Cari template..."
+                                                displayKey="label"
+                                                valueKey="value"
+                                                className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={openNmTemplateModal}
+                                            className="inline-flex items-center w-auto self-start sm:self-auto p-1.5 text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors shrink-0"
+                                            title="Simpan/Update Template"
+                                            aria-label="Simpan/Update Template"
+                                            disabled={templateSaving}
+                                        >
+                                            <Save className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Subjektif & Objektif */}
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
-                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
-                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-3">
+                                <label className="text-xs uppercase tracking-wide font-bold text-amber-700 flex items-center gap-2 mb-2">
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    Subjektif
+                                </label>
+                                <textarea
+                                    name="keluhan"
+                                    value={formData.keluhan}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Keluhan utama pasien..."
+                                    className="w-full text-sm rounded-md border border-amber-200 bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-emerald-50/80 border border-emerald-100 rounded-xl p-3">
+                                <label className="text-xs uppercase tracking-wide font-bold text-emerald-700 flex items-center gap-2 mb-2">
+                                    <Stethoscope className="w-3.5 h-3.5" />
+                                    Objektif
+                                </label>
+                                <textarea
+                                    name="pemeriksaan"
+                                    value={formData.pemeriksaan}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Hasil pemeriksaan fisik..."
+                                    className="w-full text-sm rounded-md border border-emerald-200 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none h-24"
+                                />
                             </div>
                         </div>
 
-                        {/* Tanda-Tanda Vital & Antropometri */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
-                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
-                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
-                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
-                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
-                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
-                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
-                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
-                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
-                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
+                        <div className="bg-purple-50/80 border border-purple-100 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-purple-600" />
+                                <span className="text-[10px] uppercase tracking-wide font-semibold text-purple-700">Tanda Vital</span>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                                {[
+                                    { label: 'Suhu', name: 'suhu_tubuh', unit: '°C', icon: Thermometer },
+                                    { label: 'Tensi', name: 'tensi', unit: 'mmHg', icon: Heart },
+                                    { label: 'Nadi', name: 'nadi', unit: '/menit', icon: Heart },
+                                    { label: 'Respirasi', name: 'respirasi', unit: '/menit', icon: Wind },
+                                    { label: 'SpO2', name: 'spo2', unit: '%', icon: Percent },
+                                    { label: 'Tinggi', name: 'tinggi', unit: 'cm', icon: Ruler },
+                                    { label: 'Berat', name: 'berat', unit: 'kg', icon: Scale },
+                                    { label: 'GCS', name: 'gcs', unit: '', icon: Brain },
+                                    { label: 'Lingkar Perut', name: 'lingkar_perut', unit: 'cm', icon: CircleDot }
+                                ].map(({ label, name, unit, icon: Icon }) => (
+                                    <div key={name} className="flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                            <Icon className="w-3 h-3 text-purple-600" />
+                                            {label} {unit ? `(${unit})` : ''}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name={name}
+                                            value={formData[name]}
+                                            onChange={handleChange}
+                                            className="w-full text-xs h-8 px-2 rounded-md border border-gray-200 bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors"
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Assessment & Planning */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3 flex flex-col h-full">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs uppercase tracking-wide font-bold text-blue-700 flex items-center gap-2">
+                                        <HelpCircle className="w-3.5 h-3.5" />
+                                        Assessment
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            if (typeof onOpenDiagnosa === 'function') {
+                                                e.preventDefault();
+                                                onOpenDiagnosa();
+                                            }
+                                        }}
+                                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-blue-700 border border-blue-200 hover:bg-blue-50"
+                                        aria-label="Buka tab Diagnosa"
+                                        title="Buka Diagnosa (ICD-10)"
+                                    >
+                                        ICD
+                                    </button>
+                                </div>
+                                <textarea
+                                    name="penilaian"
+                                    value={formData.penilaian}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Penilaian klinis..."
+                                    className="w-full text-sm rounded-md border border-blue-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-purple-50/80 border border-purple-100 rounded-xl p-3 flex flex-col h-full">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs uppercase tracking-wide font-bold text-purple-700 flex items-center gap-2">
+                                        <Pill className="w-3.5 h-3.5" />
+                                        Planning
+                                    </label>
+                                    <div className="flex items-center gap-2">
                                         <button
                                             type="button"
                                             onClick={(e) => {
-                                                if (typeof onOpenDiagnosa === 'function') {
+                                                if (typeof onOpenLab === 'function') {
                                                     e.preventDefault();
-                                                    onOpenDiagnosa();
+                                                    onOpenLab();
                                                 }
                                             }}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                            aria-label="Buka tab Diagnosa"
-                                            title="Buka Diagnosa (ICD-10)"
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-purple-700 border border-purple-200 hover:bg-purple-50 transition-colors"
+                                            aria-label="Buka tab Laboratorium"
+                                            title="Buka Permintaan Lab"
                                         >
-                                            ICD
+                                            Laborat
                                         </button>
+                                        <Link
+                                            href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
+                                            onClick={(e) => {
+                                                if (typeof onOpenResep === 'function') {
+                                                    e.preventDefault();
+                                                    onOpenResep();
+                                                }
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-blue-700 border border-blue-200 hover:bg-blue-50"
+                                            aria-label="Buka tab Resep"
+                                            title="Buka Resep Obat"
+                                        >
+                                            Resep
+                                        </Link>
                                     </div>
-                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    if (typeof onOpenLab === 'function') {
-                                                        e.preventDefault();
-                                                        onOpenLab();
-                                                    }
-                                                }}
-                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 transition-colors"
-                                                aria-label="Buka tab Laboratorium"
-                                                title="Buka Permintaan Lab"
-                                            >
-                                                Laborat
-                                            </button>
-                                            <Link
-                                                href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
-                                                onClick={(e) => {
-                                                    if (typeof onOpenResep === 'function') {
-                                                        e.preventDefault();
-                                                        onOpenResep();
-                                                    }
-                                                }}
-                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                                aria-label="Buka tab Resep"
-                                                title="Buka Resep Obat"
-                                            >
-                                                Resep
-                                            </Link>
-                                        </div>
-                                    </div>
-                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
-                                </div>
+                                <textarea
+                                    name="rtl"
+                                    value={formData.rtl}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Rencana tindak lanjut..."
+                                    className="w-full text-sm rounded-md border border-purple-200 bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-teal-50/80 border border-teal-100 rounded-xl p-3 flex flex-col h-full">
+                                <label className="text-[10px] uppercase tracking-wide font-semibold text-teal-700 flex items-center gap-2 mb-2">
+                                    <CircleDot className="w-3.5 h-3.5" />
+                                    Instruksi
+                                </label>
+                                <textarea
+                                    name="instruksi"
+                                    value={formData.instruksi}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    placeholder="Instruksi medis..."
+                                    className="w-full text-sm rounded-md border border-teal-200 bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors resize-none"
+                                />
+                            </div>
+                            <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3 flex flex-col h-full">
+                                <label className="text-[10px] uppercase tracking-wide font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                                    <Activity className="w-3.5 h-3.5" />
+                                    Evaluasi
+                                </label>
+                                <textarea
+                                    name="evaluasi"
+                                    value={formData.evaluasi}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    placeholder="Evaluasi kunjungan..."
+                                    className="w-full text-sm rounded-md border border-slate-200 bg-white focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-colors resize-none"
+                                />
                             </div>
                         </div>
 
@@ -2252,13 +2264,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     {/* Kolom kedua dihapus; konten template kini di dalam main form */}
                 </div>
 
-                {/* Footer Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-2">
                     {editKey && (
                         <button
                             type="button"
                             onClick={() => { setEditKey(null); setMessage(null); setError(null); }}
-                            className="bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
+                            className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2266,7 +2277,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             Batal
                         </button>
                     )}
-                    <button type="submit" className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+                    <button type="submit" className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
                         {isSubmitting ? (
                             <>
                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2288,7 +2299,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <button
                             type="button"
                             onClick={openBridgingModal}
-                            className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md"
+                            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg"
                             title="Bridging PCare"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2667,13 +2678,13 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     try {
                                         win = window.open('', 'CetakRujukan', 'width=900,height=1000');
                                         if (!win || win.closed || typeof win.closed === 'undefined') {
-                                            alert('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
+                                            toast.error('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
                                             return;
                                         }
                                         console.warn('[CpptSoap] Window opened successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error opening window:', e);
-                                        alert('Gagal membuka window cetak. Error: ' + (e.message || e));
+                                        toast.error('Gagal membuka window cetak. Error: ' + (e.message || e));
                                         return;
                                     }
                                     
@@ -2856,14 +2867,14 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         console.warn('[CpptSoap] HTML written successfully');
                                     } catch (e) {
                                         console.error('[CpptSoap] Error writing to window:', e);
-                                        alert('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
+                                        toast.error('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
                                         if (win && !win.closed) {
                                             win.close();
                                         }
                                     }
                                 } catch (e) {
                                     console.error('[CpptSoap] Error in Cetak Rujukan:', e);
-                                    alert('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
+                                    toast.error('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
                                 }
                             }}
                             className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
@@ -3000,72 +3011,96 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1 overflow-x-hidden">
                             {/* 1. Pendaftaran PCare */}
                             <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg overflow-hidden">
-                                <div className="px-4 py-3 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-2">
+                                <div className="px-3 py-2 border-b border-indigo-100 dark:border-indigo-800 flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                     <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Pendaftaran PCare</h4>
                                 </div>
-                                <div className="p-4">
+                                <div className="p-3">
                                     {pcarePendaftaran ? (
-                                        <div className="space-y-4">
+                                        <div className="space-y-2">
                                             {/* Baris 1: Identitas */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Rawat</span>
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">No Rawat</span>
+                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
                                                     </div>
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">No Kartu</span>
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">No Kartu</span>
+                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
                                                     </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Tgl Daftar</span>
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">Tgl Daftar</span>
+                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
                                                     </div>
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-1">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">Kd Poli</span>
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
+                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
+                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">Kd Poli</span>
+                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Baris 2: Vital Signs */}
-                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-3 border border-indigo-100 dark:border-indigo-800/50">
-                                                <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400">
-                                                    <Activity className="w-3.5 h-3.5" />
+                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-2 border border-indigo-100 dark:border-indigo-800/50">
+                                                <div className="flex items-center gap-2 mb-1 text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">
+                                                    <Activity className="w-3 h-3" />
                                                     Tanda Vital
                                                 </div>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
-                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Tekanan Darah</span>
-                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                                                            {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}
-                                                        </span>
-                                                        <span className="text-[10px] text-gray-400">mmHg</span>
-                                                    </div>
-                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
-                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">Resp / HR</span>
-                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                                                            {(pcarePendaftaran.respRate || pcarePendaftaran.heartRate) ? `${pcarePendaftaran.respRate || ''} / ${pcarePendaftaran.heartRate || ''}` : '-'}
-                                                        </span>
-                                                        <span className="text-[10px] text-gray-400">x/menit</span>
-                                                    </div>
-                                                    <div className="text-center p-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded">
-                                                        <span className="block text-[10px] text-gray-500 uppercase tracking-wider">BB / TB</span>
-                                                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                                                            {(pcarePendaftaran.beratBadan || pcarePendaftaran.tinggiBadan) ? `${pcarePendaftaran.beratBadan || ''} / ${pcarePendaftaran.tinggiBadan || ''}` : '-'}
-                                                        </span>
-                                                        <span className="text-[10px] text-gray-400">kg / cm</span>
-                                                    </div>
+                                                <div className="overflow-hidden rounded border border-indigo-100 dark:border-indigo-800/50">
+                                                    <table className="w-full text-left">
+                                                        <thead className="bg-indigo-50/50 dark:bg-indigo-900/10 text-[9px] text-gray-500 uppercase tracking-wider">
+                                                            <tr>
+                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Tekanan Darah</th>
+                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Resp</th>
+                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">HR</th>
+                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">BB</th>
+                                                                <th className="px-2 py-1 font-medium text-center">TB</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="bg-white dark:bg-gray-800">
+                                                            <tr className="divide-x divide-indigo-100 dark:divide-indigo-800/50">
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                                                                        {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-400 ml-0.5">mmHg</span>
+                                                                </td>
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                                                                        {pcarePendaftaran.respRate || '-'}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-400 ml-0.5">x/m</span>
+                                                                </td>
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                                                                        {pcarePendaftaran.heartRate || '-'}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-400 ml-0.5">bpm</span>
+                                                                </td>
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                                                                        {pcarePendaftaran.beratBadan || '-'}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-400 ml-0.5">kg</span>
+                                                                </td>
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                                                                        {pcarePendaftaran.tinggiBadan || '-'}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-gray-400 ml-0.5">cm</span>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
 
                                             {/* Baris 3: Keluhan */}
                                             <div>
-                                                <span className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Keluhan Utama</span>
-                                                <div className="bg-white dark:bg-gray-800 p-2.5 rounded border border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-gray-200 italic">
+                                                <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Keluhan Utama</span>
+                                                <div className="bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700 text-xs text-gray-800 dark:text-gray-200 italic leading-snug">
                                                     "{pcarePendaftaran.keluhan || '-'}"
                                                 </div>
                                             </div>
@@ -3413,22 +3448,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             </div>
                                         )}
 
-                                        {/* Button Kirim Kunjungan removed */}
-                                        {kunjunganResult && (
-                                            <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
-                                                {kunjunganResult.success ? (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                                        Berhasil: {kunjunganResult.message}
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        Gagal: {kunjunganResult.message}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
                             </div>
 
@@ -3660,7 +3679,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </div>
                         </div>
                         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
+                            {kunjunganResult ? (
+                                <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
+                                    {kunjunganResult.success ? (
+                                        <div className="flex items-center">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                            Kunjungan berhasil dikirim ke PCare ({kunjunganResult.message})
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            Gagal: {kunjunganResult.message}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div />
+                            )}
                             <div className="flex items-center gap-2">
                                 <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
                                 <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
@@ -3899,33 +3934,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                                     if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
                                                                     try {
                                                                         const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                                                        const res = await fetch(url, {
-                                                                            method: 'DELETE',
+                                                                        const res = await axios.delete(url, {
+                                                                            data: {
+                                                                                no_rawat: row.no_rawat,
+                                                                                tgl_perawatan: row.tgl_perawatan,
+                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                            },
+                                                                            withCredentials: true,
                                                                             headers: {
                                                                                 'Content-Type': 'application/json',
                                                                                 'Accept': 'application/json',
                                                                                 'X-Requested-With': 'XMLHttpRequest',
-                                                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                                                             },
-                                                                            credentials: 'same-origin',
-                                                                            body: JSON.stringify({
-                                                                                no_rawat: row.no_rawat,
-                                                                                tgl_perawatan: row.tgl_perawatan,
-                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                            }),
                                                                         });
-                                                                        const text = await res.text();
-                                                                        let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                                                        if (!res.ok) {
-                                                                            setError(json.message || 'Gagal menghapus pemeriksaan');
-                                                                            setMessage(null);
-                                                                            return;
-                                                                        }
+                                                                        const json = res?.data || {};
                                                                         setError(null);
                                                                         setMessage(json.message || 'Pemeriksaan berhasil dihapus');
                                                                         await fetchList();
                                                                     } catch (e) {
-                                                                        setError(e.message || 'Terjadi kesalahan saat menghapus');
+                                                                        const errMsg = e?.response?.data?.message || e.message || 'Terjadi kesalahan saat menghapus';
+                                                                        setError(errMsg);
                                                                         setMessage(null);
                                                                     }
                                                                 }}
