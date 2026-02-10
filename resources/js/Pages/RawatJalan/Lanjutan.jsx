@@ -950,7 +950,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
                                                 return (
                                                     <div
-                                                        className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${isBpjs
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${isBpjs
                                                             ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
                                                             : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
                                                             }`}
