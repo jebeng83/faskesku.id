@@ -120,7 +120,7 @@ dataProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2443
+* @see routes/web.php:2971
 * @route '/pcare/layanan/mcu'
 */
 export const mcu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ mcu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2443
+* @see routes/web.php:2971
 * @route '/pcare/layanan/mcu'
 */
 mcu.url = (options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ mcu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2443
+* @see routes/web.php:2971
 * @route '/pcare/layanan/mcu'
 */
 mcu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ mcu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2443
+* @see routes/web.php:2971
 * @route '/pcare/layanan/mcu'
 */
 mcu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
