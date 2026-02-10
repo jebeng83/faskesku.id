@@ -77,22 +77,7 @@ export default function SDKIIndex() {
     }
   };
 
-  // Helper untuk mendapatkan CSRF token
-  const getCsrfToken = () => {
-    // Coba dari meta tag terlebih dahulu
-    const metaToken = document.head.querySelector('meta[name="csrf-token"]');
-    if (metaToken) return metaToken.getAttribute('content');
-    
-    // Fallback ke cookie XSRF-TOKEN
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === 'XSRF-TOKEN') {
-        return decodeURIComponent(value);
-      }
-    }
-    return null;
-  };
+
 
 
   const listUrl = routeSafe("api.sdki.index", [], false) || "/api/sdki";
@@ -596,62 +581,17 @@ export default function SDKIIndex() {
         return;
       }
 
-      const csrfToken = getCsrfToken();
-      const headers = { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      };
-      
-      // Tambahkan CSRF token jika ada
-      if (csrfToken) {
-        headers['X-CSRF-TOKEN'] = csrfToken;
-        headers['X-XSRF-TOKEN'] = csrfToken;
-      } else {
-        console.warn('CSRF token tidak ditemukan, request mungkin akan gagal');
-      }
+      await window.axios.post(createUrl, payload);
 
-      // Debug logging (hanya di development)
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Sending payload:', payload);
-        console.warn('CSRF token:', csrfToken ? csrfToken.substring(0, 10) + '...' : 'NOT FOUND');
-      }
-
-      const res = await fetch(createUrl, {
-        method: "POST",
-        headers,
-        credentials: 'same-origin',
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        pushToast({ type: "success", title: "Berhasil", message: "SDKI ditambahkan" });
-        setCreateForm({ kode: "", nama: "", kategori: "", subkategori: "", definisi: "" });
-        sdkiCodeGeneratedRef.current = false; // Reset flag setelah submit berhasil
-        await loadRecords();
-      } else if (res.status === 422) {
-        // Unprocessable Entity - validation error
-        const errorMessage = responseData.message || "Data tidak valid. Pastikan semua field diisi dengan benar.";
-        pushToast({ type: "error", title: "Validasi Gagal", message: errorMessage });
-        toast.error(errorMessage);
-      } else if (res.status === 409) {
-        // Conflict - kode sudah ada
-        const errorMessage = responseData.message || "Kode SDKI sudah digunakan";
-        pushToast({ type: "error", title: "Kode Sudah Ada", message: errorMessage });
-        toast.error(errorMessage);
-      } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-        const errorMessage = responseData.message || `Gagal menyimpan SDKI (Status ${res.status})`;
-        pushToast({ type: "error", title: "Gagal", message: errorMessage });
-        toast.error(errorMessage);
-      }
+      pushToast({ type: "success", title: "Berhasil", message: "SDKI ditambahkan" });
+      setCreateForm({ kode: "", nama: "", kategori: "", subkategori: "", definisi: "" });
+      sdkiCodeGeneratedRef.current = false; // Reset flag setelah submit berhasil
+      await loadRecords();
     } catch (error) {
       console.error("Error saving SDKI:", error);
-      pushToast({ type: "error", title: "Gagal", message: "Tidak bisa menyimpan SDKI" });
-      toast.error("Terjadi kesalahan saat menyimpan SDKI");
+      const msg = error.response?.data?.message || "Tidak bisa menyimpan SDKI";
+      pushToast({ type: "error", title: "Gagal", message: msg });
+      toast.error(msg);
     }
   };
 
@@ -670,25 +610,11 @@ export default function SDKIIndex() {
       const idOrKode = keyId(item);
       if (!idOrKode) return;
       try {
-      const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        };
-        const res = await fetch(updateUrl(idOrKode), {
-          method: "PUT",
-          headers,
-          credentials: 'same-origin',
-          body: JSON.stringify(form),
-        });
-        if (res.ok) {
-          setEditing(false);
-          pushToast({ type: "success", title: "Berhasil", message: "SDKI diperbarui" });
-          await loadRecords();
-        } else {
-          pushToast({ type: "error", title: "Gagal", message: `Status ${res.status}` });
-        }
-      } catch {
+        await window.axios.put(updateUrl(idOrKode), form);
+        setEditing(false);
+        pushToast({ type: "success", title: "Berhasil", message: "SDKI diperbarui" });
+        await loadRecords();
+      } catch (error) {
         pushToast({ type: "error", title: "Gagal", message: "Tidak bisa memperbarui" });
       }
     };
@@ -698,18 +624,10 @@ export default function SDKIIndex() {
       if (!idOrKode) return;
       if (!confirm("Hapus SDKI ini?")) return;
       try {
-      const headers = {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        };
-        const res = await fetch(destroyUrl(idOrKode), { method: "DELETE", headers, credentials: 'same-origin' });
-        if (res.ok) {
-          pushToast({ type: "success", title: "Berhasil", message: "SDKI dihapus" });
-          await loadRecords();
-        } else {
-          pushToast({ type: "error", title: "Gagal", message: `Status ${res.status}` });
-        }
-      } catch {
+        await window.axios.delete(destroyUrl(idOrKode));
+        pushToast({ type: "success", title: "Berhasil", message: "SDKI dihapus" });
+        await loadRecords();
+      } catch (error) {
         pushToast({ type: "error", title: "Gagal", message: "Tidak bisa menghapus" });
       }
     };
@@ -982,17 +900,6 @@ export default function SDKIIndex() {
                 <Button
                   onClick={async () => {
                     try {
-                      const csrfToken = getCsrfToken();
-                      const headers = { 
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "X-Requested-With": "XMLHttpRequest",
-                      };
-                      // Tambahkan CSRF token jika tersedia
-                      if (csrfToken) {
-                        headers["X-CSRF-TOKEN"] = csrfToken;
-                        headers["X-XSRF-TOKEN"] = csrfToken;
-                      }
                       const payload = {
                         kode: (kategoriForm.kode || "").trim(),
                         nama: (kategoriForm.nama || "").trim(),
@@ -1002,28 +909,20 @@ export default function SDKIIndex() {
                         return;
                       }
                       
-                      let res;
                       if (kategoriEditId) {
                         // Update mode
                         const url = kategoriUpdateUrl(kategoriEditId);
-                        res = await fetch(url, { method: "PUT", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                        await window.axios.put(url, payload);
                       } else {
                         // Create mode
-                        res = await fetch(kategoriCreateUrl, { method: "POST", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                        await window.axios.post(kategoriCreateUrl, payload);
                       }
                       
-                      if (res.ok) {
-                        setKategoriForm({ kode: "", nama: "" });
-                        setKategoriEditId(null);
-                        kategoriCodeGeneratedRef.current = false; // Reset flag setelah simpan
-                        await loadKategori();
-                        toast.success(kategoriEditId ? "Kategori berhasil diupdate" : "Kategori berhasil disimpan");
-                      } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                        const errorData = await res.json().catch(() => ({}));
-                        toast.error(errorData.message || `Gagal ${kategoriEditId ? 'mengupdate' : 'menyimpan'} kategori (${res.status})`);
-                      }
+                      setKategoriForm({ kode: "", nama: "" });
+                      setKategoriEditId(null);
+                      kategoriCodeGeneratedRef.current = false; // Reset flag setelah simpan
+                      await loadKategori();
+                      toast.success(kategoriEditId ? "Kategori berhasil diupdate" : "Kategori berhasil disimpan");
                     } catch (error) {
                       console.error("Error saving kategori:", error);
                       toast.error("Terjadi kesalahan saat menyimpan kategori");
@@ -1102,29 +1001,13 @@ export default function SDKIIndex() {
                                 }}><Pencil className="w-3 h-3" /> Edit</Button>
                                 <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white" onClick={async () => {
                                   try {
-                                    const csrfToken = getCsrfToken();
                                     const url = kategoriDestroyUrl(idOrKey);
-                                    const headers = {
-                                      "Accept": "application/json",
-                                      "X-Requested-With": "XMLHttpRequest",
-                                    };
-                                    if (csrfToken) {
-                                      headers["X-CSRF-TOKEN"] = csrfToken;
-                                      headers["X-XSRF-TOKEN"] = csrfToken;
-                                    }
-                                    
-                                    const res = await fetch(url, { method: "DELETE", headers, credentials: 'same-origin' });
-                                    if (res.ok) {
-                                      await loadKategori();
-                                    } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                                      const errorData = await res.json().catch(() => ({}));
-                                      toast.error(errorData.message || `Gagal menghapus kategori (${res.status})`);
-                                    }
+                                    await window.axios.delete(url);
+                                    await loadKategori();
                                   } catch (error) {
                                     console.error("Error deleting kategori:", error);
-                                    toast.error("Terjadi kesalahan saat menghapus kategori");
+                                    const msg = error.response?.data?.message || "Terjadi kesalahan saat menghapus kategori";
+                                    toast.error(msg);
                                   }
                                 }}><Trash2 className="w-3 h-3" /> Hapus</Button>
                               </div>
@@ -1175,16 +1058,6 @@ export default function SDKIIndex() {
                 <Button
                   onClick={async () => {
                     try {
-                      const csrfToken = getCsrfToken();
-                      const headers = { 
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "X-Requested-With": "XMLHttpRequest",
-                      };
-                      if (csrfToken) {
-                        headers["X-CSRF-TOKEN"] = csrfToken;
-                        headers["X-XSRF-TOKEN"] = csrfToken;
-                      }
                       const payload = {
                         kode: (subkategoriForm.kode || "").trim(),
                         nama: (subkategoriForm.nama || "").trim(),
@@ -1195,29 +1068,22 @@ export default function SDKIIndex() {
                         return;
                       }
                       
-                      let res;
                       if (subkategoriEditId) {
                         const url = subkategoriUpdateUrl(subkategoriEditId);
-                        res = await fetch(url, { method: "PUT", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                        await window.axios.put(url, payload);
                       } else {
-                        res = await fetch(subkategoriCreateUrl, { method: "POST", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                        await window.axios.post(subkategoriCreateUrl, payload);
                       }
                       
-                      if (res.ok) {
-                        setSubkategoriForm({ kode: "", nama: "", kategori: "" });
-                        setSubkategoriEditId(null);
-                        subkategoriCodeGeneratedRef.current = false; // Reset flag setelah simpan
-                        await loadSubkategori();
-                        toast.success(subkategoriEditId ? "Subkategori berhasil diupdate" : "Subkategori berhasil disimpan");
-                      } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                        const errorData = await res.json().catch(() => ({}));
-                        toast.error(errorData.message || `Gagal ${subkategoriEditId ? 'mengupdate' : 'menyimpan'} subkategori (${res.status})`);
-                      }
+                      setSubkategoriForm({ kode: "", nama: "", kategori: "" });
+                      setSubkategoriEditId(null);
+                      subkategoriCodeGeneratedRef.current = false; // Reset flag setelah simpan
+                      await loadSubkategori();
+                      toast.success(subkategoriEditId ? "Subkategori berhasil diupdate" : "Subkategori berhasil disimpan");
                     } catch (error) {
                       console.error("Error saving subkategori:", error);
-                      toast.error("Terjadi kesalahan saat menyimpan subkategori");
+                      const msg = error.response?.data?.message || "Terjadi kesalahan saat menyimpan subkategori";
+                      toast.error(msg);
                     }
                   }}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -1300,29 +1166,14 @@ export default function SDKIIndex() {
                                 }}><Pencil className="w-3 h-3" /> Edit</Button>
                                 <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white" onClick={async () => {
                                   try {
-                                    const csrfToken = getCsrfToken();
                                     const url = subkategoriDestroyUrl(idOrKey);
-                                    const headers = {
-                                      "Accept": "application/json",
-                                      "X-Requested-With": "XMLHttpRequest",
-                                    };
-                                    if (csrfToken) {
-                                      headers["X-CSRF-TOKEN"] = csrfToken;
-                                      headers["X-XSRF-TOKEN"] = csrfToken;
-                                    }
-                                    
-                                    const res = await fetch(url, { method: "DELETE", headers, credentials: 'same-origin' });
-                                    if (res.ok) {
-                                      await loadSubkategori();
-                                    } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                                      const errorData = await res.json().catch(() => ({}));
-                                      toast.error(errorData.message || `Gagal menghapus subkategori (${res.status})`);
-                                    }
+                                    await window.axios.delete(url);
+                                    await loadSubkategori();
+                                    toast.success("Subkategori berhasil dihapus");
                                   } catch (error) {
                                     console.error("Error deleting subkategori:", error);
-                                    toast.error("Terjadi kesalahan saat menghapus subkategori");
+                                    const msg = error.response?.data?.message || "Terjadi kesalahan saat menghapus subkategori";
+                                    toast.error(msg);
                                   }
                                 }}><Trash2 className="w-3 h-3" /> Hapus</Button>
                               </div>
@@ -1403,17 +1254,6 @@ export default function SDKIIndex() {
                   if (!selectedSdki) return;
                   
                   try {
-                    const csrfToken = getCsrfToken();
-                    const headers = {
-                      "Content-Type": "application/json",
-                      "Accept": "application/json",
-                      "X-Requested-With": "XMLHttpRequest",
-                    };
-                    if (csrfToken) {
-                      headers["X-CSRF-TOKEN"] = csrfToken;
-                      headers["X-XSRF-TOKEN"] = csrfToken;
-                    }
-
                     const sdkiKode = selectedSdki?.kode ?? selectedSdki?.kd_sdki ?? "";
                     const kategoriKode = selectedSdki?.kategori ?? selectedSdki?.kd_kategori ?? "";
                     const subkategoriKode = selectedSdki?.subkategori ?? selectedSdki?.kd_subkategori ?? "";
@@ -1431,26 +1271,18 @@ export default function SDKIIndex() {
                       return;
                     }
 
-                    let res;
                     if (keluhanSubyektifEditId) {
                       const url = keluhanSubyektifUpdateUrl(keluhanSubyektifEditId);
-                      res = await fetch(url, { method: "PUT", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                      await window.axios.put(url, payload);
                     } else {
-                      res = await fetch(keluhanSubyektifCreateUrl, { method: "POST", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                      await window.axios.post(keluhanSubyektifCreateUrl, payload);
                     }
 
-                    if (res.ok) {
-                      await loadKeluhanSubyektif();
-                      toast.success(keluhanSubyektifEditId ? "Keluhan subyektif berhasil diupdate" : "Keluhan subyektif berhasil disimpan");
-                      setKeluhanSubyektifForm({ kode: "", keluhan: "" });
-                      setKeluhanSubyektifEditId(null);
-                      keluhanSubyektifCodeGeneratedRef.current = false; // Reset flag setelah submit berhasil
-                    } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                      const errorData = await res.json().catch(() => ({}));
-                      toast.error(errorData.message || `Gagal ${keluhanSubyektifEditId ? 'mengupdate' : 'menyimpan'} keluhan subyektif (${res.status})`);
-                    }
+                    await loadKeluhanSubyektif();
+                    toast.success(keluhanSubyektifEditId ? "Keluhan subyektif berhasil diupdate" : "Keluhan subyektif berhasil disimpan");
+                    setKeluhanSubyektifForm({ kode: "", keluhan: "" });
+                    setKeluhanSubyektifEditId(null);
+                    keluhanSubyektifCodeGeneratedRef.current = false; // Reset flag setelah submit berhasil
                   } catch (error) {
                     if (process.env.NODE_ENV === 'development') {
                       console.error("Error saving keluhan subyektif:", error);
@@ -1517,32 +1349,16 @@ export default function SDKIIndex() {
                                   className="bg-rose-600 hover:bg-rose-700 text-white" 
                                   onClick={async () => {
                                     try {
-                                      const csrfToken = getCsrfToken();
                                       const url = keluhanSubyektifDestroyUrl(idOrKey);
-                                      const headers = {
-                                        "Accept": "application/json",
-                                        "X-Requested-With": "XMLHttpRequest",
-                                      };
-                                      if (csrfToken) {
-                                        headers["X-CSRF-TOKEN"] = csrfToken;
-                                        headers["X-XSRF-TOKEN"] = csrfToken;
-                                      }
-                                      
-                                      const res = await fetch(url, { method: "DELETE", headers, credentials: 'same-origin' });
-                                      if (res.ok) {
-                                        await loadKeluhanSubyektif();
-                                        toast.success("Keluhan subyektif berhasil dihapus");
-                                      } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                                        const errorData = await res.json().catch(() => ({}));
-                                        toast.error(errorData.message || `Gagal menghapus keluhan subyektif (${res.status})`);
-                                      }
+                                      await window.axios.delete(url);
+                                      await loadKeluhanSubyektif();
+                                      toast.success("Keluhan subyektif berhasil dihapus");
                                     } catch (error) {
                                       if (process.env.NODE_ENV === 'development') {
                                         console.error("Error deleting keluhan subyektif:", error);
                                       }
-                                      toast.error("Terjadi kesalahan saat menghapus keluhan subyektif");
+                                      const msg = error.response?.data?.message || "Terjadi kesalahan saat menghapus keluhan subyektif";
+                                      toast.error(msg);
                                     }
                                   }}
                                   title="Hapus"
@@ -1634,7 +1450,6 @@ export default function SDKIIndex() {
                   }
                   
                   try {
-                    const csrfToken = getCsrfToken();
                     const sdkiKode = selectedSdkiObyektif?.kode ?? selectedSdkiObyektif?.kd_sdki ?? "";
                     const kategoriKode = selectedSdkiObyektif?.kategori ?? selectedSdkiObyektif?.kd_kategori ?? "";
                     const subkategoriKode = selectedSdkiObyektif?.subkategori ?? selectedSdkiObyektif?.kd_subkategori ?? "";
@@ -1647,43 +1462,26 @@ export default function SDKIIndex() {
                       keluhan: dataObyektifForm.keluhan,
                     };
                     
-                    const headers = {
-                      "Content-Type": "application/json",
-                      "Accept": "application/json",
-                      "X-Requested-With": "XMLHttpRequest",
-                    };
-                    if (csrfToken) {
-                      headers["X-CSRF-TOKEN"] = csrfToken;
-                      headers["X-XSRF-TOKEN"] = csrfToken;
-                    }
-                    
-                    let res;
                     if (dataObyektifEditId) {
                       // Update mode
                       const url = dataObyektifUpdateUrl(dataObyektifEditId);
-                      res = await fetch(url, { method: "PUT", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                      await window.axios.put(url, payload);
                     } else {
                       // Create mode
-                      res = await fetch(dataObyektifCreateUrl, { method: "POST", headers, credentials: 'same-origin', body: JSON.stringify(payload) });
+                      await window.axios.post(dataObyektifCreateUrl, payload);
                     }
                     
-                    if (res.ok) {
-                      setDataObyektifForm({ kode: "", keluhan: "" });
-                      setDataObyektifEditId(null);
-                      dataObyektifCodeGeneratedRef.current = false; // Reset flag setelah simpan
-                      await loadDataObyektif();
-                      toast.success(dataObyektifEditId ? "Data obyektif berhasil diupdate" : "Data obyektif berhasil disimpan");
-                    } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                      const errorData = await res.json().catch(() => ({}));
-                      toast.error(errorData.message || `Gagal ${dataObyektifEditId ? 'mengupdate' : 'menyimpan'} data obyektif (${res.status})`);
-                    }
+                    setDataObyektifForm({ kode: "", keluhan: "" });
+                    setDataObyektifEditId(null);
+                    dataObyektifCodeGeneratedRef.current = false; // Reset flag setelah simpan
+                    await loadDataObyektif();
+                    toast.success(dataObyektifEditId ? "Data obyektif berhasil diupdate" : "Data obyektif berhasil disimpan");
                   } catch (error) {
                     if (process.env.NODE_ENV === 'development') {
                       console.error("Error saving data obyektif:", error);
                     }
-                    toast.error("Terjadi kesalahan saat menyimpan data obyektif");
+                    const msg = error.response?.data?.message || "Terjadi kesalahan saat menyimpan data obyektif";
+                    toast.error(msg);
                   }
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -1746,32 +1544,16 @@ export default function SDKIIndex() {
                                   className="bg-rose-600 hover:bg-rose-700 text-white" 
                                   onClick={async () => {
                                     try {
-                                      const csrfToken = getCsrfToken();
                                       const url = dataObyektifDestroyUrl(idOrKey);
-                                      const headers = {
-                                        "Accept": "application/json",
-                                        "X-Requested-With": "XMLHttpRequest",
-                                      };
-                                      if (csrfToken) {
-                                        headers["X-CSRF-TOKEN"] = csrfToken;
-                                        headers["X-XSRF-TOKEN"] = csrfToken;
-                                      }
-                                      
-                                      const res = await fetch(url, { method: "DELETE", headers, credentials: 'same-origin' });
-                                      if (res.ok) {
-                                        await loadDataObyektif();
-                                        toast.success("Data obyektif berhasil dihapus");
-                                      } else if (res.status === 419) {
-        window.location.reload();
-      } else {
-                                        const errorData = await res.json().catch(() => ({}));
-                                        toast.error(errorData.message || `Gagal menghapus data obyektif (${res.status})`);
-                                      }
+                                      await window.axios.delete(url);
+                                      await loadDataObyektif();
+                                      toast.success("Data obyektif berhasil dihapus");
                                     } catch (error) {
                                       if (process.env.NODE_ENV === 'development') {
                                         console.error("Error deleting data obyektif:", error);
                                       }
-                                      toast.error("Terjadi kesalahan saat menghapus data obyektif");
+                                      const msg = error.response?.data?.message || "Terjadi kesalahan saat menghapus data obyektif";
+                                      toast.error(msg);
                                     }
                                   }}
                                   title="Hapus"

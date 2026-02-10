@@ -70,13 +70,10 @@ export default function MonitoringPcare() {
     setSelected((prev) => (prev.includes(no) ? prev.filter((x) => x !== no) : [...prev, no]));
   };
 
-  const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
-
-
   const sendPendaftaranWithResponse = async (no) => {
     try {
       const body = { no_rawat: String(no) };
-      const r = await fetch(`/api/pcare/pendaftaran`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
+      const r = await fetch(`/api/pcare/pendaftaran`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include', body: JSON.stringify(body) });
       const text = await r.text();
       let json = null;
       try { json = JSON.parse(text); } catch {}
@@ -159,7 +156,7 @@ export default function MonitoringPcare() {
           body.rujukLanjut = rl;
         }
       }
-      const r = await fetch(`/api/pcare/kunjungan`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include', body: JSON.stringify(body) });
+      const r = await fetch(`/api/pcare/kunjungan`, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include', body: JSON.stringify(body) });
       const text = await r.text();
       let json = null;
       try { json = JSON.parse(text); } catch {}
@@ -201,7 +198,7 @@ export default function MonitoringPcare() {
   const resend = async (no) => {
     setResendingNo(no);
     try {
-      const r = await fetch(`/pcare/api/resend/${encodeURIComponent(no)}`, { method: "POST", headers: { "X-Requested-With": "XMLHttpRequest", ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) }, credentials: 'include' });
+      const r = await fetch(`/pcare/api/resend/${encodeURIComponent(no)}`, { method: "POST", headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: 'include' });
       const j = await r.json().catch(() => ({}));
       setDebugInfo((prev) => ({ ...prev, queued: !!j?.queued }));
       setDebugOpen(true);

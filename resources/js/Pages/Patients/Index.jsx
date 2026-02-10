@@ -306,13 +306,11 @@ export default function Index({
                 rujukBalik: "0",
                 kdTkp: "10",
             };
-            const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.content || '';
             const { data: json } = await axios.post(`/pcare/api/kunjungan-sehat`, payload, {
                 withCredentials: true,
                 headers: {
                     Accept: "application/json",
                     "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-TOKEN": csrfToken,
                 },
             });
             setAlertConfig({

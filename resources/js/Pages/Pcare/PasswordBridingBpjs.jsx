@@ -39,9 +39,6 @@ export default function PasswordBridingBpjs({ setting, flash }) {
           method: "DELETE",
           headers: {
             "X-Requested-With": "XMLHttpRequest",
-            "X-CSRF-TOKEN": document
-              .querySelector('meta[name="csrf-token"]')
-              .getAttribute("content"),
             Accept: "application/json",
           },
         })

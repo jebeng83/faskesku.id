@@ -98,15 +98,10 @@ export default function EmployeeCreateModal({ isOpen, onClose, onSuccess }) {
 		setIsSubmitting(true);
 
 		try {
-			const csrfToken = document
-				.querySelector('meta[name="csrf-token"]')
-				?.getAttribute("content");
-
 			const response = await fetch("/api/employees", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {}),
 				},
 				body: JSON.stringify(data),
 			});

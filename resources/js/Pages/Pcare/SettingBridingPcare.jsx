@@ -35,17 +35,10 @@ export default function SettingBridingPcare({ setting, flash }) {
     const onReset = (e) => {
         e.preventDefault();
         if (confirm("Yakin ingin mereset pengaturan?")) {
-            window
-                .fetch(route("pcare.setting.destroy"), {
-                    method: "DELETE",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                        Accept: "application/json",
-                    },
-                })
+            // Gunakan axios untuk menghandle CSRF token secara otomatis via cookie
+            // daripada manual fetch dengan meta tag yang mungkin stale
+            window.axios
+                .delete(route("pcare.setting.destroy"))
                 .then(() => {
                     reset();
                     window.location.reload();

@@ -1376,8 +1376,7 @@ const DaftarPermintaanResep = () => {
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: JSON.stringify({
                             no_bukti: selectedResep.no_resep,

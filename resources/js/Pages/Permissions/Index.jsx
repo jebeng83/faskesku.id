@@ -280,8 +280,6 @@ export default function PermissionsIndex() {
 				method,
 				headers: {
 					"Content-Type": "application/json",
-					"X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
-						.content,
 				},
 				body: JSON.stringify(roleData),
 			});
@@ -312,8 +310,6 @@ export default function PermissionsIndex() {
 				method,
 				headers: {
 					"Content-Type": "application/json",
-					"X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
-						.content,
 				},
 				body: JSON.stringify(permissionData),
 			});

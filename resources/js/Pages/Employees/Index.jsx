@@ -44,15 +44,10 @@ export default function Index({ employees, filters }) {
 		if (!employeeToDelete) return;
 
 		try {
-			const csrfToken = document
-				.querySelector('meta[name="csrf-token"]')
-				?.getAttribute("content");
-
 			const response = await fetch(`/api/employees/${employeeToDelete.id}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
-					...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {}),
 				},
 			});
 

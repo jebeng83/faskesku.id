@@ -115,8 +115,7 @@ export default function MappingPractitioner() {
             const res = await fetch("/api/satusehat/practitioner-mapping/search-create", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ nik: pegawai.no_ktp })
             });
@@ -150,10 +149,7 @@ export default function MappingPractitioner() {
 
         try {
             const res = await fetch(`/api/satusehat/practitioner-mapping/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
-                }
+                method: "DELETE"
             });
 
             if (res.ok) {
@@ -187,8 +183,7 @@ export default function MappingPractitioner() {
             const res = await fetch(`/api/satusehat/practitioner-mapping/${editingId}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(editForm)
             });

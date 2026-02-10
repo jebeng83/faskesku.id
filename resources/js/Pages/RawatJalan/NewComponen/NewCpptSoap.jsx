@@ -414,7 +414,6 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
           },
         });
         const pcareJson = pcareRes.data || {};
@@ -621,7 +620,6 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
         },
       });
       const json = res.data || {};
@@ -666,7 +664,6 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': typeof document !== 'undefined' ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : undefined,
         },
         credentials: 'include',
         body: JSON.stringify(payload),
@@ -1108,8 +1105,6 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
         setTemplateSaving(false);
         return;
       }
-      const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
-      const xsrfToken = typeof document !== 'undefined' ? (document.cookie.split('; ').find((row) => row.startsWith('XSRF-TOKEN='))?.split('=')[1] || '') : '';
       const mainPayload = {
         no_template: selectedDbTemplate || undefined,
         kd_dokter: dokterPJ?.kd_dokter || '',
@@ -1143,7 +1138,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
         url: '/api/template-pemeriksaan-dokter',
         data: mainPayload,
         withCredentials: true,
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
       const mainJson = mainRes?.data || {};
       const noTemplate = mainJson?.no_template || selectedDbTemplate;
@@ -1152,7 +1147,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
         url: '/api/template-pemeriksaan-dokter/detail',
         data: { ...detailPayload, no_template: noTemplate },
         withCredentials: true,
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
       const detailJson = detailRes?.data || {};
       setSelectedDbTemplate(noTemplate);
@@ -1839,51 +1834,20 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                   const ok = typeof window !== 'undefined' ? window.confirm('Yakin ingin menghapus pemeriksaan ini?') : true;
                                   if (!ok) return;
                                   const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                  let res = await fetch(url, {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'Accept': 'application/json',
-                                      'X-Requested-With': 'XMLHttpRequest',
-                                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                    },
-                                    credentials: 'include',
-                                    body: JSON.stringify({
+                                  await window.axios.delete(url, {
+                                    data: {
                                       no_rawat: row.no_rawat,
                                       tgl_perawatan: row.tgl_perawatan,
                                       jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                    }),
+                                    }
                                   });
-                                  if (res.status === 419) {
-                                    await fetch('/sanctum/csrf-cookie', { credentials: 'include' }).catch(() => {});
-                                    res = await fetch(url, {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                        'X-Requested-With': 'XMLHttpRequest',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                      },
-                                      credentials: 'include',
-                                      body: JSON.stringify({
-                                        no_rawat: row.no_rawat,
-                                        tgl_perawatan: row.tgl_perawatan,
-                                        jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                      }),
-                                    });
-                                  }
-                                  const text = await res.text();
-                                  let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                  if (!res.ok) {
-                                    setError(json.message || 'Gagal menghapus pemeriksaan');
-                                    setMessage(null);
-                                    return;
-                                  }
+                                  
                                   setError(null);
-                                  setMessage(json.message || 'Pemeriksaan berhasil dihapus');
+                                  setMessage('Pemeriksaan berhasil dihapus');
                                   await reloadHistory();
                                 } catch (e) {
-                                  setError(e?.message || 'Terjadi kesalahan saat menghapus');
+                                  const msg = e.response?.data?.message || e.message || 'Terjadi kesalahan saat menghapus';
+                                  setError(msg);
                                   setMessage(null);
                                 }
                               }}

@@ -109,12 +109,6 @@ function toDdMmYyyy(from) {
     return from;
 }
 
-function getCsrfToken() {
-    if (typeof document === "undefined") return null;
-    const meta = document.head?.querySelector('meta[name="csrf-token"]');
-    return meta?.getAttribute("content");
-}
-
 export default function EntriKegiatan() {
     const todayDate = useMemo(() => {
         const d = new Date();
@@ -243,14 +237,10 @@ export default function EntriKegiatan() {
         setClubOptions([]);
         setClubId("");
         try {
-            const res = await fetch(
+            const res = await window.axios.get(
                 `/pcare/api/kelompok/club/${encodeURIComponent(program)}`
             );
-            const json = await res.json();
-            if (!res.ok)
-                throw new Error(
-                    json?.metaData?.message || "Gagal mengambil data club"
-                );
+            const json = res.data;
             const opts = (json?.response?.list || []).map((i) => ({
                 value: i.clubId,
                 label: i.nama || i.clubId,
@@ -266,7 +256,11 @@ export default function EntriKegiatan() {
             }
             setPreferredClubId("");
         } catch (e) {
-            setErrorClub(e.message || "Terjadi kesalahan");
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Gagal mengambil data club";
+            setErrorClub(msg);
         } finally {
             setLoadingClub(false);
         }
@@ -293,14 +287,10 @@ export default function EntriKegiatan() {
         setLoadingPembicara(true);
         try {
             // Versi sederhana sesuai katalog: GET /pcare/api/peserta/{noka}
-            const res = await fetch(
+            const res = await window.axios.get(
                 `/pcare/api/peserta/${encodeURIComponent(pembicaraNoKartu)}`
             );
-            const json = await res.json();
-            if (!res.ok)
-                throw new Error(
-                    json?.metaData?.message || "Peserta tidak ditemukan"
-                );
+            const json = res.data;
             const p = json?.response || json?.data || {};
             const nama =
                 p?.nama ||
@@ -311,7 +301,11 @@ export default function EntriKegiatan() {
             else
                 setErrorPembicara("Nama pembicara tidak tersedia pada respons");
         } catch (e) {
-            setErrorPembicara(e.message || "Terjadi kesalahan");
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Peserta tidak ditemukan";
+            setErrorPembicara(msg);
         } finally {
             setLoadingPembicara(false);
         }
@@ -332,14 +326,10 @@ export default function EntriKegiatan() {
             return toDdMmYyyy(b);
         })();
         try {
-            const res = await fetch(
+            const res = await window.axios.get(
                 `/pcare/api/kelompok/kegiatan/${encodeURIComponent(ddmmyyyy)}`
             );
-            const json = await res.json();
-            if (!res.ok)
-                throw new Error(
-                    json?.metaData?.message || "Gagal mengambil riwayat"
-                );
+            const json = res.data;
 
             // Dedup moderat: gunakan kunci gabungan (tglPelayanan + jenisKegiatan + materi + clubId)
             // agar setiap club Prolanis ditampilkan terpisah per tanggal seperti sebelumnya.
@@ -384,7 +374,11 @@ export default function EntriKegiatan() {
             };
             setRiwayat(normalized);
         } catch (e) {
-            setErrorRiwayat(e.message || "Terjadi kesalahan");
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Gagal mengambil riwayat";
+            setErrorRiwayat(msg);
         } finally {
             setLoadingRiwayat(false);
         }
@@ -405,26 +399,10 @@ export default function EntriKegiatan() {
         if (!ok) return;
         setDeletingEduId(id);
         try {
-            const res = await fetch(
-                `/pcare/api/kelompok/kegiatan/${encodeURIComponent(id)}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json; charset=utf-8",
-                        "X-CSRF-TOKEN": getCsrfToken() || undefined,
-                        "X-Requested-With": "XMLHttpRequest",
-                    },
-                    credentials: "same-origin",
-                }
+            const res = await window.axios.delete(
+                `/pcare/api/kelompok/kegiatan/${encodeURIComponent(id)}`
             );
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                throw new Error(
-                    json?.metaData?.message ||
-                        json?.message ||
-                        "Gagal menghapus kegiatan"
-                );
-            }
+            const json = res.data;
             setRiwayatAction(
                 json?.metaData?.message || "Kegiatan berhasil dihapus"
             );
@@ -437,13 +415,12 @@ export default function EntriKegiatan() {
                 await fetchRiwayat();
             } catch (_) {}
         } catch (e) {
-            setRiwayatActionError(
-                e.message || "Terjadi kesalahan saat menghapus kegiatan"
-            );
-            showToast(
-                "error",
-                e.message || "Terjadi kesalahan saat menghapus kegiatan"
-            );
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Terjadi kesalahan saat menghapus kegiatan";
+            setRiwayatActionError(msg);
+            showToast("error", msg);
         } finally {
             setDeletingEduId("");
         }
@@ -528,40 +505,12 @@ export default function EntriKegiatan() {
                 formData.append("_method", "PUT");
             }
 
-            const res = await fetch("/pcare/api/kelompok/kegiatan", {
-                method: "POST",
-                headers: {
-                    // Jangan set Content-Type manual, biarkan browser mengisi boundary untuk FormData
-                    "X-CSRF-TOKEN": getCsrfToken() || undefined,
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json",
-                },
-                credentials: "same-origin",
-                body: formData,
-            });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                // Tampilkan pesan khusus untuk 405 (PCare Method Not Allowed) dan 412 (PCare bukan Administrator)
-                if (res.status === 405) {
-                    setProposeAddInstead(true);
-                    throw new Error(
-                        "Metode PUT tidak diizinkan oleh layanan PCare untuk endpoint ini. Coba simpan sebagai data baru (POST), atau hubungi admin BPJS/PCare untuk konfirmasi dukungan update."
-                    );
-                }
-                if (res.status === 412) {
-                    throw new Error(
-                        json?.metaData?.message ||
-                            "Aksi tidak diizinkan oleh PCare (412). Pastikan akun PCare memiliki hak Administrator untuk mengubah/hapus kegiatan/peserta."
-                    );
-                }
-                throw new Error(
-                    json?.metaData?.message ||
-                        json?.message ||
-                        (isEditing
-                            ? "Gagal mengubah kegiatan"
-                            : "Gagal menambah kegiatan")
-                );
-            }
+            const res = await window.axios.post(
+                "/pcare/api/kelompok/kegiatan",
+                formData
+            );
+            const json = res.data;
+
             setSubmitSuccess(
                 json?.metaData?.message ||
                     (isEditing
@@ -574,12 +523,29 @@ export default function EntriKegiatan() {
             // Opsional: reset form setelah sukses
             // resetForm();
         } catch (e) {
-            setSubmitError(
-                e.message ||
-                    (isEditing
-                        ? "Terjadi kesalahan saat mengubah kegiatan"
-                        : "Terjadi kesalahan saat menambah kegiatan")
-            );
+            const status = e.response?.status;
+            const json = e.response?.data || {};
+
+            if (status === 405) {
+                setProposeAddInstead(true);
+                setSubmitError(
+                    "Metode PUT tidak diizinkan oleh layanan PCare untuk endpoint ini. Coba simpan sebagai data baru (POST), atau hubungi admin BPJS/PCare untuk konfirmasi dukungan update."
+                );
+            } else if (status === 412) {
+                setSubmitError(
+                    json?.metaData?.message ||
+                        "Aksi tidak diizinkan oleh PCare (412). Pastikan akun PCare memiliki hak Administrator untuk mengubah/hapus kegiatan/peserta."
+                );
+            } else {
+                setSubmitError(
+                    json?.metaData?.message ||
+                        json?.message ||
+                        e.message ||
+                        (isEditing
+                            ? "Terjadi kesalahan saat mengubah kegiatan"
+                            : "Terjadi kesalahan saat menambah kegiatan")
+                );
+            }
         } finally {
             setSubmitting(false);
         }
@@ -615,25 +581,12 @@ export default function EntriKegiatan() {
         setSubmitError("");
         setSubmitSuccess("");
         try {
-            const res = await fetch("/pcare/api/kelompok/kegiatan", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                    "X-CSRF-TOKEN": getCsrfToken() || undefined,
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json",
-                },
-                credentials: "same-origin",
-                body: JSON.stringify(payloadBaru),
-            });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                throw new Error(
-                    json?.metaData?.message ||
-                        json?.message ||
-                        "Gagal menambah kegiatan"
-                );
-            }
+            const res = await window.axios.post(
+                "/pcare/api/kelompok/kegiatan",
+                payloadBaru
+            );
+            const json = res.data;
+
             setSubmitSuccess(
                 json?.metaData?.message || "Kegiatan berhasil ditambahkan"
             );
@@ -646,13 +599,12 @@ export default function EntriKegiatan() {
                 json?.metaData?.message || "Kegiatan baru berhasil dibuat"
             );
         } catch (e) {
-            setSubmitError(
-                e.message || "Terjadi kesalahan saat menambah kegiatan"
-            );
-            showToast(
-                "error",
-                e.message || "Terjadi kesalahan saat menambah kegiatan"
-            );
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Terjadi kesalahan saat menambah kegiatan";
+            setSubmitError(msg);
+            showToast("error", msg);
         } finally {
             setSubmitting(false);
         }
@@ -725,14 +677,10 @@ export default function EntriKegiatan() {
         setPesertaListActionError("");
         setLoadingPesertaTable(true);
         try {
-            const res = await fetch(
+            const res = await window.axios.get(
                 `/pcare/api/kelompok/peserta/${encodeURIComponent(eduId)}`
             );
-            const json = await res.json();
-            if (!res.ok)
-                throw new Error(
-                    json?.metaData?.message || "Gagal mengambil peserta"
-                );
+            const json = res.data;
             const list = json?.response?.list || [];
             const normalize = (arr) => {
                 // Parser tgl lahir dari format dd-MM-yyyy atau yyyy-MM-dd
@@ -805,9 +753,11 @@ export default function EntriKegiatan() {
             };
             setPesertaRows(normalize(list));
         } catch (e) {
-            setErrorPeserta(
-                e.message || "Terjadi kesalahan saat mengambil peserta"
-            );
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Gagal mengambil peserta";
+            setErrorPeserta(msg);
             setPesertaRows([]);
         } finally {
             setLoadingPesertaTable(false);
@@ -842,24 +792,11 @@ export default function EntriKegiatan() {
 
         setAddingPesertaPosting(true);
         try {
-            const res = await fetch("/pcare/api/kelompok/peserta", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": getCsrfToken() || undefined,
-                    "X-Requested-With": "XMLHttpRequest",
-                },
-                credentials: "same-origin",
-                body: JSON.stringify(payload),
-            });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                throw new Error(
-                    json?.metaData?.message ||
-                        json?.message ||
-                        "Gagal menambah peserta ke kegiatan"
-                );
-            }
+            const res = await window.axios.post(
+                "/pcare/api/kelompok/peserta",
+                payload
+            );
+            const json = res.data;
             setAddPesertaSuccess(
                 json?.metaData?.message ||
                     "Peserta berhasil ditambahkan ke kegiatan"
@@ -874,9 +811,11 @@ export default function EntriKegiatan() {
             setPesertaNoKartu("");
             setSelectedNoKartu("");
         } catch (e) {
-            setAddPesertaError(
-                e.message || "Terjadi kesalahan saat menambah peserta"
-            );
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Terjadi kesalahan saat menambah peserta";
+            setAddPesertaError(msg);
         } finally {
             setAddingPesertaPosting(false);
         }
@@ -891,16 +830,12 @@ export default function EntriKegiatan() {
         const tgl = toDdMmYyyy(tglPelaksanaan || todayDate);
         setLoadingPeserta(true);
         try {
-            const res = await fetch(
+            const res = await window.axios.get(
                 `/pcare/api/peserta/nokartu/${encodeURIComponent(
                     pesertaNoKartu
                 )}/tgl/${encodeURIComponent(tgl)}`
             );
-            const json = await res.json();
-            if (!res.ok)
-                throw new Error(
-                    json?.metaData?.message || "Peserta tidak ditemukan"
-                );
+            const json = res.data;
             const p = json?.response?.peserta || json?.data?.peserta || {};
             if (!p?.noKartu) {
                 setErrorPeserta("Data peserta tidak lengkap.");
@@ -989,7 +924,11 @@ export default function EntriKegiatan() {
                 setSelectedNoKartu(p.noKartu || "");
             }
         } catch (e) {
-            setErrorPeserta(e.message || "Terjadi kesalahan");
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Peserta tidak ditemukan";
+            setErrorPeserta(msg);
         } finally {
             setLoadingPeserta(false);
         }
@@ -1018,28 +957,12 @@ export default function EntriKegiatan() {
 
         setDeletingPesertaNoKartu(noka);
         try {
-            const res = await fetch(
+            const res = await window.axios.delete(
                 `/pcare/api/kelompok/peserta/${encodeURIComponent(
                     eduId
-                )}/${encodeURIComponent(noka)}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json; charset=utf-8",
-                        "X-CSRF-TOKEN": getCsrfToken() || undefined,
-                        "X-Requested-With": "XMLHttpRequest",
-                    },
-                    credentials: "same-origin",
-                }
+                )}/${encodeURIComponent(noka)}`
             );
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) {
-                throw new Error(
-                    json?.metaData?.message ||
-                        json?.message ||
-                        "Gagal menghapus peserta"
-                );
-            }
+            const json = res.data;
             setPesertaListAction(
                 json?.metaData?.message || "Peserta berhasil dihapus"
             );
@@ -1052,13 +975,12 @@ export default function EntriKegiatan() {
                 await fetchPesertaByEduId(eduId);
             } catch (_) {}
         } catch (e) {
-            setPesertaListActionError(
-                e.message || "Terjadi kesalahan saat menghapus peserta"
-            );
-            showToast(
-                "error",
-                e.message || "Terjadi kesalahan saat menghapus peserta"
-            );
+            const msg =
+                e.response?.data?.metaData?.message ||
+                e.message ||
+                "Terjadi kesalahan saat menghapus peserta";
+            setPesertaListActionError(msg);
+            showToast("error", msg);
         } finally {
             setDeletingPesertaNoKartu("");
         }

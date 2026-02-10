@@ -45,8 +45,6 @@ export default function MonitoringStatusPcare() {
   const [, setStatusKunjungan] = useState({});
   const [, setDescKunjungan] = useState({});
 
-  const csrfToken = typeof document !== 'undefined' ? (document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '') : '';
-
   const setSendFlag = (no, key, v) => {
     setSendFlags((p) => ({ ...p, [no]: { ...(p[no] || {}), [key]: !!v } }));
   };
@@ -102,7 +100,7 @@ export default function MonitoringStatusPcare() {
 
   const fetchDebugJson = async (url, opts = {}, label = '') => {
     try {
-      const headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}), ...(opts.headers || {}) };
+      const headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(opts.headers || {}) };
       const res = await fetch(url, { credentials: 'include', ...opts, headers });
       const ct = res.headers.get('content-type') || '';
       const status = res.status;
@@ -165,7 +163,7 @@ export default function MonitoringStatusPcare() {
       };
       const r = await fetch(`/api/mobilejkn/antrean/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'include',
         body: JSON.stringify(body),
       });
@@ -194,7 +192,7 @@ export default function MonitoringStatusPcare() {
       };
       const r = await fetch(`/api/mobilejkn/antrean/panggil`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'include',
         body: JSON.stringify(body),
       });
@@ -215,7 +213,7 @@ export default function MonitoringStatusPcare() {
     try {
       const r = await fetch(`/api/pcare/pendaftaran`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'include',
         body: JSON.stringify({ no_rawat: String(no) }),
       });
@@ -240,7 +238,7 @@ export default function MonitoringStatusPcare() {
       payload.no_rawat = String(no);
       const r = await fetch(`/api/pcare/kunjungan`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}) },
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         credentials: 'include',
         body: JSON.stringify(payload),
       });

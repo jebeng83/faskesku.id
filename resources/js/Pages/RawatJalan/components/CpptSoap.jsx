@@ -710,29 +710,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         const newStatus = choice === 'ya' ? 'Sudah' : 'Belum';
 
         try {
-            const res = await fetch(route('rawat-jalan.status.update'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                body: JSON.stringify({
-                    no_rawat: noRawat,
-                    stts: newStatus
-                })
+            await axios.post(route('rawat-jalan.status.update'), {
+                no_rawat: noRawat,
+                stts: newStatus
             });
-
-            if (res.ok) {
-                // Redirect langsung tanpa alert
-                window.location.href = route('rawat-jalan.index');
-            } else {
-                const json = await res.json();
-                toast.error(json.message || 'Gagal memperbarui status');
-            }
+            // Redirect langsung tanpa alert
+            window.location.href = route('rawat-jalan.index');
         } catch (e) {
             console.error(e);
-            toast.error('Terjadi kesalahan saat menghubungi server');
+            const json = e.response ? e.response.data : null;
+            toast.error(json?.message || 'Gagal memperbarui status');
         } finally {
             setExitLoading(false);
             setExitModalOpen(false);
@@ -885,29 +872,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
         payload.noKunjungan = noKunjunganCandidate;
         try {
-            const res = await fetch('/api/pcare/kunjungan', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'include',
-                body: JSON.stringify(payload),
-            });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (res.ok) {
-                const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
-                setKunjunganResult({ success: true, message: msg });
-            } else {
-                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal edit Kunjungan (${res.status})`;
-                setKunjunganResult({ success: false, message: errMsg });
-            }
+            const res = await axios.put('/api/pcare/kunjungan', payload);
+            const json = res.data;
+            const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
+            setKunjunganResult({ success: true, message: msg });
         } catch (e) {
-            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+            const json = e.response ? e.response.data : null;
+            const errMsg = (json && json.metaData && json.metaData.message) 
+                ? json.metaData.message 
+                : (e.message || 'Gagal edit Kunjungan');
+            setKunjunganResult({ success: false, message: errMsg });
         } finally {
             setSendingKunjungan(false);
         }
@@ -1096,26 +1070,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const payload = creating
                 ? { ...normalizedFormData, no_rawat: noRawat, t: token, ...(hasAlergiData && { alergi_pasien: alergiPayload }) }
                 : { ...normalizedFormData, key: editKey, ...(hasAlergiData && { alergi_pasien: alergiPayload }) };
-            const res = await fetch(url, {
-                method: creating ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(payload),
+            const res = await axios({
+                method: creating ? 'post' : 'put',
+                url: url,
+                data: payload
             });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (!res.ok) {
-                const msg = (json && (json.message || (json.errors && Object.values(json.errors).flat().join(', ')))) || `Gagal menyimpan (${res.status})`;
-                setError(msg);
-                setMessage(null);
-                return;
-            }
+            const json = res.data;
             setError(null);
             setMessage(json.message || (creating ? 'Pemeriksaan tersimpan' : 'Pemeriksaan diperbarui'));
             await fetchList();
@@ -1144,63 +1104,58 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     berat: payload.berat,
                     tinggi: payload.tinggi,
                 };
-                const pcareRes = await fetch(pcareUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(pcarePayload),
-                });
-                const pcareText = await pcareRes.text();
-                let pcareJson;
-                try { pcareJson = pcareText ? JSON.parse(pcareText) : {}; } catch (_) { pcareJson = {}; }
-                if (pcareRes.ok) {
-                    // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
-                    const skipped = !!(pcareJson && pcareJson.skipped);
-                    const alreadyRegistered = !!(pcareJson && pcareJson.already_registered);
+                const pcareRes = await axios.post(pcareUrl, pcarePayload);
+                const pcareJson = pcareRes.data;
+                
+                // Deteksi kasus "dilewati" dari backend (non-BPJS): skipped === true
+                const skipped = !!(pcareJson && pcareJson.skipped);
+                const alreadyRegistered = !!(pcareJson && pcareJson.already_registered);
 
-                    if (skipped) {
-                        const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : 'Pendaftaran PCare dilewati (Non-BPJS)';
-                        // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
-                        setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
-                        
-                        // Jika skipped karena sudah terdaftar, TETAP tampilkan bridging button
-                        if (alreadyRegistered) {
-                             setShowBridging(true);
-                        } else {
-                             // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS (misal pasien umum)
-                             setShowBridging(false);
-                        }
-                    } else if (pcareRes.status === 201 || pcareRes.status === 200) {
-                        // Sukses kirim ke BPJS PCare
-                        const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
-                            ? (pcareJson.response.message || '')
-                            : '';
-                        setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
-                        setShowBridging(true);
+                if (skipped) {
+                    const skipMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                        ? pcareJson.metaData.message
+                        : 'Pendaftaran PCare dilewati (Non-BPJS)';
+                    // Jangan menampilkan pesan "Pendaftaran PCare terkirim" jika dilewati
+                    setMessage((prev) => `${prev || ''} • ${skipMsg}`.trim());
+                    
+                    // Jika skipped karena sudah terdaftar, TETAP tampilkan bridging button
+                    if (alreadyRegistered) {
+                            setShowBridging(true);
                     } else {
-                        const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
-                            ? pcareJson.metaData.message
-                            : `Gagal pendaftaran PCare (${pcareRes.status})`;
-                        setError(errMsg);
-                        setShowBridging(false);
+                            // Tombol Bridging PCare tidak boleh muncul pada kasus non-BPJS (misal pasien umum)
+                            setShowBridging(false);
                     }
+                } else if (pcareRes.status === 201 || pcareRes.status === 200) {
+                    // Sukses kirim ke BPJS PCare
+                    const noUrut = (pcareJson && pcareJson.response && pcareJson.response.field === 'noUrut')
+                        ? (pcareJson.response.message || '')
+                        : '';
+                    setMessage((prev) => `${prev || ''} • Pendaftaran PCare terkirim${noUrut ? ' (No Urut: ' + noUrut + ')' : ''}`.trim());
+                    setShowBridging(true);
                 } else {
-                    const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) ? pcareJson.metaData.message : `Gagal pendaftaran PCare (${pcareRes.status})`;
+                    const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message)
+                        ? pcareJson.metaData.message
+                        : `Gagal pendaftaran PCare (${pcareRes.status})`;
                     setError(errMsg);
                     setShowBridging(false);
                 }
             } catch (e) {
-                setError(`Gagal koneksi ke PCare: ${e.message || e}`);
+                const pcareJson = e.response ? e.response.data : null;
+                const errMsg = (pcareJson && pcareJson.metaData && pcareJson.metaData.message) 
+                     ? pcareJson.metaData.message 
+                     : `Gagal pendaftaran PCare (${e.response ? e.response.status : (e.message || 'Error')})`;
+                
+                if (e.response) {
+                     setError(errMsg);
+                     setShowBridging(false);
+                } else {
+                     setError(`Gagal koneksi ke PCare: ${e.message || e}`);
+                }
             }
         } catch (e) {
-            setError(e.message || 'Terjadi kesalahan saat menyimpan');
+            const json = e.response ? e.response.data : null;
+            const msg = (json && (json.message || (json.errors && Object.values(json.errors).flat().join(', ')))) || e.message || 'Terjadi kesalahan saat menyimpan';
+            setError(msg);
             setMessage(null);
         } finally {
             setIsSubmitting(false);
@@ -1682,61 +1637,54 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try {
             // Tampilkan payload di console untuk debug
             try { console.warn('[PCare] Payload akan dikirim', payload); } catch (_) {}
-            const res = await fetch('/api/pcare/kunjungan', {
-                method: 'POST',
+            const res = await axios.post('/api/pcare/kunjungan', payload, {
+                withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                credentials: 'include',
-                body: JSON.stringify(payload),
             });
-            const text = await res.text();
-            let json;
-            try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-            if (res.ok) {
-                const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
-                // Simpan informasi untuk cetak rujukan bila rujukan aktif
-                const noKunj = extractNoKunjungan(json);
-                setLastNoKunjungan(noKunj);
-                setLastKunjunganPayload(payload);
-                // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
-                if (payload.rujukLanjut && noRawat) {
-                    try {
-                        const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
-                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        });
-                        const rujukJson = await rujukRes.json();
-                        const rujukData = rujukJson.data || null;
-                        
-                        // Jika response OK dan ada data, set state rujukan
-                        if (rujukRes.ok && rujukData) {
-                            setRujukanBerhasil(true);
-                            setPcareRujukanSubspesialis(rujukData);
-                            if (rujukData.noKunjungan) {
-                                setLastNoKunjungan(rujukData.noKunjungan);
-                            }
-                        } else if (payload.rujukLanjut) {
-                            // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
-                            setRujukanBerhasil(true);
+            const json = res?.data || {};
+            const msg = (json && json.response && json.response.message) ? json.response.message : 'CREATED';
+            // Simpan informasi untuk cetak rujukan bila rujukan aktif
+            const noKunj = extractNoKunjungan(json);
+            setLastNoKunjungan(noKunj);
+            setLastKunjunganPayload(payload);
+            // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
+            if (payload.rujukLanjut && noRawat) {
+                try {
+                    const rujukRes = await fetch(`/api/pcare/rujuk-subspesialis/rawat/${encodeURIComponent(noRawat)}`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        credentials: 'include',
+                    });
+                    const rujukJson = await rujukRes.json();
+                    const rujukData = rujukJson.data || null;
+                    
+                    // Jika response OK dan ada data, set state rujukan
+                    if (rujukRes.ok && rujukData) {
+                        setRujukanBerhasil(true);
+                        setPcareRujukanSubspesialis(rujukData);
+                        if (rujukData.noKunjungan) {
+                            setLastNoKunjungan(rujukData.noKunjungan);
                         }
-                    } catch {
-                        // Jika error cek tabel, tetap set berdasarkan payload
-                if (payload.rujukLanjut) {
-                    setRujukanBerhasil(true);
-                        }
+                    } else if (payload.rujukLanjut) {
+                        // Jika tidak ada data di tabel tapi payload ada rujukan, tetap set true
+                        setRujukanBerhasil(true);
+                    }
+                } catch {
+                    // Jika error cek tabel, tetap set berdasarkan payload
+            if (payload.rujukLanjut) {
+                setRujukanBerhasil(true);
                     }
                 }
-                setKunjunganResult({ success: true, message: msg });
-            } else {
-                const errMsg = (json && json.metaData && json.metaData.message) ? json.metaData.message : `Gagal kirim Kunjungan (${res.status})`;
-                setKunjunganResult({ success: false, message: errMsg });
             }
+            setKunjunganResult({ success: true, message: msg });
         } catch (e) {
-            setKunjunganResult({ success: false, message: `Error: ${e.message || e}` });
+            const status = e?.response?.status;
+            const json = e?.response?.data || {};
+            const errMsg = json?.metaData?.message || json?.message || (status ? `Gagal kirim Kunjungan (${status})` : `Error: ${e.message || e}`);
+            setKunjunganResult({ success: false, message: errMsg });
         } finally {
             setSendingKunjungan(false);
         }
@@ -3950,33 +3898,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                                     if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
                                                                     try {
                                                                         const url = route('rawat-jalan.pemeriksaan-ralan.delete');
-                                                                        const res = await fetch(url, {
-                                                                            method: 'DELETE',
+                                                                        const res = await axios.delete(url, {
+                                                                            data: {
+                                                                                no_rawat: row.no_rawat,
+                                                                                tgl_perawatan: row.tgl_perawatan,
+                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
+                                                                            },
+                                                                            withCredentials: true,
                                                                             headers: {
                                                                                 'Content-Type': 'application/json',
                                                                                 'Accept': 'application/json',
                                                                                 'X-Requested-With': 'XMLHttpRequest',
-                                                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                                                                             },
-                                                                            credentials: 'same-origin',
-                                                                            body: JSON.stringify({
-                                                                                no_rawat: row.no_rawat,
-                                                                                tgl_perawatan: row.tgl_perawatan,
-                                                                                jam_rawat: String(row.jam_rawat).length === 5 ? row.jam_rawat + ':00' : row.jam_rawat,
-                                                                            }),
                                                                         });
-                                                                        const text = await res.text();
-                                                                        let json; try { json = text ? JSON.parse(text) : {}; } catch (_) { json = {}; }
-                                                                        if (!res.ok) {
-                                                                            setError(json.message || 'Gagal menghapus pemeriksaan');
-                                                                            setMessage(null);
-                                                                            return;
-                                                                        }
+                                                                        const json = res?.data || {};
                                                                         setError(null);
                                                                         setMessage(json.message || 'Pemeriksaan berhasil dihapus');
                                                                         await fetchList();
                                                                     } catch (e) {
-                                                                        setError(e.message || 'Terjadi kesalahan saat menghapus');
+                                                                        const errMsg = e?.response?.data?.message || e.message || 'Terjadi kesalahan saat menghapus';
+                                                                        setError(errMsg);
                                                                         setMessage(null);
                                                                     }
                                                                 }}
