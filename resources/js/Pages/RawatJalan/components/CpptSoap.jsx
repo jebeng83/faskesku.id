@@ -8,7 +8,7 @@ import Modal from '@/Components/Modal';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
-import { Eraser, Activity, FileText, HelpCircle, Plus, Save } from 'lucide-react';
+import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, User, MessageCircle, Stethoscope, Thermometer, Heart, Wind, Percent, Ruler, Scale, Brain, CircleDot, Pill } from 'lucide-react';
 import toast from '@/tools/toast';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
@@ -1947,109 +1947,104 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
     return (
         <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden h-full flex flex-col">
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
+            <form onSubmit={handleSubmit} className="space-y-4 bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden h-full flex flex-col">
+                <div className="h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-blue-500"></div>
+                <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                            <FileText className="w-5 h-5 text-blue-700" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">CPPT / SOAP</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Catatan Perkembangan Pasien</p>
+                            <h3 className="text-lg font-semibold text-gray-900">CPPT / SOAP</h3>
+                            <p className="text-sm text-gray-500 font-normal">Catatan Perkembangan Pasien</p>
                         </div>
-                        <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="tgl_perawatan" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Tanggal Perawatan
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <div>
+                                <label htmlFor="tgl_perawatan" className="text-[10px] font-medium text-gray-500 mb-1 block">
+                                    Tanggal
                                 </label>
-                                <input
-                                    id="tgl_perawatan"
-                                    type="date"
-                                    name="tgl_perawatan"
-                                    value={formData.tgl_perawatan}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+                                <div className="relative">
+                                    <Calendar className="absolute left-2 top-2 w-3.5 h-3.5 text-gray-400" />
+                                    <input
+                                        id="tgl_perawatan"
+                                        type="date"
+                                        name="tgl_perawatan"
+                                        value={formData.tgl_perawatan}
+                                        onChange={handleChange}
+                                        className="text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                    />
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="jam_rawat" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-0">
-                                    Jam Rawat
+                            <div>
+                                <label htmlFor="jam_rawat" className="text-[10px] font-medium text-gray-500 mb-1 block">
+                                    Jam
                                 </label>
-                                <input
-                                    id="jam_rawat"
-                                    type="time"
-                                    name="jam_rawat"
-                                    value={formData.jam_rawat}
-                                    onChange={handleChange}
-                                    className="text-sm h-9 md:h-10 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                />
+                                <div className="relative">
+                                    <Clock className="absolute left-2 top-2 w-3.5 h-3.5 text-gray-400" />
+                                    <input
+                                        id="jam_rawat"
+                                        type="time"
+                                        name="jam_rawat"
+                                        value={formData.jam_rawat}
+                                        onChange={handleChange}
+                                        className="text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="p-2 md:p-3 flex-1 overflow-y-auto">
-                <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    <div className="grid grid-cols-1 gap-4">
                     {/* Kolom Utama */}
                     <div className="order-2 md:order-1 space-y-2 min-w-0">
                         {/* Informasi Dasar */}
-                        <div className="space-y-px md:space-y-px bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md p-px md:p-1">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-px md:gap-px">
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Kesadaran :</label>
-                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full sm:w-40 md:w-66 text-sm h-7 px-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <div className="space-y-3 bg-gray-50/60 border border-gray-100 rounded-xl p-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="flex items-center gap-3">
+                                    <label className="text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <CircleDot className="w-3 h-3 text-amber-600" />
+                                        Kesadaran
+                                    </label>
+                                    <select name="kesadaran" value={formData.kesadaran} onChange={handleChange} className="w-full text-xs h-8 px-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors">
                                         {kesadaranOptions.map((opt) => (
                                             <option key={opt} value={opt}>{opt}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="relative">
-                                    <div className="min-w-0 flex flex-row items-center gap-1">
-                                        <label className="shrink-0 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">Pemeriksa :</label>
-                                        <div className="w-full md:flex-1">
-                                            <SearchableSelect
-                                                source="pegawai"
-                                                value={formData.nip}
-                                                onChange={(val) => {
-                                                    setFormData((prev) => ({ ...prev, nip: val }));
-                                                }}
-                                                onSelect={(option) => {
-                                                    const val = option?.value;
-                                                    const label = option?.label || '';
-                                                    // Save label for persistence
-                                                    setPegawaiQuery(label);
-                                                    
-                                                    const labelParts = label.split('—');
-                                                    const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
-                                                    
-                                                    if (typeof onPemeriksaChange === 'function' && val) {
-                                                        onPemeriksaChange({ id: val, nama });
-                                                    }
-                                                }}
-                                                placeholder="Ketik nama atau NIK pegawai..."
-                                                searchPlaceholder="Cari pegawai..."
-                                                defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
-                                                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-67 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <label className="text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200 md:w-24 whitespace-nowrap">
-                                        Alergi :
+                                <div className="flex items-center gap-3">
+                                    <label className="text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <User className="w-3 h-3 text-blue-600" />
+                                        Pemeriksa
                                     </label>
-                                    <div className="w-full md:flex-1 relative pr-8">
+                                    <SearchableSelect
+                                        source="pegawai"
+                                        value={formData.nip}
+                                        onChange={(val) => {
+                                            setFormData((prev) => ({ ...prev, nip: val }));
+                                        }}
+                                        onSelect={(option) => {
+                                            const val = option?.value;
+                                            const label = option?.label || '';
+                                            setPegawaiQuery(label);
+                                            
+                                            const labelParts = label.split('—');
+                                            const nama = labelParts.length > 1 ? labelParts[1].trim() : label;
+                                            
+                                            if (typeof onPemeriksaChange === 'function' && val) {
+                                                onPemeriksaChange({ id: val, nama });
+                                            }
+                                        }}
+                                        placeholder="Ketik nama atau NIK pegawai..."
+                                        searchPlaceholder="Cari pegawai..."
+                                        defaultDisplay={pegawaiQuery || (formData.nip ? `${formData.nip}` : '')} 
+                                        className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <label className="text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <MessageCircle className="w-3 h-3 text-red-500" />
+                                        Alergi
+                                    </label>
+                                    <div className="relative w-full">
                                         <SearchableSelect
                                             source="alergi_local"
                                             value={kdAlergi}
@@ -2063,195 +2058,243 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             placeholder="Pilih alergi..."
                                             searchPlaceholder="Cari alergi..."
                                             defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
-                                            className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none sm:!w-40 md:!w-68 !bg-white dark:!bg-gray-800 !border-gray-300 dark:!border-gray-600"
-                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600 dark:text-red-400' : 'dark:text-white'}
+                                            className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600' : 'text-gray-800'}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setAlergiModalOpen(true)}
-                                            className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-[2001]"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                                             aria-label="Tambah Data Alergi"
                                             title="Tambah Data Alergi"
                                         >
-                                            <Plus className="w-4 h-4" />
+                                            <Plus className="w-3.5 h-3.5 text-gray-600" />
                                         </button>
                                     </div>
                                 </div>
-                                <div className="min-w-0 flex flex-row items-center gap-1">
-                                    <div className="w-full md:flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                                            <div className="w-full sm:w-40 md:w-40">
-                                                <SearchableSelect
-                                                    options={templateOptions}
-                                                    value={selectedTemplate}
-                                                    onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                                                    placeholder="Pilih template..."
-                                                    searchPlaceholder="Cari diagnosa..."
-                                                    displayKey="label"
-                                                    valueKey="key"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={clearTemplateFields}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                                aria-label="Bersihkan Form"
-                                                title="Bersihkan"
-                                            >
-                                                <Eraser className="w-4 h-4" />
-                                            </button>
-                                            <div className="w-full sm:w-44 md:w-44">
-                                                <SearchableSelect
-                                                    options={dbTemplateOptions}
-                                                    value={selectedDbTemplate}
-                                                    onChange={(val) => { applyDbTemplate(val); }}
-                                                    placeholder="Template Manual"
-                                                    searchPlaceholder="Cari template..."
-                                                    displayKey="label"
-                                                    valueKey="value"
-                                                    className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={openNmTemplateModal}
-                                                className="inline-flex items-center w-auto self-start sm:self-auto p-1 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shrink-0"
-                                                title="Simpan/Update Template"
-                                                aria-label="Simpan/Update Template"
-                                                disabled={templateSaving}
-                                            >
-                                                <Save className="w-4 h-4" />
-                                            </button>
+                                <div className="flex items-center gap-3">
+                                    <label className="text-[10px] font-semibold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                        <HelpCircle className="w-3 h-3 text-indigo-600" />
+                                        Template
+                                    </label>
+                                    <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="w-full sm:w-40 md:w-40">
+                                            <SearchableSelect
+                                                options={templateOptions}
+                                                value={selectedTemplate}
+                                                onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                                                placeholder="Pilih template..."
+                                                searchPlaceholder="Cari diagnosa..."
+                                                displayKey="label"
+                                                valueKey="key"
+                                                className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            />
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={clearTemplateFields}
+                                            className="inline-flex items-center w-auto self-start sm:self-auto p-1.5 text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                                            aria-label="Bersihkan Form"
+                                            title="Bersihkan"
+                                        >
+                                            <Eraser className="w-3.5 h-3.5" />
+                                        </button>
+                                        <div className="w-full sm:w-44 md:w-44">
+                                            <SearchableSelect
+                                                options={dbTemplateOptions}
+                                                value={selectedDbTemplate}
+                                                onChange={(val) => { applyDbTemplate(val); }}
+                                                placeholder="Template Manual"
+                                                searchPlaceholder="Cari template..."
+                                                displayKey="label"
+                                                valueKey="value"
+                                                className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={openNmTemplateModal}
+                                            className="inline-flex items-center w-auto self-start sm:self-auto p-1.5 text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors shrink-0"
+                                            title="Simpan/Update Template"
+                                            aria-label="Simpan/Update Template"
+                                            disabled={templateSaving}
+                                        >
+                                            <Save className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Subjektif & Objektif */}
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Keluhan Utama (Subjektif)</label>
-                                    <textarea name="keluhan" value={formData.keluhan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pemeriksaan Fisik (Objektif)</label>
-                                    <textarea name="pemeriksaan" value={formData.pemeriksaan} onChange={handleChange} rows={4} className="w-full text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-3">
+                                <label className="text-xs uppercase tracking-wide font-bold text-amber-700 flex items-center gap-2 mb-2">
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    Subjektif
+                                </label>
+                                <textarea
+                                    name="keluhan"
+                                    value={formData.keluhan}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Keluhan utama pasien..."
+                                    className="w-full text-sm rounded-md border border-amber-200 bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-emerald-50/80 border border-emerald-100 rounded-xl p-3">
+                                <label className="text-xs uppercase tracking-wide font-bold text-emerald-700 flex items-center gap-2 mb-2">
+                                    <Stethoscope className="w-3.5 h-3.5" />
+                                    Objektif
+                                </label>
+                                <textarea
+                                    name="pemeriksaan"
+                                    value={formData.pemeriksaan}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    placeholder="Hasil pemeriksaan fisik..."
+                                    className="w-full text-sm rounded-md border border-emerald-200 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors resize-none h-24"
+                                />
                             </div>
                         </div>
 
-                        {/* Tanda-Tanda Vital & Antropometri */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 md:gap-1">
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Suhu (°C)</label>
-                                    <input type="text" name="suhu_tubuh" value={formData.suhu_tubuh} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tensi (mmHg)</label>
-                                    <input type="text" name="tensi" value={formData.tensi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Nadi (/menit)</label>
-                                    <input type="text" name="nadi" value={formData.nadi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Respirasi (/menit)</label>
-                                    <input type="text" name="respirasi" value={formData.respirasi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">SpO2 (%)</label>
-                                    <input type="text" name="spo2" value={formData.spo2} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Tinggi (cm)</label>
-                                    <input type="text" name="tinggi" value={formData.tinggi} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Berat (kg)</label>
-                                    <input type="text" name="berat" value={formData.berat} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">GCS</label>
-                                    <input type="text" name="gcs" value={formData.gcs} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-px">Lingkar Perut (cm)</label>
-                                    <input type="text" name="lingkar_perut" value={formData.lingkar_perut} onChange={handleChange} className="w-full text-sm h-7 px-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" />
-                                </div>
+                        <div className="bg-purple-50/80 border border-purple-100 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-purple-600" />
+                                <span className="text-[10px] uppercase tracking-wide font-semibold text-purple-700">Tanda Vital</span>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                                {[
+                                    { label: 'Suhu', name: 'suhu_tubuh', unit: '°C', icon: Thermometer },
+                                    { label: 'Tensi', name: 'tensi', unit: 'mmHg', icon: Heart },
+                                    { label: 'Nadi', name: 'nadi', unit: '/menit', icon: Heart },
+                                    { label: 'Respirasi', name: 'respirasi', unit: '/menit', icon: Wind },
+                                    { label: 'SpO2', name: 'spo2', unit: '%', icon: Percent },
+                                    { label: 'Tinggi', name: 'tinggi', unit: 'cm', icon: Ruler },
+                                    { label: 'Berat', name: 'berat', unit: 'kg', icon: Scale },
+                                    { label: 'GCS', name: 'gcs', unit: '', icon: Brain },
+                                    { label: 'Lingkar Perut', name: 'lingkar_perut', unit: 'cm', icon: CircleDot }
+                                ].map(({ label, name, unit, icon: Icon }) => (
+                                    <div key={name}>
+                                        <label className="text-[10px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                                            <Icon className="w-3 h-3 text-purple-600" />
+                                            {label} {unit ? `(${unit})` : ''}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name={name}
+                                            value={formData[name]}
+                                            onChange={handleChange}
+                                            className="w-full text-xs h-8 px-2 rounded-md border border-gray-200 bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors"
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Assessment & Planning */}
-                        <div className="space-y-px md:space-y-px">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-1 items-stretch">
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Penilaian (Assessment)</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3 flex flex-col h-full">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs uppercase tracking-wide font-bold text-blue-700 flex items-center gap-2">
+                                        <HelpCircle className="w-3.5 h-3.5" />
+                                        Assessment
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            if (typeof onOpenDiagnosa === 'function') {
+                                                e.preventDefault();
+                                                onOpenDiagnosa();
+                                            }
+                                        }}
+                                        className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-blue-700 border border-blue-200 hover:bg-blue-50"
+                                        aria-label="Buka tab Diagnosa"
+                                        title="Buka Diagnosa (ICD-10)"
+                                    >
+                                        ICD
+                                    </button>
+                                </div>
+                                <textarea
+                                    name="penilaian"
+                                    value={formData.penilaian}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Penilaian klinis..."
+                                    className="w-full text-sm rounded-md border border-blue-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-purple-50/80 border border-purple-100 rounded-xl p-3 flex flex-col h-full">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs uppercase tracking-wide font-bold text-purple-700 flex items-center gap-2">
+                                        <Pill className="w-3.5 h-3.5" />
+                                        Planning
+                                    </label>
+                                    <div className="flex items-center gap-2">
                                         <button
                                             type="button"
                                             onClick={(e) => {
-                                                if (typeof onOpenDiagnosa === 'function') {
+                                                if (typeof onOpenLab === 'function') {
                                                     e.preventDefault();
-                                                    onOpenDiagnosa();
+                                                    onOpenLab();
                                                 }
                                             }}
-                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                            aria-label="Buka tab Diagnosa"
-                                            title="Buka Diagnosa (ICD-10)"
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-purple-700 border border-purple-200 hover:bg-purple-50 transition-colors"
+                                            aria-label="Buka tab Laboratorium"
+                                            title="Buka Permintaan Lab"
                                         >
-                                            ICD
+                                            Laborat
                                         </button>
+                                        <Link
+                                            href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
+                                            onClick={(e) => {
+                                                if (typeof onOpenResep === 'function') {
+                                                    e.preventDefault();
+                                                    onOpenResep();
+                                                }
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-blue-700 border border-blue-200 hover:bg-blue-50"
+                                            aria-label="Buka tab Resep"
+                                            title="Buka Resep Obat"
+                                        >
+                                            Resep
+                                        </Link>
                                     </div>
-                                    <textarea name="penilaian" value={formData.penilaian} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
                                 </div>
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Rencana Tindak Lanjut (Planning)</label>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    if (typeof onOpenLab === 'function') {
-                                                        e.preventDefault();
-                                                        onOpenLab();
-                                                    }
-                                                }}
-                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 transition-colors"
-                                                aria-label="Buka tab Laboratorium"
-                                                title="Buka Permintaan Lab"
-                                            >
-                                                Laborat
-                                            </button>
-                                            <Link
-                                                href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}
-                                                onClick={(e) => {
-                                                    if (typeof onOpenResep === 'function') {
-                                                        e.preventDefault();
-                                                        onOpenResep();
-                                                    }
-                                                }}
-                                                className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
-                                                aria-label="Buka tab Resep"
-                                                title="Buka Resep Obat"
-                                            >
-                                                Resep
-                                            </Link>
-                                        </div>
-                                    </div>
-                                    <textarea name="rtl" value={formData.rtl} onChange={handleChange} rows={3} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none h-24" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Instruksi Medis</label>
-                                    <textarea name="instruksi" value={formData.instruksi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
-                                </div>
-                                <div className="flex flex-col h-full">
-                                    <label className="block text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 mb-px">Evaluasi</label>
-                                    <textarea name="evaluasi" value={formData.evaluasi} onChange={handleChange} rows={2} className="w-full text-sm rounded-md border bg-white border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none" />
-                                </div>
+                                <textarea
+                                    name="rtl"
+                                    value={formData.rtl}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="Rencana tindak lanjut..."
+                                    className="w-full text-sm rounded-md border border-purple-200 bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-colors resize-none h-24"
+                                />
+                            </div>
+                            <div className="bg-teal-50/80 border border-teal-100 rounded-xl p-3 flex flex-col h-full">
+                                <label className="text-[10px] uppercase tracking-wide font-semibold text-teal-700 flex items-center gap-2 mb-2">
+                                    <CircleDot className="w-3.5 h-3.5" />
+                                    Instruksi
+                                </label>
+                                <textarea
+                                    name="instruksi"
+                                    value={formData.instruksi}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    placeholder="Instruksi medis..."
+                                    className="w-full text-sm rounded-md border border-teal-200 bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors resize-none"
+                                />
+                            </div>
+                            <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-3 flex flex-col h-full">
+                                <label className="text-[10px] uppercase tracking-wide font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                                    <Activity className="w-3.5 h-3.5" />
+                                    Evaluasi
+                                </label>
+                                <textarea
+                                    name="evaluasi"
+                                    value={formData.evaluasi}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    placeholder="Evaluasi kunjungan..."
+                                    className="w-full text-sm rounded-md border border-slate-200 bg-white focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-colors resize-none"
+                                />
                             </div>
                         </div>
 
@@ -2261,13 +2304,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     {/* Kolom kedua dihapus; konten template kini di dalam main form */}
                 </div>
 
-                {/* Footer Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mt-2">
                     {editKey && (
                         <button
                             type="button"
                             onClick={() => { setEditKey(null); setMessage(null); setError(null); }}
-                            className="bg-white/90 dark:bg-gray-700/90 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
+                            className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -2275,7 +2317,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             Batal
                         </button>
                     )}
-                    <button type="submit" className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+                    <button type="submit" className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
                         {isSubmitting ? (
                             <>
                                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2297,7 +2339,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <button
                             type="button"
                             onClick={openBridgingModal}
-                            className="flex items-center justify-center gap-2 bg-black hover:bg-neutral-800 transition-colors text-white font-semibold px-3 py-1.5 text-sm rounded-md"
+                            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg"
                             title="Bridging PCare"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

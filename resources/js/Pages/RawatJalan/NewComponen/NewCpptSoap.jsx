@@ -3,7 +3,7 @@ import { route } from 'ziggy-js';
 import { usePage } from '@inertiajs/react';
 import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 import Modal from '../../../Components/Modal.jsx';
-import { Eraser, Pencil, Trash2, Copy, Save } from 'lucide-react';
+import { Eraser, Pencil, Trash2, Copy, Save, MessageCircle, Activity, Stethoscope, FileText, Calendar, Clock, User, Thermometer, Heart, Wind, Percent, Ruler, Scale, Brain, CircleDot, Pill, History } from 'lucide-react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import DataAlergi from '../../../Alergi/DataAlergi.jsx';
 import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
@@ -1174,39 +1174,50 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] font-mono rounded-2xl border border-[oklch(29.1%_0.149_302.717_/_0.35)] shadow-[0_0_20px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
-      
+    <form onSubmit={handleSubmit} className="space-y-4 font-mono bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
+      <div className="h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-blue-500"></div>
 
-      <div className="px-4 py-2.5 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)]"></div>
-
-      <div className="p-3 space-y-3">
-
-        <div className="space-y-2">
-          <div className="grid grid-cols-3 gap-2">
-            <div className="min-w-0 flex flex-row items-center gap-2">
-              <label htmlFor="tgl_perawatan" className="text-[11px]">Tanggal</label>
-              <input id="tgl_perawatan" name="tgl_perawatan" type="date" value={formData.tgl_perawatan} onChange={handleChange}
-                className="text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-              <label htmlFor="jam_rawat" className="text-[11px]">Jam</label>
-              <input id="jam_rawat" name="jam_rawat" type="time" value={formData.jam_rawat} onChange={handleChange}
-                className="text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] placeholder-[oklch(84.1%_0.238_128.85_/_0.6)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+      <div className="p-4 space-y-4">
+        <div className="bg-gray-50/60 p-3 rounded-xl border border-gray-100 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <label htmlFor="tgl_perawatan" className="text-[10px] font-medium text-gray-500 mb-1 block">Tanggal</label>
+                <div className="relative">
+                  <Calendar className="absolute left-2 top-1.5 w-3.5 h-3.5 text-gray-400" />
+                  <input id="tgl_perawatan" name="tgl_perawatan" type="date" value={formData.tgl_perawatan} onChange={handleChange}
+                    className="w-full text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                </div>
+              </div>
+              <div className="w-24">
+                <label htmlFor="jam_rawat" className="text-[10px] font-medium text-gray-500 mb-1 block">Jam</label>
+                <div className="relative">
+                  <Clock className="absolute left-2 top-1.5 w-3.5 h-3.5 text-gray-400" />
+                  <input id="jam_rawat" name="jam_rawat" type="time" value={formData.jam_rawat} onChange={handleChange}
+                    className="w-full text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
+                </div>
+              </div>
             </div>
-            <div className="min-w-0 flex flex-row items-center gap-2">
-              <label className="text-[11px] font-semibold">Kesadaran</label>
-              <select name="kesadaran" value={formData.kesadaran} onChange={handleChange}
-                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
-                {kesadaranOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
+            <div>
+              <label className="text-[10px] font-medium text-gray-500 mb-1 block">Kesadaran</label>
+              <div className="relative">
+                <Activity className="absolute left-2 top-1.5 w-3.5 h-3.5 text-gray-400" />
+                <select name="kesadaran" value={formData.kesadaran} onChange={handleChange}
+                  className="w-full text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                  {kesadaranOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="min-w-0 flex items-center gap-2">
-              <label className="text-[11px] font-semibold">Pemeriksa</label>
-              <div className="w-full">
+            <div>
+              <label className="text-[10px] font-medium text-gray-500 mb-1 block">Pemeriksa</label>
+              <div className="relative">
+                <User className="absolute left-2 top-1.5 w-3.5 h-3.5 text-gray-400" />
                 <select
                   value={formData.nip}
                   onChange={(e) => setFormData((p) => ({ ...p, nip: e.target.value }))}
-                  className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
+                  className="w-full text-xs h-8 pl-7 pr-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 >
                   <option value="">{pegawaiDisplay || currentName || '— Pilih pegawai —'}</option>
                   {pegawaiOptions.map((opt) => (
@@ -1216,212 +1227,223 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
               </div>
             </div>
           </div>
-          <div className="min-w-0 flex flex-row items-center gap-2 flex-wrap">
-            <label className="text-[11px] font-semibold">Alergi</label>
-            <select value={alergiJenis} onChange={(e) => setAlergiJenis(e.target.value)}
-              className="w-32 text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]">
-              {jenisAlergiOptions.length > 0 ? (
-                jenisAlergiOptions.map((opt) => (
-                  <option key={opt.code} value={opt.code}>{opt.label}</option>
-                ))
-              ) : (
-                <option value="">Tidak Ada</option>
-              )}
-            </select>
-            <button
-              type="button"
-              onClick={() => setAlergiCrudOpen(true)}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591)] text-[oklch(84.1%_0.238_128.85)] hover:bg-[oklch(14.5%_0_0_/_0.9)]"
-              aria-label="Tambah Alergi"
-            >
-              <PlusIcon className="h-4 w-4" />
-            </button>
-            <div className="flex-1 min-w-[220px]">
-              <select
-                value={kdAlergi}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setKdAlergi(v);
-                  const opt = alergiOptions.find((o) => o.value === v);
-                  setFormData((p) => ({ ...p, alergi: opt ? opt.label : '' }));
-                }}
-                className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]"
+          <div className="flex flex-col md:flex-row gap-3 items-end">
+            <div className="flex-1 flex gap-2 items-end">
+              <div className="w-32">
+                <label className="text-[10px] font-medium text-gray-500 mb-1 block">Alergi</label>
+                <select value={alergiJenis} onChange={(e) => setAlergiJenis(e.target.value)}
+                  className="w-full text-xs h-8 px-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                  {jenisAlergiOptions.length > 0 ? (
+                    jenisAlergiOptions.map((opt) => (
+                      <option key={opt.code} value={opt.code}>{opt.label}</option>
+                    ))
+                  ) : (
+                    <option value="">Tidak Ada</option>
+                  )}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAlergiCrudOpen(true)}
+                className="h-8 w-8 flex items-center justify-center rounded-md bg-gray-100 border border-gray-300 text-gray-600 hover:bg-gray-200"
+                aria-label="Tambah Alergi"
               >
-                <option value="">Tidak Ada</option>
-                {alergiOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                <PlusIcon className="h-4 w-4" />
+              </button>
+              <div className="flex-1">
+                <select
+                  value={kdAlergi}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setKdAlergi(v);
+                    const opt = alergiOptions.find((o) => o.value === v);
+                    setFormData((p) => ({ ...p, alergi: opt ? opt.label : '' }));
+                  }}
+                  className="w-full text-xs h-8 px-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                >
+                  <option value="">Tidak Ada</option>
+                  {alergiOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <label className="text-[11px] font-semibold">Template :</label>
-            <div className="w-40 md:w-52">
-              <SearchableSelect
-                options={templateOptions}
-                value={selectedTemplate}
-                onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
-                placeholder="Pilih template..."
-                searchPlaceholder="Cari diagnosa..."
-                displayKey="label"
-                valueKey="key"
-                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
-                dropdownClassName="bg-[oklch(98.5%_0_0)] border-[oklch(29.1%_0.149_302.717_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                searchInputClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(45.2%_0.211_324.591_/_0.5)] focus:ring-[oklch(84.1%_0_238_128.85)] focus:border-[oklch(45.2%_0.211_324.591)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                optionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                selectedOptionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)]"
-                optionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
-                selectedOptionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
-                displayClassName="text-[oklch(14.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
-              />
+            <div className="flex gap-2 items-end">
+              <div className="w-48">
+                <label className="text-[10px] font-medium text-gray-500 mb-1 block">Template</label>
+                <SearchableSelect
+                  options={templateOptions}
+                  value={selectedTemplate}
+                  onChange={(val) => { setSelectedTemplate(val); applyTemplate(val); }}
+                  placeholder="Pilih template..."
+                  searchPlaceholder="Cari diagnosa..."
+                  displayKey="label"
+                  valueKey="key"
+                  className="!h-8 !text-xs !rounded-md !bg-white !border-gray-200 shadow-sm"
+                  dropdownClassName="bg-white border-gray-200 shadow-lg"
+                  searchInputClassName="bg-white border-gray-200"
+                  optionClassName="hover:bg-gray-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={clearTemplateFields}
+                className="h-8 w-8 flex items-center justify-center rounded-md bg-white border border-gray-300 text-gray-500 hover:bg-gray-50"
+                title="Bersihkan"
+              >
+                <Eraser className="w-4 h-4" />
+              </button>
+              <div className="w-48">
+                <SearchableSelect
+                  options={dbTemplateOptions}
+                  value={selectedDbTemplate}
+                  onChange={(val) => { applyDbTemplate(val); }}
+                  placeholder="Template Manual"
+                  searchPlaceholder="Cari template..."
+                  displayKey="label"
+                  valueKey="value"
+                  className="!h-8 !text-xs !rounded-md !bg-white !border-gray-200 shadow-sm"
+                  dropdownClassName="bg-white border-gray-200 shadow-lg"
+                  searchInputClassName="bg-white border-gray-200"
+                  optionClassName="hover:bg-gray-50"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={openNmTemplateModal}
+                className="h-8 w-8 flex items-center justify-center rounded-md bg-white border border-gray-300 text-gray-500 hover:bg-gray-50"
+                title="Simpan Template"
+                aria-label="Simpan Template"
+                disabled={templateSaving}
+              >
+                <Save className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={clearTemplateFields}
-              className="inline-flex items-center w-auto p-1 text-[oklch(84.1%_0.238_128.85)] bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591_/_0.35)] rounded-md hover:bg-[oklch(14.5%_0_0_/_0.9)] transition-colors"
-              aria-label="Bersihkan Form"
-              title="Bersihkan"
-            >
-              <Eraser className="w-4 h-4" />
-            </button>
-            <div className="w-44 md:w-56">
-              <SearchableSelect
-                options={dbTemplateOptions}
-                value={selectedDbTemplate}
-                onChange={(val) => { applyDbTemplate(val); }}
-                placeholder="Template Manual"
-                searchPlaceholder="Cari template..."
-                displayKey="label"
-                valueKey="value"
-                className="!h-7 !px-1.5 !py-0.5 !text-[11px] !rounded !shadow-none !bg-[oklch(98.5%_0_0)] !text-[oklch(14.5%_0_0)] !border-[oklch(29.1%_0.149_302.717_/_0.35)] !focus:ring-[oklch(84.1%_0.238_128.85)] !focus:border-[oklch(29.1%_0.149_302.717)] shadow-[0_0_10px_oklch(84.1%_0.238_128.85_/_0.4)]"
-                dropdownClassName="bg-[oklch(98.5%_0_0)] border-[oklch(29.1%_0.149_302.717_/_0.5)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                searchInputClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] placeholder-[oklch(84.1%_0.238_128.85_/_0.7)] border-[oklch(45.2%_0.211_324.591_/_0.5)] focus:ring-[oklch(84.1%_0.238_128.85)] focus:border-[oklch(45.2%_0.211_324.591)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.6)]"
-                optionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)] drop-shadow-[0_0_4px_oklch(84.1%_0.238_128.85_/_0.5)]"
-                selectedOptionClassName="bg-[oklch(98.5%_0_0)] text-[oklch(14.5%_0_0)]"
-                optionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
-                selectedOptionHoverClassName="hover:bg-[oklch(98.5%_0_0)]"
-                displayClassName="text-[oklch(14.5%_0_0)] drop-shadow-[0_0_6px_oklch(84.1%_0.238_128.85_/_0.7)]"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={openNmTemplateModal}
-              className="inline-flex items-center w-auto p-1 text-[oklch(84.1%_0.238_128.85)] bg-[oklch(14.5%_0_0)] border border-[oklch(45.2%_0.211_324.591_/_0.35)] rounded-md hover:bg-[oklch(14.5%_0_0_/_0.9)] transition-colors"
-              title="Simpan/Update Template"
-              aria-label="Simpan/Update Template"
-              disabled={templateSaving}
-            >
-              <Save className="w-4 h-4" />
-            </button>
-            {templateError && (
-              <span className="text-[11px] text-red-600 dark:text-red-400">{templateError}</span>
-            )}
-            {templateMessage && (
-              <span className="text-[11px] text-emerald-700 dark:text-emerald-400">{templateMessage}</span>
-            )}
           </div>
+          {(templateError || templateMessage) && (
+            <div className="flex gap-2 text-[10px]">
+              {templateError && <span className="text-red-500">{templateError}</span>}
+              {templateMessage && <span className="text-emerald-500">{templateMessage}</span>}
+            </div>
+          )}
         </div>
         <Modal show={showNmTemplateModal} onClose={() => setShowNmTemplateModal(false)} title="Nama Template" size="sm">
           <div className="space-y-3">
             <div>
-              <label className="block text-[11px] mb-1">Nama Template</label>
-              <input value={nmTemplateInput} onChange={(e) => setNmTemplateInput(e.target.value)} className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+              <label className="block text-[11px] mb-1 text-gray-600">Nama Template</label>
+              <input value={nmTemplateInput} onChange={(e) => setNmTemplateInput(e.target.value)} className="w-full text-xs h-8 px-2 rounded-md bg-white border border-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500" />
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setShowNmTemplateModal(false)} className="px-3 py-1.5 text-[11px] rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717)]">Batal</button>
-              <button type="button" onClick={confirmNmTemplateAndSave} className="px-3 py-1.5 text-[11px] rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]">Simpan</button>
+              <button type="button" onClick={() => setShowNmTemplateModal(false)} className="px-3 py-1.5 text-[11px] rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-50">Batal</button>
+              <button type="button" onClick={confirmNmTemplateAndSave} className="px-3 py-1.5 text-[11px] rounded-md bg-blue-600 hover:bg-blue-700 text-white border border-blue-600">Simpan</button>
             </div>
           </div>
         </Modal>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-          <div>
-            <label className="block text-[11px] mb-0.5">Suhu (°C)</label>
-            <input name="suhu_tubuh" value={formData.suhu_tubuh || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+        <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden">
+          <div className="bg-gray-50 px-4 py-2 flex items-center gap-2 border-b border-gray-200">
+            <Activity className="w-4 h-4 text-gray-500" />
+            <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">Tanda Vital</h3>
           </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Tensi (mmHg)</label>
-            <input name="tensi" value={formData.tensi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Nadi (/menit)</label>
-            <input name="nadi" value={formData.nadi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Respirasi (/menit)</label>
-            <input name="respirasi" value={formData.respirasi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">SpO2 (%)</label>
-            <input name="spo2" value={formData.spo2 || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Tinggi (cm)</label>
-            <input name="tinggi" value={formData.tinggi || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Berat (kg)</label>
-            <input name="berat" value={formData.berat || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">GCS</label>
-            <input name="gcs" value={formData.gcs || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div>
-            <label className="block text-[11px] mb-0.5">Lingkar Perut (cm)</label>
-            <input name="lingkar_perut" value={formData.lingkar_perut || ''} onChange={handleChange}
-              className="w-full text-xs h-8 px-2 rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="block text-[11px] font-semibold">Keluhan Utama (Subjektif)</label>
-            <textarea name="keluhan" rows={4} value={formData.keluhan} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-[11px] font-semibold">Pemeriksaan Fisik (Objektif)</label>
-            <textarea name="pemeriksaan" rows={4} value={formData.pemeriksaan} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="block text-[11px] font-semibold">Penilaian (Assessment)</label>
-            <textarea name="penilaian" rows={3} value={formData.penilaian} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="block text-[11px] font-semibold">Rencana Tindak Lanjut (Planning)</label>
+          <div className="p-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[
+                { label: 'Suhu (°C)', name: 'suhu_tubuh', icon: Thermometer },
+                { label: 'Tensi (mmHg)', name: 'tensi', icon: Activity },
+                { label: 'Nadi (/menit)', name: 'nadi', icon: Heart },
+                { label: 'Respirasi (/menit)', name: 'respirasi', icon: Wind },
+                { label: 'SpO2 (%)', name: 'spo2', icon: Percent },
+                { label: 'Tinggi (cm)', name: 'tinggi', icon: Ruler },
+                { label: 'Berat (kg)', name: 'berat', icon: Scale },
+                { label: 'GCS', name: 'gcs', icon: Brain },
+                { label: 'Lingkar Perut (cm)', name: 'lingkar_perut', icon: CircleDot },
+              ].map((item) => (
+                <div key={item.name}>
+                  <label className="text-[10px] font-medium text-gray-500 mb-1 flex items-center gap-1">
+                    <item.icon className="w-3 h-3" />
+                    {item.label}
+                  </label>
+                  <input
+                    name={item.name}
+                    value={formData[item.name] || ''}
+                    onChange={handleChange}
+                    className="w-full text-xs h-8 px-2 rounded-md bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+              ))}
             </div>
-            <textarea name="rtl" rows={3} value={formData.rtl} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="block text-[11px] font-semibold">Instruksi Medis</label>
-            <textarea name="instruksi" rows={2} value={formData.instruksi} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-xl border border-amber-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-amber-100/80 px-4 py-2 flex items-center gap-2 border-b border-amber-200">
+              <MessageCircle className="w-4 h-4 text-amber-700" />
+              <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wider">S - Subjektif</h3>
+            </div>
+            <div className="p-3 bg-amber-50/30 h-full">
+              <textarea name="keluhan" rows={5} value={formData.keluhan} onChange={handleChange} placeholder="Keluhan utama pasien..."
+                className="w-full text-xs rounded-md bg-white border-amber-200 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 min-h-[120px]" />
+            </div>
           </div>
-          <div className="space-y-1">
-            <label className="block text-[11px] font-semibold">Evaluasi</label>
-            <textarea name="evaluasi" rows={2} value={formData.evaluasi} onChange={handleChange}
-              className="w-full text-xs rounded-md bg-[oklch(98.5%_0_0)] border border-[oklch(29.1%_0.149_302.717_/_0.45)] focus:ring-2 focus:ring-[oklch(84.1%_0.238_128.85_/_0.6)]" />
+
+          <div className="rounded-xl border border-emerald-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-emerald-100/80 px-4 py-2 flex items-center gap-2 border-b border-emerald-200">
+              <Stethoscope className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wider">O - Objektif</h3>
+            </div>
+            <div className="p-3 bg-emerald-50/30 h-full">
+              <textarea name="pemeriksaan" rows={5} value={formData.pemeriksaan} onChange={handleChange} placeholder="Hasil pemeriksaan fisik..."
+                className="w-full text-xs rounded-md bg-white border-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 min-h-[120px]" />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-blue-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-blue-100/80 px-4 py-2 flex items-center gap-2 border-b border-blue-200">
+              <Brain className="w-4 h-4 text-blue-700" />
+              <h3 className="text-xs font-bold text-blue-800 uppercase tracking-wider">A - Assessment</h3>
+            </div>
+            <div className="p-3 bg-blue-50/30 h-full">
+              <textarea name="penilaian" rows={4} value={formData.penilaian} onChange={handleChange} placeholder="Diagnosa / Penilaian..."
+                className="w-full text-xs rounded-md bg-white border-blue-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 min-h-[100px]" />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-indigo-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-indigo-100/80 px-4 py-2 flex items-center gap-2 border-b border-indigo-200">
+              <FileText className="w-4 h-4 text-indigo-700" />
+              <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wider">P - Planning</h3>
+            </div>
+            <div className="p-3 bg-indigo-50/30 h-full">
+              <textarea name="rtl" rows={4} value={formData.rtl} onChange={handleChange} placeholder="Rencana tindak lanjut..."
+                className="w-full text-xs rounded-md bg-white border-indigo-200 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 min-h-[100px]" />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-orange-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-orange-100/80 px-4 py-2 flex items-center gap-2 border-b border-orange-200">
+              <Pill className="w-4 h-4 text-orange-700" />
+              <h3 className="text-xs font-bold text-orange-800 uppercase tracking-wider">I - Instruksi</h3>
+            </div>
+            <div className="p-3 bg-orange-50/30 h-full">
+              <textarea name="instruksi" rows={3} value={formData.instruksi} onChange={handleChange} placeholder="Instruksi medis..."
+                className="w-full text-xs rounded-md bg-white border-orange-200 focus:ring-2 focus:ring-orange-400 focus:border-orange-400" />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 shadow-sm bg-white overflow-hidden">
+            <div className="bg-slate-100/80 px-4 py-2 flex items-center gap-2 border-b border-slate-200">
+              <Activity className="w-4 h-4 text-slate-700" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">E - Evaluasi</h3>
+            </div>
+            <div className="p-3 bg-slate-50/30 h-full">
+              <textarea name="evaluasi" rows={3} value={formData.evaluasi} onChange={handleChange} placeholder="Evaluasi..."
+                className="w-full text-xs rounded-md bg-white border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400" />
+            </div>
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 flex-wrap">
-          <button type="submit" className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]">
+          <button type="submit" className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-gray-900 hover:bg-gray-800 text-white border border-gray-800 shadow-sm transition-all active:scale-95">
             {editKey ? 'Update Pemeriksaan' : 'Simpan Pemeriksaan'}
           </button>
           {showBridging && (
@@ -1434,7 +1456,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   openBridgingModal();
                 }
               }}
-              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]"
+              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-gray-900 hover:bg-gray-800 text-white border border-gray-800 shadow-sm transition-all active:scale-95"
               title="Bridging PCare"
             >
               Bridging PCare
@@ -1595,15 +1617,18 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                   try { win.document.write(html); win.document.close(); } catch (e) { setError('Gagal menulis konten cetak: ' + (e.message || e)); if (win && !win.closed) { win.close(); } }
                 } catch (e) { setError(`Gagal mencetak rujukan: ${e.message || e}`); }
               }}
-              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-black hover:bg-neutral-800 text-white border border-[oklch(45.2%_0.211_324.591)]"
+              className="inline-flex items-center px-3 py-1.5 text-sm rounded-md bg-gray-900 hover:bg-gray-800 text-white border border-gray-800 shadow-sm transition-all active:scale-95"
               title="Cetak Rujukan"
             >
               Cetak Rujukan
             </button>
           )}
         </div>
-        <div className="mt-3 rounded-2xl border border-[oklch(29.1%_0.149_302.717_/_0.35)] shadow-[0_0_14px_oklch(84.1%_0.238_128.85_/_0.25)] overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-[oklch(29.1%_0.149_302.717_/_0.35)] text-sm font-semibold">Riwayat Pemeriksaan</div>
+        <div className="mt-6 rounded-xl border border-gray-200 shadow-lg bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <History className="w-4 h-4 text-gray-500" />
+            Riwayat Pemeriksaan
+          </div>
           <div className="p-3">
             {historyLoading && (
               <div className="text-[11px]">Memuat…</div>
@@ -1629,7 +1654,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                     })
                     .slice(0, 10)
                     .map((row, idx) => (
-                      <div key={`${row?.no_rawat || ''}-${row?.tgl_perawatan || ''}-${row?.jam_rawat || ''}-${idx}`} className="rounded-md border border-[oklch(29.1%_0.149_302.717_/_0.3)]">
+                      <div key={`${row?.no_rawat || ''}-${row?.tgl_perawatan || ''}-${row?.jam_rawat || ''}-${idx}`} className="rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-white hover:shadow-sm transition-all">
                         <div className="px-3 py-2 text-[11px] flex items-center justify-between">
                           <div className="font-semibold">{row?.tgl_perawatan || '-'} {String(row?.jam_rawat || '').length === 5 ? row?.jam_rawat + ':00' : (row?.jam_rawat || '')}</div>
                           <div className="text-[10px] flex items-center gap-1">
@@ -1668,7 +1693,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                 setError(null);
                                 setTimeout(() => { performSave(); }, 0);
                               }}
-                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-blue-600 transition-colors"
                               title="Salin pemeriksaan"
                             >
                               <Copy className="w-3 h-3 text-red-500" />
@@ -1708,7 +1733,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                 setMessage(null);
                                 setError(null);
                               }}
-                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-blue-600 transition-colors"
                               title="Edit pemeriksaan"
                             >
                               <Pencil className="w-3 h-3 text-red-500" />
@@ -1756,7 +1781,7 @@ export default function NewCpptSoap({ _token = '', noRkmMedis = '', noRawat = ''
                                   setMessage(null);
                                 }
                               }}
-                              className="inline-flex items-center justify-center h-5 w-5 rounded-md border border-[oklch(45.2%_0.211_324.591)] text-[oklch(89.7%_0.196_126.665)] hover:bg-[oklch(89.7%_0.196_126.665_/_0.1)]"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-blue-600 transition-colors"
                               title="Hapus pemeriksaan"
                             >
                               <Trash2 className="w-3 h-3 text-red-500" />
