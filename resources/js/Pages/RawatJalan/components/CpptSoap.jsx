@@ -1023,6 +1023,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             nadi: '',
             respirasi: '',
             spo2: '',
+            tinggi: '',
+            berat: '',
+            gcs: '',
+            lingkar_perut: '',
             keluhan: '',
             pemeriksaan: '',
             penilaian: '',
@@ -1948,7 +1952,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <div className="space-y-3 bg-gray-50/60 border border-gray-100 rounded-xl p-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="flex items-center gap-3">
-                                    <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
                                         <CircleDot className="w-3 h-3 text-amber-600" />
                                         Kesadaran
                                     </label>
@@ -1959,7 +1963,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     </select>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
                                         <User className="w-3 h-3 text-blue-600" />
                                         Pemeriksa
                                     </label>
@@ -1988,7 +1992,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     />
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
                                         <MessageCircle className="w-3 h-3 text-red-500" />
                                         Alergi
                                     </label>
@@ -2021,7 +2025,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
                                         <HelpCircle className="w-3 h-3 text-indigo-600" />
                                         Template
                                     </label>
@@ -2110,7 +2114,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 <Activity className="w-4 h-4 text-purple-600" />
                                 <span className="text-[10px] uppercase tracking-wide font-semibold text-purple-700">Tanda Vital</span>
                             </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                                 {[
                                     { label: 'Suhu', name: 'suhu_tubuh', unit: '°C', icon: Thermometer },
                                     { label: 'Tensi', name: 'tensi', unit: 'mmHg', icon: Heart },
@@ -2122,8 +2126,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     { label: 'GCS', name: 'gcs', unit: '', icon: Brain },
                                     { label: 'Lingkar Perut', name: 'lingkar_perut', unit: 'cm', icon: CircleDot }
                                 ].map(({ label, name, unit, icon: Icon }) => (
-                                    <div key={name}>
-                                        <label className="text-[10px] font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                                    <div key={name} className="flex items-center gap-2">
+                                        <label className="text-[10px] font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
                                             <Icon className="w-3 h-3 text-purple-600" />
                                             {label} {unit ? `(${unit})` : ''}
                                         </label>
