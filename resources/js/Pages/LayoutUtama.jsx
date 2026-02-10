@@ -6,7 +6,6 @@ import {
   Ambulance,
   FlaskConical,
   Pill,
-  ChartNoAxesColumn,
   CreditCard,
   User,
   LogOut,
@@ -49,7 +48,6 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
     { href: route("igd.index"), label: "UGD", icon: Ambulance },
     { href: "/laboratorium/permintaan-lab", label: "Laborat", icon: FlaskConical },
     { href: "/farmasi/permintaan-resep", label: "Farmasi", icon: Pill },
-    { href: "/laporan", label: "Laporan", icon: ChartNoAxesColumn },
     { href: "/akutansi/kasir-ralan", label: "Kasir", icon: CreditCard },
   ];
 
