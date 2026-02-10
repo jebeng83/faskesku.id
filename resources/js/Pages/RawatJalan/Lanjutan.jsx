@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import { ChevronDown, FileText, Upload, File } from 'lucide-react';
 import LayoutUtama from "@/Pages/LayoutUtama";
 import LanjutanRalanSidebar from "@/Components/LanjutanRalanSidebar";
-import RiwayatPerawatan from "./components/RiwayatPerawatan"; // Updated import
+import RiwayatPerawatan from "./components/RiwayatPerawatan";
 import CpptSoap from "./components/CpptSoap";
+import Modal from "@/Components/Modal";
 import Resep from "./components/Resep";
 import Diagnosa from "./components/Diagnosa";
 import PermintaanLab from "./components/PermintaanLab";
@@ -45,6 +47,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [soapViewMode, setSoapViewMode] = useState('table');
     const [soapShowAll, setSoapShowAll] = useState(false);
     const [soapPage, setSoapPage] = useState(1);
+    const [berkasModalOpen, setBerkasModalOpen] = useState(false);
     const [skriningVisual, setSkriningVisual] = useState(null);
     const [loadingSkriningVisual, setLoadingSkriningVisual] = useState(false);
     const [poliCalling, setPoliCalling] = useState(false);
@@ -994,6 +997,80 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                             >
                                                 Surat
                                             </button>
+                                            <button 
+                                                onClick={() => setBerkasModalOpen(true)}
+                                                className="text-xs px-3 py-1.5 rounded border bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200 flex items-center gap-1"
+                                            >
+                                                Berkas Lain
+                                                <ChevronDown className="w-3 h-3" />
+                                            </button>
+
+                                     {/* Berkas Lain Modal */}
+                                     <Modal
+                                        show={berkasModalOpen}
+                                        onClose={() => setBerkasModalOpen(false)}
+                                        title="Menu Berkas Lain"
+                                        size="sm"
+                                     >
+                                        <div className="p-4 grid grid-cols-1 gap-3">
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Upload Berkas dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                                    <Upload className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Upload Berkas</div>
+                                                    <div className="text-xs text-gray-500">Unggah dokumen pendukung</div>
+                                                </div>
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Lihat Berkas dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                                    <FileText className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Lihat Berkas</div>
+                                                    <div className="text-xs text-gray-500">Lihat riwayat berkas pasien</div>
+                                                </div>
+                                            </button>
+
+                                            <button 
+                                                onClick={() => {
+                                                    alert('Fitur Resume Medis dalam pengembangan');
+                                                    setBerkasModalOpen(false);
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                                            >
+                                                <div className="p-2 bg-green-50 rounded-lg text-green-600">
+                                                    <File className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">Resume Medis</div>
+                                                    <div className="text-xs text-gray-500">Buat atau lihat resume medis</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                        <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 rounded-b-lg">
+                                            <button
+                                                type="button"
+                                                onClick={() => setBerkasModalOpen(false)}
+                                                className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                            >
+                                                Tutup
+                                            </button>
+                                        </div>
+                                     </Modal>
                                         </div>
                                     </div>
                                 </div>

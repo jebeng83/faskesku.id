@@ -54,7 +54,7 @@ export default function Modal({
     children,
     size = "md",
     className = "",
-    zIndex = 50,
+    zIndex = 1050,
     headerClassName = "",
     titleClassName = "",
     showTopGradient = false,
