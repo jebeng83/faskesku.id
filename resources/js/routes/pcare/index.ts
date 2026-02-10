@@ -3,7 +3,6 @@ import mapping from './mapping'
 import monitoringBb077c from './monitoring'
 import referensi from './referensi'
 import layanan from './layanan'
-import skrining from './skrining'
 import kelompok from './kelompok'
 import diagnosa from './diagnosa'
 import dokter from './dokter'
@@ -11,7 +10,6 @@ import poli from './poli'
 import rs from './rs'
 import tindakan from './tindakan'
 import srk from './srk'
-import pcareNested from './pcare'
 import peserta from './peserta'
 import kunjungan from './kunjungan'
 import pendaftaran from './pendaftaran'
@@ -20,7 +18,7 @@ import resend from './resend'
 import massSend from './mass-send'
 import setting from './setting'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2307
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +32,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2307
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -42,7 +40,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2307
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -51,7 +49,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2307
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -60,7 +58,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2326
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -74,7 +72,7 @@ monitoring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2326
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -82,7 +80,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2326
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -91,7 +89,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2326
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -100,7 +98,7 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2334
 * @route '/pcare/data-pendaftaran'
 */
 export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +112,7 @@ dataPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2334
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -122,7 +120,7 @@ dataPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2334
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -131,7 +129,7 @@ dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:2334
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -146,7 +144,6 @@ const pcare = {
     dataPendaftaran: Object.assign(dataPendaftaran, dataPendaftaran),
     referensi: Object.assign(referensi, referensi),
     layanan: Object.assign(layanan, layanan),
-    skrining: Object.assign(skrining, skrining),
     kelompok: Object.assign(kelompok, kelompok),
     diagnosa: Object.assign(diagnosa, diagnosa),
     dokter: Object.assign(dokter, dokter),
@@ -154,7 +151,6 @@ const pcare = {
     rs: Object.assign(rs, rs),
     tindakan: Object.assign(tindakan, tindakan),
     srk: Object.assign(srk, srk),
-    pcare: Object.assign(pcareNested, pcareNested),
     peserta: Object.assign(peserta, peserta),
     kunjungan: Object.assign(kunjungan, kunjungan),
     pendaftaran: Object.assign(pendaftaran, pendaftaran),

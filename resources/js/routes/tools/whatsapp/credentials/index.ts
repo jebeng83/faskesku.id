@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1290
 * @route '/tools/scan-whatsapp-credentials'
 */
 export const scan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ scan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1290
 * @route '/tools/scan-whatsapp-credentials'
 */
 scan.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ scan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1290
 * @route '/tools/scan-whatsapp-credentials'
 */
 scan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ scan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1290
 * @route '/tools/scan-whatsapp-credentials'
 */
 scan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

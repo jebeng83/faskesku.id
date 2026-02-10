@@ -2440,6 +2440,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/DataProlanis');
         })->name('layanan.data-prolanis');
 
+        Route::get('/layanan/mcu', function () {
+            return Inertia::render('Pcare/LayananPcare/Mcu');
+        })->name('layanan.mcu');
+
         // Kegiatan Kelompok - Club Prolanis (Inertia page)
         Route::get('/kelompok/club-prolanis', function () {
             return Inertia::render('Pcare/KegiatanKelompok/ClubProlanis');
@@ -2669,6 +2673,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/interoperabilitas/rajal/encounter', function () {
             return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/Encounter');
         })->name('interoperabilitas.rajal.encounter');
+
+        // Mapping Routes (Inertia pages)
+        Route::get('/mapping-practitioner', function () {
+            return Inertia::render('SatuSehat/Prerequisites/MappingPractitioner');
+        })->name('mapping-practitioner');
+
+        Route::get('/mapping-alergi', [\App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::class, 'index'])->name('mapping-alergi.index');
+
+        Route::get('/mapping-obat', [\App\Http\Controllers\SatuSehat\SatuSehatMedicationMappingController::class, 'index'])->name('mapping-obat.index');
     });
 
 });
@@ -2719,11 +2732,3 @@ Route::middleware(['auth'])->prefix('api/satusehat')->name('api.satusehat.')->gr
     Route::get('/practitioner', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'searchOnly'])->name('practitioner.search');
 });
 
-// SATU SEHAT PAGE ROUTES
-Route::middleware(['auth'])->group(function () {
-    Route::get('/satusehat/mapping-practitioner', function () {
-        return Inertia::render('SatuSehat/Prerequisites/MappingPractitioner');
-    })->name('satusehat.mapping-practitioner');
-
-    Route::get('/satusehat/mapping-alergi', [\App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::class, 'index'])->name('satusehat_mapping_alergi.index');
-});

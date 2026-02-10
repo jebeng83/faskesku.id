@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1398
 * @route '/wa-gateway/kredensial'
 */
 export const kredensial = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ kredensial.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1398
 * @route '/wa-gateway/kredensial'
 */
 kredensial.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ kredensial.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1398
 * @route '/wa-gateway/kredensial'
 */
 kredensial.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ kredensial.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/web.php:1398
 * @route '/wa-gateway/kredensial'
 */
 kredensial.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

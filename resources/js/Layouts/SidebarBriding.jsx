@@ -66,8 +66,12 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
         "/satusehat/mapping-practitioner"
       ),
       ssMapAlergi: safeRoute(
-        "satusehat_mapping_alergi.index",
+        "satusehat.mapping-alergi.index",
         "/satusehat/mapping-alergi"
+      ),
+      ssMapObat: safeRoute(
+        "satusehat.mapping-obat.index",
+        "/satusehat/mapping-obat"
       ),
     }),
     []
@@ -95,6 +99,7 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       { href: paths.ssPrPractitioner, label: "Referensi Practitioner", icon: BadgeInfo, permission: "satusehat.index" },
       { href: paths.ssMapPractitioner, label: "Mapping Dokter Satu Sehat", icon: Stethoscope, permission: "satusehat.index" },
       { href: paths.ssMapAlergi, label: "Mapping Alergi", icon: ShieldAlert, permission: "satusehat.index" },
+      { href: paths.ssMapObat, label: "Mapping Obat", icon: Pill, permission: "satusehat.index" },
       { href: paths.ssPrPatient, label: "Referensi Pasien", icon: User, permission: "satusehat.index" },
       { href: paths.ssInteropRajalEncounter, label: "Encounter Rajal", icon: HeartPulse, permission: "satusehat.index" },
     ].filter((l) => !l.permission || can(l.permission)),

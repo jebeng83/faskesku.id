@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see [serialized-closure]:2
+* @see routes/api.php:276
 * @route '/api/public/sip-pegawai/expiring'
 */
 export const expiring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ expiring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see [serialized-closure]:2
+* @see routes/api.php:276
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ expiring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see [serialized-closure]:2
+* @see routes/api.php:276
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ expiring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see [serialized-closure]:2
+* @see routes/api.php:276
 * @route '/api/public/sip-pegawai/expiring'
 */
 expiring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

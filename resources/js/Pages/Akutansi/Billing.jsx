@@ -1232,6 +1232,50 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         );
                         // Jangan gagalkan proses jika update status_bayar gagal
                     }
+
+                    // Integrasi SATUSEHAT: saat billing sukses, otomatis:
+                    // 1) Finish Encounter (PUT Encounter dengan status 'finished')
+                    // 2) Menjalankan pipeline RAJAL by-rawat (menyiapkan Composition & resource lain)
+                    try {
+                        // 1. Ambil Encounter ID berdasarkan no_rawat
+                        const encRes = await axios.get(
+                            `/api/satusehat/rajal/encounter/id-by-rawat/${encodeURIComponent(
+                                noRawat
+                            )}`
+                        );
+                        const encounterId = encRes?.data?.encounter_id;
+
+                        if (encounterId) {
+                            // 2. Update Encounter ke status 'finished' dengan period.end dari pemeriksaan_ralan terakhir
+                            await axios.put(
+                                `/api/satusehat/rajal/encounter/by-rawat/${encodeURIComponent(
+                                    noRawat
+                                )}`,
+                                {
+                                    encounter_id: encounterId,
+                                    status: "finished",
+                                    tz_offset: "+07:00",
+                                }
+                            );
+
+                            // 3. Jalankan pipeline RAJAL by-rawat (mengirim Condition/Observation/Composition, dll.)
+                            await axios.post(
+                                `/api/satusehat/rajal/pipeline/by-rawat/${encodeURIComponent(
+                                    noRawat
+                                )}`,
+                                {
+                                    tz_offset: "+07:00",
+                                }
+                            );
+                        }
+                    } catch (satusehatError) {
+                        console.warn(
+                            "[SATUSEHAT][Billing] Gagal finish Encounter / menjalankan pipeline:",
+                            satusehatError?.response?.data ||
+                                satusehatError?.message
+                        );
+                        // Penting: jangan gagalkan proses billing kalau integrasi SATUSEHAT gagal.
+                    }
                 }
             } catch (_e) {
                 const errorMsg =

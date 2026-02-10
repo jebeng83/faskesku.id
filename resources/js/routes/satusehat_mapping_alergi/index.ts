@@ -261,50 +261,6 @@ destroy.delete = (args: { id: string | number } | [id: string | number ] | strin
     method: 'delete',
 })
 
-/**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatAllergyMappingController.php:14
-* @route '/satusehat/mapping-alergi'
-*/
-export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-index.definition = {
-    methods: ["get","head"],
-    url: '/satusehat/mapping-alergi',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatAllergyMappingController.php:14
-* @route '/satusehat/mapping-alergi'
-*/
-index.url = (options?: RouteQueryOptions) => {
-    return index.definition.url + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatAllergyMappingController.php:14
-* @route '/satusehat/mapping-alergi'
-*/
-index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: index.url(options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController::index
-* @see app/Http/Controllers/SatuSehat/SatuSehatAllergyMappingController.php:14
-* @route '/satusehat/mapping-alergi'
-*/
-index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: index.url(options),
-    method: 'head',
-})
-
 const satusehat_mapping_alergi = {
     substance: Object.assign(substance, substance),
     manifestation: Object.assign(manifestation, manifestation),
@@ -312,7 +268,6 @@ const satusehat_mapping_alergi = {
     lookup: Object.assign(lookup, lookup),
     store: Object.assign(store, store),
     destroy: Object.assign(destroy, destroy),
-    index: Object.assign(index, index),
 }
 
 export default satusehat_mapping_alergi

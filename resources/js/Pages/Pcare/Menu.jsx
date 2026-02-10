@@ -440,6 +440,20 @@ const cardsByTab = {
         </svg>
       )
     },
+    {
+      key: 'mcu',
+      title: 'MCU',
+      desc: 'Cek & input Medical Check Up',
+      href: '/pcare/layanan/mcu',
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 22s8-4 8-10V6l-8-4-8 4v6c0 6 8 10 8 10z" />
+          <path d="M12 7v6" />
+          <path d="M9 10h6" />
+        </svg>
+      )
+    },
   ],
   setting: [
     {
