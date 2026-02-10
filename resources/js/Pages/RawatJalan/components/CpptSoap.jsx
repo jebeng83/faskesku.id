@@ -496,7 +496,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         berat: '',
         spo2: '',
         gcs: '',
-        kesadaran: 'Compos mentis',
+        kesadaran: 'Compos Mentis',
         keluhan: '',
         pemeriksaan: '',
         alergi: '',
@@ -1027,7 +1027,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             tinggi: '',
             berat: '',
             gcs: '',
-            kesadaran: 'Compos mentis',
+            kesadaran: 'Compos Mentis',
             lingkar_perut: '',
             keluhan: '',
             pemeriksaan: '',
@@ -1040,7 +1040,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     };
 
     const kesadaranOptions = [
-        'Compos mentis','Somnolence','Sopor','Coma','Alert','Confusion','Voice','Pain','Unresponsive','Apatis','Delirium'
+        'Compos Mentis','Somnolence','Sopor','Coma','Alert','Confusion','Voice','Pain','Unresponsive','Apatis','Delirium'
     ];
 
     const handleSubmit = async (e) => {
@@ -1066,6 +1066,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     normalizedFormData[key] = '-';
                 }
             });
+            const kesadaranRaw = (normalizedFormData.kesadaran ?? '').toString().trim();
+            if (kesadaranRaw === '' || kesadaranRaw.toLowerCase() === 'compos mentis') {
+                normalizedFormData.kesadaran = 'Compos Mentis';
+            }
             const jenisInt = alergiJenis ? parseInt(alergiJenis, 10) : null;
             const hasAlergiData = !!(noRkmMedis && kdAlergi && String(kdAlergi).trim() !== '' && String(kdAlergi).trim() !== '-' && jenisInt);
             const alergiPayload = hasAlergiData ? {
@@ -3444,22 +3448,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                             </div>
                                         )}
 
-                                        {/* Button Kirim Kunjungan removed */}
-                                        {kunjunganResult && (
-                                            <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
-                                                {kunjunganResult.success ? (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                                        Berhasil: {kunjunganResult.message}
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center">
-                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        Gagal: {kunjunganResult.message}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
                             </div>
 
@@ -3691,7 +3679,23 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                             </div>
                         </div>
                         <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-between bg-white dark:bg-gray-800">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Tutup popup ini untuk kembali ke form pemeriksaan.</div>
+                            {kunjunganResult ? (
+                                <div className={`text-sm px-3 py-2 rounded border ${kunjunganResult.success ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'}`}>
+                                    {kunjunganResult.success ? (
+                                        <div className="flex items-center">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                                            Kunjungan berhasil dikirim ke PCare ({kunjunganResult.message})
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center">
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            Gagal: {kunjunganResult.message}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div />
+                            )}
                             <div className="flex items-center gap-2">
                                 <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
                                 <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
