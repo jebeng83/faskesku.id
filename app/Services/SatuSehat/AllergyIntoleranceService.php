@@ -35,6 +35,7 @@ class AllergyIntoleranceService
         }
 
         $noRM = $rawat->no_rkm_medis;
+        $practitionerId = $this->getPractitionerIhsIdFromKdDokter((string) ($rawat->kd_dokter ?? ''));
 
         // 2. Get patient allergies from alergi_pasien
         // Kita ambil semua riwayat alergi yang tercatat untuk pasien ini
@@ -69,7 +70,7 @@ class AllergyIntoleranceService
             $mapping = $this->mappingService->getMapping($alergi->kd_alergi, $alergi->nm_alergi);
             
             // Build FHIR Payload
-            $payload = $this->buildPayload($alergi, $mapping, $patientId, $encounterId);
+            $payload = $this->buildPayload($alergi, $mapping, $patientId, $encounterId, $practitionerId);
             
             // Send to Satu Sehat API
             $response = $this->satusehatRequest('POST', 'AllergyIntolerance', $payload, [
@@ -102,8 +103,9 @@ class AllergyIntoleranceService
     /**
      * Build FHIR AllergyIntolerance Resource
      */
-    private function buildPayload($alergi, $mapping, $patientId, $encounterId)
+    private function buildPayload($alergi, $mapping, $patientId, $encounterId, $practitionerId = null)
     {
+        $practitionerId = $practitionerId ? trim((string) $practitionerId) : '';
         $payload = [
             'resourceType' => 'AllergyIntolerance',
             'clinicalStatus' => [
@@ -128,6 +130,9 @@ class AllergyIntoleranceService
             'patient' => [
                 'reference' => 'Patient/' . $patientId
             ],
+            'recorder' => $practitionerId !== ''
+                ? ['reference' => 'Practitioner/' . $practitionerId]
+                : ['reference' => 'Patient/' . $patientId],
             'recordedDate' => now()->toIso8601String(),
         ];
 
@@ -191,6 +196,55 @@ class AllergyIntoleranceService
         }
         
         return $payload;
+    }
+
+    private function getPractitionerIhsIdFromKdDokter(string $kdDokter): ?string
+    {
+        $kdDokter = trim($kdDokter);
+        if ($kdDokter === '') {
+            return null;
+        }
+
+        $pegawai = DB::table('pegawai')->where('nik', $kdDokter)->first(['no_ktp', 'nama']);
+        $nikRaw = $pegawai ? (string) ($pegawai->no_ktp ?? '') : '';
+        $nik = preg_replace('/\D/', '', $nikRaw);
+        if ($nik === '' || strlen($nik) !== 16) {
+            return null;
+        }
+
+        $mapping = DB::table('satusehat_mapping_practitioner')->where('nik', $nik)->first(['satusehat_id']);
+        if ($mapping && ! empty($mapping->satusehat_id)) {
+            return (string) $mapping->satusehat_id;
+        }
+
+        try {
+            $response = $this->satusehatRequest('GET', 'Practitioner', null, [
+                'query' => ['identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $nik]
+            ]);
+
+            if (($response['ok'] ?? false) && ! empty($response['json']['entry'])) {
+                $practitioner = $response['json']['entry'][0]['resource'] ?? null;
+                $id = is_array($practitioner) ? (string) ($practitioner['id'] ?? '') : '';
+                if ($id !== '') {
+                    DB::table('satusehat_mapping_practitioner')->updateOrInsert(
+                        ['nik' => $nik],
+                        [
+                            'satusehat_id' => $id,
+                            'nama' => $pegawai ? (string) ($pegawai->nama ?? $kdDokter) : $kdDokter,
+                            'fhir_json' => json_encode($practitioner),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+
+                    return $id;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[SATU SEHAT][Allergy] Gagal search Practitioner', ['kd_dokter' => $kdDokter, 'error' => $e->getMessage()]);
+        }
+
+        return null;
     }
 
     // Helper methods for IHS IDs

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function PasswordBridingBpjs({ setting, flash }) {
@@ -181,5 +182,5 @@ export default function PasswordBridingBpjs({ setting, flash }) {
 }
 
 PasswordBridingBpjs.layout = (page) => (
-  <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>
+  <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>
 );

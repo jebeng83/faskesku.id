@@ -40,6 +40,9 @@ class ObservationService
         $patientId = $this->getPatientIhsIdFromNoRawat($noRawat);
         $encounterId = $this->getEncounterIhsIdFromNoRawat($noRawat);
         $practitionerId = $this->getPractitionerIhsIdFromNip($pemeriksaan->nip);
+        if (! $practitionerId) {
+            $practitionerId = $this->getPractitionerIhsIdFromNoRawat($noRawat);
+        }
 
         if (!$patientId) {
             Log::warning('[OBSERVATION] Patient IHS ID tidak ditemukan', ['no_rawat' => $noRawat]);
@@ -119,6 +122,66 @@ class ObservationService
         ];
     }
 
+    private function buildPerformer(string $patientId, ?string $practitionerId = null): array
+    {
+        $practitionerId = $practitionerId ? trim((string) $practitionerId) : '';
+        if ($practitionerId !== '') {
+            return [['reference' => 'Practitioner/' . $practitionerId]];
+        }
+
+        return [['reference' => 'Patient/' . $patientId]];
+    }
+
+    private function getPractitionerIhsIdFromNoRawat(string $noRawat): ?string
+    {
+        $kdDokter = (string) (DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('kd_dokter') ?? '');
+        $kdDokter = trim($kdDokter);
+        if ($kdDokter === '') {
+            return null;
+        }
+
+        $pegawai = DB::table('pegawai')->where('nik', $kdDokter)->first(['no_ktp', 'nama']);
+        $nikRaw = $pegawai ? (string) ($pegawai->no_ktp ?? '') : '';
+        $nik = preg_replace('/\D/', '', $nikRaw);
+        if ($nik === '' || strlen($nik) !== 16) {
+            return null;
+        }
+
+        $mapping = DB::table('satusehat_mapping_practitioner')->where('nik', $nik)->first(['satusehat_id']);
+        if ($mapping && ! empty($mapping->satusehat_id)) {
+            return (string) $mapping->satusehat_id;
+        }
+
+        try {
+            $response = $this->satusehatRequest('GET', 'Practitioner', null, [
+                'query' => ['identifier' => 'https://fhir.kemkes.go.id/id/nik|' . $nik]
+            ]);
+
+            if (($response['ok'] ?? false) && ! empty($response['json']['entry'])) {
+                $practitioner = $response['json']['entry'][0]['resource'] ?? null;
+                $id = is_array($practitioner) ? (string) ($practitioner['id'] ?? '') : '';
+                if ($id !== '') {
+                    DB::table('satusehat_mapping_practitioner')->updateOrInsert(
+                        ['nik' => $nik],
+                        [
+                            'satusehat_id' => $id,
+                            'nama' => $pegawai ? (string) ($pegawai->nama ?? $kdDokter) : $kdDokter,
+                            'fhir_json' => json_encode($practitioner),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+
+                    return $id;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[OBSERVATION] Gagal search Practitioner by no_rawat', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
+        }
+
+        return null;
+    }
+
     /**
      * Send Height Observation
      */
@@ -160,9 +223,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -216,9 +277,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -272,9 +331,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -344,9 +401,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -395,9 +450,7 @@ class ObservationService
             'valueString' => $keluhan
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -486,9 +539,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -542,9 +593,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -598,9 +647,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -654,9 +701,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 
@@ -710,9 +755,7 @@ class ObservationService
             ]
         ];
 
-        if ($practitionerId) {
-            $resource['performer'] = [['reference' => 'Practitioner/' . $practitionerId]];
-        }
+        $resource['performer'] = $this->buildPerformer($patientId, $practitionerId);
 
         $response = $this->satusehatRequest('POST', 'Observation', $resource, ['local_id' => $data->no_rawat]);
 

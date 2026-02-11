@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -161,4 +162,4 @@ export default function ReferensiKesadaran() {
 }
 
 // Render dalam AppLayout
-ReferensiKesadaran.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiKesadaran.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

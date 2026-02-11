@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, BuildingOfficeIcon, MagnifyingGlassIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import SearchableSelect from '@/Components/SearchableSelect';
@@ -344,4 +345,4 @@ export default function ReferensiFaskesRujukan() {
 }
 
 // Render dalam AppLayout
-ReferensiFaskesRujukan.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiFaskesRujukan.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -246,4 +247,4 @@ export default function ReferensiPoliMobileJkn() {
 }
 
 // Render dalam AppLayout
-ReferensiPoliMobileJkn.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiPoliMobileJkn.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

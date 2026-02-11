@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { Card, CardHeader, CardContent } from "@/Components/ui/Card";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -203,7 +204,7 @@ export default function MappingPractitioner() {
     };
 
     return (
-        <SidebarBriding title="Mapping Practitioner">
+        <LayoutUtama title="Mapping Practitioner" left={<BridingMenu />}>
             <motion.div
                 className="p-4 md:p-6 lg:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen"
                 variants={containerVariants}
@@ -438,6 +439,6 @@ export default function MappingPractitioner() {
 
                 <Toaster toasts={toasts} onRemove={removeToast} />
             </motion.div>
-        </SidebarBriding>
+        </LayoutUtama>
     );
 }

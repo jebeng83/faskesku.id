@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SatuSehat\PelayananRawatJalan;
 
+use App\Jobs\SatuSehat\ProcessCompositionJob;
 use App\Http\Controllers\Controller;
 use App\Traits\SatuSehatTraits;
 use Illuminate\Http\Request;
@@ -198,11 +199,23 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
             ];
-            if ($practitionerId !== '') {
-                $body['asserter'] = ['reference' => 'Practitioner/'.$practitionerId];
-            }
+            $recorderRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+            $body['asserter'] = ['reference' => $recorderRef];
+            $body['recorder'] = ['reference' => $recorderRef];
             if ($recordedDate !== '') {
-                $body['recordedDate'] = $recordedDate;
+                try {
+                    $dt = \Carbon\Carbon::parse($recordedDate, 'Asia/Jakarta');
+                    $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
+                    if ($dt->lt($min)) {
+                        $dt = $min;
+                    }
+                    $now = \Carbon\Carbon::now('Asia/Jakarta');
+                    if ($dt->gt($now)) {
+                        $dt = $now;
+                    }
+                    $body['recordedDate'] = $dt->toIso8601String();
+                } catch (\Throwable) {
+                }
             }
             if ($onsetDateTime !== '') {
                 $body['onsetDateTime'] = $onsetDateTime;
@@ -233,6 +246,7 @@ class SatuSehatRajalController extends Controller
         $type = trim((string) $request->input('type', ''));
         $patientId = trim((string) $request->input('patient_id', ''));
         $encounterId = trim((string) $request->input('encounter_id', ''));
+        $practitionerId = trim((string) $request->input('practitioner_id', ''));
         $effectiveDateTime = trim((string) $request->input('effectiveDateTime', ''));
         $status = trim((string) $request->input('status', 'final'));
         $resource = $request->input('resource');
@@ -351,6 +365,19 @@ class SatuSehatRajalController extends Controller
             }
         }
 
+        $hasPerformer = isset($body['performer']) && is_array($body['performer']) && ! empty($body['performer']);
+        if (! $hasPerformer) {
+            if ($practitionerId !== '') {
+                $body['performer'] = [[
+                    'reference' => 'Practitioner/'.$practitionerId,
+                ]];
+            } elseif ($patientId !== '') {
+                $body['performer'] = [[
+                    'reference' => 'Patient/'.$patientId,
+                ]];
+            }
+        }
+
         $res = $this->satusehatRequest('POST', 'Observation', $body, [
             'prefer_representation' => true,
         ]);
@@ -405,11 +432,10 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
             ];
-            if ($practitionerId !== '') {
-                $body['performer'] = [[
-                    'actor' => ['reference' => 'Practitioner/'.$practitionerId],
-                ]];
-            }
+            $performerRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+            $body['performer'] = [[
+                'actor' => ['reference' => $performerRef],
+            ]];
             if ($performedDateTime !== '') {
                 $body['performedDateTime'] = $performedDateTime;
             }
@@ -446,10 +472,10 @@ class SatuSehatRajalController extends Controller
         if (is_array($resource)) {
             $body = $resource;
         } else {
-            if ($patientId === '' || $encounterId === '' || $practitionerId === '') {
+            if ($patientId === '' || $encounterId === '') {
                 return response()->json([
                     'ok' => false,
-                    'message' => 'patient_id, encounter_id, dan practitioner_id wajib diisi',
+                    'message' => 'patient_id dan encounter_id wajib diisi',
                 ], 422);
             }
             $sections = [];
@@ -516,7 +542,9 @@ class SatuSehatRajalController extends Controller
                 'title' => $title,
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
-                'author' => [['reference' => 'Practitioner/'.$practitionerId]],
+                'author' => [[
+                    'reference' => $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId,
+                ]],
                 'section' => $sections,
             ];
             if ($date !== '') {
@@ -718,6 +746,25 @@ class SatuSehatRajalController extends Controller
                 'encounter_id' => $savedId,
                 'status' => $update['status'],
             ]);
+
+            if (strtolower((string) ($payload['status'] ?? '')) === 'finished') {
+                $patientRef = (string) ($payload['subject']['reference'] ?? '');
+                $patientId = strpos($patientRef, 'Patient/') === 0 ? substr($patientRef, strlen('Patient/')) : '';
+                $pracRef = '';
+                if (is_array($payload['participant'] ?? null) && isset($payload['participant'][0]['individual']['reference'])) {
+                    $pracRef = (string) $payload['participant'][0]['individual']['reference'];
+                }
+                $practitionerId = strpos($pracRef, 'Practitioner/') === 0 ? substr($pracRef, strlen('Practitioner/')) : '';
+                if ($patientId !== '') {
+                    ProcessCompositionJob::dispatch(
+                        $no_rawat,
+                        $savedId,
+                        $patientId,
+                        $practitionerId,
+                        (string) ($period['end'] ?? '')
+                    );
+                }
+            }
         } catch (\Throwable $e) {
             Log::channel('daily')->error('[SATUSEHAT][Encounter PUT] store failed', [
                 'error' => $e->getMessage(),
@@ -855,7 +902,7 @@ class SatuSehatRajalController extends Controller
             ->where('no_rawat', $no_rawat)
             ->orderByDesc('tgl_perawatan')
             ->orderByDesc('jam_rawat')
-            ->first(['tgl_perawatan', 'jam_rawat', 'keluhan', 'pemeriksaan', 'nadi', 'tinggi', 'berat', 'kesadaran', 'penilaian', 'instruksi', 'alergi']);
+            ->first(['tgl_perawatan', 'jam_rawat', 'keluhan', 'pemeriksaan', 'suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'penilaian', 'instruksi', 'alergi']);
 
         $eff = '';
         if ($pem && ! empty($pem->tgl_perawatan) && ! empty($pem->jam_rawat)) {
@@ -895,19 +942,76 @@ class SatuSehatRajalController extends Controller
             }
         }
         if ($practitionerIdLocal === '') {
-            return response()->json([
-                'ok' => false,
-                'code' => 'PRACTITIONER_REQUIRED',
-                'message' => 'Performer wajib Practitioner dari petugas pemeriksaan',
-                'detail' => $detail,
+            Log::channel('daily')->warning('[SATUSEHAT][Observation] Practitioner performer tidak ditemukan, fallback ke Patient', [
                 'no_rawat' => $no_rawat,
+                'detail' => $detail,
                 'nip' => $petugas->nip ?? null,
                 'nik' => $nik ?: null,
-            ], 422);
+            ]);
+        } else {
+            $practitionerId = $practitionerIdLocal;
         }
-        $practitionerId = $practitionerIdLocal;
+        $performerRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
 
         $createdObs = [];
+        if ($pem && is_numeric($pem->suhu_tubuh) && (float) $pem->suhu_tubuh > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs']]]],
+                'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '8310-5', 'display' => 'Body temperature']]],
+                'subject' => ['reference' => 'Patient/'.$patientId],
+                'encounter' => ['reference' => 'Encounter/'.$encounterId],
+                'valueQuantity' => ['value' => (float) $pem->suhu_tubuh, 'unit' => 'Cel', 'system' => 'http://unitsofmeasure.org', 'code' => 'Cel'],
+                'performer' => [['reference' => $performerRef]],
+            ];
+            if ($eff !== '') {
+                $body['effectiveDateTime'] = $eff;
+            }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, ['prefer_representation' => true]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) {
+                $createdObs[] = (string) ($res['json']['id'] ?? '');
+                Log::channel('daily')->info('[SATUSEHAT][Observation] temperature', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
+            }
+        }
+        if ($pem && ! empty($pem->tensi)) {
+            $raw = trim((string) $pem->tensi);
+            $systolic = null;
+            $diastolic = null;
+            if (preg_match('/^(\d{2,3})\s*\/\s*(\d{2,3})$/', $raw, $m)) {
+                $systolic = (float) $m[1];
+                $diastolic = (float) $m[2];
+            }
+            if ($systolic && $diastolic && $systolic > 0 && $diastolic > 0) {
+                $body = [
+                    'resourceType' => 'Observation',
+                    'status' => 'final',
+                    'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs']]]],
+                    'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '85354-9', 'display' => 'Blood pressure panel with two readings']]],
+                    'subject' => ['reference' => 'Patient/'.$patientId],
+                    'encounter' => ['reference' => 'Encounter/'.$encounterId],
+                    'component' => [
+                        [
+                            'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '8480-6', 'display' => 'Systolic blood pressure']]],
+                            'valueQuantity' => ['value' => $systolic, 'unit' => 'mmHg', 'system' => 'http://unitsofmeasure.org', 'code' => 'mm[Hg]'],
+                        ],
+                        [
+                            'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '8462-4', 'display' => 'Diastolic blood pressure']]],
+                            'valueQuantity' => ['value' => $diastolic, 'unit' => 'mmHg', 'system' => 'http://unitsofmeasure.org', 'code' => 'mm[Hg]'],
+                        ],
+                    ],
+                    'performer' => [['reference' => $performerRef]],
+                ];
+                if ($eff !== '') {
+                    $body['effectiveDateTime'] = $eff;
+                }
+                $res = $this->satusehatRequest('POST', 'Observation', $body, ['prefer_representation' => true]);
+                if ($res['ok'] && is_array($res['json'] ?? null)) {
+                    $createdObs[] = (string) ($res['json']['id'] ?? '');
+                    Log::channel('daily')->info('[SATUSEHAT][Observation] blood_pressure', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
+                }
+            }
+        }
         if ($pem && is_numeric($pem->nadi) && (float) $pem->nadi > 0) {
             $body = [
                 'resourceType' => 'Observation',
@@ -917,7 +1021,7 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
                 'valueQuantity' => ['value' => (float) $pem->nadi, 'unit' => '/min', 'system' => 'http://unitsofmeasure.org', 'code' => '/min'],
-                'performer' => [['reference' => 'Practitioner/'.$practitionerId]],
+                'performer' => [['reference' => $performerRef]],
             ];
             if ($eff !== '') {
                 $body['effectiveDateTime'] = $eff;
@@ -937,7 +1041,7 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
                 'valueQuantity' => ['value' => (float) $pem->tinggi, 'unit' => 'cm', 'system' => 'http://unitsofmeasure.org', 'code' => 'cm'],
-                'performer' => [['reference' => 'Practitioner/'.$practitionerId]],
+                'performer' => [['reference' => $performerRef]],
             ];
             if ($eff !== '') {
                 $body['effectiveDateTime'] = $eff;
@@ -957,7 +1061,7 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
                 'valueQuantity' => ['value' => (float) $pem->berat, 'unit' => 'kg', 'system' => 'http://unitsofmeasure.org', 'code' => 'kg'],
-                'performer' => [['reference' => 'Practitioner/'.$practitionerId]],
+                'performer' => [['reference' => $performerRef]],
             ];
             if ($eff !== '') {
                 $body['effectiveDateTime'] = $eff;
@@ -966,6 +1070,66 @@ class SatuSehatRajalController extends Controller
             if ($res['ok'] && is_array($res['json'] ?? null)) {
                 $createdObs[] = (string) ($res['json']['id'] ?? '');
                 Log::channel('daily')->info('[SATUSEHAT][Observation] weight', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
+            }
+        }
+        if ($pem && is_numeric($pem->respirasi) && (float) $pem->respirasi > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs']]]],
+                'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '9279-1', 'display' => 'Respiratory rate']]],
+                'subject' => ['reference' => 'Patient/'.$patientId],
+                'encounter' => ['reference' => 'Encounter/'.$encounterId],
+                'valueQuantity' => ['value' => (float) $pem->respirasi, 'unit' => '/min', 'system' => 'http://unitsofmeasure.org', 'code' => '/min'],
+                'performer' => [['reference' => $performerRef]],
+            ];
+            if ($eff !== '') {
+                $body['effectiveDateTime'] = $eff;
+            }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, ['prefer_representation' => true]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) {
+                $createdObs[] = (string) ($res['json']['id'] ?? '');
+                Log::channel('daily')->info('[SATUSEHAT][Observation] respiratory_rate', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
+            }
+        }
+        if ($pem && is_numeric($pem->spo2) && (float) $pem->spo2 > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs']]]],
+                'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '59408-5', 'display' => 'Oxygen saturation in Arterial blood by Pulse oximetry']]],
+                'subject' => ['reference' => 'Patient/'.$patientId],
+                'encounter' => ['reference' => 'Encounter/'.$encounterId],
+                'valueQuantity' => ['value' => (float) $pem->spo2, 'unit' => '%', 'system' => 'http://unitsofmeasure.org', 'code' => '%'],
+                'performer' => [['reference' => $performerRef]],
+            ];
+            if ($eff !== '') {
+                $body['effectiveDateTime'] = $eff;
+            }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, ['prefer_representation' => true]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) {
+                $createdObs[] = (string) ($res['json']['id'] ?? '');
+                Log::channel('daily')->info('[SATUSEHAT][Observation] spo2', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
+            }
+        }
+        if ($pem && is_numeric($pem->gcs) && (float) $pem->gcs > 0) {
+            $body = [
+                'resourceType' => 'Observation',
+                'status' => 'final',
+                'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/observation-category', 'code' => 'vital-signs']]]],
+                'code' => ['coding' => [['system' => 'http://loinc.org', 'code' => '9269-2', 'display' => 'Glasgow coma score total']]],
+                'subject' => ['reference' => 'Patient/'.$patientId],
+                'encounter' => ['reference' => 'Encounter/'.$encounterId],
+                'valueQuantity' => ['value' => (float) $pem->gcs, 'unit' => '{score}', 'system' => 'http://unitsofmeasure.org', 'code' => '{score}'],
+                'performer' => [['reference' => $performerRef]],
+            ];
+            if ($eff !== '') {
+                $body['effectiveDateTime'] = $eff;
+            }
+            $res = $this->satusehatRequest('POST', 'Observation', $body, ['prefer_representation' => true]);
+            if ($res['ok'] && is_array($res['json'] ?? null)) {
+                $createdObs[] = (string) ($res['json']['id'] ?? '');
+                Log::channel('daily')->info('[SATUSEHAT][Observation] gcs', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
             }
         }
         if ($pem && ! empty($pem->kesadaran)) {
@@ -977,7 +1141,7 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
                 'valueString' => trim((string) $pem->kesadaran),
-                'performer' => [['reference' => 'Practitioner/'.$practitionerId]],
+                'performer' => [['reference' => $performerRef]],
             ];
             if ($eff !== '') {
                 $body['effectiveDateTime'] = $eff;
@@ -999,9 +1163,9 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
             ];
-            if ($practitionerId !== '') {
-                $body['asserter'] = ['reference' => 'Practitioner/'.$practitionerId];
-            }
+            $recorderRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+            $body['asserter'] = ['reference' => $recorderRef];
+            $body['recorder'] = ['reference' => $recorderRef];
             $res = $this->satusehatRequest('POST', 'Condition', $body, ['prefer_representation' => true]);
             if ($res['ok'] && is_array($res['json'] ?? null)) {
                 $createdCond[] = (string) ($res['json']['id'] ?? '');
@@ -1017,9 +1181,9 @@ class SatuSehatRajalController extends Controller
                 'subject' => ['reference' => 'Patient/'.$patientId],
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
             ];
-            if ($practitionerId !== '') {
-                $body['asserter'] = ['reference' => 'Practitioner/'.$practitionerId];
-            }
+            $recorderRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+            $body['asserter'] = ['reference' => $recorderRef];
+            $body['recorder'] = ['reference' => $recorderRef];
             $res = $this->satusehatRequest('POST', 'Condition', $body, ['prefer_representation' => true]);
             if ($res['ok'] && is_array($res['json'] ?? null)) {
                 $createdCond[] = (string) ($res['json']['id'] ?? '');
@@ -1043,7 +1207,7 @@ class SatuSehatRajalController extends Controller
             if ($eff !== '') {
                 $body['recordedDate'] = $eff;
             }
-            $res = $this->satusehatRequest('POST', 'AllergyIntolerance', $body, ['prefer_representation' => true]);
+            $res = $this->satusehatRequest('POST', 'AllergyIntolerance', $body, ['prefer_representation' => true, 'local_id' => $no_rawat]);
             if ($res['ok'] && is_array($res['json'] ?? null)) {
                 $allergyId = (string) ($res['json']['id'] ?? '');
                 Log::channel('daily')->info('[SATUSEHAT][AllergyIntolerance] created', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
@@ -1061,13 +1225,12 @@ class SatuSehatRajalController extends Controller
                 'encounter' => ['reference' => 'Encounter/'.$encounterId],
                 'identifier' => [['system' => 'http://pcare.bpjs.go.id/rujukan/noKunjungan', 'value' => (string) $rujuk->noKunjungan]],
             ];
-            if ($practitionerId !== '') {
-                $body['performer'] = [['actor' => ['reference' => 'Practitioner/'.$practitionerId]]];
-            }
+            $performerRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+            $body['performer'] = [['actor' => ['reference' => $performerRef]]];
             if ($eff !== '') {
                 $body['performedDateTime'] = $eff;
             }
-            $res = $this->satusehatRequest('POST', 'Procedure', $body, ['prefer_representation' => true]);
+            $res = $this->satusehatRequest('POST', 'Procedure', $body, ['prefer_representation' => true, 'local_id' => $no_rawat]);
             if ($res['ok'] && is_array($res['json'] ?? null)) {
                 $procId = (string) ($res['json']['id'] ?? '');
                 Log::channel('daily')->info('[SATUSEHAT][Procedure] rujukan', ['no_rawat' => $no_rawat, 'id' => $res['json']['id'] ?? null]);
@@ -1132,64 +1295,39 @@ class SatuSehatRajalController extends Controller
             $objectiveRefs[] = 'AllergyIntolerance/'.$allergyId;
         }
 
-        $compBody = [
-            'resourceType' => 'Composition',
-            'status' => 'final',
-            'type' => ['coding' => [['system' => 'http://loinc.org', 'code' => '11506-3', 'display' => 'Progress note']]],
-            'title' => 'RME Rawat Jalan',
-            'subject' => ['reference' => 'Patient/'.$patientId],
-            'encounter' => ['reference' => 'Encounter/'.$encounterId],
-            'author' => $practitionerId !== '' ? [['reference' => 'Practitioner/'.$practitionerId]] : [],
-            'section' => [],
-        ];
-        if ($eff !== '') {
-            $compBody['date'] = $eff;
-        }
-        if ($subjectiveText !== '' || ! empty($subjectiveRefs)) {
-            $sec = ['title' => 'Subjective'];
-            if ($subjectiveText !== '') {
-                $sec['text'] = ['status' => 'generated', 'div' => $subjectiveText];
-            } if (! empty($subjectiveRefs)) {
-                $sec['entry'] = array_map(fn ($r) => ['reference' => $r], $subjectiveRefs);
-            } $compBody['section'][] = $sec;
-        }
-        if ($objectiveText !== '' || ! empty($objectiveRefs)) {
-            $sec = ['title' => 'Objective'];
-            if ($objectiveText !== '') {
-                $sec['text'] = ['status' => 'generated', 'div' => $objectiveText];
-            } if (! empty($objectiveRefs)) {
-                $sec['entry'] = array_map(fn ($r) => ['reference' => $r], $objectiveRefs);
-            } $compBody['section'][] = $sec;
-        }
-        if ($assessmentText !== '' || ! empty($assessmentRefs)) {
-            $sec = ['title' => 'Assessment'];
-            if ($assessmentText !== '') {
-                $sec['text'] = ['status' => 'generated', 'div' => $assessmentText];
-            } if (! empty($assessmentRefs)) {
-                $sec['entry'] = array_map(fn ($r) => ['reference' => $r], $assessmentRefs);
-            } $compBody['section'][] = $sec;
-        }
-        if ($planText !== '' || ! empty($planRefs)) {
-            $sec = ['title' => 'Plan'];
-            if ($planText !== '') {
-                $sec['text'] = ['status' => 'generated', 'div' => $planText];
-            } if (! empty($planRefs)) {
-                $sec['entry'] = array_map(fn ($r) => ['reference' => $r], $planRefs);
-            } $compBody['section'][] = $sec;
-        }
+        $compositionService = app(\App\Services\SatuSehat\CompositionService::class);
+        $compSend = $compositionService->sendRajalCompositionFromSoap(
+            $no_rawat,
+            $patientId,
+            $encounterId,
+            $practitionerId,
+            $eff,
+            [
+                'subjective' => $subjectiveText,
+                'objective' => $objectiveText,
+                'assessment' => $assessmentText,
+                'plan' => $planText,
+            ],
+            [
+                'subjective' => $subjectiveRefs,
+                'objective' => $objectiveRefs,
+                'assessment' => $assessmentRefs,
+                'plan' => $planRefs,
+            ]
+        );
 
-        $compRes = $this->satusehatRequest('POST', 'Composition', $compBody, ['prefer_representation' => true]);
-        if (! $compRes['ok']) {
+        if (! ($compSend['ok'] ?? false)) {
             return response()->json([
                 'ok' => false,
-                'status' => $compRes['status'],
-                'error' => $compRes['error'],
-                'body' => $compRes['body'] ?? null,
-            ], $compRes['status'] ?: 400);
+                'status' => $compSend['status'] ?? 400,
+                'error' => $compSend['message'] ?? 'Gagal kirim Composition',
+                'body' => $compSend['body'] ?? null,
+            ], (int) ($compSend['status'] ?? 400));
         }
-        $compId = is_array($compRes['json'] ?? null) ? (string) ($compRes['json']['id'] ?? '') : '';
+
+        $compId = (string) ($compSend['composition_id'] ?? '');
         if ($compId !== '') {
-            Log::channel('daily')->info('[SATUSEHAT][Composition] created', ['no_rawat' => $no_rawat, 'id' => $compId]);
+            Log::channel('daily')->info('[SATUSEHAT][Composition] '.$compSend['action'], ['no_rawat' => $no_rawat, 'id' => $compId]);
         }
 
         $entries = [];

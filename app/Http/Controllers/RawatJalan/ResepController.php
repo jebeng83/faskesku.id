@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\RawatJalan;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SatuSehat\ProcessMedicationDispenseJob;
+use App\Jobs\SatuSehat\ProcessMedicationRequestJob;
 use App\Models\RawatJalan\Databarang;
 use App\Models\RawatJalan\Gudangbarang;
 use App\Models\RawatJalan\ResepDokter;
@@ -138,6 +140,8 @@ class ResepController extends Controller
             $resepDetails = ResepDokter::saveResepDetail($resepObat->no_resep, $request->items);
 
             DB::commit();
+
+            ProcessMedicationRequestJob::dispatch($resepObat->no_resep);
 
             return response()->json([
                 'success' => true,
@@ -283,6 +287,8 @@ class ResepController extends Controller
             }
 
             DB::commit();
+
+            ProcessMedicationRequestJob::dispatch($resepObat->no_resep);
 
             return response()->json([
                 'success' => true,
@@ -466,6 +472,8 @@ class ResepController extends Controller
 
             DB::commit();
 
+            ProcessMedicationRequestJob::dispatch($resepObat->no_resep);
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -582,6 +590,8 @@ class ResepController extends Controller
             }
 
             DB::commit();
+
+            ProcessMedicationRequestJob::dispatch($resep->no_resep);
 
             return response()->json([
                 'success' => true,
@@ -1047,6 +1057,8 @@ class ResepController extends Controller
             $resep->save();
 
             DB::commit();
+
+            ProcessMedicationDispenseJob::dispatch($resep->no_resep, $resep->no_rawat, $nowDate, $nowTime);
 
             return response()->json([
                 'success' => true,

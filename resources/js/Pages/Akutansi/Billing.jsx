@@ -84,6 +84,40 @@ function parseIDRInput(s) {
     return Number(d || 0);
 }
 
+function getTimeZoneOffsetMinutes(date, timeZone) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    }).formatToParts(date);
+
+    const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+    const asUtc = Date.UTC(
+        Number(map.year),
+        Number(map.month) - 1,
+        Number(map.day),
+        Number(map.hour),
+        Number(map.minute),
+        Number(map.second)
+    );
+
+    return Math.round((asUtc - date.getTime()) / 60000);
+}
+
+function getTimeZoneOffsetString(timeZone) {
+    const offsetMinutes = getTimeZoneOffsetMinutes(new Date(), timeZone);
+    const sign = offsetMinutes >= 0 ? "+" : "-";
+    const abs = Math.abs(offsetMinutes);
+    const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+    const mm = String(abs % 60).padStart(2, "0");
+    return `${sign}${hh}:${mm}`;
+}
+
 // Fungsi untuk normalisasi tanggal ke format yyyy-MM-dd untuk input type="date"
 // Menggunakan timezone aplikasi (Asia/Jakarta) untuk konsistensi
 function normalizeDateForInput(dateValue, useAppTimezone = true) {
@@ -1145,13 +1179,22 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 2) Buat nota_jalan baru
         let noNota = null;
         try {
-            const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
+            const notaPayload = {
                 no_rawat: noRawat,
                 tanggal: todayDateString(),
                 jam:
                     nowDateTimeString().split(" ")[1] ||
                     new Date().toTimeString().slice(0, 8),
-            });
+            };
+            if (bayarNormalized > 0 && akunBayar?.nama_bayar) {
+                notaPayload.nama_bayar = akunBayar.nama_bayar;
+                notaPayload.besar_bayar = bayarNormalized;
+            }
+
+            const createNotaRes = await axios.post(
+                "/api/akutansi/nota-jalan",
+                notaPayload
+            );
             noNota = createNotaRes?.data?.no_nota || null;
             if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
         } catch (_e) {
@@ -1246,6 +1289,9 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         const encounterId = encRes?.data?.encounter_id;
 
                         if (encounterId) {
+                            const tzOffset = getTimeZoneOffsetString(
+                                getAppTimeZone()
+                            );
                             // 2. Update Encounter ke status 'finished' dengan period.end dari pemeriksaan_ralan terakhir
                             await axios.put(
                                 `/api/satusehat/rajal/encounter/by-rawat/${encodeURIComponent(
@@ -1254,7 +1300,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 {
                                     encounter_id: encounterId,
                                     status: "finished",
-                                    tz_offset: "+07:00",
+                                    tz_offset: tzOffset,
                                 }
                             );
 
@@ -1264,7 +1310,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                     noRawat
                                 )}`,
                                 {
-                                    tz_offset: "+07:00",
+                                    tz_offset: tzOffset,
                                 }
                             );
                         }

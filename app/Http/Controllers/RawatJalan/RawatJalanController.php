@@ -1042,6 +1042,9 @@ class RawatJalanController extends Controller
                 \App\Jobs\SatuSehat\ProcessConditionJob::dispatch($no_rawat, $item['kode'], 'Ralan')
                     ->afterResponse();
             }
+
+            \App\Jobs\SatuSehat\ProcessProcedureJob::dispatch($no_rawat, 'Ralan')
+                ->afterResponse();
             
             \Illuminate\Support\Facades\Log::info('[SATU SEHAT] Jobs created for conditions', [
                 'no_rawat' => $no_rawat,

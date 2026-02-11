@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import SearchableSelect from '@/Components/SearchableSelect';
 
 // Helper: format yyyy-mm-dd (HTML date) -> dd-mm-yyyy (PCare)
@@ -609,4 +610,4 @@ export default function LayananPcare() {
 }
 
 // Render dalam AppLayout
-LayananPcare.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+LayananPcare.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

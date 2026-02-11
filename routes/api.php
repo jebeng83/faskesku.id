@@ -50,6 +50,7 @@ use App\Http\Controllers\SDKI\KeluhanSubyektifController;
 use App\Http\Controllers\SDKI\DataObyektifController;
 use App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController;
 use App\Http\Controllers\SatuSehat\SatuSehatMedicationMappingController;
+use App\Http\Controllers\SatuSehat\PelayananRawatJalan\ProcedureTindakanController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Http\Request;
@@ -868,6 +869,9 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::post('/condition', [SatuSehatRajalController::class, 'createCondition'])->name('api.satusehat.rajal.condition.create');
             Route::post('/observation', [SatuSehatRajalController::class, 'createObservation'])->name('api.satusehat.rajal.observation.create');
             Route::post('/procedure', [SatuSehatRajalController::class, 'createProcedure'])->name('api.satusehat.rajal.procedure.create');
+            Route::post('/procedure/by-rawat/{no_rawat}', [ProcedureTindakanController::class, 'sendByRawat'])
+                ->where('no_rawat', '.*')
+                ->name('api.satusehat.rajal.procedure.send-by-rawat');
             Route::post('/composition', [SatuSehatRajalController::class, 'createComposition'])->name('api.satusehat.rajal.composition.create');
             Route::post('/bundle', [SatuSehatRajalController::class, 'createBundle'])->name('api.satusehat.rajal.bundle.create');
             Route::post('/pipeline/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'pipelineByRawat'])

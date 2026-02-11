@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import LayoutUtama from '@/Pages/LayoutUtama';
-import LanjutanRegistrasiSidebar from '@/Components/LanjutanRegistrasiSidebar';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -275,7 +275,7 @@ export default function CekPesertaPcareNik() {
 
 // Render dalam LanjutanRegistrasiLayout
 CekPesertaPcareNik.layout = (page) => (
-  <LayoutUtama title="Layanan PCare" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: 'cek_peserta_bpjs' }} />}> 
+  <LayoutUtama title="Layanan PCare" left={<BridingMenu />}>
     {page}
   </LayoutUtama>
 );

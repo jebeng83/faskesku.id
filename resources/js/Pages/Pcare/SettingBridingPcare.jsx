@@ -1,7 +1,8 @@
 import React from "react";
 import { Head, useForm, Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 
 export default function SettingBridingPcare({ setting, flash }) {
     // Animations
@@ -284,5 +285,5 @@ export default function SettingBridingPcare({ setting, flash }) {
 }
 
 SettingBridingPcare.layout = (page) => (
-    <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>
+    <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>
 );

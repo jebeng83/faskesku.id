@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, IdentificationIcon } from '@heroicons/react/24/outline';
 
@@ -158,4 +159,4 @@ export default function ReferensiSpesialis() {
   );
 }
 
-ReferensiSpesialis.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiSpesialis.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

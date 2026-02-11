@@ -16,17 +16,8 @@ import {
 } from "lucide-react";
 import usePermission from "@/hooks/usePermission";
 
-export default function SidebarBriding({ title = "Briding", children, wide = false }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+function useBridingNavigation() {
   const { permissions, can } = usePermission();
-
-  const items = useMemo(() => [
-    { label: "Dashboard", href: "/dashboard", icon: Squares2X2Icon, permission: "dashboard.index" },
-    { label: "Home", href: safeRoute("pcare.index", "/pcare"), icon: HomeIcon, permission: "pcare.index" },
-  ], []);
-
-  const filteredTop = useMemo(() => items.filter((it) => !it.permission || can(it.permission)), [items, permissions]);
 
   function safeRoute(name, fallback) {
     try {
@@ -63,6 +54,10 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
         "satusehat.interoperabilitas.rajal.encounter",
         "/satusehat/interoperabilitas/rajal/encounter"
       ),
+      ssInteropRajalProsedurTindakan: safeRoute(
+        "satusehat.interoperabilitas.rajal.prosedur_tindakan",
+        "/satusehat/interoperabilitas/rajal/prosedur-tindakan"
+      ),
       ssMapPractitioner: safeRoute(
         "satusehat.mapping-practitioner",
         "/satusehat/mapping-practitioner"
@@ -77,6 +72,19 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       ),
     }),
     []
+  );
+
+  const items = useMemo(
+    () => [
+      { label: "Dashboard", href: "/dashboard", icon: Squares2X2Icon, permission: "dashboard.index" },
+      { label: "Home", href: safeRoute("pcare.index", "/pcare"), icon: HomeIcon, permission: "pcare.index" },
+    ],
+    []
+  );
+
+  const filteredTop = useMemo(
+    () => items.filter((it) => !it.permission || can(it.permission)),
+    [items, permissions]
   );
 
   const pcareLinks = useMemo(
@@ -106,11 +114,13 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       { href: paths.ssMapObat, label: "Mapping Obat", icon: Pill, permission: "satusehat.index" },
       { href: paths.ssPrPatient, label: "Referensi Pasien", icon: User, permission: "satusehat.index" },
       { href: paths.ssInteropRajalEncounter, label: "Encounter Rajal", icon: HeartPulse, permission: "satusehat.index" },
+      { href: paths.ssInteropRajalProsedurTindakan, label: "Prosedur/Tindakan Rajal", icon: NotebookTabs, permission: "satusehat.index" },
     ].filter((l) => !l.permission || can(l.permission)),
     [paths, permissions]
   );
 
   const isActive = (href) => {
+    if (typeof window === "undefined") return false;
     try {
       const u = new URL(href, window.location.origin);
       return (window.location.pathname).startsWith(u.pathname);
@@ -118,6 +128,66 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
       return (window.location.pathname).startsWith(href);
     }
   };
+
+  return { filteredTop, pcareLinks, ssLinks, isActive };
+}
+
+export function BridingMenu() {
+  const { filteredTop, pcareLinks, ssLinks, isActive } = useBridingNavigation();
+
+  return (
+    <div className="space-y-1">
+      {filteredTop.map((it) => (
+        <Link
+          key={it.label}
+          href={it.href}
+          className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(it.href) ? "bg-white/15 text-white" : "text-white/90 hover:bg-white/10"}`}
+        >
+          <it.icon className="w-5 h-5" />
+          <span className="text-sm">{it.label}</span>
+        </Link>
+      ))}
+
+      {pcareLinks.length > 0 && (
+        <div className="mt-2">
+          <div className="px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Bridging PCare</div>
+          {pcareLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "text-white/90 hover:bg-white/10"}`}
+            >
+              <l.icon className="w-4 h-4" />
+              <span className="text-sm">{l.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {ssLinks.length > 0 && (
+        <div className="mt-2">
+          <div className="mt-4 px-3 py-2 text-[12px] uppercase tracking-wide text-white/80">Bridging Satu Sehat</div>
+          {ssLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-label={l.label}
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "text-white/90 hover:bg-white/10"}`}
+            >
+              <l.icon className="w-4 h-4" />
+              <span className="text-sm">{l.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function SidebarBriding({ title = "Briding", children, wide = false }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { filteredTop, pcareLinks, ssLinks, isActive } = useBridingNavigation();
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">

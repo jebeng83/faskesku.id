@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/api.php:138
+* @see routes/api.php:139
 * @route '/api/dev/bootstrap/reg-periksa'
 */
 export const regPeriksa = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -14,7 +14,7 @@ regPeriksa.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see routes/api.php:138
+* @see routes/api.php:139
 * @route '/api/dev/bootstrap/reg-periksa'
 */
 regPeriksa.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ regPeriksa.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:138
+* @see routes/api.php:139
 * @route '/api/dev/bootstrap/reg-periksa'
 */
 regPeriksa.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -31,7 +31,7 @@ regPeriksa.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/api.php:203
+* @see routes/api.php:204
 * @route '/api/dev/bootstrap/alergi-master'
 */
 export const alergiMaster = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -45,7 +45,7 @@ alergiMaster.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see routes/api.php:203
+* @see routes/api.php:204
 * @route '/api/dev/bootstrap/alergi-master'
 */
 alergiMaster.url = (options?: RouteQueryOptions) => {
@@ -53,7 +53,7 @@ alergiMaster.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:203
+* @see routes/api.php:204
 * @route '/api/dev/bootstrap/alergi-master'
 */
 alergiMaster.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

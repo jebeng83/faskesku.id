@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 
 // Menu SatuSehat
 // Fokus ke menu yang sudah tersedia (Prerequisites)
@@ -163,7 +164,7 @@ const cardsByTab = {
 export default function MenuSatuSehat() {
     const [activeTab, setActiveTab] = useState("prereq");
     return (
-        <SidebarPengaturan title="Pengaturan">
+        <LayoutUtama title="Pengaturan" left={<BridingMenu />}>
             <div className="px-4 sm:px-6 lg:px-8 py-6">
                 {/* Header */}
                 <div className="mb-4 flex items-center justify-between">
@@ -242,6 +243,6 @@ export default function MenuSatuSehat() {
                     Tip: Klik kartu untuk membuka halaman pengelolaan.
                 </div>
             </div>
-        </SidebarPengaturan>
+        </LayoutUtama>
     );
 }

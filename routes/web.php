@@ -3202,6 +3202,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/Encounter');
         })->name('interoperabilitas.rajal.encounter');
 
+        Route::get('/interoperabilitas/rajal/prosedur-tindakan', function () {
+            return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/ProsedurTindakan');
+        })->name('interoperabilitas.rajal.prosedur_tindakan');
+
         // Mapping Routes (Inertia pages)
         Route::get('/mapping-practitioner', function () {
             return Inertia::render('SatuSehat/Prerequisites/MappingPractitioner');
@@ -3259,4 +3263,3 @@ Route::middleware(['auth'])->prefix('api/satusehat')->name('api.satusehat.')->gr
     // Proxy ke Practitioner search
     Route::get('/practitioner', [\App\Http\Controllers\SatuSehat\PractitionerMappingController::class, 'searchOnly'])->name('practitioner.search');
 });
-

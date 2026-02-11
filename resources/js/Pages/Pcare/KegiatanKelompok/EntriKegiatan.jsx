@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import LayoutUtama from "@/Pages/LayoutUtama";
-import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 
 const containerVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -2062,7 +2062,7 @@ export default function EntriKegiatan() {
 EntriKegiatan.layout = (page) => (
     <LayoutUtama
         title="Kegiatan Kelompok PCare"
-        left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "keg_kelompok_pcare" }} />}
+        left={<BridingMenu />}
     >
         {page}
     </LayoutUtama>

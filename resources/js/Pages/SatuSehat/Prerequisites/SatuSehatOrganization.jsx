@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -263,7 +264,7 @@ export default function SatuSehatOrganization() {
   };
 
   return (
-    <SidebarBriding title="Pengaturan" wide>
+    <LayoutUtama title="Pengaturan" left={<BridingMenu />}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <motion.div
           className="px-4 sm:px-6 lg:px-8 py-8 space-y-8"
@@ -797,6 +798,6 @@ export default function SatuSehatOrganization() {
           <Toaster toasts={toasts} onRemove={removeToast} />
         </motion.div>
       </div>
-    </SidebarBriding>
+    </LayoutUtama>
   );
 }

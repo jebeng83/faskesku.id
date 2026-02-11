@@ -200,6 +200,23 @@ Kunjungan/episode pelayanan (Ralan, Ranap, IGD).
 
 - `App\Services\SatuSehat\EncounterService::createEncounter($noRawat, $sendToSatuSehat = true)`
 
+**Referensi resmi**
+
+- https://satusehat.kemkes.go.id/platform/docs/id/fhir/resources/encounter/
+
+**Catatan mandatory (katalog SATUSEHAT)**
+
+- `Encounter.identifier[i].system` mengikuti format: `http://sys-ids.kemkes.go.id/encounter/{organization-ihs-number}`.
+- Untuk histori status, terdapat 3 status yang wajib dikirimkan: `arrived`, `in-progress`, `finished` dan masing-masing item wajib memiliki `statusHistory.period.start` dan `statusHistory.period.end`.
+- Format waktu yang digunakan oleh SATUSEHAT adalah UTC `+00` (contoh WIB perlu dikonversi menjadi UTC dengan mengurangi 7 jam).
+
+**Catatan implementasi di aplikasi ini**
+
+- `EncounterService::buildEncounterResource()` sudah mengisi `identifier.system` dan `identifier.value` (`no_rawat`), namun belum mengisi `identifier.use` (`official`).
+- Payload Encounter awal saat `POST` masih minimal: `statusHistory` baru berisi `arrived` dan `period.start`, serta belum mengirim `period.end` dan 3 status wajib pada `statusHistory`.
+- Proses “closing” Encounter dilakukan melalui endpoint `PUT /api/satusehat/rajal/encounter/by-rawat/{no_rawat}` (`updateEncounterByRawat`) yang akan menyetel `status=finished`, mengisi `period.end`, dan membentuk baseline `statusHistory` 3 status.
+- Implementasi waktu saat ini mengirim offset timezone (contoh `+07:00`) mengikuti nilai yang dibangun oleh aplikasi; bila terjadi penolakan validasi waktu dari SATUSEHAT, sesuaikan pengiriman timestamp ke UTC `+00`.
+
 **Data yang diambil dari RME**
 
 - Tabel utama: `reg_periksa` (alias `rp`)
@@ -396,6 +413,376 @@ Mencatat alergi pasien.
 
 ---
 
+### 4.5. Procedure (Tindakan)
+
+**Peran**  
+Mencatat tindakan/prosedur klinis yang dilakukan pada pasien, dan mengaitkannya ke `Encounter` (kunjungan) serta `Patient`.
+
+**Endpoint yang tersedia (FHIR R4 – SATUSEHAT)**
+
+1) **Pencarian Procedure**
+- `GET {FHIR_BASE}/Procedure?subject={patientId}`
+- `GET {FHIR_BASE}/Procedure?encounter={encounterId}`
+- `GET {FHIR_BASE}/Procedure?subject={patientId}&encounter={encounterId}`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+
+Response sukses: `Bundle` (`type: searchset`) berisi `entry[].resource`.
+
+2) **Detail Procedure**
+- `GET {FHIR_BASE}/Procedure/{id}`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+- `Content-Type: application/json`
+
+Response sukses: resource `Procedure`.
+
+3) **Tambah Procedure**
+- `POST {FHIR_BASE}/Procedure`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+- `Content-Type: application/json`
+
+Body: payload resource `Procedure` sesuai standar FHIR (mengacu Panduan Interoperabilitas per modul/use-case).
+Response sukses: mengembalikan resource `Procedure` termasuk `id` (UUID). Nilai `id` ini perlu disimpan untuk operasi lanjutan.
+
+4) **Update penuh Procedure**
+- `PUT {FHIR_BASE}/Procedure/{id}`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+- `Content-Type: application/json`
+
+5) **Update sebagian (patch) Procedure**
+- `PATCH {FHIR_BASE}/Procedure/{id}`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+- `Content-Type: application/json`
+
+Body: JSON Patch dengan operasi yang didukung `replace`.
+Contoh format:
+
+```json
+[
+  { "op": "replace", "path": "/language", "value": "id" }
+]
+```
+
+**Kebutuhan data minimal untuk implementasi di aplikasi**
+
+- `Procedure.subject` → `Patient/{patientId}`
+- `Procedure.encounter` → `Encounter/{encounterId}`
+- `Procedure.status` → status prosedur (mengacu panduan; umumnya `completed` ketika tindakan sudah dilakukan)
+- `Procedure.code` → kode tindakan (mengacu terminologi yang diwajibkan pada Panduan Interoperabilitas)
+- Waktu tindakan → biasanya di `performedDateTime` / `performedPeriod`
+- Pelaksana tindakan → `performer.actor` (Practitioner/PractitionerRole) bila tersedia
+
+**Tabel sumber & tabel mapping (dipakai di aplikasi ini)**
+
+1) **`prosedur_pasien` (sumber tindakan/prosedur pasien)**
+- Tujuan: daftar prosedur yang dilakukan pada kunjungan.
+- Kolom:
+  - `no_rawat` (varchar(17))
+  - `kode` (varchar(8))
+  - `status` (enum: `Ralan`|`Ranap`)
+  - `prioritas` (tinyint)
+- Primary key: (`no_rawat`, `kode`, `status`)
+- Foreign key:
+  - `no_rawat` → `reg_periksa.no_rawat` (cascade)
+  - `kode` → `icd9.kode` (cascade)
+
+2) **`satu_sehat_procedure` (mapping lokal ↔ SATUSEHAT Procedure)**
+- Tujuan: menyimpan `id_procedure` (UUID SATUSEHAT) untuk tiap baris prosedur lokal.
+- Kolom:
+  - `no_rawat` (varchar(17))
+  - `kode` (varchar(10))
+  - `status` (enum: `Ralan`|`Ranap`)
+  - `id_procedure` (varchar(40), nullable)
+- Primary key: (`no_rawat`, `kode`, `status`)
+- Foreign key:
+  - `no_rawat` → `reg_periksa.no_rawat` (cascade)
+  - `kode` → `icd9.kode` (restrict)
+
+Catatan: secara skema, `prosedur_pasien.kode` mengacu ke tabel `icd9`. Namun pada implementasi klinik/puskesmas yang tidak menggunakan ICD9, tetapkan default/fallback kode **`89.06` (Limited Consultation)** untuk:
+- Nilai `prosedur_pasien.kode` saat tidak ada kode prosedur yang valid dari sumber.
+- `Procedure.code` di payload SATUSEHAT saat tidak ada mapping kode lokal.
+
+**Strategi implementasi (agar idempotent dan bisa diaudit)**
+
+1) **Tambahkan service baru**
+- `App\Services\SatuSehat\ProcedureService`
+  - `sendProceduresForEncounter($noRawat)`
+  - `createProcedure(array $payload, array $options = [])`
+  - `searchProcedure(array $query)` (untuk troubleshooting dan rekonsiliasi)
+
+2) **Idempotensi (hindari duplikasi Procedure di SATUSEHAT)**
+- Saat mengirim dari `prosedur_pasien`, lakukan lookup ke `satu_sehat_procedure` berdasarkan:
+  - (`no_rawat`, `kode`, `status`)
+  - Jika `id_procedure` sudah terisi → jangan POST lagi.
+- Jika `id_procedure` kosong/belum ada baris mapping:
+  - lakukan POST `Procedure`
+  - simpan `id` response ke `satu_sehat_procedure.id_procedure` (updateOrInsert).
+
+Catatan: SATUSEHAT menyediakan pencarian berbasis `subject`/`encounter`, namun itu tidak cukup untuk memastikan satu baris tindakan lokal = satu resource Procedure (karena bisa banyak tindakan dalam satu Encounter). Karena itu, mapping lokal tetap diperlukan.
+
+3) **Pencatatan (audit trail)**
+- Aplikasi ini sudah memiliki auto-log resource POST/PUT/PATCH ke tabel `satusehat_resources` melalui `SatuSehatTraits::satusehatRequest()`.
+- Untuk Procedure, pastikan payload memiliki `identifier.value` yang stabil (mis. gabungan `no_rawat` + `kode` + `status`) atau kirim `local_id` via opsi request, agar kolom `local_id` di log mudah ditelusuri.
+
+4) **Kapan dikirim**
+- Rekomendasi baseline untuk RAJAL:
+  - Kirim Procedure setelah Encounter berhasil dibuat dan ID Encounter tersimpan.
+  - Trigger yang paling aman: saat tindakan tersimpan (insert/update) atau saat pipeline “Resume Medis Rawat Jalan” dijalankan.
+
+5) **Rekonsiliasi & debugging**
+- Untuk investigasi cepat (tanpa perubahan data), gunakan:
+  - `GET Procedure?encounter={encounterId}` untuk melihat semua Procedure yang sudah ada pada kunjungan.
+  - `GET Procedure/{id}` untuk memeriksa payload resource yang tersimpan.
+
+---
+
+### 4.6. MedicationRequest (Resep Obat)
+
+**Peran**  
+Mencatat peresepan obat pada suatu `Encounter` (kunjungan) untuk seorang `Patient`. Pada implementasi yang umum di RME, **setiap item obat** (baris di detail resep) dikirim sebagai **1 resource MedicationRequest**.
+
+**Referensi resmi**
+
+- https://satusehat.kemkes.go.id/platform/docs/id/fhir/resources/medication-request/
+
+**Endpoint yang tersedia (FHIR R4 – SATUSEHAT)**
+
+1) **Pencarian MedicationRequest**
+- `GET {FHIR_BASE}/MedicationRequest?subject=Patient/{patientId}`
+- `GET {FHIR_BASE}/MedicationRequest?encounter=Encounter/{encounterId}`
+
+2) **Detail MedicationRequest**
+- `GET {FHIR_BASE}/MedicationRequest/{id}`
+
+3) **Tambah MedicationRequest**
+- `POST {FHIR_BASE}/MedicationRequest`
+
+4) **Update penuh MedicationRequest**
+- `PUT {FHIR_BASE}/MedicationRequest/{id}`
+
+5) **Update sebagian (patch) MedicationRequest**
+- `PATCH {FHIR_BASE}/MedicationRequest/{id}`
+
+Header wajib:
+- `Authorization: Bearer <access_token>`
+- `Content-Type: application/json`
+
+**Kebutuhan data minimal untuk implementasi di aplikasi**
+
+- `MedicationRequest.status` → mis. `active` (resep masih berlaku) / `completed` (jika sudah ditutup sesuai use-case)
+- `MedicationRequest.intent` → umumnya `order`
+- `MedicationRequest.subject` → `Patient/{patientId}`
+- `MedicationRequest.encounter` → `Encounter/{encounterId}`
+- `MedicationRequest.authoredOn` → gabungan `tgl_peresepan` + `jam_peresepan`
+- `MedicationRequest.requester` → `Practitioner/{practitionerId}` (dari `resep_obat.kd_dokter` → NIK dokter)
+- `MedicationRequest.medicationReference` → `Medication/{medicationId}` (hasil mapping obat lokal → SATUSEHAT)
+- `MedicationRequest.dosageInstruction[]` → aturan pakai dari RME
+
+**Catatan penting: dosageInstruction (aturan pakai)**
+
+Sesuai dokumentasi SATUSEHAT, `MedicationRequest.dosageInstruction[]` menggunakan tipe data `Dosage` dan mendukung komponen-komponen berikut (ringkasan yang sering dipakai):
+
+- `dosageInstruction[i].sequence` (integer) → urutan paket aturan pakai
+- `dosageInstruction[i].text` (string) → aturan pakai naratif (contoh: “3 x sehari 1 tablet sesudah makan”)
+- `dosageInstruction[i].patientInstruction` (string) → instruksi berorientasi pasien
+- `dosageInstruction[i].additionalInstruction[]` (CodeableConcept) → instruksi tambahan (SNOMED CT)
+- `dosageInstruction[i].timing.event` (dateTime) → waktu spesifik kejadian
+- `dosageInstruction[i].timing.repeat` → pola pengulangan, mis.:
+  - `frequency` (positiveInt), `period` (decimal), `periodUnit` (code UCUM, contoh `d`)
+  - `dayOfWeek` (DaysOfWeek), `timeOfDay` (time), `when` (event timing), `offset` (unsignedInt)
+- `dosageInstruction[i].timing.code.coding[]` → aturan timing terkode (GTSAbbreviation)
+- `dosageInstruction[i].route` (CodeableConcept) → rute pemberian (terminologi sesuai panduan)
+- `dosageInstruction[i].method` (CodeableConcept) → teknik pemberian (SNOMED CT)
+- `dosageInstruction[i].doseAndRate[].doseQuantity` (SimpleQuantity) → jumlah per dosis (unit dapat mengacu UCUM / OrderableDrugForm / SNOMED CT)
+
+Jika RME belum punya data terstruktur (frekuensi, route, dose unit), baseline yang aman:
+
+- Isi `dosageInstruction[0].sequence = 1`
+- Isi `dosageInstruction[0].text = resep_dokter.aturan_pakai` (apa adanya)
+
+**Data dari RME (tabel sumber)**
+
+1) **`resep_obat` (header resep)**
+- Tujuan: metadata resep per kunjungan.
+- Kolom utama yang dipakai di aplikasi:
+  - `no_resep` (PK logis, string)
+  - `no_rawat` (varchar(17))
+  - `kd_dokter` (kode dokter)
+  - `tgl_peresepan`, `jam_peresepan`
+  - `status` (mis. `ralan`/`ranap`)
+  - `tgl_penyerahan`, `jam_penyerahan` (bila ada)
+
+2) **`resep_dokter` (detail item obat per resep)**
+- Tujuan: daftar item obat yang diresepkan.
+- Kolom utama yang dipakai di aplikasi:
+  - `no_resep` (FK logis ke `resep_obat.no_resep`)
+  - `kode_brng` (FK logis ke `databarang.kode_brng`)
+  - `jml` (jumlah)
+  - `aturan_pakai` (string)
+
+Strategi mapping ke resource:
+
+- 1 baris `resep_dokter` → 1 `MedicationRequest`
+- `identifier.value` direkomendasikan stabil per item, contoh: `{no_resep}:{kode_brng}`
+
+**Penyimpanan response SATUSEHAT (idempotensi)**
+
+Aplikasi menyimpan hasil `id` dari response SATUSEHAT ke tabel mapping berikut agar tidak mengirim duplikat:
+
+1) **`satu_sehat_medicationrequest` (mapping lokal ↔ SATUSEHAT MedicationRequest)**
+- Kolom:
+  - `no_resep` (varchar(14))
+  - `kode_brng` (varchar(15))
+  - `id_medicationrequest` (varchar(40), nullable)
+- Primary key: (`no_resep`, `kode_brng`)
+- Foreign key:
+  - `no_resep` → `resep_obat.no_resep` (cascade)
+  - `kode_brng` → `databarang.kode_brng` (restrict)
+
+Aturan simpan:
+
+- Setelah `POST MedicationRequest` sukses dan response mengandung `id`, simpan ke `satu_sehat_medicationrequest.id_medicationrequest`.
+- Saat akan mengirim ulang, lakukan lookup PK (`no_resep`, `kode_brng`):
+  - Jika `id_medicationrequest` sudah ada → jangan `POST` lagi.
+  - Jika belum ada → `POST` dan update mapping.
+
+---
+
+### 4.7. MedicationDispense (Penyerahan/Dispensing Obat)
+
+**Peran**  
+Mencatat kejadian **obat diserahkan/di-dispense** pada seorang pasien. Secara praktik RME, `MedicationRequest` mewakili *permintaan/resep*, sedangkan `MedicationDispense` mewakili *eksekusi penyerahan* (seringnya oleh unit farmasi/depo).
+
+**Referensi resmi**
+
+- https://satusehat.kemkes.go.id/platform/docs/id/fhir/resources/medication-dispense/
+
+**Kapan dikirim di aplikasi ini**
+
+- Trigger paling aman: saat event **penyerahan obat** berhasil (stok sudah dipotong dan detail penyerahan tersimpan).
+- Di codebase saat ini, kandidat sumber data utama adalah insert ke `detail_pemberian_obat` pada flow penyerahan.
+
+**Relasi dengan MedicationRequest (penting)**
+
+- Idealnya `MedicationDispense.authorizingPrescription[]` mengacu ke `MedicationRequest/{id}` (hasil mapping dari `satu_sehat_medicationrequest`).
+- Dampak arsitektural:
+  - Pipeline “resep → kirim MedicationRequest” sebaiknya jalan terlebih dahulu.
+  - “penyerahan → kirim MedicationDispense” melakukan lookup `id_medicationrequest` agar linkage lengkap.
+  - Jika `id_medicationrequest` belum ada, pilihan aman:
+    - tetap kirim `MedicationDispense` tanpa `authorizingPrescription` (baseline), atau
+    - tunda pengiriman sampai mapping `MedicationRequest` tersedia.
+
+**Catatan penting: dosageInstruction**
+
+Sesuai panduan SATUSEHAT, `MedicationDispense.dosageInstruction[i].sequence` bertipe integer:
+
+- Jika aturan pakai konsisten dari awal sampai akhir → cukup 1 paket, `sequence = 1`.
+- Jika ada perubahan aturan pakai (contoh tapering-down) → tulis lebih dari 1 paket (`sequence = 1`, lalu `sequence = 2`, dst.).
+
+Baseline yang aman jika RME hanya menyimpan narasi:
+
+- `dosageInstruction[0].sequence = 1`
+- `dosageInstruction[0].text = aturan_pakai`
+
+Komponen lain yang didukung dan bisa diadopsi bertahap bila data RME sudah terstruktur:
+
+- `additionalInstruction[]` (CodeableConcept; coding mengacu SNOMED CT)
+- `patientInstruction` (string)
+- `timing` (Timing; termasuk `timing.event` atau `timing.repeat`)
+- `route` (CodeableConcept; sesuai terminologi yang disyaratkan SATUSEHAT)
+- `method` (CodeableConcept; coding mengacu SNOMED CT)
+- `doseAndRate[].doseQuantity` (SimpleQuantity; unit dapat mengacu UCUM / OrderableDrugForm)
+
+**Data dari RME (tabel sumber yang direkomendasikan)**
+
+1) **`detail_pemberian_obat` (hasil penyerahan)**
+- Kandidat field yang biasanya bisa dipakai:
+  - `no_rawat` → untuk cari `Encounter` dan `Patient`
+  - `tgl_perawatan` + `jam` → `whenHandedOver` (dateTime)
+  - `kode_brng` → mapping ke `Medication/{id}` (via `satu_sehat_mapping_obat.satusehat_id`)
+  - `jml` → `quantity.value`
+  - `status` (Ralan/Ranap) → konteks pemakaian (bukan status FHIR)
+  - `kd_bangsal`, `no_batch`, `no_faktur` → kandidat traceability (lot/batch) jika kelak di-map
+
+2) **`resep_obat` + `resep_dokter`**
+- Dipakai bila ingin mengisi `dosageInstruction.text` dari `aturan_pakai` atau menghubungkan ke `MedicationRequest`.
+
+**Penyimpanan response SATUSEHAT (idempotensi) – rancangan untuk pengembangan lanjutan**
+
+Untuk menghindari pengiriman duplikat, perlu tabel mapping mirip `satu_sehat_medicationrequest`.
+
+- Rekomendasi identifier stabil per event penyerahan (salah satu opsi):
+  - `{no_rawat}:{tgl_perawatan}T{jam}:{kode_brng}`
+  - Jika butuh granular per batch: `{no_rawat}:{tgl_perawatan}T{jam}:{kode_brng}:{no_batch}`
+
+Skema tabel yang direkomendasikan (belum diimplementasikan):
+
+- `satu_sehat_medicationdispense`
+  - `no_rawat`
+  - `kode_brng`
+  - `tgl_perawatan`
+  - `jam`
+  - `no_batch` (nullable)
+  - `id_medicationdispense` (nullable)
+  - PK komposit menyesuaikan kebutuhan idempotensi (mis. termasuk `no_batch` bila dipakai).
+
+**Saran implementasi di codebase (pola mengikuti service lain)**
+
+- Tambah:
+  - `App\Services\SatuSehat\MedicationDispenseService`
+  - `App\Jobs\SatuSehat\ProcessMedicationDispenseJob`
+- Trigger:
+  - Dispatch job setelah `penyerahan()` sukses.
+- Flow service:
+  - Resolve `Encounter` + `Patient` dari `no_rawat`.
+  - Resolve `Medication` dari `kode_brng` (mapping obat).
+  - (Opsional) Resolve `MedicationRequest` via `satu_sehat_medicationrequest` untuk `authorizingPrescription`.
+  - Build payload `MedicationDispense` minimal + `dosageInstruction` baseline.
+  - `POST MedicationDispense`, lalu simpan `id` ke mapping table.
+
+---
+
+### 4.8. Composition (Resume Medis / Outpatient Note)
+
+**Peran**  
+Dokumen klinis yang merangkum hasil pelayanan dalam satu kunjungan. Di aplikasi ini, Composition dipakai sebagai “resume kunjungan” (SOAP ringkas) untuk Rawat Jalan.
+
+**Referensi resmi**
+
+- https://satusehat.kemkes.go.id/platform/docs/id/fhir/resources/composition/
+
+**Catatan mandatory (katalog SATUSEHAT)**
+
+- `Composition.identifier.system` mengikuti format: `http://sys-ids.kemkes.go.id/composition/{organization-ihs-number}`.
+- Field yang ditandai wajib pada katalog SATUSEHAT (umum) mencakup: `Composition.status`, `Composition.type` (LOINC), `Composition.subject`, `Composition.date`, dan `Composition.title`.
+- Format waktu yang digunakan oleh SATUSEHAT adalah UTC `+00` (contoh WIB perlu dikonversi menjadi UTC dengan mengurangi 7 jam).
+- `Composition.section.text.div` adalah Narrative XHTML (umumnya berbentuk `<div xmlns="http://www.w3.org/1999/xhtml">...</div>`).
+
+**Implementasi di aplikasi ini (endpoint & payload)**
+
+- Endpoint backend: `POST /api/satusehat/rajal/composition` (controller `SatuSehatRajalController::createComposition`).
+- Mode input:
+  - `resource` dikirim full sebagai array → backend meneruskan apa adanya (advanced mode).
+  - Atau kirim field minimal: `patient_id`, `encounter_id`, `practitioner_id`, `title`, `date` + konten per bagian (`subjective_text`, `objective_text`, `assessment_text`, `plan_text`) dan referensi resource (`*_refs`).
+- Default yang dibangun backend bila tidak mengirim `resource`:
+  - `status = final`
+  - `type` menggunakan LOINC `37145-9` (Outpatient Note)
+  - `subject = Patient/{patient_id}`
+  - `encounter = Encounter/{encounter_id}`
+  - `author = Practitioner/{practitioner_id}`
+  - `title` dari request
+  - `date` hanya dikirim jika request mengisi `date` (karena itu caller sebaiknya selalu mengirim `date` agar sesuai field wajib di katalog SATUSEHAT)
+  - `section[]` dibentuk dari Subjective/Objective/Assessment/Plan, masing-masing dapat berisi `text` dan/atau `entry[]`.
+
 ## 5. Integrasi Lanjutan per Modul Pelayanan
 
 Bagian ini menghubungkan resource di atas ke **Panduan Interoperabilitas** (modul pelayanan).
@@ -416,8 +803,8 @@ Bagian ini menghubungkan resource di atas ke **Panduan Interoperabilitas** (modu
 - Pendaftaran: `reg_periksa`.
 - CPPT/SOAP: tabel SOAP/CPPT (anamnesis, pemeriksaan fisik, assesmen, plan).
 - Diagnosa: `diagnosa_pasien`.
-- Tindakan: tabel tindakan poli.
-- Resep: tabel `resep_obat` + `detail_resep_obat`.
+- Tindakan/Procedure: `prosedur_pasien`.
+- Resep: tabel `resep_obat` + `resep_dokter`.
 
 **Saran implementasi**
 
@@ -474,11 +861,14 @@ Menyelaraskan **siklus klinis** (Encounter, Composition, dst.) dengan **siklus k
               - `encounter_id`: ID hasil langkah (1).
               - `status`: `"finished"`.
               - `tz_offset`: `"+07:00"`.
+              - `end` (opsional): override `period.end` (format dateTime ISO-8601 beserta timezone).
             - Backend (`updateEncounterByRawat`) akan:
               - Menyetel `Encounter.status = finished`.
-              - Mengisi `period.end` dari pemeriksaan terakhir (`pemeriksaan_ralan`) atau `endOverride`.
-              - Membentuk `statusHistory` lengkap (arrived, in-progress, finished).
-              - Bila Encounter belum punya `diagnosis`, otomatis membuat `Condition` dari `diagnosa_pasien` lokal dan mengisi `Encounter.diagnosis`.
+              - Mengisi `period.end` dari pemeriksaan terakhir (`pemeriksaan_ralan.tgl_perawatan + pemeriksaan_ralan.jam_rawat + tz_offset`) atau dari field `end` bila dikirim.
+              - Menjaga `period.start` bila sudah ada; jika kosong akan diisi dari `reg_periksa.tgl_registrasi + reg_periksa.jam_reg + tz_offset` (fallback ke `period.end`).
+              - Mengganti `statusHistory` menjadi baseline 3 status: `arrived`, `in-progress`, `finished`.
+              - Bila Encounter belum punya `diagnosis`, akan membuat hingga 3 `Condition` dari `diagnosa_pasien.kd_penyakit` (ICD-10) lalu mengisi `Encounter.diagnosis` (rank 1..n).
+              - Menyimpan `encounter_id` hasil update ke tabel lokal `satu_sehat_encounter.id_encounter_2`.
          3. Jalankan pipeline RAJAL by‑rawat:
             - `POST /api/satusehat/rajal/pipeline/by-rawat/{no_rawat}` dengan body:
               - `tz_offset`: `"+07:00"`.
@@ -547,4 +937,3 @@ Menyelaraskan **siklus klinis** (Encounter, Composition, dst.) dengan **siklus k
      - Mapping terminologi.
      - Resource & field wajib.
      - Validasi lokal sebelum kirim.
-

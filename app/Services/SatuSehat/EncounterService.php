@@ -359,6 +359,10 @@ class EncounterService
             $encounter['reasonCode'] = $reasonCodes;
         }
 
+        if (is_array($encounter)) {
+            $encounter = $this->ensureEncounterReferences($encounter, (string) $noRawat, $regPeriksa);
+        }
+
         
         // Update via PUT
         $updateResponse = $this->satusehatRequest('PUT', "Encounter/{$tracking->satusehat_id}", $encounter);
@@ -376,6 +380,135 @@ class EncounterService
             ]);
         
         return $updateResponse['json'];
+    }
+
+    private function ensureEncounterReferences(array $encounter, string $noRawat, $regPeriksa = null): array
+    {
+        $orgId = $this->satusehatOrganizationId();
+        if (! isset($encounter['serviceProvider']) || ! is_array($encounter['serviceProvider'])) {
+            $encounter['serviceProvider'] = [];
+        }
+        if (($encounter['serviceProvider']['reference'] ?? '') === '' && $orgId !== '') {
+            $encounter['serviceProvider']['reference'] = 'Organization/'.$orgId;
+        }
+
+        $subjectRef = is_array($encounter['subject'] ?? null) ? (string) ($encounter['subject']['reference'] ?? '') : '';
+        if ($subjectRef === '') {
+            $patientId = $this->getPatientIhsIdFromNoRawat($noRawat);
+            if ($patientId) {
+                $encounter['subject'] = ['reference' => 'Patient/'.$patientId];
+            }
+        }
+
+        $participantRef = '';
+        if (is_array($encounter['participant'] ?? null) && isset($encounter['participant'][0]['individual']['reference'])) {
+            $participantRef = (string) $encounter['participant'][0]['individual']['reference'];
+        }
+        if ($participantRef === '') {
+            $practitionerId = $this->getPractitionerIhsIdFromNoRawat($noRawat);
+            if ($practitionerId) {
+                $encounter['participant'] = [[
+                    'type' => [[
+                        'coding' => [[
+                            'system' => 'http://terminology.hl7.org/CodeSystem/v3-ParticipationType',
+                            'code' => 'ATND',
+                            'display' => 'attender',
+                        ]],
+                    ]],
+                    'individual' => ['reference' => 'Practitioner/'.$practitionerId],
+                ]];
+            }
+        }
+
+        $locationRef = '';
+        if (is_array($encounter['location'] ?? null) && isset($encounter['location'][0]['location']['reference'])) {
+            $locationRef = (string) $encounter['location'][0]['location']['reference'];
+        }
+        if ($locationRef === '' && $regPeriksa && isset($regPeriksa->kd_poli)) {
+            $locationId = $this->getLocationId($regPeriksa->kd_poli);
+            if ($locationId) {
+                $display = '';
+                $poli = DB::table('poliklinik')->where('kd_poli', $regPeriksa->kd_poli)->first(['nm_poli']);
+                if ($poli && ! empty($poli->nm_poli)) {
+                    $display = (string) $poli->nm_poli;
+                }
+                $encounter['location'] = [[
+                    'location' => array_filter([
+                        'reference' => 'Location/'.$locationId,
+                        'display' => $display !== '' ? $display : null,
+                    ], fn ($v) => $v !== null),
+                ]];
+            }
+        }
+
+        return $encounter;
+    }
+
+    private function getPatientIhsIdFromNoRawat(string $noRawat): ?string
+    {
+        $reg = DB::table('reg_periksa')
+            ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+            ->where('reg_periksa.no_rawat', $noRawat)
+            ->first(['pasien.no_ktp']);
+
+        if (! $reg || empty($reg->no_ktp)) {
+            return null;
+        }
+
+        $mapping = DB::table('satusehat_patient_mapping')->where('nik', $reg->no_ktp)->first(['satusehat_id']);
+        if (! $mapping || empty($mapping->satusehat_id)) {
+            return null;
+        }
+
+        return (string) $mapping->satusehat_id;
+    }
+
+    private function getPractitionerIhsIdFromNoRawat(string $noRawat): ?string
+    {
+        $kdDokter = (string) (DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('kd_dokter') ?? '');
+        $kdDokter = trim($kdDokter);
+        if ($kdDokter === '') {
+            return null;
+        }
+
+        $pegawai = DB::table('pegawai')->where('nik', $kdDokter)->first(['no_ktp', 'nama']);
+        $nikRaw = $pegawai ? (string) ($pegawai->no_ktp ?? '') : '';
+        $nik = preg_replace('/\D/', '', $nikRaw);
+        if ($nik === '' || strlen($nik) !== 16) {
+            return null;
+        }
+
+        $mapping = DB::table('satusehat_mapping_practitioner')->where('nik', $nik)->first(['satusehat_id']);
+        if ($mapping && ! empty($mapping->satusehat_id)) {
+            return (string) $mapping->satusehat_id;
+        }
+
+        try {
+            $response = $this->satusehatRequest('GET', 'Practitioner', null, [
+                'query' => ['identifier' => 'https://fhir.kemkes.go.id/id/nik|'.$nik],
+            ]);
+            if (($response['ok'] ?? false) && ! empty($response['json']['entry'])) {
+                $practitioner = $response['json']['entry'][0]['resource'] ?? null;
+                $id = is_array($practitioner) ? (string) ($practitioner['id'] ?? '') : '';
+                if ($id !== '') {
+                    DB::table('satusehat_mapping_practitioner')->updateOrInsert(
+                        ['nik' => $nik],
+                        [
+                            'satusehat_id' => $id,
+                            'nama' => $pegawai ? (string) ($pegawai->nama ?? $kdDokter) : $kdDokter,
+                            'fhir_json' => json_encode($practitioner),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+
+                    return $id;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
+        return null;
     }
     
     /**

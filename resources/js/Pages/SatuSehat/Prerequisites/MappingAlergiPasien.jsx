@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { Card, CardHeader, CardContent } from "@/Components/ui/Card";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -214,7 +215,7 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
     );
 
     return (
-        <SidebarBriding title="Mapping Alergi Satu Sehat">
+        <LayoutUtama title="Mapping Alergi Satu Sehat" left={<BridingMenu />}>
             <div className="p-4 md:p-8 space-y-6 bg-slate-50 min-h-screen">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -603,6 +604,6 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
 
                 <Toaster toasts={toasts} onRemove={removeToast} />
             </div>
-        </SidebarBriding>
+        </LayoutUtama>
     );
 }

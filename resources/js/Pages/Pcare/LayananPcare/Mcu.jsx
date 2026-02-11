@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 
 const toDdMmYy = (htmlDate) => {
   if (!htmlDate) return '';
@@ -473,5 +474,4 @@ export default function Mcu() {
   );
 }
 
-Mcu.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
-
+Mcu.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

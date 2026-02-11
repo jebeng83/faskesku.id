@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, PlusIcon, PencilSquareIcon, TrashIcon, XMarkIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/Components/ui';
@@ -590,4 +591,4 @@ export default function MappingPoliPcare() {
   );
 }
 
-MappingPoliPcare.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+MappingPoliPcare.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

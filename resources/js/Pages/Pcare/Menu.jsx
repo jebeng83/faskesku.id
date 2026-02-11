@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
+import { route } from 'ziggy-js';
 
 // Pcare Menu Page
 // - 3 Tabs: Referensi Pcare, Mapping Pcare, Layanan Pcare
@@ -13,6 +15,8 @@ const tabs = [
   { key: 'layanan', label: 'Layanan Pcare' },
   { key: 'kelompok', label: 'Kegiatan Kelompok' },
   { key: 'setting', label: 'Setting & Tools' },
+  { key: 'satusehat_pengaturan', label: 'Pengaturan' },
+  { key: 'satusehat_interoperabilitas', label: 'Interoperabilitas' },
 ];
 
 const cardVariants = {
@@ -509,6 +513,141 @@ const cardsByTab = {
       )
     },
   ],
+  satusehat_pengaturan: [
+    {
+      key: 'satusehatOrganization',
+      title: 'Organization',
+      desc: 'Kelola Organization & Subunits',
+      href: route('satusehat.prerequisites.organization'),
+      gradient: 'from-blue-500 to-indigo-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="4" width="18" height="14" rx="2" />
+          <path d="M7 8h4M7 12h4M13 12h4M13 8h4" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatLocation',
+      title: 'Location',
+      desc: 'Kelola lokasi faskes & ruangan',
+      href: route('satusehat.prerequisites.location'),
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7z" />
+          <circle cx="12" cy="9" r="2.5" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatLocationRanap',
+      title: 'Location Satusehat',
+      desc: 'Kelola lokasi bangsal (Rawat Inap)',
+      href: route('satusehat.prerequisites.location_ranap'),
+      gradient: 'from-sky-500 to-cyan-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7z" />
+          <circle cx="12" cy="9" r="2.5" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatLocationFarmasi',
+      title: 'Lokasi SatuSehat',
+      desc: 'Kelola lokasi farmasi (Bangsal)',
+      href: route('satusehat.prerequisites.location_farmasi'),
+      gradient: 'from-violet-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7z" />
+          <circle cx="12" cy="9" r="2.5" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatPractitioner',
+      title: 'Referensi Practitioner',
+      desc: 'Cari Practitioner (berdasarkan NIK)',
+      href: route('satusehat.prerequisites.practitioner'),
+      gradient: 'from-rose-500 to-red-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="8" r="3" />
+          <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatPatient',
+      title: 'Referensi Pasien',
+      desc: 'Cari Pasien (berdasarkan NIK)',
+      href: route('satusehat.prerequisites.patient'),
+      gradient: 'from-amber-500 to-orange-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="8" r="3" />
+          <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatMappingPractitioner',
+      title: 'Mapping Practitioner',
+      desc: 'Mapping pegawai → Practitioner',
+      href: route('satusehat.mapping-practitioner'),
+      gradient: 'from-indigo-500 to-blue-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M7 7h10" />
+          <path d="M7 12h10" />
+          <path d="M7 17h6" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatMappingAlergi',
+      title: 'Mapping Alergi',
+      desc: 'Mapping alergi pasien',
+      href: route('satusehat.mapping-alergi.index'),
+      gradient: 'from-fuchsia-500 to-pink-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+          <path d="M12 7v6" />
+          <path d="M12 16h.01" />
+        </svg>
+      )
+    },
+    {
+      key: 'satusehatMappingObat',
+      title: 'Mapping Obat',
+      desc: 'Mapping obat → Medication',
+      href: route('satusehat.mapping-obat.index'),
+      gradient: 'from-teal-500 to-emerald-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="4" y="4" width="16" height="12" rx="2" />
+          <path d="M8 10h8M8 14h8" />
+        </svg>
+      )
+    },
+  ],
+  satusehat_interoperabilitas: [
+    {
+      key: 'satusehatEncounterRajal',
+      title: 'Encounter',
+      desc: 'Kirim Encounter Rajal',
+      href: route('satusehat.interoperabilitas.rajal.encounter'),
+      gradient: 'from-indigo-500 to-blue-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 6v12M6 12h12" />
+        </svg>
+      )
+    },
+  ],
 };
 
 export default function PcareMenu() {
@@ -578,4 +717,4 @@ export default function PcareMenu() {
 }
 
 // Attach the application layout so this page renders inside the global sidebar/header
-PcareMenu.layout = (page) => <SidebarBriding title="Briding Pcare" wide={true}>{page}</SidebarBriding>;
+PcareMenu.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

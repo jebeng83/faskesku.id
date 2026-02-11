@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3206
+* @see routes/web.php:3210
 * @route '/satusehat/mapping-practitioner'
 */
 export const mappingPractitioner = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,7 +58,7 @@ mappingPractitioner.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3206
+* @see routes/web.php:3210
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.url = (options?: RouteQueryOptions) => {
@@ -66,7 +66,7 @@ mappingPractitioner.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3206
+* @see routes/web.php:3210
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -75,7 +75,7 @@ mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:3206
+* @see routes/web.php:3210
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

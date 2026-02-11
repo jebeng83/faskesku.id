@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { Card, CardHeader, CardContent } from "@/Components/ui/Card";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -213,7 +214,7 @@ export default function MappingMedication() {
     };
 
     return (
-        <SidebarBriding title="Mapping Medication (KFA)">
+        <LayoutUtama title="Mapping Medication (KFA)" left={<BridingMenu />}>
             <motion.div
                 className="p-4 md:p-6 lg:p-8 space-y-6 bg-slate-50 dark:bg-gray-900 min-h-screen"
                 initial={{ opacity: 0 }}
@@ -486,6 +487,6 @@ export default function MappingMedication() {
 
                 <Toaster toasts={toasts} onRemove={removeToast} />
             </motion.div>
-        </SidebarBriding>
+        </LayoutUtama>
     );
 }
