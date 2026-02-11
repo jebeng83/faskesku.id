@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
@@ -546,8 +546,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     // Menyimpan nomor kunjungan terakhir (pengganti no rujukan bila belum tersedia)
     const [lastNoKunjungan, setLastNoKunjungan] = useState('');
     const [kunjunganSent, setKunjunganSent] = useState(false);
-    // Menyimpan payload terakhir untuk template cetak rujukan
-    const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
     const [dbTemplateOptions, setDbTemplateOptions] = useState([]);
     const [selectedDbTemplate, setSelectedDbTemplate] = useState('');
@@ -1731,7 +1729,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const noKunj = extractNoKunjungan(json);
             setLastNoKunjungan(noKunj);
             setKunjunganSent(!!noKunj || (res.status >= 200 && res.status < 300));
-            setLastKunjunganPayload(payload);
             // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
             if (payload.rujukLanjut && noRawat) {
                 try {
@@ -2418,570 +2415,46 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         <button
                             type="button"
                             onClick={async () => {
+                                const hasRujukan = rujukanBerhasil && (lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan));
+                                if (!hasRujukan) {
+                                    toast.error('Data rujukan tidak tersedia.');
+                                    return;
+                                }
+                                if (!noRawat) {
+                                    toast.error('No rawat tidak tersedia.');
+                                    return;
+                                }
+                                const encodedNoRawat = encodeURIComponent(noRawat).replace(/%2F/g, '/');
+                                const url = `/pcare/cetak-rujukan/${encodedNoRawat}?norawat=${encodeURIComponent(noRawat)}`;
                                 try {
-                                    console.warn('[CpptSoap] Cetak Rujukan clicked');
-                                    console.warn('[CpptSoap] State check:', {
-                                        hasRujukanData: !!pcareRujukanSubspesialis,
-                                        hasPayload: !!lastKunjunganPayload,
-                                        hasPendaftaran: !!pcarePendaftaran
+                                    const res = await fetch(url, {
+                                        method: 'GET',
+                                        headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
+                                        credentials: 'include'
                                     });
-                                    
-                                    // Prioritaskan data dari tabel pcare_rujuk_subspesialis jika tersedia
-                                    const rujukanData = pcareRujukanSubspesialis || {};
-                                const p = lastKunjunganPayload || {};
-                                const pd = pcarePendaftaran || {};
-                                const findLabel = (opts, val) => {
-                                    if (!val) return '';
-                                    const it = (opts || []).find(o => String(o.value) === String(val));
-                                    return it ? it.label : '';
-                                };
-                                    
-                                    console.warn('[CpptSoap] Starting data fetch...');
-                                    
-                                    const kdPPK = rujukanData.kdPPK || p?.rujukLanjut?.kdppk || '';
-                                    const kdSubSpesialis = rujukanData.kdSubSpesialis || p?.rujukLanjut?.subSpesialis?.kdSubSpesialis1 || '';
-                                    const kdSarana = rujukanData.kdSarana || p?.rujukLanjut?.subSpesialis?.kdSarana || '';
-                                    const tglEstRujuk = rujukanData.tglEstRujuk || p?.rujukLanjut?.tglEstRujuk || '';
-                                    
-                                    // Optimasi: Fetch paralel hanya jika diperlukan
-                                    const fetchPromises = [];
-                                    
-                                    // Ambil data FKTP provider - hanya jika nmPPK belum ada di rujukanData
-                                    let fktpData = null;
-                                    if (kdPPK && (!rujukanData.nmPPK || rujukanData.nmPPK.trim() === '' || rujukanData.nmPPK === '-')) {
-                                        fetchPromises.push(
-                                            fetch(`/api/pcare/provider?start=0&limit=200`, {
-                                                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                                                credentials: 'include',
-                                            })
-                                                .then(res => res.ok ? res.json() : null)
-                                                .then(json => {
-                                                    if (json?.response?.list) {
-                                                        fktpData = json.response.list.find(pr => String(pr.kdProvider) === String(kdPPK));
-                                                    }
-                                                })
-                                                .catch(() => {})
-                                        );
-                                    }
-                                    
-                                    // Ambil jadwal praktek - hanya jika diperlukan (opsional, bisa di-skip)
-                                    const jadwalPraktek = '';
-                                    // Skip fetch jadwal untuk mempercepat - bisa ditambahkan nanti jika diperlukan
-                                    
-                                    // Ambil kabupaten/kota dari config - fetch cepat
-                                    let kabupatenKota = '';
-                                    fetchPromises.push(
-                                        fetch('/api/pcare/config/kabupaten', {
-                                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                                            credentials: 'include',
-                                        })
-                                            .then(res => res.ok ? res.json() : null)
-                                            .then(json => {
-                                                kabupatenKota = json?.kabupaten || '';
-                                            })
-                                            .catch(() => {})
-                                    );
-                                    
-                                    // Tunggu semua fetch selesai (maksimal 2 detik)
-                                    await Promise.race([
-                                        Promise.all(fetchPromises),
-                                        new Promise(resolve => setTimeout(resolve, 2000))
-                                    ]);
-                                    
-                                    // Gunakan data dari tabel jika tersedia, fallback ke payload
-                                    const nmPPK = fktpData?.nmProvider || rujukanData.nmPPK || '';
-                                    
-                                    
-                                    // Cari label dari options jika tersedia
-                                    const providerLabel = findLabel(providerOptions, kdPPK);
-                                const providerParts = providerLabel.split(' — ');
-                                    const kdProvider = providerParts[0] || kdPPK || '';
-                                    // Format FKTP: "Nama FKTP (Kode)" atau hanya "Kode" jika nama tidak ada
-                                    const nmProvider = providerParts[1] || nmPPK || '';
-                                    const fktpDisplay = nmProvider ? `${nmProvider} (${kdProvider})` : kdProvider || '-';
-                                    
-                                    // Format SubSpesialis untuk "Kepada Yth. TS Dokter"
-                                    // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmSubSpesialis
-                                    // Jika kosong, coba dari options yang sudah di-load (tidak fetch lagi untuk performa)
-                                    let subSpDisplay = rujukanData.nmSubSpesialis || '';
-                                    if (!subSpDisplay || subSpDisplay === '-') {
-                                        // Coba dari subSpesialisOptions yang sudah di-load (tidak fetch untuk performa)
-                                        const selectedSubSp = subSpesialisOptions.find(opt => String(opt.value) === String(kdSubSpesialis));
-                                        if (selectedSubSp) {
-                                            subSpDisplay = selectedSubSp.label.split(' — ')[1] || selectedSubSp.label;
-                                        } else {
-                                            // Coba dari findLabel sebagai fallback
-                                            const subSpLabel = findLabel(subSpesialisOptions, kdSubSpesialis);
-                                            if (subSpLabel) {
-                                                subSpDisplay = subSpLabel.split(' — ')[1] || subSpLabel;
-                                            } else {
-                                                subSpDisplay = '-';
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Format Provider untuk "Di"
-                                    // Prioritas: ambil langsung dari tabel pcare_rujuk_subspesialis.nmPPK
-                                    // Jika kosong, coba dari provider options atau fallback ke '-'
-                                    let diDisplay = '';
-                                    // Cek nmPPK dari rujukanData (tabel pcare_rujuk_subspesialis)
-                                    if (rujukanData.nmPPK && rujukanData.nmPPK.trim() !== '' && rujukanData.nmPPK !== '-') {
-                                        diDisplay = rujukanData.nmPPK.trim();
-                                    } else {
-                                        // Jika kosong, coba dari fktpData yang sudah di-fetch
-                                        if (fktpData && fktpData.nmProvider && fktpData.nmProvider.trim() !== '') {
-                                            diDisplay = fktpData.nmProvider.trim();
-                                        } else {
-                                            // Coba dari providerOptions yang sudah di-load
-                                            const selectedProvider = providerOptions.find(opt => String(opt.value) === String(kdPPK));
-                                            if (selectedProvider) {
-                                                const providerName = selectedProvider.label.split(' — ')[1] || selectedProvider.meta?.nmppk || '';
-                                                if (providerName && providerName.trim() !== '') {
-                                                    diDisplay = providerName.trim();
-                                                }
-                                            }
-                                            // Jika masih kosong, coba dari nmProvider atau nmPPK yang sudah di-parse
-                                            if (!diDisplay || diDisplay === '') {
-                                                diDisplay = (nmProvider && nmProvider.trim() !== '') ? nmProvider.trim() : 
-                                                           (nmPPK && nmPPK.trim() !== '') ? nmPPK.trim() : '-';
-                                            }
-                                        }
-                                    }
-                                    
-                                    
-                                    const fmtIdDateShort = (d) => {
-                                        if (!d) return '-';
-                                        try {
-                                            if (typeof d === 'string' && d.includes('-')) {
-                                                const parts = d.split('-');
-                                                if (parts.length === 3) {
-                                                    let dt;
-                                                    if (parts[0].length === 2 && parts[2].length === 4) {
-                                                        // Format DD-MM-YYYY
-                                                        dt = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                                    } else if (parts[0].length === 4) {
-                                                        // Format YYYY-MM-DD
-                                                        dt = new Date(d);
-                                                    } else {
-                                                        dt = new Date(d);
-                                                    }
-                                                    const day = String(dt.getDate()).padStart(2, '0');
-                                                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                                    const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
-                                                    const year = dt.getFullYear();
-                                                    return `${day}-${month}-${year}`;
-                                                }
-                                            }
-                                            const dt = new Date(d);
-                                            const day = String(dt.getDate()).padStart(2, '0');
-                                            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                            const month = monthNames[dt.getMonth()] || String(dt.getMonth() + 1).padStart(2, '0');
-                                            const year = dt.getFullYear();
-                                            return `${day}-${month}-${year}`;
-                                        } catch { return String(d); }
-                                    };
-                                    
-                                    const tglEstStr = tglEstRujuk ? fmtIdDateShort(tglEstRujuk) : '-';
-                                    
-                                    // Hitung tanggal validitas (90 hari dari tglEstRujuk)
-                                    let tglValiditasStr = '-';
-                                    if (tglEstRujuk) {
-                                        try {
-                                            let tglEstDate;
-                                            if (typeof tglEstRujuk === 'string' && tglEstRujuk.includes('-')) {
-                                                const parts = tglEstRujuk.split('-');
-                                                if (parts.length === 3) {
-                                                    if (parts[0].length === 2 && parts[2].length === 4) {
-                                                        tglEstDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-                                                    } else {
-                                                        tglEstDate = new Date(tglEstRujuk);
-                                                    }
-                                                } else {
-                                                    tglEstDate = new Date(tglEstRujuk);
-                                                }
-                                            } else {
-                                                tglEstDate = new Date(tglEstRujuk);
-                                            }
-                                            const tglValiditas = new Date(tglEstDate);
-                                            tglValiditas.setDate(tglValiditas.getDate() + 90);
-                                            // Gunakan helper untuk mendapatkan tanggal dengan timezone yang benar
-                                            const tz = getAppTimeZone();
-                                            const dateParts = tglValiditas.toLocaleDateString('en-GB', { timeZone: tz }).split('/');
-                                            if (dateParts.length === 3) {
-                                                tglValiditasStr = fmtIdDateShort(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
-                                            } else {
-                                                tglValiditasStr = fmtIdDateShort(tglValiditas.toISOString().split('T')[0]);
-                                            }
-                                        } catch {
-                                            tglValiditasStr = '-';
-                                        }
-                                    }
-                                    
-                                    // Data pasien
-                                    const noKunjungan = rujukanData.noKunjungan || lastNoKunjungan || '';
-                                    const namaPasien = rujukanData.nm_pasien || pd?.nm_pasien || pd?.nama || '-';
-                                    const noKartu = rujukanData.noKartu || pd?.noKartu || pd?.no_kartu || '-';
-                                    
-                                    // Format diagnosa: "Nama Diagnosa (Kode)" atau hanya "Kode" jika nama tidak ada
-                                    const kdDiag1 = rujukanData.kdDiag1 || '';
-                                    const nmDiag1 = rujukanData.nmDiag1 || '';
-                                    const diagnosaDisplay = nmDiag1 ? `${nmDiag1} (${kdDiag1})` : (kdDiag1 || '-');
-                                    
-                                    // Umur: hanya angka tanpa satuan
-                                    const umur = rujukanData.umur || rujukanData.umurdaftar || '';
-                                    const umurDisplay = umur ? String(umur) : '-';
-                                    
-                                    const tglLahir = rujukanData.tgl_lahir || '';
-                                    const tglLahirStr = tglLahir ? fmtIdDateShort(tglLahir) : '-';
-                                    
-                                    // Format status: "Kode Deskripsi"
-                                    const statusPeserta = rujukanData.statusPeserta || '1';
-                                    const statusDisplay = statusPeserta === '1' ? '1 Utama/Tanggungan' : 
-                                                          statusPeserta === '2' ? '2 Istri' : 
-                                                          statusPeserta === '3' ? '3 Anak' : 
-                                                          `${statusPeserta} Lainnya`;
-                                    
-                                    // Format gender: "L (L / P)" atau "P (L / P)"
-                                    const jenisKelamin = rujukanData.jenisKelamin || pd?.jk || pd?.jenis_kelamin || 'L';
-                                    const genderDisplay = jenisKelamin === 'L' ? 'L (L / P)' : jenisKelamin === 'P' ? 'P (L / P)' : 'L (L / P)';
-                                    
-                                    const tglDaftar = rujukanData.tglDaftar || '';
-                                    const tglDaftarStr = tglDaftar ? fmtIdDateShort(tglDaftar) : '-';
-                                    const nmDokter = rujukanData.nm_dokter || '';
-                                    
-                                    // Format jadwal praktek: "Hari : Jam" dari jadwal yang sudah di-parse
-                                    let jadwalPraktekDisplay = '';
-                                    if (jadwalPraktek) {
-                                        // Parse jadwal jika format string, atau gunakan langsung jika sudah di-parse
-                                        const DAY_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-                                        const parseJadwal = (text) => {
-                                            const result = {};
-                                            if (!text || typeof text !== 'string') return result;
-                                            const re = /(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)\s*:/gi;
-                                            let match;
-                                            const segments = [];
-                                            while ((match = re.exec(text)) !== null) {
-                                                segments.push({ day: match[1], start: match.index, end: null });
-                                            }
-                                            for (let i = 0; i < segments.length; i++) {
-                                                segments[i].end = i < segments.length - 1 ? segments[i + 1].start : text.length;
-                                            }
-                                            segments.forEach(seg => {
-                                                const raw = text.slice(seg.start, seg.end);
-                                                const [dayLabel, rest] = raw.split(':');
-                                                if (!dayLabel || !rest) return;
-                                                const day = dayLabel.trim();
-                                                const times = rest.replace(/\n/g, ' ').split(/[,;]+/).map(s => s.trim()).filter(Boolean);
-                                                if (times.length) {
-                                                    result[day] = times;
-                                                }
-                                            });
-                                            return result;
-                                        };
-                                        const jadwalParsed = parseJadwal(jadwalPraktek);
-                                        // Ambil jadwal untuk hari yang sesuai dengan tglEstRujuk jika ada
-                                        if (tglEstRujuk) {
-                                            try {
-                                                const tglEstDate = new Date(tglEstRujuk.includes('-') && tglEstRujuk.split('-')[0].length === 2 
-                                                    ? `${tglEstRujuk.split('-')[2]}-${tglEstRujuk.split('-')[1]}-${tglEstRujuk.split('-')[0]}`
-                                                    : tglEstRujuk);
-                                                const dayIndex = tglEstDate.getDay();
-                                                const dayName = DAY_ORDER[dayIndex === 0 ? 6 : dayIndex - 1]; // Convert Sunday=0 to Monday=0
-                                                if (jadwalParsed[dayName] && jadwalParsed[dayName].length > 0) {
-                                                    jadwalPraktekDisplay = `${dayName} : ${jadwalParsed[dayName].join(' - ')}`;
-                                                }
-                                        } catch {
-                                            // Fallback: ambil jadwal pertama yang ada
-                                            const firstDay = Object.keys(jadwalParsed)[0];
-                                            if (firstDay && jadwalParsed[firstDay].length > 0) {
-                                                jadwalPraktekDisplay = `${firstDay} : ${jadwalParsed[firstDay].join(' - ')}`;
-                                            }
-                                        }
-                                        }
-                                    }
-
-                                    console.warn('[CpptSoap] Data prepared:', { 
-                                        noKunjungan, 
-                                        namaPasien, 
-                                        noKartu,
-                                        tglEstRujuk,
-                                        kdSubSpesialis,
-                                        kdSarana,
-                                        kdPPK
-                                    });
-                                    console.warn('[CpptSoap] Preparing print data...', { noKunjungan, namaPasien, noKartu });
-                                    
-                                    // Generate barcode menggunakan library JsBarcode (CDN)
-                                    const barcodeSvg = noKunjungan ? `<svg id="barcode"></svg>` : '';
-
-                                    // Cari logo BPJS (non-blocking, gunakan default jika gagal)
-                                const base = window.location.origin || '';
-                                const logoCandidates = [
-                                    `${base}/img/BPJS_Kesehatan_logo.png`,
-                                    '/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8000/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8001/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8006/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8007/img/BPJS_Kesehatan_logo.png',
-                                    'http://127.0.0.1:8008/img/BPJS_Kesehatan_logo.png',
-                                ];
-                                    
-                                    // Resolve logo dengan timeout singkat untuk performa
-                                    let logoSrc = '/img/BPJS_Kesehatan_logo.png';
-                                    try {
-                                const fetchAsDataURL = async (url) => {
-                                            const controller = new AbortController();
-                                            const timeoutId = setTimeout(() => controller.abort(), 500); // Timeout 500ms per URL
-                                            try {
-                                                const r = await fetch(url, { method: 'GET', signal: controller.signal });
-                                                clearTimeout(timeoutId);
-                                    if (!r.ok) throw new Error('not ok');
-                                    const blob = await r.blob();
-                                                return await new Promise((resolve, reject) => {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => resolve(reader.result);
-                                                    reader.onerror = reject;
-                                        reader.readAsDataURL(blob);
-                                    });
-                                            } catch (e) {
-                                                clearTimeout(timeoutId);
-                                                throw e;
-                                            }
-                                        };
-                                        
-                                        // Coba resolve logo dengan timeout total 1 detik (lebih cepat)
-                                        const logoPromise = Promise.race([
-                                            (async () => {
-                                                // Coba hanya 2 URL pertama untuk mempercepat
-                                                for (const u of logoCandidates.slice(0, 2)) {
-                                        try {
-                                            const dataUrl = await fetchAsDataURL(u);
-                                            if (dataUrl) return dataUrl;
-                                        } catch { /* try next candidate */ }
-                                    }
-                                    return '/img/BPJS_Kesehatan_logo.png';
-                                            })(),
-                                            new Promise((resolve) => setTimeout(() => resolve('/img/BPJS_Kesehatan_logo.png'), 1000))
-                                        ]);
-                                        
-                                        logoSrc = await logoPromise;
-                                    } catch (e) {
-                                        console.warn('[CpptSoap] Error resolving logo:', e);
-                                        // Gunakan default logo jika gagal
-                                    }
-
-                                    console.warn('[CpptSoap] Opening print window...');
-                                    // Pastikan window terbuka meskipun ada error sebelumnya
-                                    let win = null;
-                                    try {
-                                        win = window.open('', 'CetakRujukan', 'width=900,height=1000');
-                                        if (!win || win.closed || typeof win.closed === 'undefined') {
-                                            toast.error('Popup diblokir oleh browser. Silakan izinkan popup untuk halaman ini.');
-                                            return;
-                                        }
-                                        console.warn('[CpptSoap] Window opened successfully');
-                                    } catch (e) {
-                                        console.error('[CpptSoap] Error opening window:', e);
-                                        toast.error('Gagal membuka window cetak. Error: ' + (e.message || e));
+                                    if (!res.ok) {
+                                        toast.error('URL cetak rujukan tidak dapat diakses.');
                                         return;
                                     }
-                                    
-                                const html = `<!doctype html>
-<html lang="id"><head><meta charset="utf-8"/><title>Surat Rujukan FKTP</title>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-<style>
-  @page { size: A4 portrait; margin: 12mm; }
-  html, body { height: 100%; margin: 0; padding: 0; }
-  body {
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    font-family: Arial, Helvetica, sans-serif; color: #111;
-    width: 186mm; /* 210mm - (12mm + 12mm) */
-  }
-  .wrap { width: 100%; margin: 0 auto; padding: 0; }
-  .header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    border-bottom: 3px solid #0d47a1; padding-bottom: 10px; margin-bottom: 14px;
-  }
-  .brand { display: flex; align-items: center; gap: 16px; }
-  .brand img { height: 50px; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
-  .brand-title { font-size: 30px; font-weight: bold; line-height: 1; }
-  .brand-title .bpjs { color: #1a237e; }
-  .brand-title .kesehatan { color: #2e7d32; }
-  .brand-sub { font-size: 14px; color: #1a237e; margin-top: 2px; }
-  .header-right { text-align: right; font-size: 12px; color: #444; }
-  .header-right div { margin-bottom: 4px; }
-  .doc-title { font-size: 20px; font-weight: bold; text-align: center; margin: 12px 0; }
-  .rujukan-box {
-    border: 2px solid #333; padding: 12px; margin: 12px 0; background: #fff;
-    display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;
-  }
-  .rujukan-left { flex: 1; }
-  .rujukan-right { text-align: center; }
-  .rujukan-row { display: flex; gap: 8px; margin: 6px 0; font-size: 13px; }
-  .rujukan-label { min-width: 140px; font-weight: bold; }
-  .rujukan-value { flex: 1; }
-  #barcode { max-width: 120px; height: auto; }
-  .pasien-section { margin: 16px 0; }
-  .pasien-title { font-weight: bold; margin-bottom: 8px; font-size: 13px; }
-  .pasien-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .pasien-row { display: flex; gap: 8px; margin: 4px 0; font-size: 13px; }
-  .pasien-label { min-width: 140px; font-weight: bold; }
-  .pasien-value { flex: 1; }
-  .footer-section { margin-top: 20px; }
-  .footer-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 13px; }
-  .footer-left { flex: 1; }
-  .footer-right { text-align: right; }
-  .small { font-size: 11px; color: #666; }
-  .terimakasih { margin-top: 0; margin-bottom: 8px; font-size: 13px; }
-  .footer-row-top { margin-bottom: 8px; font-size: 13px; }
-  .validitas-wrapper { flex: 1; text-align: left; display: flex; flex-direction: column; }
-  .validitas { font-size: 12px; margin-top: 0; }
-  .ttd-section { margin-top: 20px; font-size: 13px; }
-  .ttd-date { margin-bottom: 0; text-align: right; }
-  .ttd-name { font-weight: bold; margin-top: 0; text-align: right; }
-  .ttd-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-top: 0; }
-</style></head>
-<body>
-  <div class="wrap">
-    <div class="header">
-      <div class="brand">
-        ${logoSrc ? `<img src="${logoSrc}" alt="BPJS Kesehatan"/>` : ''}
-        </div>
-      <div class="header-right">
-        <div><strong>Kedeputian Wilayah</strong></div>
-        <div>KEDEPUTIAN WILAYAH VI</div>
-        <div style="margin-top: 8px;"><strong>Kantor Cabang</strong></div>
-        <div>SURAKARTA</div>
-      </div>
-    </div>
-    <div class="doc-title">Surat Rujukan FKTP</div>
-
-    <div class="rujukan-box">
-      <div class="rujukan-left">
-        <div class="rujukan-row">
-          <div class="rujukan-label">No. Rujukan</div>
-          <div class="rujukan-value">: ${noKunjungan}</div>
-        </div>
-        <div class="rujukan-row">
-          <div class="rujukan-label">FKTP</div>
-          <div class="rujukan-value">: ${fktpDisplay}</div>
-        </div>
-        ${kabupatenKota ? `<div class="rujukan-row">
-          <div class="rujukan-label">Kabupaten / Kota</div>
-          <div class="rujukan-value">: ${kabupatenKota}</div>
-        </div>` : ''}
-        <div class="rujukan-row">
-          <div class="rujukan-label">Kepada Yth. TS Dokter</div>
-          <div class="rujukan-value">: ${subSpDisplay}</div>
-        </div>
-        <div class="rujukan-row">
-          <div class="rujukan-label">Di</div>
-          <div class="rujukan-value">: ${diDisplay}</div>
-        </div>
-      </div>
-      <div class="rujukan-right">
-        ${barcodeSvg}
-      </div>
-    </div>
-
-    <div class="pasien-section">
-      <div class="pasien-title">Mohon pemeriksaan dan penangan lebih lanjut pasien :</div>
-      <div class="pasien-grid">
-        <div class="pasien-row">
-          <div class="pasien-label">Nama</div>
-          <div class="pasien-value">: ${namaPasien}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">No. Kartu BPJS</div>
-          <div class="pasien-value">: ${noKartu}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Diagnosa</div>
-          <div class="pasien-value">: ${diagnosaDisplay}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Umur</div>
-          <div class="pasien-value">: ${umurDisplay}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Tahun</div>
-          <div class="pasien-value">: ${tglLahirStr}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Status</div>
-          <div class="pasien-value">: ${statusDisplay}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Gender</div>
-          <div class="pasien-value">: ${genderDisplay}</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Catatan</div>
-          <div class="pasien-value">:</div>
-        </div>
-        <div class="pasien-row">
-          <div class="pasien-label">Telah diberikan</div>
-          <div class="pasien-value">:</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-section">
-      <div class="ttd-section">
-        <div style="margin-bottom: 4px; text-align: right;">Salam sejawat,</div>
-        <div class="ttd-date">${tglDaftarStr}</div>
-        <div style="height: 50px; margin-top: 8px;"></div>
-        <div class="ttd-row">
-          <div class="validitas-wrapper">
-            <div class="terimakasih">Atas bantuannya, diucapkan terima kasih</div>
-            <div class="footer-row-top">
-              <div><strong>Tgl. Rencana Berkunjung</strong>: ${tglEstStr}</div>
-              ${jadwalPraktekDisplay ? `<div><strong>Jadwal Praktek</strong>: ${jadwalPraktekDisplay}</div>` : ''}
-        </div>
-            <div class="validitas">
-              Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : ${tglValiditasStr}
-        </div>
-      </div>
-          <div class="ttd-name">${nmDokter || '-'}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    ${noKunjungan ? `JsBarcode("#barcode", "${noKunjungan}", { format: "CODE128", width: 2, height: 50, displayValue: false });` : ''}
-    window.onload = function(){
-      window.print();
-      setTimeout(function(){ window.close(); }, 600);
-    };
-  </script>
-</body></html>`;
-                                    console.warn('[CpptSoap] Writing HTML to window...');
-                                    try {
-                                        if (!win || win.closed) {
-                                            throw new Error('Window sudah ditutup');
-                                        }
-                                win.document.write(html);
-                                win.document.close();
-                                        console.warn('[CpptSoap] HTML written successfully');
-                                    } catch (e) {
-                                        console.error('[CpptSoap] Error writing to window:', e);
-                                        toast.error('Gagal menulis konten ke window cetak. Error: ' + (e.message || e));
-                                        if (win && !win.closed) {
-                                            win.close();
-                                        }
-                                    }
-                                } catch (e) {
-                                    console.error('[CpptSoap] Error in Cetak Rujukan:', e);
-                                    toast.error('Terjadi kesalahan saat mencetak rujukan: ' + (e.message || e));
+                                } catch {
+                                    toast.error('URL cetak rujukan tidak dapat diakses.');
+                                    return;
+                                }
+                                const win = window.open(url, '_blank', 'noopener,noreferrer');
+                                if (!win) {
+                                    toast.error('Popup diblokir. Izinkan popup untuk mencetak rujukan.');
+                                    return;
                                 }
                             }}
-                            className="bg-black hover:bg-neutral-800 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
-                            title="Cetak Rujukan"
+                            className="inline-flex items-center gap-2 border rounded px-2 py-1 text-xs w-full sm:w-auto justify-center bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200"
+                            title="Rujuk PCare"
                         >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 9V2h12v7"></path>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <path d="M6 14h12v8H6z"></path>
                             </svg>
-                            Cetak Rujukan
+                            <span>Rujuk PCare</span>
                         </button>
                     )}
                     <button
