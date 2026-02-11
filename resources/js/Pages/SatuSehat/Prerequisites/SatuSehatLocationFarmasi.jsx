@@ -13,12 +13,16 @@ import Toaster from "@/Components/ui/Toaster";
 import { MapPin, Edit2, Trash2, Building2, RefreshCw, Loader2, CheckCircle2, Info, X, Globe } from "lucide-react";
 
 export default function SatuSehatLocationFarmasi() {
-  const csrfToken = (() => {
+  const getCsrfToken = () => {
     const p = `; ${document.cookie}`;
-    const r = p.split('; XSRF-TOKEN=');
-    const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-    return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  })();
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
 
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
@@ -103,6 +107,17 @@ export default function SatuSehatLocationFarmasi() {
       addToast("danger", "Validasi", "Isi ID Organization SATUSEHAT dulu.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi`, {
@@ -110,11 +125,10 @@ export default function SatuSehatLocationFarmasi() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           kd_bangsal: String(bangsalValue),
           id_organisasi_satusehat: String(orgSubunitId),
@@ -148,15 +162,23 @@ export default function SatuSehatLocationFarmasi() {
     if (!kd_bangsal) return;
     if (!confirm(`Hapus mapping untuk bangsal ${kd_bangsal}?`)) return;
     try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
       });
       const json = await res.json();
       if (res.status === 419) {
@@ -194,6 +216,17 @@ export default function SatuSehatLocationFarmasi() {
       addToast("danger", "Validasi", "ID Organization dan ID Location wajib diisi.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
@@ -201,11 +234,10 @@ export default function SatuSehatLocationFarmasi() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           id_organisasi_satusehat: String(updateOrgId),
           id_lokasi_satusehat: String(updateLocId),

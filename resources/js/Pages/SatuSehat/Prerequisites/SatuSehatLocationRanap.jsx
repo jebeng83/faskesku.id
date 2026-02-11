@@ -13,12 +13,16 @@ import Toaster from "@/Components/ui/Toaster";
 import { MapPin, Edit2, Trash2, Building2, RefreshCw, Loader2, CheckCircle2, Info, X, Globe } from "lucide-react";
 
 export default function SatuSehatLocationRanap() {
-  const csrfToken = (() => {
+  const getCsrfToken = () => {
     const p = `; ${document.cookie}`;
-    const r = p.split('; XSRF-TOKEN=');
-    const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-    return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  })();
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -107,6 +111,17 @@ export default function SatuSehatLocationRanap() {
       addToast("danger", "Validasi", "Isi ID Organization SATUSEHAT dulu.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-ranap`, {
@@ -114,11 +129,10 @@ export default function SatuSehatLocationRanap() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           kd_kamar: String(kamarValue),
           id_organisasi_satusehat: String(orgSubunitId),
@@ -152,15 +166,23 @@ export default function SatuSehatLocationRanap() {
     if (!kd_kamar) return;
     if (!confirm(`Hapus mapping untuk kamar ${kd_kamar}?`)) return;
     try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
       const res = await fetch(`/api/satusehat/mapping/lokasi-ranap/${encodeURIComponent(kd_kamar)}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
       });
       const json = await res.json();
       if (res.status === 419) {
@@ -199,6 +221,17 @@ export default function SatuSehatLocationRanap() {
       addToast("danger", "Validasi", "ID Organization dan ID Location wajib diisi.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-ranap/${encodeURIComponent(kd_kamar)}`, {
@@ -206,11 +239,10 @@ export default function SatuSehatLocationRanap() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           id_organisasi_satusehat: String(updateOrgId),
           id_lokasi_satusehat: String(updateLocId),

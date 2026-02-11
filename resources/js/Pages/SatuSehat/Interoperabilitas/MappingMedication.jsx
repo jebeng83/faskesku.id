@@ -22,12 +22,16 @@ import {
 } from "lucide-react";
 
 export default function MappingMedication() {
-    const csrfToken = (() => {
+    const getCsrfToken = () => {
         const p = `; ${document.cookie}`;
-        const r = p.split('; XSRF-TOKEN=');
-        const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-        return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    })();
+        const r = p.split("; XSRF-TOKEN=");
+        const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+        try {
+            return raw ? decodeURIComponent(raw) : "";
+        } catch {
+            return raw || "";
+        }
+    };
 
     // State
     const [loading, setLoading] = useState(false);
@@ -133,6 +137,16 @@ export default function MappingMedication() {
             return;
         }
 
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            addToast(
+                "danger",
+                "Sesi kedaluwarsa",
+                "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+            );
+            return;
+        }
+
         setSaving(true);
         try {
             const res = await fetch("/api/satusehat/mapping-obat" + (sync ? "?sync=1" : ""), {
@@ -140,11 +154,10 @@ export default function MappingMedication() {
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
                 body: JSON.stringify(form)
             });
 
@@ -197,15 +210,24 @@ export default function MappingMedication() {
     const handleDelete = async (kode) => {
         if (!confirm("Hapus mapping ini?")) return;
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                addToast(
+                    "danger",
+                    "Sesi kedaluwarsa",
+                    "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+                );
+                return;
+            }
+
             const res = await fetch(`/api/satusehat/mapping-obat/${kode}`, {
                 method: "DELETE",
                 headers: {
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
             });
             if (res.status === 419) {
                 addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");

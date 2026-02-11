@@ -22,12 +22,16 @@ import {
 
 
 export default function MappingPractitioner() {
-    const csrfToken = (() => {
+    const getCsrfToken = () => {
         const p = `; ${document.cookie}`;
-        const r = p.split('; XSRF-TOKEN=');
-        const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-        return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    })();
+        const r = p.split("; XSRF-TOKEN=");
+        const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+        try {
+            return raw ? decodeURIComponent(raw) : "";
+        } catch {
+            return raw || "";
+        }
+    };
 
     // State
     const [loading, setLoading] = useState(false);
@@ -117,6 +121,16 @@ export default function MappingPractitioner() {
             return;
         }
 
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            addToast(
+                "danger",
+                "Sesi kedaluwarsa",
+                "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+            );
+            return;
+        }
+
         setSyncLoading(true);
         try {
             // Direct call to searchAndCreate
@@ -125,11 +139,10 @@ export default function MappingPractitioner() {
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
                 body: JSON.stringify({ nik: pegawai.no_ktp })
             });
 
@@ -166,15 +179,24 @@ export default function MappingPractitioner() {
         if (!confirm("Apakah Anda yakin ingin menghapus mapping ini?")) return;
 
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                addToast(
+                    "danger",
+                    "Sesi kedaluwarsa",
+                    "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+                );
+                return;
+            }
+
             const res = await fetch(`/api/satusehat/practitioner-mapping/${id}`, {
                 method: "DELETE",
                 headers: {
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
             });
 
             if (res.status === 419) {
@@ -210,16 +232,25 @@ export default function MappingPractitioner() {
 
     const saveEdit = async () => {
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                addToast(
+                    "danger",
+                    "Sesi kedaluwarsa",
+                    "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+                );
+                return;
+            }
+
             const res = await fetch(`/api/satusehat/practitioner-mapping/${editingId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
                 body: JSON.stringify(editForm)
             });
 

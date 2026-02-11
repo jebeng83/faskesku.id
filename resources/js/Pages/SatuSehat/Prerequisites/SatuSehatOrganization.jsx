@@ -27,7 +27,16 @@ import {
 } from "lucide-react";
 
 export default function SatuSehatOrganization() {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  const getCsrfToken = () => {
+    const p = `; ${document.cookie}`;
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -109,6 +118,17 @@ export default function SatuSehatOrganization() {
       addToast("warning", "Departemen belum dipilih", "Silakan pilih departemen terlebih dahulu.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -124,9 +144,10 @@ export default function SatuSehatOrganization() {
           "Content-Type": "application/json",
           Accept: "application/json",
           "X-CSRF-TOKEN": csrfToken,
+          "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       const json = await res.json();
@@ -165,6 +186,15 @@ export default function SatuSehatOrganization() {
     const ok = window.confirm(`Hapus mapping untuk departemen ${dep_id}?`);
     if (!ok) return;
     try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
       const res = await fetch(`/api/satusehat/mapping/departemen/${encodeURIComponent(dep_id)}`, {
         method: "DELETE",
         headers: {
@@ -172,7 +202,7 @@ export default function SatuSehatOrganization() {
           "X-CSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
       });
       const json = await res.json();
       if (res.status === 419) {
@@ -224,6 +254,17 @@ export default function SatuSehatOrganization() {
 
   async function submitUpdate() {
     if (!updateSubunit?.id) return;
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/organization/${encodeURIComponent(updateSubunit.id)}`, {
@@ -234,7 +275,7 @@ export default function SatuSehatOrganization() {
           "X-CSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ name: updateName, active: !!updateActive }),
       });
       const json = await res.json();

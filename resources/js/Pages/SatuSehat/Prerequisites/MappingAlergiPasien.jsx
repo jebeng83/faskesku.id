@@ -23,12 +23,16 @@ import {
 } from "lucide-react";
 
 export default function MappingAlergiPasien({ initialMappings = [], itemAlergi = [] }) {
-    const csrfToken = (() => {
+    const getCsrfToken = () => {
         const p = `; ${document.cookie}`;
-        const r = p.split('; XSRF-TOKEN=');
-        const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-        return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    })();
+        const r = p.split("; XSRF-TOKEN=");
+        const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+        try {
+            return raw ? decodeURIComponent(raw) : "";
+        } catch {
+            return raw || "";
+        }
+    };
 
     // State
     const [loading, setLoading] = useState(false);
@@ -158,16 +162,25 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
         e.preventDefault();
         setFormLoading(true);
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                addToast(
+                    "danger",
+                    "Sesi kedaluwarsa",
+                    "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+                );
+                return;
+            }
+
             const res = await fetch("/api/satusehat/mapping-alergi", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
                 body: JSON.stringify(formData)
             });
 
@@ -213,15 +226,24 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
     const handleDelete = async (id) => {
         if (!confirm("Hapus mapping ini?")) return;
         try {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                addToast(
+                    "danger",
+                    "Sesi kedaluwarsa",
+                    "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+                );
+                return;
+            }
+
             const res = await fetch(`/api/satusehat/mapping-alergi/${id}`, {
                 method: "DELETE",
                 headers: {
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
                     "X-XSRF-TOKEN": csrfToken,
                     "X-Requested-With": "XMLHttpRequest",
                 },
-                credentials: 'include',
+                credentials: "include",
             });
             if (res.status === 419) {
                 addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
