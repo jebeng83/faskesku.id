@@ -85,10 +85,6 @@ if (!token) {
                      if (!headers.has('X-XSRF-TOKEN')) {
                         headers.set('X-XSRF-TOKEN', cookieToken);
                      }
-                     // Also set X-CSRF-TOKEN to cookie value for compatibility
-                     if (!headers.has('X-CSRF-TOKEN')) {
-                        headers.set('X-CSRF-TOKEN', cookieToken);
-                     }
                 } else if (metaToken) {
                     // Fallback to meta token if no cookie
                     if (!headers.has('X-CSRF-TOKEN')) {
@@ -128,7 +124,6 @@ const refreshCsrfToken = async () => {
         const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
         
         if (c) {
-            window.axios.defaults.headers.common['X-CSRF-TOKEN'] = c;
             window.axios.defaults.headers.common['X-XSRF-TOKEN'] = c;
             return c;
         }
