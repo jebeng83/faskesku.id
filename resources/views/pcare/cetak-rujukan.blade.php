@@ -179,7 +179,7 @@
                     </tr>
                     <tr>
                         <td colspan="3" style="font-size: 9pt; padding-top: 5px;">
-                            Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : {{ $tglBerlaku }}
+                            Surat rujukan berlaku 1[satu] kali kunjungan, berlaku sampai dengan : <span style="white-space: nowrap;">{{ $tglBerlaku }}</span>
                         </td>
                     </tr>
                 </table>
