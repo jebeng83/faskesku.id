@@ -2279,6 +2279,23 @@ class PcareController extends Controller
     }
 
     /**
+     * Ambil data pendaftaran PCare berdasarkan nomor rawat via query string.
+     * Digunakan untuk menghindari masalah karakter '/' pada path param.
+     */
+    public function getPendaftaranByRawatQuery(Request $request)
+    {
+        $noRawat = trim((string) $request->query('no_rawat', ''));
+        if ($noRawat === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter no_rawat wajib diisi',
+            ], 422);
+        }
+
+        return $this->getPendaftaranByRawat($noRawat);
+    }
+
+    /**
      * Add Data Pendaftaran (BPJS PCare Catalog)
      * Endpoint: POST {Base URL}/{Service Name}/pendaftaran
      * Content-Type: text/plain

@@ -1215,7 +1215,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         try { await toggleKunjungan(true); } catch (_) {}
         // Ambil data pendaftaran dari tabel pcare_pendaftaran
         try {
-            const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
+            const params = new URLSearchParams({ no_rawat: noRawat });
+            const res = await fetch(`/api/pcare/pendaftaran/rawat?${params.toString()}`, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'include',
             });
@@ -1354,8 +1355,9 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setKunjunganResult(null);
         if (checked) {
             try {
-                // Gunakan endpoint PCare yang benar: /api/pcare/kunjungan/preview/{no_rawat}
-                const res = await fetch(`/api/pcare/kunjungan/preview/${encodeURIComponent(noRawat)}`, {
+                // Gunakan endpoint PCare yang benar: /api/pcare/kunjungan/preview
+                const params = new URLSearchParams({ no_rawat: noRawat });
+                const res = await fetch(`/api/pcare/kunjungan/preview?${params.toString()}`, {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     credentials: 'include',
                 });

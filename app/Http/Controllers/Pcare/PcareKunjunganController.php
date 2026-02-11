@@ -1947,6 +1947,23 @@ class PcareKunjunganController extends Controller
     }
 
     /**
+     * Preview payload kunjungan PCare via query string.
+     * Digunakan untuk menghindari masalah karakter '/' pada path param.
+     */
+    public function previewQuery(Request $request)
+    {
+        $noRawat = trim((string) $request->query('no_rawat', ''));
+        if ($noRawat === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter no_rawat wajib diisi',
+            ], 422);
+        }
+
+        return $this->preview($noRawat);
+    }
+
+    /**
      * Ambil data kunjungan dari database.
      */
     private function getKunjunganData(string $noRawat)

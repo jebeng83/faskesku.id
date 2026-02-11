@@ -120,6 +120,50 @@ destroy.delete = (args: { noKunjungan: string | number } | [noKunjungan: string 
 })
 
 /**
+* @see \App\Http\Controllers\Pcare\PcareKunjunganController::previewQuery
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1953
+* @route '/api/pcare/kunjungan/preview'
+*/
+export const previewQuery = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: previewQuery.url(options),
+    method: 'get',
+})
+
+previewQuery.definition = {
+    methods: ["get","head"],
+    url: '/api/pcare/kunjungan/preview',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareKunjunganController::previewQuery
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1953
+* @route '/api/pcare/kunjungan/preview'
+*/
+previewQuery.url = (options?: RouteQueryOptions) => {
+    return previewQuery.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareKunjunganController::previewQuery
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1953
+* @route '/api/pcare/kunjungan/preview'
+*/
+previewQuery.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: previewQuery.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Pcare\PcareKunjunganController::previewQuery
+* @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1953
+* @route '/api/pcare/kunjungan/preview'
+*/
+previewQuery.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: previewQuery.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\Pcare\PcareKunjunganController::preview
 * @see app/Http/Controllers/Pcare/PcareKunjunganController.php:1924
 * @route '/api/pcare/kunjungan/preview/{no_rawat}'
@@ -243,6 +287,6 @@ getNoKunjungan.head = (args: { no_rawat: string | number } | [no_rawat: string |
     method: 'head',
 })
 
-const PcareKunjunganController = { store, update, destroy, preview, getNoKunjungan }
+const PcareKunjunganController = { store, update, destroy, previewQuery, preview, getNoKunjungan }
 
 export default PcareKunjunganController
