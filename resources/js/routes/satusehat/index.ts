@@ -1,8 +1,10 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import prerequisites from './prerequisites'
 import interoperabilitas from './interoperabilitas'
+import mappingAlergi from './mapping-alergi'
+import mappingObat from './mapping-obat'
 /**
-* @see routes/web.php:3173
+* @see routes/web.php:3221
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +18,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3173
+* @see routes/web.php:3221
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3173
+* @see routes/web.php:3221
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -33,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3173
+* @see routes/web.php:3221
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -42,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3252
+* @see routes/web.php:3254
 * @route '/satusehat/mapping-practitioner'
 */
 export const mappingPractitioner = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -56,7 +58,7 @@ mappingPractitioner.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3252
+* @see routes/web.php:3254
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.url = (options?: RouteQueryOptions) => {
@@ -64,7 +66,7 @@ mappingPractitioner.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3252
+* @see routes/web.php:3254
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -73,7 +75,7 @@ mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> 
 })
 
 /**
-* @see routes/web.php:3252
+* @see routes/web.php:3254
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -86,6 +88,8 @@ const satusehat = {
     prerequisites: Object.assign(prerequisites, prerequisites),
     interoperabilitas: Object.assign(interoperabilitas, interoperabilitas),
     mappingPractitioner: Object.assign(mappingPractitioner, mappingPractitioner),
+    mappingAlergi: Object.assign(mappingAlergi, mappingAlergi),
+    mappingObat: Object.assign(mappingObat, mappingObat),
 }
 
 export default satusehat

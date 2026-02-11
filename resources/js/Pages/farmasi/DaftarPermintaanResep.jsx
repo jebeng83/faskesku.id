@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Head } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import LayoutUtama from "@/Pages/LayoutUtama";
@@ -1216,25 +1217,34 @@ const DaftarPermintaanResep = () => {
             const timeStr = timeFormatter.format(now);
 
             // Update Validasi (tgl_perawatan & jam) di backend
-            const resp = await fetch(
-                `/api/resep/${encodeURIComponent(selectedResep.no_resep)}/validasi`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
+            try {
+                const res = await axios.post(
+                    `/api/resep/${encodeURIComponent(selectedResep.no_resep)}/validasi`,
+                    {
                         tgl_validasi: todayISO,
                         jam_validasi: timeStr,
-                    }),
-                }
-            );
+                    },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                    }
+                );
 
-            if (!resp.ok) {
-                // Jika endpoint tidak ada, hanya update di frontend
-                console.warn("Endpoint validasi tidak tersedia, hanya update di frontend");
-            } else {
-                const json = await resp.json();
-                if (!json.success) {
-                    throw new Error(json.message || "Gagal menyimpan validasi");
+                if (!res?.data?.success) {
+                    throw new Error(
+                        res?.data?.message || "Gagal menyimpan validasi"
+                    );
+                }
+            } catch (e) {
+                if (e?.response?.status === 404) {
+                    console.warn(
+                        "Endpoint validasi tidak tersedia, hanya update di frontend"
+                    );
+                } else {
+                    throw e;
                 }
             }
 
@@ -1299,19 +1309,19 @@ const DaftarPermintaanResep = () => {
             };
 
             const payload = buildPenyerahanPayload(selectedResep);
-            const resp = await fetch(
-                `/api/resep/${encodeURIComponent(
-                    selectedResep.no_resep
-                )}/penyerahan`,
+            const res = await axios.post(
+                `/api/resep/${encodeURIComponent(selectedResep.no_resep)}/penyerahan`,
+                payload,
                 {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    // Backend telah memproses perubahan embalase/tuslah untuk item non-racikan.
-                    // Dukungan untuk racikan akan ditambahkan kemudian.
-                    body: JSON.stringify(payload),
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
                 }
             );
-            const json = await resp.json();
+
+            const json = res?.data || {};
             if (!json.success) {
                 throw new Error(json.message || "Gagal memproses penyerahan");
             }
@@ -1362,40 +1372,46 @@ const DaftarPermintaanResep = () => {
             alert("Penyerahan obat berhasil diproses.");
 
             try {
-                const stageRes = await fetch(`/api/resep/${encodeURIComponent(selectedResep.no_resep)}/jurnal/stage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                });
-                const stageData = await stageRes.json();
-                if (!stageRes.ok || !stageData.success || !stageData.meta?.balanced) {
+                const stageRes = await axios.post(
+                    `/api/resep/${encodeURIComponent(selectedResep.no_resep)}/jurnal/stage`,
+                    {},
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                            "X-Requested-With": "XMLHttpRequest",
+                        },
+                    }
+                );
+                const stageData = stageRes?.data || {};
+                if (!stageData.success || !stageData.meta?.balanced) {
                     const errMsg = stageData?.message || 'Staging jurnal gagal atau tidak seimbang. Posting dibatalkan.';
                     alert(`Staging jurnal penyerahan gagal: ${errMsg}`);
                 } else {
-                    const postRes = await fetch('/api/akutansi/jurnal/post', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
+                    const postRes = await axios.post(
+                        "/api/akutansi/jurnal/post",
+                        {
                             no_bukti: selectedResep.no_resep,
-                            keterangan: `Posting otomatis penyerahan Resep ${selectedResep.no_resep}${selectedResep.no_rawat ? ` (no_rawat ${selectedResep.no_rawat})` : ''}`,
-                            tgl_jurnal: tglPenyerahanBaru
-                        })
-                    });
-                    let postData = {};
-                    try {
-                        const text = await postRes.text();
-                        postData = text ? JSON.parse(text) : {};
-                    } catch (_) {
-                        postData = {};
-                    }
-                    if (postRes.status === 201 && postData.no_jurnal) {
+                            keterangan: `Posting otomatis penyerahan Resep ${selectedResep.no_resep}${selectedResep.no_rawat ? ` (no_rawat ${selectedResep.no_rawat})` : ""}`,
+                            tgl_jurnal: tglPenyerahanBaru,
+                        },
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                                Accept: "application/json",
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                            validateStatus: () => true,
+                        }
+                    );
+                    const postData = postRes?.data || {};
+                    if (postRes?.status === 201 && postData.no_jurnal) {
                         const noJurnal = postData.no_jurnal;
                         alert(`Jurnal penyerahan diposting (No: ${noJurnal}).`);
                     } else {
-                        const errMsg = postData?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                        const errMsg =
+                            postData?.message ||
+                            `Posting jurnal gagal (Status: ${postRes?.status}).`;
                         alert(`Gagal posting jurnal penyerahan: ${errMsg}`);
                     }
                 }

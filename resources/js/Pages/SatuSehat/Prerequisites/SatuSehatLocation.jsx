@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -24,6 +25,17 @@ import {
 } from "lucide-react";
 
 export default function SatuSehatLocation() {
+  const getCsrfToken = () => {
+    const p = `; ${document.cookie}`;
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
+
   // Toasts
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
@@ -123,6 +135,16 @@ export default function SatuSehatLocation() {
       return;
     }
 
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       // Pastikan koordinat dikirim sebagai string (akan dikonversi ke float di backend)
@@ -139,10 +161,20 @@ export default function SatuSehatLocation() {
 
       const res = await fetch(`/api/satusehat/mapping/lokasi`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || !json.ok) {
         // Parse error detail dari OperationOutcome jika ada
         let errorMsg = json?.message || json?.error || `Status: ${res.status}`;
@@ -184,11 +216,29 @@ export default function SatuSehatLocation() {
     const ok = window.confirm(`Hapus mapping lokasi untuk poli ${kd_poli}?`);
     if (!ok) return;
     try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
       const res = await fetch(`/api/satusehat/mapping/lokasi/${encodeURIComponent(kd_poli)}`, {
         method: "DELETE",
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || !json.ok) {
         addToast("danger", "Gagal menghapus mapping", json?.message || `Status: ${res.status}`);
         return;
@@ -229,11 +279,27 @@ export default function SatuSehatLocation() {
 
   async function submitUpdate() {
     if (!updateItem?.kd_poli) return;
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi/${encodeURIComponent(updateItem.kd_poli)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
         body: JSON.stringify({
           id_organisasi_satusehat: updateOrgId,
           id_lokasi_satusehat: updateLocId,
@@ -245,6 +311,10 @@ export default function SatuSehatLocation() {
         }),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || !json.ok) {
         addToast("danger", "Gagal memperbarui lokasi", json?.message || `Status: ${res.status}`);
         return;
@@ -296,7 +366,7 @@ export default function SatuSehatLocation() {
   };
 
   return (
-    <SidebarBriding title="Pengaturan">
+    <LayoutUtama title="Pengaturan" left={<BridingMenu />}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <motion.div
           className="px-4 sm:px-6 lg:px-8 py-8 space-y-8"
@@ -763,6 +833,6 @@ export default function SatuSehatLocation() {
           <Toaster toasts={toasts} onRemove={removeToast} />
         </motion.div>
       </div>
-    </SidebarBriding>
+    </LayoutUtama>
   );
 }

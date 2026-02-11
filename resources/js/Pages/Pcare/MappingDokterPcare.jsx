@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui";
 import {
@@ -837,5 +838,5 @@ export default function MappingDokterPcare() {
 }
 
 MappingDokterPcare.layout = (page) => (
-    <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>
+    <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>
 );

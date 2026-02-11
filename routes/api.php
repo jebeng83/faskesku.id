@@ -49,6 +49,8 @@ use App\Http\Controllers\SDKI\SubKategoriSdkiController;
 use App\Http\Controllers\SDKI\KeluhanSubyektifController;
 use App\Http\Controllers\SDKI\DataObyektifController;
 use App\Http\Controllers\SatuSehat\SatuSehatAllergyMappingController;
+use App\Http\Controllers\SatuSehat\SatuSehatMedicationMappingController;
+use App\Http\Controllers\SatuSehat\PelayananRawatJalan\ProcedureTindakanController;
 use App\Http\Controllers\SatuSehat\PelayananRawatJalan\SatuSehatRajalController;
 use App\Http\Controllers\SatuSehat\SatuSehatController;
 use Illuminate\Http\Request;
@@ -873,6 +875,9 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::post('/condition', [SatuSehatRajalController::class, 'createCondition'])->name('api.satusehat.rajal.condition.create');
             Route::post('/observation', [SatuSehatRajalController::class, 'createObservation'])->name('api.satusehat.rajal.observation.create');
             Route::post('/procedure', [SatuSehatRajalController::class, 'createProcedure'])->name('api.satusehat.rajal.procedure.create');
+            Route::post('/procedure/by-rawat/{no_rawat}', [ProcedureTindakanController::class, 'sendByRawat'])
+                ->where('no_rawat', '.*')
+                ->name('api.satusehat.rajal.procedure.send-by-rawat');
             Route::post('/composition', [SatuSehatRajalController::class, 'createComposition'])->name('api.satusehat.rajal.composition.create');
             Route::post('/bundle', [SatuSehatRajalController::class, 'createBundle'])->name('api.satusehat.rajal.bundle.create');
             Route::post('/pipeline/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'pipelineByRawat'])
@@ -885,10 +890,17 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenUpdate'])->name('api.satusehat.mapping.departemen.update');
         Route::delete('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenDestroy'])->name('api.satusehat.mapping.departemen.destroy');
         // CRUD Mapping Lokasi Ralan (Poliklinik ↔ SATUSEHAT Location)
-        Route::get('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiIndex'])->name('api.satusehat.mapping.lokasi.index');
-        Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])->name('api.satusehat.mapping.lokasi.store');
-        Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])->name('api.satusehat.mapping.lokasi.update');
-        Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])->name('api.satusehat.mapping.lokasi.destroy');
+        Route::get('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiIndex'])
+            ->name('api.satusehat.mapping.lokasi.index');
+        Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.store');
+        Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.update');
+        Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.destroy');
         // CRUD Mapping Lokasi Ranap (Kamar ↔ SATUSEHAT Location)
         Route::get('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapIndex'])->name('api.satusehat.mapping.lokasi_ranap.index');
         Route::post('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapStore'])->name('api.satusehat.mapping.lokasi_ranap.store');
@@ -911,13 +923,43 @@ Route::middleware(['web', 'auth'])->group(function () {
             Route::delete('/{id}', [SatuSehatAllergyMappingController::class, 'destroy'])->name('destroy');
         });
 
+        // CRUD Mapping Obat (Medication)
+        Route::prefix('mapping-obat')->name('api.satusehat.mapping-obat.')->group(function() {
+            Route::get('/', [SatuSehatMedicationMappingController::class, 'getMappings'])->name('index');
+            Route::post('/', [SatuSehatMedicationMappingController::class, 'store'])->name('store');
+            Route::post('/test-store', [SatuSehatMedicationMappingController::class, 'storeTest'])
+                ->withoutMiddleware([
+                    'auth',
+                    'auth:web',
+                    'auth:sanctum',
+                    \Illuminate\Auth\Middleware\Authenticate::class,
+                    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+                    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+                    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+                ])
+                ->name('test-store');
+            Route::delete('/{kode_brng}', [SatuSehatMedicationMappingController::class, 'destroy'])->name('destroy');
+            Route::get('/search-barang', [SatuSehatMedicationMappingController::class, 'searchBarang'])->name('search-barang');
+            Route::post('/test-relay', [SatuSehatMedicationMappingController::class, 'testRelay'])
+                ->withoutMiddleware([
+                    'auth',
+                    'auth:web',
+                    'auth:sanctum',
+                    \Illuminate\Auth\Middleware\Authenticate::class,
+                    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+                    \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+                    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+                ])
+                ->name('test-relay');
+        });
+
         // Generic resource relay
         // Batasi hanya ke resource FHIR umum agar tidak bentrok dengan endpoint khusus
         Route::post('/{resource}', [SatuSehatController::class, 'createResource'])
-            ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle)$')
+            ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle|Medication|MedicationRequest)$')
             ->name('api.satusehat.create');
         Route::get('/{resource}/{id}', [SatuSehatController::class, 'getResource'])
-            ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle)$')
+            ->where('resource', '^(?:Patient|Encounter|Observation|Condition|Composition|Procedure|Practitioner|Organization|Location|Bundle|Medication|MedicationRequest)$')
             ->name('api.satusehat.get');
     });
 

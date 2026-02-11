@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion } from 'framer-motion';
 import { ArrowPathIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
@@ -296,4 +297,4 @@ export default function ReferensiSRK() {
   );
 }
 
-ReferensiSRK.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiSRK.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

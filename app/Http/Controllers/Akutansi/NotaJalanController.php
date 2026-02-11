@@ -50,13 +50,19 @@ class NotaJalanController extends Controller
      */
     public function store(Request $request)
     {
-        $noRawat = $request->input('no_rawat');
-        $tanggal = $request->input('tanggal');
-        $jam = $request->input('jam');
+        $data = $request->validate([
+            'no_rawat' => ['required', 'string'],
+            'tanggal' => ['nullable', 'date'],
+            'jam' => ['nullable', 'string'],
+            'nama_bayar' => ['nullable', 'string', 'required_with:besar_bayar', 'exists:akun_bayar,nama_bayar'],
+            'besar_bayar' => ['nullable', 'numeric', 'min:0', 'required_with:nama_bayar'],
+        ]);
 
-        if (! $noRawat) {
-            return response()->json(['message' => 'no_rawat wajib diisi'], 422);
-        }
+        $noRawat = $data['no_rawat'];
+        $tanggal = $data['tanggal'] ?? null;
+        $jam = $data['jam'] ?? null;
+        $namaBayar = $data['nama_bayar'] ?? null;
+        $besarBayar = isset($data['besar_bayar']) ? (float) $data['besar_bayar'] : null;
 
         $date = $tanggal ? Carbon::parse($tanggal) : Carbon::now();
         $time = $jam ?: Carbon::now()->format('H:i:s');
@@ -65,13 +71,22 @@ class NotaJalanController extends Controller
         // Tanpa slash setelah RJ, langsung angka 4 digit
         $prefix = $date->format('Y/m/d').'/RJ';
 
-        return DB::transaction(function () use ($noRawat, $date, $time, $prefix) {
+        return DB::transaction(function () use ($noRawat, $date, $time, $prefix, $namaBayar, $besarBayar) {
             // Cek apakah sudah ada nota_jalan untuk no_rawat ini
             $existingNota = DB::table('nota_jalan')
                 ->where('no_rawat', $noRawat)
                 ->first();
 
             if ($existingNota) {
+                if ($namaBayar && $besarBayar !== null) {
+                    $akun = DB::table('akun_bayar')->where('nama_bayar', $namaBayar)->first();
+                    $ppnPercent = $akun ? (float) ($akun->ppn ?? 0) : 0.0;
+                    $besarppn = round($besarBayar * $ppnPercent / 100.0, 2);
+                    DB::table('detail_nota_jalan')->updateOrInsert(
+                        ['no_rawat' => $noRawat, 'nama_bayar' => $namaBayar],
+                        ['besar_bayar' => $besarBayar, 'besarppn' => $besarppn]
+                    );
+                }
                 // Jika sudah ada, return yang sudah ada
                 return response()->json(['no_nota' => $existingNota->no_nota], 200);
             }
@@ -380,6 +395,16 @@ class NotaJalanController extends Controller
 
             if (! $inserted) {
                 throw new \Exception('Gagal insert nota_jalan setelah retry');
+            }
+
+            if ($namaBayar && $besarBayar !== null) {
+                $akun = DB::table('akun_bayar')->where('nama_bayar', $namaBayar)->first();
+                $ppnPercent = $akun ? (float) ($akun->ppn ?? 0) : 0.0;
+                $besarppn = round($besarBayar * $ppnPercent / 100.0, 2);
+                DB::table('detail_nota_jalan')->updateOrInsert(
+                    ['no_rawat' => $noRawat, 'nama_bayar' => $namaBayar],
+                    ['besar_bayar' => $besarBayar, 'besarppn' => $besarppn]
+                );
             }
 
             // Update status dan status_bayar di reg_periksa setelah nota_jalan dibuat

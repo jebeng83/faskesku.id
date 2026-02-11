@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::get
-* @see app/Http/Controllers/Pcare/PcareController.php:4467
+* @see app/Http/Controllers/Pcare/PcareController.php:4599
 * @route '/pcare/api/mapping/dokter'
 */
 export const get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +17,7 @@ get.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::get
-* @see app/Http/Controllers/Pcare/PcareController.php:4467
+* @see app/Http/Controllers/Pcare/PcareController.php:4599
 * @route '/pcare/api/mapping/dokter'
 */
 get.url = (options?: RouteQueryOptions) => {
@@ -25,7 +26,7 @@ get.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::get
-* @see app/Http/Controllers/Pcare/PcareController.php:4467
+* @see app/Http/Controllers/Pcare/PcareController.php:4599
 * @route '/pcare/api/mapping/dokter'
 */
 get.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +36,7 @@ get.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::get
-* @see app/Http/Controllers/Pcare/PcareController.php:4467
+* @see app/Http/Controllers/Pcare/PcareController.php:4599
 * @route '/pcare/api/mapping/dokter'
 */
 get.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +46,7 @@ get.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:4484
+* @see app/Http/Controllers/Pcare/PcareController.php:4616
 * @route '/pcare/api/mapping/dokter'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +61,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:4484
+* @see app/Http/Controllers/Pcare/PcareController.php:4616
 * @route '/pcare/api/mapping/dokter'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +70,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::store
-* @see app/Http/Controllers/Pcare/PcareController.php:4484
+* @see app/Http/Controllers/Pcare/PcareController.php:4616
 * @route '/pcare/api/mapping/dokter'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +80,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:4545
+* @see app/Http/Controllers/Pcare/PcareController.php:4677
 * @route '/pcare/api/mapping/dokter'
 */
 export const deleteMethod = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -94,7 +95,7 @@ deleteMethod.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:4545
+* @see app/Http/Controllers/Pcare/PcareController.php:4677
 * @route '/pcare/api/mapping/dokter'
 */
 deleteMethod.url = (options?: RouteQueryOptions) => {
@@ -103,7 +104,7 @@ deleteMethod.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::deleteMethod
-* @see app/Http/Controllers/Pcare/PcareController.php:4545
+* @see app/Http/Controllers/Pcare/PcareController.php:4677
 * @route '/pcare/api/mapping/dokter'
 */
 deleteMethod.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

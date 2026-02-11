@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { Card, CardHeader, CardTitle, CardContent } from "@/Components/ui/Card";
 import Button from "@/Components/ui/Button";
@@ -12,6 +13,17 @@ import Toaster from "@/Components/ui/Toaster";
 import { MapPin, Edit2, Trash2, Building2, RefreshCw, Loader2, CheckCircle2, Info, X, Globe } from "lucide-react";
 
 export default function SatuSehatLocationFarmasi() {
+  const getCsrfToken = () => {
+    const p = `; ${document.cookie}`;
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
+
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -95,11 +107,28 @@ export default function SatuSehatLocationFarmasi() {
       addToast("danger", "Validasi", "Isi ID Organization SATUSEHAT dulu.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
         body: JSON.stringify({
           kd_bangsal: String(bangsalValue),
           id_organisasi_satusehat: String(orgSubunitId),
@@ -111,6 +140,10 @@ export default function SatuSehatLocationFarmasi() {
         }),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal menyimpan", json?.message || json?.error || `Status: ${res.status}`);
         return;
@@ -129,8 +162,29 @@ export default function SatuSehatLocationFarmasi() {
     if (!kd_bangsal) return;
     if (!confirm(`Hapus mapping untuk bangsal ${kd_bangsal}?`)) return;
     try {
-      const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, { method: "DELETE", headers: { Accept: "application/json" } });
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
+      const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
+      });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal hapus", json?.message || json?.error || `Status: ${res.status}`);
         return;
@@ -162,11 +216,28 @@ export default function SatuSehatLocationFarmasi() {
       addToast("danger", "Validasi", "ID Organization dan ID Location wajib diisi.");
       return;
     }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "include",
         body: JSON.stringify({
           id_organisasi_satusehat: String(updateOrgId),
           id_lokasi_satusehat: String(updateLocId),
@@ -178,6 +249,10 @@ export default function SatuSehatLocationFarmasi() {
         }),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal memperbarui", json?.message || json?.error || `Status: ${res.status}`);
         return;
@@ -193,7 +268,7 @@ export default function SatuSehatLocationFarmasi() {
   }
 
   return (
-    <SidebarBriding title="Pengaturan">
+    <LayoutUtama title="Pengaturan" left={<BridingMenu />}>
       <motion.div className="p-4 md:p-6 lg:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900" variants={containerVariants} initial="hidden" animate="visible">
         <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 p-6">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
@@ -410,6 +485,6 @@ export default function SatuSehatLocationFarmasi() {
 
         <Toaster toasts={toasts} onRemove={removeToast} />
       </motion.div>
-    </SidebarBriding>
+    </LayoutUtama>
   );
 }

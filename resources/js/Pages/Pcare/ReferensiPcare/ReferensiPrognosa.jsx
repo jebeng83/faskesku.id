@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowPathIcon, CheckCircleIcon, ExclamationTriangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
@@ -214,4 +215,4 @@ export default function ReferensiPrognosa() {
   );
 }
 
-ReferensiPrognosa.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+ReferensiPrognosa.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

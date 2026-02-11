@@ -3303,52 +3303,90 @@ class PcareController extends Controller
 
         try {
             $nomorPesertaEncoded = rawurlencode($nomorPeserta);
-            $endpoint = 'skrining/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
-            
-            Log::channel('bpjs')->info('PCare getProlanisDm requesting endpoint', [
-                'endpoint' => $endpoint,
-                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
-                'start' => $start,
-                'limit' => $limit,
-            ]);
+            $endpoints = [
+                'skrinning/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit,
+                'skrining/prolanis/dm/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit,
+            ];
 
-            $result = $this->pcareRequest('GET', $endpoint, [], null, [
-                'Content-Type' => 'application/json; charset=utf-8',
-            ]);
+            foreach ($endpoints as $endpoint) {
+                Log::channel('bpjs')->info('PCare getProlanisDm requesting endpoint', [
+                    'endpoint' => $endpoint,
+                    'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                    'start' => $start,
+                    'limit' => $limit,
+                ]);
 
-            $response = $result['response'];
-            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+                try {
+                    $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                        'Content-Type' => 'application/json; charset=utf-8',
+                    ]);
 
-            Log::channel('bpjs')->info('PCare getProlanisDm response received', [
-                'status' => $response->status(),
-                'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
-            ]);
+                    $response = $result['response'];
+                    $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
-            return response()->json($processed, $response->status());
-        } catch (\Illuminate\Http\Client\RequestException $e) {
-            $response = $e->response;
-            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+                    Log::channel('bpjs')->info('PCare getProlanisDm response received', [
+                        'status' => $response->status(),
+                        'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
+                    ]);
 
-            Log::channel('bpjs')->error('PCare getProlanisDm RequestException', [
-                'status' => $response->status(),
-                'error' => $e->getMessage(),
-                'response' => $processed,
-            ]);
+                    return response()->json($processed, $response->status());
+                } catch (\Illuminate\Http\Client\RequestException $e) {
+                    $resp = $e->response;
+                    $status = $resp ? $resp->status() : 503;
+                    $body = $resp ? $resp->body() : '';
+                    $processed = $this->maybeDecryptAndDecompress($body, time());
 
-            if (is_array($processed)) {
-                return response()->json($processed, $response->status());
+                    if ($status === 412) {
+                        return response()->json([
+                            'metaData' => [
+                                'message' => 'Data Prolanis DM tidak tersedia untuk PPK saat ini',
+                                'code' => 200,
+                            ],
+                            'response' => [
+                                'count' => 0,
+                                'list' => [],
+                            ],
+                        ], 200);
+                    }
+
+                    Log::channel('bpjs')->warning('PCare getProlanisDm endpoint rejected, trying fallback', [
+                        'endpoint' => $endpoint,
+                        'status' => $status,
+                        'error' => $e->getMessage(),
+                        'response_body' => substr((string) $body, 0, 500),
+                    ]);
+
+                    if (in_array($status, [400, 404], true)) {
+                        continue;
+                    }
+
+                    if (is_array($processed)) {
+                        return response()->json($processed, $status);
+                    }
+
+                    return response()->json([
+                        'metaData' => [
+                            'message' => $e->getMessage(),
+                            'code' => $status,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], $status);
+                }
             }
 
             return response()->json([
                 'metaData' => [
-                    'message' => $e->getMessage(),
-                    'code' => $response->status(),
+                    'message' => 'Permintaan Prolanis DM ditolak BPJS',
+                    'code' => 400,
                 ],
                 'response' => [
                     'count' => 0,
                     'list' => [],
                 ],
-            ], $response->status());
+            ], 400);
         } catch (\Throwable $e) {
             Log::error('Error get Prolanis DM PCare', [
                 'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
@@ -3399,52 +3437,90 @@ class PcareController extends Controller
 
         try {
             $nomorPesertaEncoded = rawurlencode($nomorPeserta);
-            $endpoint = 'skrining/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit;
-            
-            Log::channel('bpjs')->info('PCare getProlanisHt requesting endpoint', [
-                'endpoint' => $endpoint,
-                'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
-                'start' => $start,
-                'limit' => $limit,
-            ]);
+            $endpoints = [
+                'skrinning/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit,
+                'skrining/prolanis/ht/'.$nomorPesertaEncoded.'/'.$start.'/'.$limit,
+            ];
 
-            $result = $this->pcareRequest('GET', $endpoint, [], null, [
-                'Content-Type' => 'application/json; charset=utf-8',
-            ]);
+            foreach ($endpoints as $endpoint) {
+                Log::channel('bpjs')->info('PCare getProlanisHt requesting endpoint', [
+                    'endpoint' => $endpoint,
+                    'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
+                    'start' => $start,
+                    'limit' => $limit,
+                ]);
 
-            $response = $result['response'];
-            $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+                try {
+                    $result = $this->pcareRequest('GET', $endpoint, [], null, [
+                        'Content-Type' => 'application/json; charset=utf-8',
+                    ]);
 
-            Log::channel('bpjs')->info('PCare getProlanisHt response received', [
-                'status' => $response->status(),
-                'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
-            ]);
+                    $response = $result['response'];
+                    $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
 
-            return response()->json($processed, $response->status());
-        } catch (\Illuminate\Http\Client\RequestException $e) {
-            $response = $e->response;
-            $processed = $this->maybeDecryptAndDecompress($response->body(), time());
+                    Log::channel('bpjs')->info('PCare getProlanisHt response received', [
+                        'status' => $response->status(),
+                        'has_data' => isset($processed['response']['list']) && count($processed['response']['list'] ?? []) > 0,
+                    ]);
 
-            Log::channel('bpjs')->error('PCare getProlanisHt RequestException', [
-                'status' => $response->status(),
-                'error' => $e->getMessage(),
-                'response' => $processed,
-            ]);
+                    return response()->json($processed, $response->status());
+                } catch (\Illuminate\Http\Client\RequestException $e) {
+                    $resp = $e->response;
+                    $status = $resp ? $resp->status() : 503;
+                    $body = $resp ? $resp->body() : '';
+                    $processed = $this->maybeDecryptAndDecompress($body, time());
 
-            if (is_array($processed)) {
-                return response()->json($processed, $response->status());
+                    if ($status === 412) {
+                        return response()->json([
+                            'metaData' => [
+                                'message' => 'Data Prolanis HT tidak tersedia untuk PPK saat ini',
+                                'code' => 200,
+                            ],
+                            'response' => [
+                                'count' => 0,
+                                'list' => [],
+                            ],
+                        ], 200);
+                    }
+
+                    Log::channel('bpjs')->warning('PCare getProlanisHt endpoint rejected, trying fallback', [
+                        'endpoint' => $endpoint,
+                        'status' => $status,
+                        'error' => $e->getMessage(),
+                        'response_body' => substr((string) $body, 0, 500),
+                    ]);
+
+                    if (in_array($status, [400, 404], true)) {
+                        continue;
+                    }
+
+                    if (is_array($processed)) {
+                        return response()->json($processed, $status);
+                    }
+
+                    return response()->json([
+                        'metaData' => [
+                            'message' => $e->getMessage(),
+                            'code' => $status,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], $status);
+                }
             }
 
             return response()->json([
                 'metaData' => [
-                    'message' => $e->getMessage(),
-                    'code' => $response->status(),
+                    'message' => 'Permintaan Prolanis HT ditolak BPJS',
+                    'code' => 400,
                 ],
                 'response' => [
                     'count' => 0,
                     'list' => [],
                 ],
-            ], $response->status());
+            ], 400);
         } catch (\Throwable $e) {
             Log::error('Error get Prolanis HT PCare', [
                 'nomor_peserta' => substr($nomorPeserta, 0, 6).'***',
@@ -3640,76 +3716,29 @@ class PcareController extends Controller
             ], 422);
         }
 
-        // Sesuai katalog BPJS, endpoint skrining/rekap TIDAK menerima parameter
-        // Endpoint langsung mengembalikan semua data rekapitulasi
-        // Content-Type sesuai katalog: application/json; charset=utf-8
-        $endpoint = 'skrining/rekap';
+        $endpoints = ['skrinning/rekap', 'skrining/rekap'];
+        $lastResponseBody = '';
+        $lastResponseStatus = 503;
+        $lastEndpoint = '';
+        $lastError = '';
 
-        try {
-            Log::channel('bpjs')->info('PCare getReferensiSrk requesting endpoint', [
-                'endpoint' => $endpoint,
-                'full_url' => $base.'/'.$endpoint,
-                'note' => 'Endpoint tidak menerima parameter sesuai katalog BPJS',
-            ]);
-
-            // Gunakan pcareRequest seperti endpoint lain yang sudah bekerja
-            // Endpoint skrining/rekap tidak menerima parameter sesuai katalog BPJS
-            // Content-Type sesuai katalog: application/json; charset=utf-8
-            $result = $this->pcareRequest('GET', $endpoint, [], null, [
-                'Content-Type' => 'application/json; charset=utf-8',
-            ]);
-            $response = $result['response'];
-            $url = $result['url'] ?? $base.'/'.$endpoint;
-
-            // Log response status dan body untuk debugging
-            $rawBody = $response->body();
-            $statusCode = $response->status();
-
-            Log::channel('bpjs')->info('PCare getReferensiSrk response received', [
-                'status' => $statusCode,
-                'endpoint' => $endpoint,
-                'url' => $url,
-                'body_preview' => substr($rawBody, 0, 1000),
-                'body_length' => strlen($rawBody),
-            ]);
-
-            // Process response
-            $processed = $this->maybeDecryptAndDecompress($rawBody, $result['timestamp_used']);
-            if (! is_array($processed)) {
-                $processed = ['raw' => $processed];
-            }
-
-            // Log processed response untuk debugging error 400
-            if ($statusCode >= 400) {
-                Log::channel('bpjs')->error('PCare getReferensiSrk error response details', [
-                    'status' => $statusCode,
+        foreach ($endpoints as $endpoint) {
+            $lastEndpoint = $endpoint;
+            try {
+                Log::channel('bpjs')->info('PCare getReferensiSrk requesting endpoint', [
                     'endpoint' => $endpoint,
-                    'url' => $url,
-                    'processed' => $processed,
-                    'raw_body' => substr($rawBody, 0, 2000),
-                    'headers_sent' => [
-                        'X-cons-id' => $result['headers_used']['X-cons-id'] ?? 'N/A',
-                        'X-timestamp' => $result['timestamp_used'] ?? 'N/A',
-                        'Content-Type' => $result['headers_used']['Content-Type'] ?? 'N/A',
-                    ],
+                    'full_url' => $base.'/'.$endpoint,
+                    'note' => 'Endpoint tidak menerima parameter sesuai katalog BPJS',
                 ]);
-                if ($statusCode === 412) {
-                    return response()->json([
-                        'metaData' => [
-                            'message' => 'Data SRK tidak tersedia untuk PPK saat ini',
-                            'code' => 200,
-                        ],
-                        'response' => [
-                            'list' => [],
-                            'count' => 0,
-                        ],
-                    ], 200);
-                }
-            }
 
-            // Jika sukses (2xx), return response
-            if ($response->status() >= 200 && $response->status() < 300) {
-                // Filter di sisi server jika parameter q diberikan (untuk kompatibilitas dengan frontend)
+                $result = $this->pcareRequest('GET', $endpoint);
+                $response = $result['response'];
+                $rawBody = $response->body();
+                $processed = $this->maybeDecryptAndDecompress($rawBody, $result['timestamp_used']);
+                if (! is_array($processed)) {
+                    $processed = ['raw' => $processed];
+                }
+
                 $q = trim($request->query('q', ''));
                 if ($q !== '' && isset($processed['response']['list']) && is_array($processed['response']['list'])) {
                     $filtered = array_filter($processed['response']['list'], function ($item) use ($q) {
@@ -3722,7 +3751,6 @@ class PcareController extends Controller
                     $processed['response']['count'] = count($filtered);
                 }
 
-                // Pagination di sisi server jika start/limit diberikan
                 $start = (int) $request->query('start', 0);
                 $limit = (int) $request->query('limit', 0);
                 if ($limit > 0 && isset($processed['response']['list']) && is_array($processed['response']['list'])) {
@@ -3733,31 +3761,13 @@ class PcareController extends Controller
                 }
 
                 return response()->json($processed, $response->status());
-            }
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                $responseStatus = $e->response ? $e->response->status() : 503;
+                $responseBody = $e->response ? $e->response->body() : '';
+                $lastResponseStatus = $responseStatus;
+                $lastResponseBody = $responseBody;
+                $lastError = $e->getMessage();
 
-            // Jika error, return response error dari BPJS (termasuk pesan dari metaData jika ada)
-            $errorMessage = 'Permintaan tidak valid ke BPJS PCare (Referensi SRK)';
-            if (is_array($processed) && isset($processed['metaData']['message'])) {
-                $errorMessage = $processed['metaData']['message'];
-            }
-            if ($response->status() === 412) {
-                $errorMessage = 'Precondition Failed dari BPJS PCare: periksa kredensial dan header (user_key, signature, authorization)';
-            }
-
-            return response()->json([
-                'metaData' => [
-                    'message' => $errorMessage,
-                    'code' => $response->status(),
-                ],
-                'response' => $processed['response'] ?? ['list' => [], 'count' => 0],
-            ], $response->status());
-
-        } catch (\Illuminate\Http\Client\RequestException $e) {
-            $responseBody = '';
-            $responseStatus = 503;
-            if ($e->response) {
-                $responseBody = $e->response->body();
-                $responseStatus = $e->response->status();
                 if ($responseStatus === 412) {
                     return response()->json([
                         'metaData' => [
@@ -3770,6 +3780,18 @@ class PcareController extends Controller
                         ],
                     ], 200);
                 }
+
+                if (in_array($responseStatus, [400, 404], true)) {
+                    Log::channel('bpjs')->warning('PCare getReferensiSrk endpoint rejected, trying fallback', [
+                        'endpoint' => $endpoint,
+                        'base_url' => $base,
+                        'status' => $responseStatus,
+                        'error' => $lastError,
+                        'response_body' => substr($responseBody, 0, 500),
+                    ]);
+                    continue;
+                }
+
                 try {
                     $processed = $this->maybeDecryptAndDecompress($responseBody, '');
                     if (is_array($processed) && isset($processed['metaData']['message'])) {
@@ -3777,52 +3799,162 @@ class PcareController extends Controller
                     }
                 } catch (\Throwable $ignore) {
                 }
+
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Gagal terhubung ke BPJS PCare (Referensi SRK): '.$lastError,
+                        'code' => $responseStatus,
+                    ],
+                    'response' => [
+                        'list' => [],
+                        'count' => 0,
+                    ],
+                ], $responseStatus);
+            } catch (\Throwable $e) {
+                $lastResponseStatus = 503;
+                $lastResponseBody = '';
+                $lastError = $e->getMessage();
+                Log::channel('bpjs')->error('PCare getReferensiSrk error', [
+                    'endpoint' => $endpoint,
+                    'base_url' => $base,
+                    'error' => $lastError,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                break;
             }
+        }
 
-            Log::channel('bpjs')->error('PCare getReferensiSrk RequestException', [
-                'endpoint' => $endpoint,
-                'base_url' => $base,
-                'status' => $responseStatus,
-                'error' => $e->getMessage(),
-                'response_body' => substr($responseBody, 0, 500),
-            ]);
+        return response()->json([
+            'metaData' => [
+                'message' => 'Permintaan SRK rekap ditolak BPJS ('.$lastResponseStatus.') pada endpoint '.$lastEndpoint.': '.$lastError,
+                'code' => $lastResponseStatus,
+            ],
+            'response' => [
+                'list' => [],
+                'count' => 0,
+                'raw' => substr((string) $lastResponseBody, 0, 2000),
+            ],
+        ], $lastResponseStatus);
+    }
 
-            $errorMsg = 'Gagal terhubung ke BPJS PCare (Referensi SRK): '.$e->getMessage();
-            $status = $responseStatus;
-        } catch (\Throwable $e) {
-            Log::channel('bpjs')->error('PCare getReferensiSrk error', [
-                'endpoint' => $endpoint,
-                'base_url' => $base,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+    public function getDetailPesertaSrk(Request $request)
+    {
+        $q = trim((string) $request->query('q', $request->query('peserta', '')));
+        $start = (int) $request->query('start', 0);
+        $limit = (int) $request->query('limit', 25);
 
-            $errorMsg = 'Gagal terhubung ke BPJS PCare (Referensi SRK): '.$e->getMessage();
-            $status = 503;
-
-            // Deteksi jenis error untuk status code yang lebih tepat
-            $errorMsgLower = strtolower($e->getMessage());
-            if (stripos($errorMsgLower, 'status code 400') !== false || stripos($errorMsgLower, '400') !== false) {
-                $status = 400;
-            } elseif (stripos($errorMsgLower, 'status code 401') !== false || stripos($errorMsgLower, '401') !== false) {
-                $status = 401;
-            } elseif (stripos($errorMsgLower, 'status code 404') !== false || stripos($errorMsgLower, '404') !== false) {
-                $status = 404;
-            } elseif (stripos($errorMsgLower, 'timeout') !== false || stripos($errorMsgLower, 'connection') !== false) {
-                $status = 503;
-            }
-
+        if ($q === '') {
             return response()->json([
                 'metaData' => [
-                    'message' => $errorMsg,
-                    'code' => $status,
+                    'message' => 'Parameter peserta wajib diisi',
+                    'code' => 422,
                 ],
                 'response' => [
-                    'list' => [],
                     'count' => 0,
+                    'list' => [],
                 ],
-            ], $status);
+            ], 422);
         }
+
+        $qEnc = urlencode($q);
+        $endpoints = [
+            'skrinning/peserta/'.$qEnc.'/'.$start.'/'.$limit,
+            'skrining/peserta/'.$qEnc.'/'.$start.'/'.$limit,
+        ];
+
+        $base = rtrim((string) (($this->pcareConfig())['base_url'] ?? ''), '/');
+        $lastResponseBody = '';
+        $lastResponseStatus = 503;
+        $lastEndpoint = '';
+        $lastError = '';
+
+        foreach ($endpoints as $endpoint) {
+            $lastEndpoint = $endpoint;
+            try {
+                Log::channel('bpjs')->info('PCare getDetailPesertaSrk requesting endpoint', [
+                    'endpoint' => $endpoint,
+                    'full_url' => ($base !== '' ? $base.'/' : '').$endpoint,
+                ]);
+
+                $result = $this->pcareRequest('GET', $endpoint);
+                $response = $result['response'];
+                $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+
+                return response()->json($processed, $response->status());
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                $responseStatus = $e->response ? $e->response->status() : 503;
+                $responseBody = $e->response ? $e->response->body() : '';
+                $lastResponseStatus = $responseStatus;
+                $lastResponseBody = $responseBody;
+                $lastError = $e->getMessage();
+
+                if ($responseStatus === 412) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => 'Data SRK tidak tersedia untuk PPK saat ini',
+                            'code' => 200,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], 200);
+                }
+
+                if (in_array($responseStatus, [400, 404], true)) {
+                    Log::channel('bpjs')->warning('PCare getDetailPesertaSrk endpoint rejected, trying fallback', [
+                        'endpoint' => $endpoint,
+                        'base_url' => $base,
+                        'status' => $responseStatus,
+                        'error' => $lastError,
+                        'response_body' => substr($responseBody, 0, 500),
+                    ]);
+                    continue;
+                }
+
+                try {
+                    $processed = $this->maybeDecryptAndDecompress($responseBody, '');
+                    if (is_array($processed) && isset($processed['metaData']['message'])) {
+                        return response()->json($processed, $responseStatus);
+                    }
+                } catch (\Throwable $ignore) {
+                }
+
+                return response()->json([
+                    'metaData' => [
+                        'message' => 'Gagal terhubung ke BPJS PCare (Detail Peserta SRK): '.$lastError,
+                        'code' => $responseStatus,
+                    ],
+                    'response' => [
+                        'count' => 0,
+                        'list' => [],
+                    ],
+                ], $responseStatus);
+            } catch (\Throwable $e) {
+                $lastError = $e->getMessage();
+                Log::channel('bpjs')->error('PCare getDetailPesertaSrk error', [
+                    'endpoint' => $endpoint,
+                    'base_url' => $base,
+                    'error' => $lastError,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                break;
+            }
+        }
+
+        return response()->json([
+            'metaData' => [
+                'message' => 'Permintaan SRK peserta ditolak BPJS ('.$lastResponseStatus.') pada endpoint '.$lastEndpoint.': '.$lastError,
+                'code' => $lastResponseStatus,
+            ],
+            'response' => [
+                'count' => 0,
+                'list' => [],
+                'raw' => substr((string) $lastResponseBody, 0, 2000),
+            ],
+        ], $lastResponseStatus);
     }
 
     /**

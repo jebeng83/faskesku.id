@@ -343,7 +343,14 @@ export default function Breadcrumb({ currentMenu, menuHierarchy }) {
 // Helper function to get menu URL
 function getMenuUrl(menu) {
 	if (menu.url) {
-		return menu.url;
+		try {
+			const currentOrigin = window.location.origin;
+			const u = new URL(menu.url, currentOrigin);
+			return u.pathname + u.search + u.hash;
+		} catch {
+			if (String(menu.url).startsWith("/")) return menu.url;
+			return "/" + String(menu.url).replace(/^https?:\/\/[^/]+/, "");
+		}
 	}
 
 	if (menu.route) {

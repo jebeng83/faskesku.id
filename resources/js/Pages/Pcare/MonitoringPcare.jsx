@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { motion } from "framer-motion";
 
 const containerVariants = {
@@ -487,5 +488,5 @@ export default function MonitoringPcare() {
 }
 
 MonitoringPcare.layout = (page) => (
-  <SidebarBriding title="Briding Pcare" wide={true}>{page}</SidebarBriding>
+  <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>
 );

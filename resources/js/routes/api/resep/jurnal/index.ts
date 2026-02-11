@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::stage
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1091
 * @route '/api/resep/{no_resep}/jurnal/stage'
 */
 export const stage = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ stage.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::stage
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1091
 * @route '/api/resep/{no_resep}/jurnal/stage'
 */
 stage.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ stage.url = (args: { no_resep: string | number } | [no_resep: string | number ] 
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::stage
-* @see app/Http/Controllers/RawatJalan/ResepController.php:1079
+* @see app/Http/Controllers/RawatJalan/ResepController.php:1091
 * @route '/api/resep/{no_resep}/jurnal/stage'
 */
 stage.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

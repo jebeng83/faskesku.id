@@ -64,6 +64,8 @@ class ConditionService
             return null;
         }
 
+        $practitionerId = $this->getPractitionerIhsIdFromNoRawat((string) $noRawat);
+
         // 3. Cek apakah Condition sudah pernah dikirim (untuk Update vs Create)
         $conditionTracking = DB::table('satu_sehat_condition')
             ->where('no_rawat', $noRawat)
@@ -74,7 +76,7 @@ class ConditionService
         $existingId = $conditionTracking->id_condition ?? null;
 
         // 4. Build Resource
-        $resource = $this->buildConditionResource($data, $patientId, $encounterId, $existingId);
+        $resource = $this->buildConditionResource($data, $patientId, $encounterId, $practitionerId, $existingId);
 
         // 5. Send Request
         if ($existingId) {
@@ -113,8 +115,14 @@ class ConditionService
         }
     }
 
-    private function buildConditionResource($data, $patientId, $encounterId, $existingId = null)
+    private function buildConditionResource($data, $patientId, $encounterId, $practitionerId = null, $existingId = null)
     {
+        $patientId = trim((string) $patientId);
+        $encounterId = trim((string) $encounterId);
+        $practitionerId = $practitionerId ? trim((string) $practitionerId) : '';
+
+        $recorderRef = $practitionerId !== '' ? 'Practitioner/'.$practitionerId : 'Patient/'.$patientId;
+
         $resource = [
             'resourceType' => 'Condition',
             'clinicalStatus' => [
@@ -144,13 +152,102 @@ class ConditionService
             ],
             'encounter' => [
                 'reference' => "Encounter/{$encounterId}"
-            ]
+            ],
+            'asserter' => [
+                'reference' => $recorderRef,
+            ],
+            'recorder' => [
+                'reference' => $recorderRef,
+            ],
         ];
+
+        $recordedDate = trim((string) ($data->tgl_registrasi ?? ''));
+        if ($recordedDate !== '') {
+            $normalized = $this->normalizeDateTimeForSatusehat($recordedDate);
+            if ($normalized) {
+                $resource['recordedDate'] = $normalized;
+            }
+        }
         
         if ($existingId) {
             $resource['id'] = $existingId;
         }
 
         return $resource;
+    }
+
+    private function normalizeDateTimeForSatusehat(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            $dt = Carbon::parse($value, 'Asia/Jakarta');
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $min = Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
+        if ($dt->lt($min)) {
+            $dt = $min;
+        }
+
+        $now = Carbon::now('Asia/Jakarta');
+        if ($dt->gt($now)) {
+            $dt = $now;
+        }
+
+        return $dt->toIso8601String();
+    }
+
+    private function getPractitionerIhsIdFromNoRawat(string $noRawat): ?string
+    {
+        $kdDokter = (string) (DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('kd_dokter') ?? '');
+        $kdDokter = trim($kdDokter);
+        if ($kdDokter === '') {
+            return null;
+        }
+
+        $pegawai = DB::table('pegawai')->where('nik', $kdDokter)->first(['no_ktp', 'nama']);
+        $nikRaw = $pegawai ? (string) ($pegawai->no_ktp ?? '') : '';
+        $nik = preg_replace('/\D/', '', $nikRaw);
+        if ($nik === '' || strlen($nik) !== 16) {
+            return null;
+        }
+
+        $mapping = DB::table('satusehat_mapping_practitioner')->where('nik', $nik)->first(['satusehat_id']);
+        if ($mapping && ! empty($mapping->satusehat_id)) {
+            return (string) $mapping->satusehat_id;
+        }
+
+        try {
+            $response = $this->satusehatRequest('GET', 'Practitioner', null, [
+                'query' => ['identifier' => 'https://fhir.kemkes.go.id/id/nik|'.$nik],
+            ]);
+            if (($response['ok'] ?? false) && ! empty($response['json']['entry'])) {
+                $practitioner = $response['json']['entry'][0]['resource'] ?? null;
+                $id = is_array($practitioner) ? (string) ($practitioner['id'] ?? '') : '';
+                if ($id !== '') {
+                    DB::table('satusehat_mapping_practitioner')->updateOrInsert(
+                        ['nik' => $nik],
+                        [
+                            'satusehat_id' => $id,
+                            'nama' => $pegawai ? (string) ($pegawai->nama ?? $kdDokter) : $kdDokter,
+                            'fhir_json' => json_encode($practitioner),
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+
+                    return $id;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[SATUSEHAT][Condition] Gagal search Practitioner', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
+        }
+
+        return null;
     }
 }

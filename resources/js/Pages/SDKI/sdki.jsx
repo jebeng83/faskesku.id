@@ -614,7 +614,7 @@ export default function SDKIIndex() {
         setEditing(false);
         pushToast({ type: "success", title: "Berhasil", message: "SDKI diperbarui" });
         await loadRecords();
-      } catch (error) {
+      } catch (_error) {
         pushToast({ type: "error", title: "Gagal", message: "Tidak bisa memperbarui" });
       }
     };
@@ -627,7 +627,7 @@ export default function SDKIIndex() {
         await window.axios.delete(destroyUrl(idOrKode));
         pushToast({ type: "success", title: "Berhasil", message: "SDKI dihapus" });
         await loadRecords();
-      } catch (error) {
+      } catch (_error) {
         pushToast({ type: "error", title: "Gagal", message: "Tidak bisa menghapus" });
       }
     };

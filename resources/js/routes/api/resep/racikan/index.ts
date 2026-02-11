@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:170
+* @see app/Http/Controllers/RawatJalan/ResepController.php:174
 * @route '/api/resep/racikan'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:170
+* @see app/Http/Controllers/RawatJalan/ResepController.php:174
 * @route '/api/resep/racikan'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:170
+* @see app/Http/Controllers/RawatJalan/ResepController.php:174
 * @route '/api/resep/racikan'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::append
-* @see app/Http/Controllers/RawatJalan/ResepController.php:484
+* @see app/Http/Controllers/RawatJalan/ResepController.php:492
 * @route '/api/resep/{no_resep}/racikan'
 */
 export const append = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ append.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::append
-* @see app/Http/Controllers/RawatJalan/ResepController.php:484
+* @see app/Http/Controllers/RawatJalan/ResepController.php:492
 * @route '/api/resep/{no_resep}/racikan'
 */
 append.url = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -77,7 +77,7 @@ append.url = (args: { no_resep: string | number } | [no_resep: string | number ]
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::append
-* @see app/Http/Controllers/RawatJalan/ResepController.php:484
+* @see app/Http/Controllers/RawatJalan/ResepController.php:492
 * @route '/api/resep/{no_resep}/racikan'
 */
 append.post = (args: { no_resep: string | number } | [no_resep: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

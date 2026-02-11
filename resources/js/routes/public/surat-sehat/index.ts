@@ -1,7 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
-/**
-* @see \App\Http\Controllers\RawatJalan\RawatJalanController::show
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1335
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
+s/RawatJalan/RawatJalanController.php:1338
 * @route '/surat-sehat'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +15,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::show
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1335
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1338
 * @route '/surat-sehat'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +24,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::show
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1335
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1338
 * @route '/surat-sehat'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +34,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::show
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1335
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1338
 * @route '/surat-sehat'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

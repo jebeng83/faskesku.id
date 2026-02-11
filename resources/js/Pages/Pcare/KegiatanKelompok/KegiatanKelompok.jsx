@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import SidebarBriding from '@/Layouts/SidebarBriding';
+import LayoutUtama from '@/Pages/LayoutUtama';
+import { BridingMenu } from '@/Layouts/SidebarBriding';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.98 },
@@ -133,4 +134,4 @@ export default function KegiatanKelompok() {
   );
 }
 
-KegiatanKelompok.layout = (page) => <SidebarBriding title="Briding Pcare">{page}</SidebarBriding>;
+KegiatanKelompok.layout = (page) => <LayoutUtama title="Briding Pcare" left={<BridingMenu />}>{page}</LayoutUtama>;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import SidebarBriding from "@/Layouts/SidebarBriding";
+import LayoutUtama from "@/Pages/LayoutUtama";
+import { BridingMenu } from "@/Layouts/SidebarBriding";
 import { Card, CardHeader, CardContent } from "@/Components/ui/Card";
 import Input from "@/Components/ui/Input";
 import Label from "@/Components/ui/Label";
@@ -21,6 +22,73 @@ import {
 
 
 export default function MappingPractitioner() {
+    const metaCsrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || "";
+
+    const getCsrfToken = () => {
+        const p = `; ${document.cookie}`;
+        const r = p.split("; XSRF-TOKEN=");
+        const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+        try {
+            return raw ? decodeURIComponent(raw) : "";
+        } catch {
+            return raw || "";
+        }
+    };
+
+    const ensureCsrfCookie = async () => {
+        try {
+            await window.axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        } catch {}
+    };
+
+    const fetchWithCsrf = async (input, init = {}) => {
+        const firstInit = init ? { ...init } : {};
+        const headers = new Headers(firstInit.headers || {});
+
+        await ensureCsrfCookie();
+
+        const cookieToken = getCsrfToken();
+        if (cookieToken) {
+            headers.set('X-XSRF-TOKEN', cookieToken);
+        } else if (metaCsrfToken) {
+            headers.set('X-CSRF-TOKEN', metaCsrfToken);
+        }
+
+        if (!headers.has('X-Requested-With')) headers.set('X-Requested-With', 'XMLHttpRequest');
+        if (!headers.has('Accept')) headers.set('Accept', 'application/json');
+
+        const finalInit = {
+            ...firstInit,
+            headers,
+            credentials: firstInit.credentials || 'include',
+        };
+
+        const res = await fetch(input, finalInit);
+        if (res.status !== 419 || headers.get('X-CSRF-RETRY') === '1') {
+            return res;
+        }
+
+        await ensureCsrfCookie();
+
+        const retryHeaders = new Headers(finalInit.headers || {});
+        const retryCookieToken = getCsrfToken();
+        retryHeaders.set('X-CSRF-RETRY', '1');
+        if (retryCookieToken) {
+            retryHeaders.set('X-XSRF-TOKEN', retryCookieToken);
+        } else if (metaCsrfToken) {
+            retryHeaders.set('X-CSRF-TOKEN', metaCsrfToken);
+        }
+
+        const retryInit = {
+            ...finalInit,
+            headers: retryHeaders,
+        };
+
+        const retryInput = input instanceof Request ? input.clone() : input;
+        return fetch(retryInput, retryInit);
+    };
+
     // State
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]); // List mapping
@@ -112,13 +180,18 @@ export default function MappingPractitioner() {
         setSyncLoading(true);
         try {
             // Direct call to searchAndCreate
-            const res = await fetch("/api/satusehat/practitioner-mapping/search-create", {
+            const res = await fetchWithCsrf("/api/satusehat/practitioner-mapping/search-create", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ nik: pegawai.no_ktp })
             });
+
+            if (res.status === 419) {
+                addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+                return;
+            }
 
             const json = await res.json();
 
@@ -148,9 +221,17 @@ export default function MappingPractitioner() {
         if (!confirm("Apakah Anda yakin ingin menghapus mapping ini?")) return;
 
         try {
-            const res = await fetch(`/api/satusehat/practitioner-mapping/${id}`, {
-                method: "DELETE"
+            const res = await fetchWithCsrf(`/api/satusehat/practitioner-mapping/${id}`, {
+                method: "DELETE",
+                headers: {
+                    Accept: "application/json",
+                },
             });
+
+            if (res.status === 419) {
+                addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+                return;
+            }
 
             if (res.ok) {
                 addToast("success", "Terhapus", "Mapping berhasil dihapus");
@@ -180,13 +261,19 @@ export default function MappingPractitioner() {
 
     const saveEdit = async () => {
         try {
-            const res = await fetch(`/api/satusehat/practitioner-mapping/${editingId}`, {
+            const res = await fetchWithCsrf(`/api/satusehat/practitioner-mapping/${editingId}`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
                 },
                 body: JSON.stringify(editForm)
             });
+
+            if (res.status === 419) {
+                addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+                return;
+            }
 
             const json = await res.json();
 
@@ -203,7 +290,7 @@ export default function MappingPractitioner() {
     };
 
     return (
-        <SidebarBriding title="Mapping Practitioner">
+        <LayoutUtama title="Mapping Practitioner" left={<BridingMenu />}>
             <motion.div
                 className="p-4 md:p-6 lg:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen"
                 variants={containerVariants}
@@ -438,6 +525,6 @@ export default function MappingPractitioner() {
 
                 <Toaster toasts={toasts} onRemove={removeToast} />
             </motion.div>
-        </SidebarBriding>
+        </LayoutUtama>
     );
 }
