@@ -37,5 +37,6 @@ return [
     // Opsi khusus Mobile JKN (opsional)
     'mobilejkn' => [
         'force_resolve' => env('BPJS_MOBILEJKN_FORCE_RESOLVE'),
+        'retry_service_expired' => env('BPJS_MOBILEJKN_RETRY_SERVICE_EXPIRED', true),
     ],
 ];

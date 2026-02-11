@@ -740,12 +740,13 @@ class MobileJknController extends Controller
                 'kd_poli' => 'required|string',
                 'status' => 'required|integer|in:1,2',
                 'tanggalperiksa' => 'nullable|date',
+                'waktu' => 'nullable|numeric',
             ]);
 
             $noRkmMedis = (string) $request->input('no_rkm_medis');
             $kdPoli = (string) $request->input('kd_poli');
             $status = (int) $request->input('status');
-            $tanggalPeriksa = date('Y-m-d');
+            $tanggalPeriksa = (string) ($request->input('tanggalperiksa') ?: date('Y-m-d'));
 
             // Cek No Rawat terlebih dahulu
             $reg = DB::table('reg_periksa')
@@ -838,16 +839,69 @@ class MobileJknController extends Controller
                 ], 400);
             }
 
-            // Waktu sekarang (UTC)
-            $now = microtime(true);
-            
-            // Header X-Timestamp tetap gunakan UTC (standar signature BPJS)
-            // Biarkan null agar BpjsTraits generate otomatis atau kita set eksplisit
-            $timestampOverride = (string) floor($now);
-
-            // Waktu payload body gunakan UTC (sama dengan X-Timestamp)
-            // Standar epoch time adalah UTC. Mengirim WIB (UTC+7) akan dianggap masa depan oleh server.
-            $waktuPayload = (int) round($now * 1000);
+            $now = \Carbon\Carbon::now('UTC');
+            $waktuPayload = (int) $now->valueOf();
+            $waktuInput = $request->input('waktu');
+            if (is_numeric($waktuInput)) {
+                $waktuCandidate = preg_replace('/\D+/', '', (string) $waktuInput);
+                if ($waktuCandidate !== '') {
+                    $waktuPayload = (int) $waktuCandidate;
+                    if ($waktuPayload > 0 && $waktuPayload < 1000000000000) {
+                        $waktuPayload = $waktuPayload * 1000;
+                    }
+                }
+            }
+            $jamPraktek = null;
+            $waktuOriginal = $waktuPayload;
+            $waktuWindowed = null;
+            $kdDokter = $reg?->kd_dokter ?? null;
+            if ($kdDokter) {
+                $hariMap = [1 => 'SENIN', 2 => 'SELASA', 3 => 'RABU', 4 => 'KAMIS', 5 => 'JUMAT', 6 => 'SABTU', 7 => 'MINGGU'];
+                $hari = $hariMap[(int) date('N', strtotime($tanggalPeriksa))] ?? null;
+                $jadwalQuery = DB::table('jadwal')
+                    ->select(['jam_mulai', 'jam_selesai'])
+                    ->where('kd_dokter', $kdDokter)
+                    ->where('kd_poli', $kdPoli)
+                    ->orderBy('jam_mulai');
+                if ($hari) {
+                    $jadwalQuery = $jadwalQuery->where('hari_kerja', $hari);
+                }
+                $jadwal = $jadwalQuery->first();
+                if ($jadwal) {
+                    $formatJam = function ($time) {
+                        if (! is_string($time)) {
+                            return '08:00';
+                        }
+                        $time = substr($time, 0, 5);
+                        if (preg_match('/^\d:\d{2}$/', $time)) {
+                            $time = '0'.$time;
+                        }
+                        if (! preg_match('/^\d{2}:\d{2}$/', $time)) {
+                            return '08:00';
+                        }
+                        return $time;
+                    };
+                    $jamMulai = $formatJam($jadwal->jam_mulai ?: '08:00');
+                    $jamSelesai = $formatJam($jadwal->jam_selesai ?: '16:00');
+                    $jamPraktek = $jamMulai.'-'.$jamSelesai;
+                    try {
+                        $startLocal = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $tanggalPeriksa.' '.$jamMulai, 'Asia/Jakarta');
+                        $endLocal = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $tanggalPeriksa.' '.$jamSelesai, 'Asia/Jakarta');
+                        $startMs = (int) $startLocal->setTimezone('UTC')->valueOf();
+                        $endMs = (int) $endLocal->setTimezone('UTC')->valueOf();
+                        if ($endMs >= $startMs) {
+                            $waktuWindowed = $waktuPayload;
+                            if ($waktuPayload < $startMs) {
+                                $waktuWindowed = $startMs;
+                            } elseif ($waktuPayload > $endMs) {
+                                $waktuWindowed = $endMs;
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                    }
+                }
+            }
+            $timestampOverride = (string) floor($waktuPayload / 1000);
 
             $payload = [
                 'tanggalperiksa' => $tanggalPeriksa,
@@ -865,7 +919,9 @@ class MobileJknController extends Controller
                 'tanggalperiksa' => $tanggalPeriksa,
                 'status' => $status,
                 'waktu_ms' => $waktuPayload,
-                'waktu_utc' => (int)($now * 1000), // Log pembanding
+                'waktu_orig_ms' => $waktuOriginal,
+                'jam_praktek' => $jamPraktek,
+                'waktu_utc' => (int) $now->valueOf(),
             ]);
 
             // Debug payload yang akan dikirim ke Mobile JKN
@@ -877,16 +933,40 @@ class MobileJknController extends Controller
                 'method' => 'POST',
             ]);
 
-            $start = microtime(true);
-            $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payload, [], $timestampOverride);
-            $response = $result['response'];
-            $timestamp = $result['timestamp_used'];
+            $sendRequest = function (array $payloadData, string $timestampOverrideValue) {
+                $start = microtime(true);
+                $result = $this->mobilejknRequest('POST', 'antrean/panggil', [], $payloadData, [], $timestampOverrideValue);
+                $response = $result['response'];
+                $timestamp = $result['timestamp_used'];
+                $body = $response->body();
+                $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+                $durationMs = (int) round((microtime(true) - $start) * 1000);
+                return [$response, $timestamp, $body, $parsed, $durationMs];
+            };
 
-            $body = $response->body();
-            $parsed = $this->maybeDecryptAndDecompressMobileJkn($body, $timestamp);
+            [$response, $timestamp, $body, $parsed, $durationMs] = $sendRequest($payload, $timestampOverride);
+            if (is_array($parsed)) {
+                $meta = $parsed['metadata'] ?? $parsed['metaData'] ?? null;
+                $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+                $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : '';
+                if ($metaCode === 201 && stripos($metaMessage, 'waktu tidak valid') !== false && $waktuWindowed !== null && $waktuWindowed !== $waktuPayload) {
+                    \Illuminate\Support\Facades\Log::channel('bpjs')->info('MobileJKN panggilAntrean retry', [
+                        'no_rkm_medis' => $noRkmMedis,
+                        'kd_poli_rs' => $kdPoli,
+                        'tanggalperiksa' => $tanggalPeriksa,
+                        'status' => $status,
+                        'waktu_ms' => $waktuWindowed,
+                        'waktu_orig_ms' => $waktuPayload,
+                        'jam_praktek' => $jamPraktek,
+                    ]);
+                    $waktuPayload = $waktuWindowed;
+                    $payload['waktu'] = $waktuPayload;
+                    $timestampOverride = (string) floor($waktuPayload / 1000);
+                    [$response, $timestamp, $body, $parsed, $durationMs] = $sendRequest($payload, $timestampOverride);
+                }
+            }
 
             // no_rawat sudah diambil di awal fungsi
-            $durationMs = (int) round((microtime(true) - $start) * 1000);
             $maskedCard = '';
             try {
                 $card = (string) ($pasien->no_peserta ?? '');

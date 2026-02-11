@@ -240,7 +240,7 @@ export const panggilAntrean = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 export const batalAntrean = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -255,7 +255,7 @@ batalAntrean.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 batalAntrean.url = (options?: RouteQueryOptions) => {
@@ -264,7 +264,7 @@ batalAntrean.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batalAntrean
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 batalAntrean.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -70,7 +70,7 @@ panggil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 export const batal = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -85,7 +85,7 @@ batal.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 batal.url = (options?: RouteQueryOptions) => {
@@ -94,7 +94,7 @@ batal.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\MobileJknController::batal
-* @see app/Http/Controllers/Pcare/MobileJknController.php:995
+* @see app/Http/Controllers/Pcare/MobileJknController.php:1075
 * @route '/api/mobilejkn/antrean/batal'
 */
 batal.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

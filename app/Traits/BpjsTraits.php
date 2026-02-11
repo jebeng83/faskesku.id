@@ -379,15 +379,6 @@ trait BpjsTraits
         if (empty($cfg['base_url'])) {
             throw new \InvalidArgumentException('Base URL Mobile JKN belum dikonfigurasi di database (kolom base_url_mobilejkn).');
         }
-        $headers = array_merge($this->buildMobileJknHeaders($overrideTimestamp), $extraHeaders);
-        $url = rtrim($cfg['base_url'], '/').'/'.ltrim($endpoint, '/');
-
-        $sanitizedHeaders = [
-            'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
-            'X-timestamp' => (string) ($headers['X-timestamp'] ?? ''),
-            'Accept' => (string) ($headers['Accept'] ?? ''),
-            'Content-Type' => (string) ($headers['Content-Type'] ?? ''),
-        ];
 
         $bodyPreview = null;
         if (is_array($body)) {
@@ -397,74 +388,122 @@ trait BpjsTraits
             $bodyPreview = substr($body, 0, 1000);
         }
 
-        Log::channel('bpjs')->debug('MobileJKN request', [
-            'id' => $logId,
-            'method' => strtoupper($method),
-            'url' => $url,
-            'endpoint' => $endpoint,
-            'query' => $query,
-            'headers' => $sanitizedHeaders,
-            'body_preview' => $bodyPreview,
-        ]);
-
-        // Build HTTP client with optional timeouts and DNS fallback
         $httpOptions = [];
-        // Query params
         if (! empty($query)) {
             $httpOptions['query'] = $query;
         }
-        // Timeouts (gunakan config agar aman saat config:cache)
         $connectTimeout = (int) config('bpjs.http.connect_timeout', 10);
         $timeout = (int) config('bpjs.http.timeout', 30);
         $httpOptions['connect_timeout'] = $connectTimeout;
         $httpOptions['timeout'] = $timeout;
-        // Optional forced DNS resolve to mitigate local DNS issues
         $forceResolve = config('bpjs.mobilejkn.force_resolve');
         if (! empty($forceResolve)) {
-            // Example value: apijkn.bpjs-kesehatan.go.id:443:118.97.79.198
             $httpOptions['curl'] = [CURLOPT_RESOLVE => [$forceResolve]];
             Log::channel('bpjs')->warning('MobileJKN using CURLOPT_RESOLVE fallback', [
                 'resolve' => $forceResolve,
             ]);
         }
-        $request = Http::withHeaders($headers)->withOptions($httpOptions);
 
-        switch (strtoupper($method)) {
-            case 'GET':
-                $response = $request->get($url);
-                break;
-            case 'POST':
-                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                $response = $request->post($url, $payload);
-                break;
-            case 'PUT':
-                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                $response = $request->put($url, $payload);
-                break;
-            case 'DELETE':
-                $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
-                $response = $request->delete($url, $payload);
-                break;
-            default:
-                throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+        $sendRequest = function (string $url, array $headers, string $logIdValue, float $startTime) use ($method, $body, $bodyPreview, $query, $httpOptions, $endpoint) {
+            $sanitizedHeaders = [
+                'X-cons-id' => (string) ($headers['X-cons-id'] ?? ''),
+                'X-timestamp' => (string) ($headers['X-timestamp'] ?? ''),
+                'Accept' => (string) ($headers['Accept'] ?? ''),
+                'Content-Type' => (string) ($headers['Content-Type'] ?? ''),
+            ];
+
+            Log::channel('bpjs')->debug('MobileJKN request', [
+                'id' => $logIdValue,
+                'method' => strtoupper($method),
+                'url' => $url,
+                'endpoint' => $endpoint,
+                'query' => $query,
+                'headers' => $sanitizedHeaders,
+                'body_preview' => $bodyPreview,
+            ]);
+
+            $request = Http::withHeaders($headers)->withOptions($httpOptions);
+
+            switch (strtoupper($method)) {
+                case 'GET':
+                    $response = $request->get($url);
+                    break;
+                case 'POST':
+                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                    $response = $request->post($url, $payload);
+                    break;
+                case 'PUT':
+                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                    $response = $request->put($url, $payload);
+                    break;
+                case 'DELETE':
+                    $payload = is_array($body) ? $body : (is_string($body) ? json_decode($body, true) : []);
+                    $response = $request->delete($url, $payload);
+                    break;
+                default:
+                    throw new \InvalidArgumentException("Unsupported HTTP method: {$method}");
+            }
+
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            $rawBody = $response->body();
+            Log::channel('bpjs')->debug('MobileJKN response', [
+                'id' => $logIdValue,
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'duration_ms' => $durationMs,
+                'url' => $url,
+                'timestamp_used' => $headers['X-timestamp'] ?? null,
+                'body_excerpt' => substr($rawBody ?? '', 0, 1000),
+            ]);
+
+            return [$response, $headers, $rawBody];
+        };
+
+        $headers = array_merge($this->buildMobileJknHeaders($overrideTimestamp), $extraHeaders);
+        $url = rtrim($cfg['base_url'], '/').'/'.ltrim($endpoint, '/');
+        [$response, $headersUsed, $rawBody] = $sendRequest($url, $headers, $logId, $start);
+
+        $shouldRetry = false;
+        $decoded = null;
+        if (is_string($rawBody) && $rawBody !== '') {
+            $decoded = json_decode($rawBody, true);
+        }
+        $meta = is_array($decoded) ? ($decoded['metadata'] ?? $decoded['metaData'] ?? null) : null;
+        $metaCode = is_array($meta) ? (int) ($meta['code'] ?? 0) : null;
+        $metaMessage = is_array($meta) ? (string) ($meta['message'] ?? '') : '';
+        if (($metaCode === 401 && stripos($metaMessage, 'Service Expired') !== false) || (is_string($rawBody) && stripos($rawBody, 'Service Expired') !== false)) {
+            $shouldRetry = (bool) config('bpjs.mobilejkn.retry_service_expired', true);
         }
 
-        $durationMs = (int) round((microtime(true) - $start) * 1000);
-        $rawBody = $response->body();
-        Log::channel('bpjs')->debug('MobileJKN response', [
-            'id' => $logId,
-            'status' => $response->status(),
-            'successful' => $response->successful(),
-            'duration_ms' => $durationMs,
-            'url' => $url,
-            'timestamp_used' => $headers['X-timestamp'] ?? null,
-            'body_excerpt' => substr($rawBody ?? '', 0, 1000),
-        ]);
+        if ($shouldRetry) {
+            $retryLogId = uniqid('mobilejkn_', true);
+            $freshCfg = $this->mobilejknConfig();
+            $baseUrls = array_values(array_filter([
+                $freshCfg['base_url'] ?? '',
+                $freshCfg['base_url_v2'] ?? '',
+                $freshCfg['base_url_v1'] ?? '',
+            ], function ($value) {
+                return is_string($value) && $value !== '';
+            }));
+            $baseUrls = array_values(array_unique($baseUrls));
+            $retryBaseUrl = $baseUrls[0] ?? ($freshCfg['base_url'] ?? '');
+            $previousUrl = $url;
+            $newUrl = $retryBaseUrl !== '' ? rtrim($retryBaseUrl, '/').'/'.ltrim($endpoint, '/') : $url;
+            if ($newUrl !== '') {
+                $url = $newUrl;
+            }
+            $retryHeaders = array_merge($this->buildMobileJknHeaders(null), $extraHeaders);
+            Log::channel('bpjs')->warning('MobileJKN service expired, retry with refreshed credentials', [
+                'previous_url' => $previousUrl,
+                'retry_url' => $url,
+            ]);
+            [$response, $headersUsed, $rawBody] = $sendRequest($url, $retryHeaders, $retryLogId, microtime(true));
+        }
 
         return [
             'response' => $response,
-            'headers_used' => $headers,
-            'timestamp_used' => $headers['X-timestamp'],
+            'headers_used' => $headersUsed,
+            'timestamp_used' => $headersUsed['X-timestamp'],
             'url' => $url,
         ];
     }
