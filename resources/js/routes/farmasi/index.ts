@@ -10,7 +10,7 @@ import daruratStokFb6373 from './darurat-stok'
 import sirkulasiObatDb42f9 from './sirkulasi-obat'
 import permintaan from './permintaan'
 import sisaStok71ee58 from './sisa-stok'
-import farmasiNested from './farmasi'
+import farmasi from './farmasi'
 import cetak from './cetak'
 import dataObatF6becc from './data-obat'
 import setPenjualanBarang from './set-penjualan-barang'
@@ -908,7 +908,7 @@ const farmasi = {
     permintaan: Object.assign(permintaan, permintaan),
     sisaStok: Object.assign(sisaStok, sisaStok71ee58),
     dataOpname: Object.assign(dataOpname, dataOpname),
-    farmasi: Object.assign(farmasiNested, farmasiNested),
+    farmasi: Object.assign(farmasi, farmasi),
     cetak: Object.assign(cetak, cetak),
     dataObat: Object.assign(dataObat, dataObatF6becc),
     setPenjualanBarang: Object.assign(setPenjualanBarang, setPenjualanBarang),

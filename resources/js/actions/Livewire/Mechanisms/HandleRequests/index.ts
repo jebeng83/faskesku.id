@@ -1,7 +1,7 @@
-import HandleRequestsNested from './HandleRequests'
+import HandleRequests from './HandleRequests'
 
 const HandleRequests = {
-    HandleRequests: Object.assign(HandleRequestsNested, HandleRequestsNested),
+    HandleRequests: Object.assign(HandleRequests, HandleRequests),
 }
 
 export default HandleRequests

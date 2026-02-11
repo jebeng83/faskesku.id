@@ -1,7 +1,7 @@
-import FrontendAssetsNested from './FrontendAssets'
+import FrontendAssets from './FrontendAssets'
 
 const FrontendAssets = {
-    FrontendAssets: Object.assign(FrontendAssetsNested, FrontendAssetsNested),
+    FrontendAssets: Object.assign(FrontendAssets, FrontendAssets),
 }
 
 export default FrontendAssets
