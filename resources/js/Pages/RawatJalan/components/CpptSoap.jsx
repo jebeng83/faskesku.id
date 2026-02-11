@@ -514,6 +514,20 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
     const [pegawaiMap, setPegawaiMap] = useState({});
+
+    useEffect(() => {
+        if (message) {
+            toast.success(message);
+            setMessage(null);
+        }
+    }, [message]);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+            setError(null);
+        }
+    }, [error]);
     const [pegawaiQuery, setPegawaiQuery] = useState('');
     const [kdAlergi, setKdAlergi] = useState('');
     const [alergiJenis, setAlergiJenis] = useState('');
@@ -3015,36 +3029,32 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                     <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Pendaftaran PCare</h4>
                                 </div>
-                                <div className="p-3">
+                                <div className="p-2">
                                     {pcarePendaftaran ? (
-                                        <div className="space-y-2">
+                                        <div className="space-y-1">
                                             {/* Baris 1: Identitas */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
-                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">No Rawat</span>
-                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
-                                                    </div>
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
-                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">No Kartu</span>
-                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
-                                                    </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-0.5">
+                                                <div className="flex items-center justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0">
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">No Rawat</span>
+                                                    <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.no_rawat}</span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
-                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">Tgl Daftar</span>
-                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
-                                                    </div>
-                                                    <div className="flex justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0.5">
-                                                        <span className="text-[11px] text-gray-500 dark:text-gray-400">Kd Poli</span>
-                                                        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
-                                                    </div>
+                                                <div className="flex items-center justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0">
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">No Kartu</span>
+                                                    <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.noKartu || pcarePendaftaran.no_kartu || '-'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0">
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Tgl Daftar</span>
+                                                    <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.tglDaftar || '-'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between border-b border-indigo-100 dark:border-indigo-800/50 pb-0">
+                                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Kd Poli</span>
+                                                    <span className="text-[11px] font-medium text-gray-800 dark:text-gray-200">{pcarePendaftaran.kdPoli || '-'}</span>
                                                 </div>
                                             </div>
 
                                             {/* Baris 2: Vital Signs */}
-                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-2 border border-indigo-100 dark:border-indigo-800/50">
-                                                <div className="flex items-center gap-2 mb-1 text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">
+                                            <div className="bg-white/50 dark:bg-gray-800/50 rounded-md p-1.5 border border-indigo-100 dark:border-indigo-800/50">
+                                                <div className="flex items-center gap-1.5 mb-0.5 text-[10px] font-semibold text-indigo-700 dark:text-indigo-400">
                                                     <Activity className="w-3 h-3" />
                                                     Tanda Vital
                                                 </div>
@@ -3052,40 +3062,40 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                     <table className="w-full text-left">
                                                         <thead className="bg-indigo-50/50 dark:bg-indigo-900/10 text-[9px] text-gray-500 uppercase tracking-wider">
                                                             <tr>
-                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Tekanan Darah</th>
-                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Resp</th>
-                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">HR</th>
-                                                                <th className="px-2 py-1 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">BB</th>
-                                                                <th className="px-2 py-1 font-medium text-center">TB</th>
+                                                                <th className="px-1.5 py-0.5 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Tekanan Darah</th>
+                                                                <th className="px-1.5 py-0.5 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">Resp</th>
+                                                                <th className="px-1.5 py-0.5 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">HR</th>
+                                                                <th className="px-1.5 py-0.5 font-medium text-center border-r border-indigo-100 dark:border-indigo-800/50">BB</th>
+                                                                <th className="px-1.5 py-0.5 font-medium text-center">TB</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="bg-white dark:bg-gray-800">
                                                             <tr className="divide-x divide-indigo-100 dark:divide-indigo-800/50">
-                                                                <td className="px-2 py-1 text-center">
+                                                                <td className="px-1.5 py-0.5 text-center">
                                                                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                                                                         {(pcarePendaftaran.sistole || pcarePendaftaran.diastole) ? `${pcarePendaftaran.sistole || ''}/${pcarePendaftaran.diastole || ''}` : '-'}
                                                                     </span>
                                                                     <span className="text-[9px] text-gray-400 ml-0.5">mmHg</span>
                                                                 </td>
-                                                                <td className="px-2 py-1 text-center">
+                                                                <td className="px-1.5 py-0.5 text-center">
                                                                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                                                                         {pcarePendaftaran.respRate || '-'}
                                                                     </span>
                                                                     <span className="text-[9px] text-gray-400 ml-0.5">x/m</span>
                                                                 </td>
-                                                                <td className="px-2 py-1 text-center">
+                                                                <td className="px-1.5 py-0.5 text-center">
                                                                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                                                                         {pcarePendaftaran.heartRate || '-'}
                                                                     </span>
                                                                     <span className="text-[9px] text-gray-400 ml-0.5">bpm</span>
                                                                 </td>
-                                                                <td className="px-2 py-1 text-center">
+                                                                <td className="px-1.5 py-0.5 text-center">
                                                                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                                                                         {pcarePendaftaran.beratBadan || '-'}
                                                                     </span>
                                                                     <span className="text-[9px] text-gray-400 ml-0.5">kg</span>
                                                                 </td>
-                                                                <td className="px-2 py-1 text-center">
+                                                                <td className="px-1.5 py-0.5 text-center">
                                                                     <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
                                                                         {pcarePendaftaran.tinggiBadan || '-'}
                                                                     </span>
@@ -3099,8 +3109,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
 
                                             {/* Baris 3: Keluhan */}
                                             <div>
-                                                <span className="block text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Keluhan Utama</span>
-                                                <div className="bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700 text-xs text-gray-800 dark:text-gray-200 italic leading-snug">
+                                                <span className="block text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">Keluhan Utama</span>
+                                                <div className="bg-white dark:bg-gray-800 p-1.5 rounded border border-gray-200 dark:border-gray-700 text-[11px] text-gray-800 dark:text-gray-200 italic leading-snug">
                                                     "{pcarePendaftaran.keluhan || '-'}"
                                                 </div>
                                             </div>
@@ -3706,18 +3716,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 </div>
             )}
             <div className="relative z-20 pb-4 md:pb-6 px-3 md:px-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                {(message || error) && (
-                    <div className={`mb-4 text-sm px-4 py-3 rounded-lg border flex items-start ${error ? 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800' : 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800'}`}>
-                        <svg className={`w-5 h-5 mr-2 mt-0.5 flex-shrink-0 ${error ? 'text-red-500' : 'text-green-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {error ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            )}
-                        </svg>
-                        <span>{error || message}</span>
-                    </div>
-                )}
                 <>
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">

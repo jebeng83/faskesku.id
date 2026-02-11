@@ -610,8 +610,15 @@ class RawatJalanController extends Controller
         $alergiPasien = $validated['alergi_pasien'] ?? null;
         unset($validated['alergi_pasien']);
 
-        // Insert data pemeriksaan tanpa alergi_pasien
-        DB::table('pemeriksaan_ralan')->insert($validated);
+        $pemeriksaanKey = [
+            'no_rawat' => $validated['no_rawat'],
+            'tgl_perawatan' => $validated['tgl_perawatan'],
+            'jam_rawat' => $validated['jam_rawat'],
+        ];
+        $pemeriksaanData = $validated;
+        unset($pemeriksaanData['no_rawat'], $pemeriksaanData['tgl_perawatan'], $pemeriksaanData['jam_rawat']);
+
+        DB::table('pemeriksaan_ralan')->updateOrInsert($pemeriksaanKey, $pemeriksaanData);
 
         // Update status reg_periksa.stts menjadi 'Sudah' setelah pemeriksaan tersimpan
         // Ketika pemeriksaan disimpan, status harus menjadi 'Sudah'
