@@ -556,6 +556,22 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [showNmTemplateModal, setShowNmTemplateModal] = useState(false);
     const [nmTemplateInput, setNmTemplateInput] = useState('');
 
+    const parseApiResponse = async (res) => {
+        const text = await res.text();
+        let json = null;
+        if (text) {
+            try {
+                json = JSON.parse(text);
+            } catch (_) {
+                json = null;
+            }
+        }
+        const contentType = res.headers.get('content-type') || '';
+        const trimmed = text.trim();
+        const isHtml = contentType.includes('text/html') || (trimmed.startsWith('<') && trimmed.includes('<html'));
+        return { text, json, isHtml, contentType };
+    };
+
     useEffect(() => {
         let active = true;
         const loadAlergiPasien = async () => {
@@ -1203,20 +1219,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 credentials: 'include',
             });
+            const parsed = await parseApiResponse(res);
+            if (parsed.isHtml) {
+                setPcarePendaftaran(null);
+                setPcarePendaftaranError(`Server mengembalikan HTML (${res.status}). Periksa sesi login dan routing /api di production.`);
+                return;
+            }
             if (res.status === 401) {
                 setIsUnauthorized(true);
                 setPcarePendaftaran(null);
                 setPcarePendaftaranError('Tidak punya akses memuat pendaftaran PCare (401).');
             } else {
                 setIsUnauthorized(false);
-                const json = await res.json();
-                const data = json.data || null;
+                const json = parsed.json || null;
+                const data = json?.data || null;
                 setPcarePendaftaran(data);
-                if (!res.ok || json.success === false) {
-                    const msg = json.message || `Gagal memuat pendaftaran PCare (${res.status})`;
+                if (!res.ok || json?.success === false || !json) {
+                    const msg = json?.message || `Gagal memuat pendaftaran PCare (${res.status})`;
                     setPcarePendaftaranError(msg);
                 } else if (!data) {
-                    const msg = json.message || 'Data pendaftaran belum tersedia.';
+                    const msg = json?.message || 'Data pendaftaran belum tersedia.';
                     setPcarePendaftaranError(msg);
                 } else {
                     setPcarePendaftaranError('');
@@ -1337,6 +1359,12 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     credentials: 'include',
                 });
+                const parsed = await parseApiResponse(res);
+                if (parsed.isHtml) {
+                    setKunjunganPreview(null);
+                    setKunjunganPreviewError(`Server mengembalikan HTML (${res.status}). Periksa sesi login dan routing /api di production.`);
+                    return;
+                }
                 if (res.status === 401) {
                     setIsUnauthorized(true);
                     setKunjunganPreview(null);
@@ -1345,7 +1373,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 } else {
                     setIsUnauthorized(false);
                 }
-                const json = await res.json();
+                const json = parsed.json || null;
                 if (json && json.success) {
                     const payload = json.payload || {};
                     const kdSadar = '01';
@@ -1372,7 +1400,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     setKunjunganPreviewError('');
                 } else {
                     setKunjunganPreview(null);
-                    const msg = (json && json.message) ? json.message : `Gagal memuat preview kunjungan (${res.status})`;
+                    const msg = json?.message || `Gagal memuat preview kunjungan (${res.status})`;
                     setKunjunganPreviewError(msg);
                 }
             } catch (e) {
