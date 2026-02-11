@@ -545,6 +545,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [rujukanBerhasil, setRujukanBerhasil] = useState(false);
     // Menyimpan nomor kunjungan terakhir (pengganti no rujukan bila belum tersedia)
     const [lastNoKunjungan, setLastNoKunjungan] = useState('');
+    const [kunjunganSent, setKunjunganSent] = useState(false);
     // Menyimpan payload terakhir untuk template cetak rujukan
     const [lastKunjunganPayload, setLastKunjunganPayload] = useState(null);
     const [rujukanActive, setRujukanActive] = useState(false); // checklist aktifkan kartu rujukan
@@ -908,6 +909,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             const json = res.data;
             const msg = (json && json.metaData && json.metaData.message) ? json.metaData.message : 'OK';
             setKunjunganResult({ success: true, message: msg });
+            setKunjunganSent(true);
         } catch (e) {
             const json = e.response ? e.response.data : null;
             const errMsg = (json && json.metaData && json.metaData.message) 
@@ -1728,6 +1730,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             // Simpan informasi untuk cetak rujukan bila rujukan aktif
             const noKunj = extractNoKunjungan(json);
             setLastNoKunjungan(noKunj);
+            setKunjunganSent(!!noKunj || (res.status >= 200 && res.status < 300));
             setLastKunjunganPayload(payload);
             // Cek kembali data rujukan dari tabel setelah sukses kirim kunjungan
             if (payload.rujukLanjut && noRawat) {
@@ -1887,7 +1890,6 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         }
     }, [noRawat, noRkmMedis, viewMode]);
 
-    // Cek status pendaftaran PCare dari tabel pcare_pendaftaran
     useEffect(() => {
         const checkPendaftaranStatus = async () => {
             if (!noRawat) {
@@ -1895,29 +1897,58 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 return;
             }
             try {
-                const res = await fetch(`/api/pcare/pendaftaran/rawat/${encodeURIComponent(noRawat)}`, {
+                const params = new URLSearchParams({ no_rawat: noRawat });
+                const res = await fetch(`/api/pcare/pendaftaran/rawat?${params.toString()}`, {
                     headers: { 'Accept': 'application/json' }
                 });
                 if (res.ok) {
                     const json = await res.json();
                     const data = json.data || null;
-                    // Tampilkan tombol Bridging jika status = 'Terkirim'
-                    if (data && data.status === 'Terkirim') {
-                        setShowBridging(true);
+                    const status = String(data?.status ?? '').trim().toLowerCase();
+                    const hasNoUrut = String(data?.noUrut ?? '').trim() !== '';
+                    const isSuccess = status === 'terkirim' || status === 'sent' || status === 'success' || status === 'sukses' || hasNoUrut;
+                    setShowBridging(!!data && isSuccess);
+                    if (data) {
                         setPcarePendaftaran(data);
-                    } else {
-                        setShowBridging(false);
                     }
                 } else {
                     setShowBridging(false);
                 }
             } catch {
-                // Jika error, tetap hidden
                 setShowBridging(false);
             }
         };
         checkPendaftaranStatus();
          
+    }, [noRawat]);
+
+    useEffect(() => {
+        const checkKunjunganStatus = async () => {
+            if (!noRawat) {
+                setKunjunganSent(false);
+                return;
+            }
+            try {
+                const res = await fetch(`/api/pcare/kunjungan/nokunjungan/${encodeURIComponent(noRawat)}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    const noKunjungan = String(json?.noKunjungan ?? '').trim();
+                    if (noKunjungan) {
+                        setLastNoKunjungan(noKunjungan);
+                        setKunjunganSent(true);
+                    } else {
+                        setKunjunganSent(false);
+                    }
+                } else {
+                    setKunjunganSent(false);
+                }
+            } catch {
+                setKunjunganSent(false);
+            }
+        };
+        checkKunjunganStatus();
     }, [noRawat]);
 
     useEffect(() => {
@@ -2364,14 +2395,15 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                     {showBridging && (
                         <button
                             type="button"
+                            disabled={kunjunganSent}
                             onClick={openBridgingModal}
-                            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg"
-                            title="Bridging PCare"
+                            className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 transition-colors text-white font-semibold px-4 py-2 text-sm rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                            title="Kunjungan PCare"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m4 0h-1v4h-1m1-9h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Bridging PCare
+                            Kunjungan PCare
                         </button>
                     )}
                     {/* Debug: Log state rujukanBerhasil saat render */}
