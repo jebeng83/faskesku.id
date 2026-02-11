@@ -513,6 +513,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
     const [loadingList, setLoadingList] = useState(false);
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
+    const [pcarePendaftaranError, setPcarePendaftaranError] = useState('');
+    const [kunjunganPreviewError, setKunjunganPreviewError] = useState('');
     const [pegawaiMap, setPegawaiMap] = useState({});
 
     useEffect(() => {
@@ -1191,6 +1193,8 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setBridgingOpen(true);
         setKunjunganResult(null);
         setIsUnauthorized(false);
+        setPcarePendaftaranError('');
+        setKunjunganPreviewError('');
         // Secara default, buka Kunjungan dan muat preview
         try { await toggleKunjungan(true); } catch (_) {}
         // Ambil data pendaftaran dari tabel pcare_pendaftaran
@@ -1202,13 +1206,25 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
             if (res.status === 401) {
                 setIsUnauthorized(true);
                 setPcarePendaftaran(null);
+                setPcarePendaftaranError('Tidak punya akses memuat pendaftaran PCare (401).');
             } else {
                 setIsUnauthorized(false);
                 const json = await res.json();
-                setPcarePendaftaran(json.data || null);
+                const data = json.data || null;
+                setPcarePendaftaran(data);
+                if (!res.ok || json.success === false) {
+                    const msg = json.message || `Gagal memuat pendaftaran PCare (${res.status})`;
+                    setPcarePendaftaranError(msg);
+                } else if (!data) {
+                    const msg = json.message || 'Data pendaftaran belum tersedia.';
+                    setPcarePendaftaranError(msg);
+                } else {
+                    setPcarePendaftaranError('');
+                }
             }
-        } catch (_) {
+        } catch (e) {
             setPcarePendaftaran(null);
+            setPcarePendaftaranError(`Gagal memuat pendaftaran PCare: ${e.message || e}`);
         }
         // Ambil data rujukan subspesialis dari tabel pcare_rujuk_subspesialis
         try {
@@ -1324,6 +1340,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 if (res.status === 401) {
                     setIsUnauthorized(true);
                     setKunjunganPreview(null);
+                    setKunjunganPreviewError('Tidak punya akses memuat preview kunjungan (401).');
                     return;
                 } else {
                     setIsUnauthorized(false);
@@ -1352,14 +1369,19 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                         nmAlergi: payload.nmAlergi ?? 'Tidak Ada',
                     };
                     setKunjunganPreview(withDefaults);
+                    setKunjunganPreviewError('');
                 } else {
                     setKunjunganPreview(null);
+                    const msg = (json && json.message) ? json.message : `Gagal memuat preview kunjungan (${res.status})`;
+                    setKunjunganPreviewError(msg);
                 }
-            } catch {
+            } catch (e) {
                 setKunjunganPreview(null);
+                setKunjunganPreviewError(`Gagal memuat preview kunjungan: ${e.message || e}`);
             }
         } else {
             setKunjunganPreview(null);
+            setKunjunganPreviewError('');
         }
     };
 
@@ -3030,6 +3052,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     <h4 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">Pendaftaran PCare</h4>
                                 </div>
                                 <div className="p-2">
+                                    {pcarePendaftaranError && (
+                                        <div className="mb-2 text-[11px] px-2 py-1 rounded border border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                                            {pcarePendaftaranError}
+                                        </div>
+                                    )}
                                     {pcarePendaftaran ? (
                                         <div className="space-y-1">
                                             {/* Baris 1: Identitas */}
@@ -3130,6 +3157,11 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                     <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Kunjungan PCare</h4>
                                 </div>
                                 <div className="space-y-2">
+                                        {kunjunganPreviewError && (
+                                            <div className="text-[11px] px-2 py-1 rounded border border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800">
+                                                {kunjunganPreviewError}
+                                            </div>
+                                        )}
                                         {/* Form Kunjungan PCare */}
                                         {kunjunganPreview && (
                                             <div className="space-y-4">
