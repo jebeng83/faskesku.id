@@ -1171,89 +1171,40 @@ export default function Registration({
                 // Cek hasil BPJS dari backend (jika ada) - tidak perlu call ulang ke /api/mobilejkn/antrean/add
                 if (response.data.bpjs) {
                     const bpjs = response.data.bpjs;
+                    const reg = response.data.data || {};
                     const mjResData = bpjs.response || {};
                     const httpStatus = bpjs.http_status || 200;
-                    
-                    // Jika status selain 200, tampilkan popup respon BPJS
+                    const meta = mjResData?.metaData ?? mjResData?.metadata ?? {};
+                    const metaCode = Number(meta?.code ?? bpjs.meta_code ?? 0);
+                    const metaMessage = String(meta?.message ?? bpjs.meta_message ?? "").trim();
                     if (httpStatus !== 200) {
-                        // Tetap tampilkan alert utama dulu karena registrasi lokal sukses
-                        // alert(mainMessage);
-                        // showMainAlert = false;
-
                         openBpjsPopup({
                             status: httpStatus,
-                            message: bpjs.meta_message || "BPJS Mobile JKN mengembalikan status selain 200",
+                            message: metaMessage || "BPJS Mobile JKN mengembalikan status selain 200",
                             data: mjResData,
                             raw: JSON.stringify(mjResData, null, 2),
                         });
                     } else {
-                        const reg = response.data.data || {};
-                        const mjRes = await axios.post(
-                            "/api/mobilejkn/antrean/add",
-                            {
-                                no_rkm_medis: selectedPatient.no_rkm_medis,
-                                kd_poli: formData.kd_poli,
-                                kd_dokter: formData.kd_dokter,
-                                tanggalperiksa: reg.tgl_registrasi,
-                                no_reg: reg.no_reg,
-                            }
-                        );
-                        // Jika status selain 200, tampilkan popup respon BPJS
-                        if (mjRes?.status !== 200) {
+                        const looksLikeFailure =
+                            (metaCode && metaCode !== 200) ||
+                            /skrining kesehatan|gagal|tidak/i.test(metaMessage);
+                        if (looksLikeFailure) {
                             openBpjsPopup({
-                                status: mjRes?.status,
-                                message:
-                                    mjRes?.data?.metaData?.message ||
-                                    mjRes?.data?.metadata?.message ||
-                                    "BPJS Mobile JKN mengembalikan status selain 200",
-                                data: mjRes?.data ?? null,
-                                raw:
-                                    typeof mjRes?.data === "string"
-                                        ? mjRes.data
-                                        : JSON.stringify(
-                                              mjRes?.data ?? {},
-                                              null,
-                                              2
-                                          ),
+                                status: 200,
+                                message: metaMessage || "Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200",
+                                data: mjResData ?? null,
+                                raw: JSON.stringify(mjResData ?? {}, null, 2),
                             });
                         } else {
-                            // Status HTTP 200, tetapi perlu cek metaData.code dan pesan kegagalan pada body
-                            const meta =
-                                mjRes?.data?.metaData ??
-                                mjRes?.data?.metadata ??
-                                {};
-                            const codeNum = Number(meta?.code ?? 200);
-                            const msgStr = String(meta?.message ?? "").trim();
-                            const looksLikeFailure =
-                                codeNum !== 200 ||
-                                /skrining kesehatan|gagal|tidak/i.test(msgStr);
-                            if (looksLikeFailure) {
-                                openBpjsPopup({
-                                    status: 200,
-                                    message:
-                                        msgStr ||
-                                        "Respon BPJS mengindikasikan kegagalan meskipun status HTTP 200",
-                                    data: mjRes?.data ?? null,
-                                    raw:
-                                        typeof mjRes?.data === "string"
-                                            ? mjRes.data
-                                            : JSON.stringify(
-                                                  mjRes?.data ?? {},
-                                                  null,
-                                                  2
-                                              ),
-                                });
-                            } else {
-                                const payloadResp = mjRes?.data?.response ?? mjRes?.data?.resp ?? mjRes?.data?.data ?? null;
-                                let nomorAntrean = null;
-                                if (payloadResp) {
-                                    const r = Array.isArray(payloadResp) ? (payloadResp[0] || {}) : payloadResp;
-                                    nomorAntrean = r?.nomorantrean ?? r?.nomorAntrian ?? r?.nomor_antrian ?? r?.nomor ?? r?.number ?? r?.noUrut ?? r?.angkaantrean ?? r?.angkaAntrian ?? null;
-                                }
-                                if (!nomorAntrean && reg?.no_reg) nomorAntrean = reg.no_reg;
-                                const label = typeof nomorAntrean === 'number' ? String(nomorAntrean) : String(nomorAntrean || '').trim();
-                                notify('success', 'Pendaftaran PCare Sukses', `No Antrean ${label || '-'}`);
+                            const payloadResp = mjResData?.response ?? mjResData?.resp ?? mjResData?.data ?? null;
+                            let nomorAntrean = null;
+                            if (payloadResp) {
+                                const r = Array.isArray(payloadResp) ? (payloadResp[0] || {}) : payloadResp;
+                                nomorAntrean = r?.nomorantrean ?? r?.nomorAntrian ?? r?.nomor_antrian ?? r?.nomor ?? r?.number ?? r?.noUrut ?? r?.angkaantrean ?? r?.angkaAntrian ?? null;
                             }
+                            if (!nomorAntrean && reg?.no_reg) nomorAntrean = reg.no_reg;
+                            const label = typeof nomorAntrean === 'number' ? String(nomorAntrean) : String(nomorAntrean || '').trim();
+                            notify('success', 'Pendaftaran PCare Sukses', `No Antrean ${label || '-'}`);
                         }
                     }
                 }
