@@ -13,6 +13,13 @@ import Toaster from "@/Components/ui/Toaster";
 import { MapPin, Edit2, Trash2, Building2, RefreshCw, Loader2, CheckCircle2, Info, X, Globe } from "lucide-react";
 
 export default function SatuSehatLocationFarmasi() {
+  const csrfToken = (() => {
+    const p = `; ${document.cookie}`;
+    const r = p.split('; XSRF-TOKEN=');
+    const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
+    return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+  })();
+
   const [toasts, setToasts] = useState([]);
   const addToast = (type = "info", title = "", message = "", duration = 4000) => {
     const id = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -100,7 +107,14 @@ export default function SatuSehatLocationFarmasi() {
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: 'include',
         body: JSON.stringify({
           kd_bangsal: String(bangsalValue),
           id_organisasi_satusehat: String(orgSubunitId),
@@ -112,6 +126,10 @@ export default function SatuSehatLocationFarmasi() {
         }),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal menyimpan", json?.message || json?.error || `Status: ${res.status}`);
         return;
@@ -130,8 +148,21 @@ export default function SatuSehatLocationFarmasi() {
     if (!kd_bangsal) return;
     if (!confirm(`Hapus mapping untuk bangsal ${kd_bangsal}?`)) return;
     try {
-      const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, { method: "DELETE", headers: { Accept: "application/json" } });
+      const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: 'include',
+      });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal hapus", json?.message || json?.error || `Status: ${res.status}`);
         return;
@@ -167,7 +198,14 @@ export default function SatuSehatLocationFarmasi() {
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi-farmasi/${encodeURIComponent(kd_bangsal)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-CSRF-TOKEN": csrfToken,
+          "X-XSRF-TOKEN": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: 'include',
         body: JSON.stringify({
           id_organisasi_satusehat: String(updateOrgId),
           id_lokasi_satusehat: String(updateLocId),
@@ -179,6 +217,10 @@ export default function SatuSehatLocationFarmasi() {
         }),
       });
       const json = await res.json();
+      if (res.status === 419) {
+        addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+        return;
+      }
       if (!res.ok || json?.ok === false) {
         addToast("danger", "Gagal memperbarui", json?.message || json?.error || `Status: ${res.status}`);
         return;

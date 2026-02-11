@@ -22,6 +22,13 @@ import {
 } from "lucide-react";
 
 export default function MappingMedication() {
+    const csrfToken = (() => {
+        const p = `; ${document.cookie}`;
+        const r = p.split('; XSRF-TOKEN=');
+        const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
+        return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    })();
+
     // State
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState([]);
@@ -132,10 +139,19 @@ export default function MappingMedication() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    "X-XSRF-TOKEN": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest",
                 },
+                credentials: 'include',
                 body: JSON.stringify(form)
             });
+
+            if (res.status === 419) {
+                addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+                return;
+            }
 
             const json = await res.json();
             if (res.ok) {
@@ -184,9 +200,17 @@ export default function MappingMedication() {
             const res = await fetch(`/api/satusehat/mapping-obat/${kode}`, {
                 method: "DELETE",
                 headers: {
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ""
-                }
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    "X-XSRF-TOKEN": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: 'include',
             });
+            if (res.status === 419) {
+                addToast("danger", "Sesi kedaluwarsa", "CSRF token expired. Silakan refresh halaman.");
+                return;
+            }
             if (res.ok) {
                 addToast("success", "Berhasil", "Mapping dihapus");
                 fetchMappings();
