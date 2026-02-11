@@ -419,6 +419,51 @@ const cardsByTab = {
       )
     },
     {
+      key: 'cekPesertaNoPeserta',
+      title: 'Cek Kepesetaan Berdasarkan No Peserta',
+      desc: 'Cari data peserta BPJS berdasarkan No. Peserta',
+      href: '/pcare/data-peserta-by-kartu',
+      gradient: 'from-fuchsia-500 to-pink-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="4" width="18" height="14" rx="2" />
+          <path d="M7 8h10" />
+          <path d="M7 12h6" />
+        </svg>
+      )
+    },
+    {
+      key: 'srkPerPenyakit',
+      title: 'SRK Per Penyakit',
+      desc: 'Rekap SRK per penyakit',
+      href: '/pcare/layanan/srk-per-penyakit',
+      gradient: 'from-indigo-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M4 19V5" />
+          <path d="M20 19V5" />
+          <path d="M6 17l3-4 3 2 4-6 2 3" />
+          <path d="M6 5h14" />
+        </svg>
+      )
+    },
+    {
+      key: 'detailPesertaSrk',
+      title: 'Detail Peserta SRK',
+      desc: 'Rekap SRK per peserta',
+      href: '/pcare/layanan/detail-peserta-srk',
+      gradient: 'from-sky-500 to-indigo-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M9 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+          <path d="M3 20c0-3.314 2.686-6 6-6" />
+          <path d="M14 11h7" />
+          <path d="M14 15h7" />
+          <path d="M14 19h7" />
+        </svg>
+      )
+    },
+    {
       key: 'dataKunjungan',
       title: 'Data Kunjungan',
       desc: 'Kunjungan pasien PCare',
@@ -445,6 +490,34 @@ const cardsByTab = {
       )
     },
     {
+      key: 'prolanisDm',
+      title: 'Prolanis DM',
+      desc: 'Data peserta Prolanis Diabetes Mellitus',
+      href: '/pcare/layanan/prolanis-dm',
+      gradient: 'from-indigo-500 to-purple-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 22s8-4 8-10V6l-8-4-8 4v6c0 6 8 10 8 10z" />
+          <path d="M12 9v6" />
+          <path d="M9 12h6" />
+        </svg>
+      )
+    },
+    {
+      key: 'prolanisHt',
+      title: 'Prolanis HT',
+      desc: 'Data peserta Prolanis Hipertensi',
+      href: '/pcare/layanan/prolanis-ht',
+      gradient: 'from-pink-500 to-rose-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 22s8-4 8-10V6l-8-4-8 4v6c0 6 8 10 8 10z" />
+          <path d="M12 9v6" />
+          <path d="M9 12h6" />
+        </svg>
+      )
+    },
+    {
       key: 'mcu',
       title: 'MCU',
       desc: 'Cek & input Medical Check Up',
@@ -455,6 +528,21 @@ const cardsByTab = {
           <path d="M12 22s8-4 8-10V6l-8-4-8 4v6c0 6 8 10 8 10z" />
           <path d="M12 7v6" />
           <path d="M9 10h6" />
+        </svg>
+      )
+    },
+    {
+      key: 'dphoPcare',
+      title: 'DPHO PCare',
+      desc: 'Pencarian obat DPHO BPJS',
+      href: '/pcare/referensi/dpho',
+      gradient: 'from-teal-500 to-sky-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M6 8a6 6 0 0 1 12 0v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          <path d="M10 12h4" />
+          <path d="M12 10v4" />
         </svg>
       )
     },

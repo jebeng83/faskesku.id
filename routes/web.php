@@ -2820,6 +2820,14 @@ Route::middleware('auth')->group(function () {
         return redirect()->to(route('farmasi.cetak.data-opname', request()->query()));
     });
 
+    Route::get('/prolanis-dm', function () {
+        return redirect()->to('/pcare/layanan/prolanis-dm');
+    });
+
+    Route::get('/prolanis-ht', function () {
+        return redirect()->to('/pcare/layanan/prolanis-ht');
+    });
+
     Route::prefix('pcare')->name('pcare.')->group(function () {
         // Landing page
         Route::get('/', function () {
@@ -2954,6 +2962,11 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/CekPesertaPcareNik');
         })->name('layanan.cek-peserta-nik');
 
+        // Layanan PCare: Cek Peserta by No. Kartu (Inertia page)
+        Route::get('/data-peserta-by-kartu', function () {
+            return Inertia::render('Pcare/LayananPcare/CekpesertaPcareKartu');
+        })->name('layanan.cek-peserta-kartu');
+
         Route::get('/form-pendaftaran', function () {
             return Inertia::render('Pcare/LayananPcare/LayananPcare');
         })->name('form-pendaftaran');
@@ -2968,9 +2981,37 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('Pcare/LayananPcare/DataProlanis');
         })->name('layanan.data-prolanis');
 
+        Route::get('/layanan/prolanis-dm', function () {
+            return Inertia::render('Pcare/LayananPcare/ProlanisDM');
+        })->name('layanan.prolanis-dm');
+
+        Route::get('/prolanis-dm', function () {
+            return redirect()->to('/pcare/layanan/prolanis-dm');
+        })->name('prolanis-dm');
+
+        Route::get('/layanan/prolanis-ht', function () {
+            return Inertia::render('Pcare/LayananPcare/ProlanisHT');
+        })->name('layanan.prolanis-ht');
+
+        Route::get('/prolanis-ht', function () {
+            return redirect()->to('/pcare/layanan/prolanis-ht');
+        })->name('prolanis-ht');
+
         Route::get('/layanan/mcu', function () {
             return Inertia::render('Pcare/LayananPcare/Mcu');
         })->name('layanan.mcu');
+
+        Route::get('/layanan/srk-per-penyakit', function () {
+            return Inertia::render('Pcare/LayananPcare/SRKPerPenyakit');
+        })->name('layanan.srk-per-penyakit');
+
+        Route::get('/layanan/detail-peserta-srk', function () {
+            return Inertia::render('Pcare/LayananPcare/DetailPesertaSRK');
+        })->name('layanan.detail-peserta-srk');
+
+        Route::get('/srk-per-penyakit', function () {
+            return redirect()->to('/pcare/layanan/srk-per-penyakit');
+        })->name('srk-per-penyakit');
 
         // Kegiatan Kelompok - Club Prolanis (Inertia page)
         Route::get('/kelompok/club-prolanis', function () {
@@ -3047,6 +3088,9 @@ Route::middleware('auth')->group(function () {
         // API: Referensi Penyakit SRK (skrinning/rekap) dari BPJS PCare
         Route::get('/api/srk/rekap', [\App\Http\Controllers\Pcare\PcareController::class, 'getReferensiSrk'])
             ->name('srk.rekap.api');
+
+        Route::get('/api/srk/peserta', [\App\Http\Controllers\Pcare\PcareController::class, 'getDetailPesertaSrk'])
+            ->name('srk.peserta.api');
 
         // API TEST (tanpa auth/CSRF): Referensi Penyakit SRK for terminal curl
         Route::get('/api/srk/rekap/test', [\App\Http\Controllers\Pcare\PcareController::class, 'getReferensiSrk'])

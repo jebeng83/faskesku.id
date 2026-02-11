@@ -67,7 +67,7 @@ dm.head = (args: { nomorPeserta: string | number, start: string | number, limit:
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3363
+* @see app/Http/Controllers/Pcare/PcareController.php:3401
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 export const ht = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -82,7 +82,7 @@ ht.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3363
+* @see app/Http/Controllers/Pcare/PcareController.php:3401
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.url = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions) => {
@@ -111,7 +111,7 @@ ht.url = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3363
+* @see app/Http/Controllers/Pcare/PcareController.php:3401
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.get = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -121,7 +121,7 @@ ht.get = (args: { nomorPeserta: string | number, start: string | number, limit: 
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::ht
-* @see app/Http/Controllers/Pcare/PcareController.php:3363
+* @see app/Http/Controllers/Pcare/PcareController.php:3401
 * @route '/api/pcare/prolanis/ht/{nomorPeserta}/{start}/{limit}'
 */
 ht.head = (args: { nomorPeserta: string | number, start: string | number, limit: string | number } | [nomorPeserta: string | number, start: string | number, limit: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
