@@ -25,12 +25,16 @@ import {
 } from "lucide-react";
 
 export default function SatuSehatLocation() {
-  const csrfToken = (() => {
+  const getCsrfToken = () => {
     const p = `; ${document.cookie}`;
-    const r = p.split('; XSRF-TOKEN=');
-    const c = r.length === 2 ? decodeURIComponent(r.pop().split(';').shift()) : '';
-    return c || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-  })();
+    const r = p.split("; XSRF-TOKEN=");
+    const raw = r.length === 2 ? r.pop()?.split(";").shift() ?? "" : "";
+    try {
+      return raw ? decodeURIComponent(raw) : "";
+    } catch {
+      return raw || "";
+    }
+  };
 
   // Toasts
   const [toasts, setToasts] = useState([]);
@@ -131,6 +135,16 @@ export default function SatuSehatLocation() {
       return;
     }
 
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       // Pastikan koordinat dikirim sebagai string (akan dikonversi ke float di backend)
@@ -150,11 +164,10 @@ export default function SatuSehatLocation() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(payload),
       });
       const json = await res.json();
@@ -203,15 +216,23 @@ export default function SatuSehatLocation() {
     const ok = window.confirm(`Hapus mapping lokasi untuk poli ${kd_poli}?`);
     if (!ok) return;
     try {
+      const csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        addToast(
+          "danger",
+          "Sesi kedaluwarsa",
+          "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+        );
+        return;
+      }
       const res = await fetch(`/api/satusehat/mapping/lokasi/${encodeURIComponent(kd_poli)}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
       });
       const json = await res.json();
       if (res.status === 419) {
@@ -258,6 +279,16 @@ export default function SatuSehatLocation() {
 
   async function submitUpdate() {
     if (!updateItem?.kd_poli) return;
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      addToast(
+        "danger",
+        "Sesi kedaluwarsa",
+        "CSRF token tidak tersedia. Silakan refresh halaman dan coba lagi."
+      );
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch(`/api/satusehat/mapping/lokasi/${encodeURIComponent(updateItem.kd_poli)}`, {
@@ -265,11 +296,10 @@ export default function SatuSehatLocation() {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-CSRF-TOKEN": csrfToken,
           "X-XSRF-TOKEN": csrfToken,
           "X-Requested-With": "XMLHttpRequest",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           id_organisasi_satusehat: updateOrgId,
           id_lokasi_satusehat: updateLocId,

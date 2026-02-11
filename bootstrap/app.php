@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/api/whatsapp/send',
             '/api/pcare/*', // Exclude PCare routes from CSRF to prevent 419 errors on long-lived pages
+            '/api/satusehat/mapping/lokasi*', // Exclude SATUSEHAT lokasi mapping API from CSRF (internal tool, sudah dilindungi auth)
         ]);
 
         $middleware->alias([

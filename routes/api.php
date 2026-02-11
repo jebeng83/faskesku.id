@@ -884,10 +884,17 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::put('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenUpdate'])->name('api.satusehat.mapping.departemen.update');
         Route::delete('/mapping/departemen/{dep_id}', [SatuSehatController::class, 'mappingDepartemenDestroy'])->name('api.satusehat.mapping.departemen.destroy');
         // CRUD Mapping Lokasi Ralan (Poliklinik ↔ SATUSEHAT Location)
-        Route::get('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiIndex'])->name('api.satusehat.mapping.lokasi.index');
-        Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])->name('api.satusehat.mapping.lokasi.store');
-        Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])->name('api.satusehat.mapping.lokasi.update');
-        Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])->name('api.satusehat.mapping.lokasi.destroy');
+        Route::get('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiIndex'])
+            ->name('api.satusehat.mapping.lokasi.index');
+        Route::post('/mapping/lokasi', [SatuSehatController::class, 'mappingLokasiStore'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.store');
+        Route::put('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiUpdate'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.update');
+        Route::delete('/mapping/lokasi/{kd_poli}', [SatuSehatController::class, 'mappingLokasiDestroy'])
+            ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('api.satusehat.mapping.lokasi.destroy');
         // CRUD Mapping Lokasi Ranap (Kamar ↔ SATUSEHAT Location)
         Route::get('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapIndex'])->name('api.satusehat.mapping.lokasi_ranap.index');
         Route::post('/mapping/lokasi-ranap', [SatuSehatController::class, 'mappingLokasiRanapStore'])->name('api.satusehat.mapping.lokasi_ranap.store');
