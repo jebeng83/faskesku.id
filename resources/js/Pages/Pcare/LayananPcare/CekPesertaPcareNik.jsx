@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import LayoutUtama from '@/Pages/LayoutUtama';
-import { BridingMenu } from '@/Layouts/SidebarBriding';
+import { Head } from '@inertiajs/react';
+import LanjutanRegistrasiSidebar from '@/Components/LanjutanRegistrasiSidebar';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -97,7 +98,13 @@ export default function CekPesertaPcareNik() {
   const aktif = !!resp?.aktif;
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
+    <LayoutUtama
+      title="Layanan PCare"
+      left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: 'cek_peserta_bpjs' }} />}
+    >
+      <Head title="Layanan PCare" />
+
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
       {/* Header */}
       <motion.div variants={itemVariants} className="mb-4">
         <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/50 shadow-xl">
@@ -269,13 +276,7 @@ export default function CekPesertaPcareNik() {
           )}
         </AnimatePresence>
       </motion.div>
-    </motion.div>
+      </motion.div>
+    </LayoutUtama>
   );
 }
-
-// Render dalam LanjutanRegistrasiLayout
-CekPesertaPcareNik.layout = (page) => (
-  <LayoutUtama title="Layanan PCare" left={<BridingMenu />}>
-    {page}
-  </LayoutUtama>
-);

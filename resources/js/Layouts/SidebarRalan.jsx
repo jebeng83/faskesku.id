@@ -7,7 +7,7 @@ import useTheme from '@/hooks/useTheme';
 import usePermission from '@/hooks/usePermission';
 
 // Sidebar khusus modul Rawat Jalan dengan pola tampilan seperti LanjutanRalanLayout
-export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
+export default function SidebarRalan({ title = 'Rawat Jalan', children, mode = 'layout' }) {
   const { url, props } = usePage();
   const auth = props?.auth || {};
   const { permissions, can } = usePermission();
@@ -117,6 +117,70 @@ export default function SidebarRalan({ title = 'Rawat Jalan', children }) {
       return (url || window.location.pathname).startsWith(href);
     }
   };
+
+  if (mode === 'menu') {
+    return (
+      <div>
+        <div className="mb-3 flex items-center gap-2 text-white">
+          <Stethoscope className="w-5 h-5" />
+          <span className="font-semibold truncate">{title}</span>
+        </div>
+        <nav className="space-y-1 text-white/90">
+          {filteredItems.map((item, idx) => (
+            <div key={idx}>
+              {!item.children ? (
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-white/20 text-white'
+                      : 'hover:bg-white/10'
+                  }`}
+                >
+                  <span className="text-white/90">{item.icon}</span>
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Link>
+              ) : (
+                <div className="mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setOpenRalan((v) => !v)}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                  >
+                    <span className="text-white/90">{item.icon}</span>
+                    <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
+                    {openRalan ? (
+                      <ChevronDown className="w-4 h-4 text-white/70" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-white/70" />
+                    )}
+                  </button>
+                  {openRalan && (
+                    <div className="mt-1 ml-2 space-y-1">
+                      {item.children.map((child, cIdx) => (
+                        <Link
+                          key={cIdx}
+                          href={child.href}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                            isActive(child.href)
+                              ? 'bg-white/20 text-white'
+                              : 'hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="text-white/90">{child.icon}</span>
+                          <span className="text-sm">{child.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
