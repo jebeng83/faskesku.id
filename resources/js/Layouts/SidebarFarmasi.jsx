@@ -595,13 +595,28 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                             {!item.children ? (
                                 <Link
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(item.href)
-                                        ? "bg-white/20 text-white"
-                                        : "hover:bg-white/10"
-                                        }`}
+                                    className={
+                                        item.label.toLowerCase() === "dashboard"
+                                            ? `relative w-full flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all duration-300 group ${
+                                                  isActive(item.href)
+                                                      ? "text-white bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-[0_10px_30px_rgba(79,70,229,0.45)] ring-1 ring-white/20"
+                                                      : "text-white/90 hover:text-white bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm hover:shadow-[0_6px_18px_rgba(59,130,246,0.25)]"
+                                              }`
+                                            : `flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
+                                                  isActive(item.href)
+                                                      ? "bg-white/20 text-white"
+                                                      : "hover:bg-white/10"
+                                              }`
+                                    }
                                 >
                                     <span className="text-white/90">
-                                        {item.icon}
+                                        {React.cloneElement(item.icon, {
+                                            className:
+                                                item.label.toLowerCase() ===
+                                                "dashboard"
+                                                    ? "w-7 h-7"
+                                                    : "w-4 h-4",
+                                        })}
                                     </span>
                                     {!isSidebarCollapsed && (
                                         <span className="text-sm font-medium">
@@ -638,7 +653,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                             )
                                                 setOpenLaporan((v) => !v);
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
                                     >
                                         <span className="text-white/90">
                                             {item.icon}
@@ -682,7 +697,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                                     child.disabled ? (
                                                         <div
                                                             key={cIdx}
-                                                            className="flex items-center gap-3 px-3 py-2 rounded-md opacity-60 cursor-not-allowed"
+                                                            className="flex items-center gap-3 px-3 py-2 rounded-xl opacity-60 cursor-not-allowed"
                                                             title="Segera hadir"
                                                         >
                                                             <span className="text-white/90">
@@ -698,7 +713,7 @@ export default function SidebarFarmasi({ title = "Farmasi", children }) {
                                                         <Link
                                                             key={cIdx}
                                                             href={child.href}
-                                                            className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(child.href)
+                                                            className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${isActive(child.href)
                                                                 ? "bg-white/20 text-white"
                                                                 : "hover:bg-white/10"
                                                                 }`}

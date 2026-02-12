@@ -40,7 +40,7 @@ function NavItem({ href, icon: Icon, label, active, collapsed }) {
                 collapsed
                     ? "justify-center px-2 py-3"
                     : "items-center gap-3 px-3 py-2"
-            } rounded text-sm transition-colors ${
+            } rounded-xl text-sm transition-all duration-300 ${
                 active
                     ? "bg-white/15 text-white ring-1 ring-white/30"
                     : "text-white/90 hover:bg-white/10"

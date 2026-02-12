@@ -318,7 +318,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                             {!item.children ? (
                                 <Link
                                     href={item.href}
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                                         isActive(item.href)
                                             ? "bg-white/20 text-white"
                                             : "hover:bg-white/10"
@@ -347,7 +347,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                                             else if (item.label === "Akutansi")
                                                 setOpenAkutansi((v) => !v);
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
                                     >
                                         <span className="text-white/90">
                                             {item.icon}
@@ -385,7 +385,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                                                     <Link
                                                         key={cIdx}
                                                         href={child.href}
-                                                        className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                                                        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                                                             isActive(child.href)
                                                                 ? "bg-white/20 text-white"
                                                                 : "hover:bg-white/10"

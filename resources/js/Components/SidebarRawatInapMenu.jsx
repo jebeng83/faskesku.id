@@ -47,11 +47,26 @@ export default function SidebarRawatInapMenu({ title = "Rawat Inap" }) {
             {!item.children ? (
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                  isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
-                }`}
+                className={
+                  item.label.toLowerCase() === "dashboard"
+                    ? `relative w-full flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all duration-300 group ${
+                        isActive(item.href)
+                          ? "text-white bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-[0_10px_30px_rgba(79,70,229,0.45)] ring-1 ring-white/20"
+                          : "text-white/90 hover:text-white bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm hover:shadow-[0_6px_18px_rgba(59,130,246,0.25)]"
+                      }`
+                    : `flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
+                        isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
+                      }`
+                }
               >
-                <span className="text-white/90">{item.icon}</span>
+                <span className="text-white/90">
+                  {React.cloneElement(item.icon, {
+                    className:
+                      item.label.toLowerCase() === "dashboard"
+                        ? "w-7 h-7"
+                        : "w-4 h-4",
+                  })}
+                </span>
                 <span className="text-sm font-medium">{item.label}</span>
               </Link>
             ) : (
@@ -59,7 +74,7 @@ export default function SidebarRawatInapMenu({ title = "Rawat Inap" }) {
                 <button
                   type="button"
                   onClick={() => setOpenRanap((v) => !v)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
                 >
                   <span className="text-white/90">{item.icon}</span>
                   <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
@@ -75,7 +90,7 @@ export default function SidebarRawatInapMenu({ title = "Rawat Inap" }) {
                       <Link
                         key={cIdx}
                         href={child.href}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                           isActive(child.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
                         }`}
                       >
@@ -93,4 +108,3 @@ export default function SidebarRawatInapMenu({ title = "Rawat Inap" }) {
     </div>
   );
 }
-
