@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Head } from "@inertiajs/react";
 import LayoutUtama from "@/Pages/LayoutUtama";
-import { BridingMenu } from "@/Layouts/SidebarBriding";
+import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
 
 const containerVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -987,8 +988,18 @@ export default function EntriKegiatan() {
     };
 
     return (
-        // Full-width within content area (no negative margins so it doesn't get covered by sidebar)
-        <div className="w-full max-w-none px-0">
+        <LayoutUtama
+            title="Kegiatan Kelompok PCare"
+            left={
+                <LanjutanRegistrasiSidebar
+                    title="Registrasi Pasien"
+                    menuConfig={{ activeTab: "keg_kelompok_pcare" }}
+                />
+            }
+        >
+            <Head title="Kegiatan Kelompok PCare" />
+
+            <div className="w-full max-w-none px-0">
             {/* Header: judul utama */}
             <div className="mb-6">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
@@ -2055,15 +2066,7 @@ export default function EntriKegiatan() {
                     </div>
                 </div>
             </motion.div>
-        </div>
+            </div>
+        </LayoutUtama>
     );
 }
-
-EntriKegiatan.layout = (page) => (
-    <LayoutUtama
-        title="Kegiatan Kelompok PCare"
-        left={<BridingMenu />}
-    >
-        {page}
-    </LayoutUtama>
-);
