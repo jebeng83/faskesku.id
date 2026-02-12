@@ -33,7 +33,7 @@ export default function SidebarDaftarTarifMenu({ title = "Master Tarif" }) {
           <Link
             key={item.label}
             href={item.href}
-            className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+            className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
               isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
             }`}
           >

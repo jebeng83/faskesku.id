@@ -200,17 +200,27 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
           )}
         </div>
         <nav className="px-2 py-2 space-y-1 text-white/90">
-          {filteredTop.map((it) => (
-            <Link
-              key={it.label}
-              href={it.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(it.href) ? "bg-white/15 text-white" : "hover:bg-white/10"
-                }`}
-            >
-              <it.icon className="w-5 h-5" />
-              {!isSidebarCollapsed && <span className="text-sm">{it.label}</span>}
-            </Link>
-          ))}
+          {filteredTop.map((it) => {
+            const isDashboard = it.label && it.label.toLowerCase() === "dashboard";
+            const active = isActive(it.href);
+            return (
+              <Link
+                key={it.label}
+                href={it.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${isDashboard
+                  ? active
+                    ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.45)] ring-1 ring-white/20"
+                    : "bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 text-white/90 hover:text-white hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm hover:shadow-[0_8px_22px_rgba(59,130,246,0.3)]"
+                  : active
+                    ? "bg-white/15 text-white"
+                    : "hover:bg-white/10"
+                  }`}
+              >
+                <it.icon className={isDashboard ? "w-6 h-6" : "w-5 h-5"} />
+                {!isSidebarCollapsed && <span className="text-sm">{it.label}</span>}
+              </Link>
+            );
+          })}
 
           <div className="mt-2">
             {!isSidebarCollapsed && pcareLinks.length > 0 && (
@@ -220,7 +230,7 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
               <Link
                 key={l.href}
                 href={l.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
                   }`}
               >
                 <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />
@@ -236,7 +246,7 @@ export default function SidebarBriding({ title = "Briding", children, wide = fal
                 key={l.href}
                 href={l.href}
                 aria-label={l.label}
-                className={`group flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
+                className={`group flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${isActive(l.href) ? "bg-white/15 text-white ring-1 ring-white/30" : "hover:bg-white/10"
                   }`}
               >
                 <l.icon className={isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} />

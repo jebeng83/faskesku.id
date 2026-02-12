@@ -31,12 +31,12 @@ export default function LanjutanRegistrasiSidebar({
     building: BuildingOfficeIcon,
   };
 
-  const renderIcon = (iconName) => {
+  const renderIcon = (iconName, sizeClass = "h-5 w-5") => {
     const IconComponent = iconMap[iconName];
     if (IconComponent) {
-      return <IconComponent className="h-5 w-5" />;
+      return <IconComponent className={sizeClass} />;
     }
-    return <span className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700" />;
+    return <span className={`${sizeClass} rounded bg-gray-200 dark:bg-gray-700`} />;
   };
 
   const getColorClasses = (colorScheme, isActive = false, isCollapsed = false) => {
@@ -58,6 +58,13 @@ export default function LanjutanRegistrasiSidebar({
           ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
           : "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-l-4 border-blue-500",
         inactive: "text-white/80 hover:text-blue-300 hover:bg-blue-500/20",
+      },
+      brand: {
+        active: isCollapsed
+          ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-white/20 backdrop-blur-md"
+          : "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-white/20 backdrop-blur-md",
+        inactive:
+          "text-white/90 hover:text-white bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm",
       },
     };
 
@@ -81,7 +88,7 @@ export default function LanjutanRegistrasiSidebar({
         }
       })(),
       active: false,
-      colorScheme: "slate",
+      colorScheme: "brand",
     },
     {
       id: "registrasi-group",
@@ -192,8 +199,20 @@ export default function LanjutanRegistrasiSidebar({
 
   const isMenuActive = (menu) => {
     if (menu.active) return true;
+    const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    const menuUrl = getMenuUrl(menu);
+    if (menuUrl && menuUrl !== "#") {
+      try {
+        const menuPath = new URL(menuUrl, window.location.origin).pathname.replace(/\/+$/, "") || "/";
+        if (menuPath === "/") {
+          if (currentPath === "/") return true;
+        } else if (currentPath === menuPath || currentPath.startsWith(`${menuPath}/`)) {
+          return true;
+        }
+      } catch {}
+    }
     if (menu.children) {
-      return menu.children.some((child) => child.active);
+      return menu.children.some((child) => isMenuActive(child));
     }
     return false;
   };
@@ -244,7 +263,8 @@ export default function LanjutanRegistrasiSidebar({
     return (
       <motion.nav className="space-y-2 px-2" variants={listVariants} initial="hidden" animate="show" transition={{ duration: baseDuration, ease }}>
         {menus.map((menu) => {
-          const isActive = isMenuActive(menu);
+            const isActive = isMenuActive(menu);
+            const isDashboard = menu.id === "dashboard" || (menu.name && menu.name.toLowerCase() === "dashboard");
           return (
             <motion.div
               key={menu.id}
@@ -259,12 +279,17 @@ export default function LanjutanRegistrasiSidebar({
                   menu.colorScheme || "slate",
                   isActive,
                   true
-                )}`}
+            )} ${isActive ? "ring-1 ring-white/30 shadow-[0_10px_30px_rgba(79,70,229,0.45)]" : "hover:shadow-[0_8px_22px_rgba(59,130,246,0.3)]"}`}
                 title={menu.name}
               >
                 {isActive && <div className="absolute inset-0 rounded-xl ring-2 ring-blue-400/30" />}
+            {isActive && (
+              <div className="absolute -right-1 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-gradient-to-b from-blue-300 via-indigo-200 to-purple-300 shadow-[0_0_8px_rgba(129,140,248,0.9)]" />
+            )}
 
-                <div className="relative z-10">{renderIcon(menu.icon)}</div>
+                <div className="relative z-10">
+                  {renderIcon(menu.icon, isDashboard ? "h-7 w-7" : "h-5 w-5")}
+                </div>
 
                 <div className="absolute left-full ml-3 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
                   <div className="bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg py-2 px-3 whitespace-nowrap shadow-lg border border-gray-700 dark:border-gray-600">
@@ -285,6 +310,7 @@ export default function LanjutanRegistrasiSidebar({
     const hasChildren = children && children.length > 0;
     const isExpanded = expandedMenus.has(menu.id);
     const isActive = isMenuActive(menu);
+    const isDashboard = menu.id === "dashboard" || (menu.name && menu.name.toLowerCase() === "dashboard");
 
     if (collapsed) {
       if (level === 0) return null;
@@ -305,16 +331,23 @@ export default function LanjutanRegistrasiSidebar({
             className={`relative w-full flex items-center p-3 text-sm font-medium rounded-xl transition-all duration-300 group ${getColorClasses(
               menu.colorScheme || "slate",
               isActive
-            )} ${level === 0 ? "mb-1" : "mb-0.5"}`}
+            )} ${level === 0 ? "mb-1" : "mb-0.5"} ${isActive ? "ring-1 ring-white/30 shadow-[0_8px_24px_rgba(79,70,229,0.35)]" : "hover:shadow-[0_6px_18px_rgba(59,130,246,0.25)]"}`}
             style={{ paddingLeft: `${0.75 + level * 0.5}rem` }}
             whileTap={{ scale: 0.98 }}
             whileHover={{ y: -1 }}
             transition={{ duration: baseDuration, ease }}
           >
             {isActive && <div className="absolute inset-0 rounded-xl ring-2 ring-blue-400/20" />}
+            {isActive && (
+              <div className="absolute -right-1 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-gradient-to-b from-blue-300 via-indigo-200 to-purple-300 shadow-[0_0_8px_rgba(129,140,248,0.9)]" />
+            )}
 
             <div className="relative z-10 flex items-center w-full">
-              {menu.icon && <div className="mr-3 flex-shrink-0">{renderIcon(menu.icon)}</div>}
+              {menu.icon && (
+                <div className="mr-3 flex-shrink-0">
+                  {renderIcon(menu.icon, isDashboard ? "h-7 w-7" : "h-5 w-5")}
+                </div>
+              )}
               <div className="flex-1 text-left">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{menu.name}</span>

@@ -59,7 +59,7 @@ export default function SidebarLaporanMenu({ title = "Laporan" }) {
                   if (item.label === "Laporan Rajal") setOpenRalan((v) => !v);
                   else if (item.label === "Laporan Ranap") setOpenRanap((v) => !v);
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
               >
                 <span className="text-white/90">{item.icon}</span>
                 <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
@@ -70,10 +70,10 @@ export default function SidebarLaporanMenu({ title = "Laporan" }) {
               {(item.label === "Laporan Rajal" ? openRalan : openRanap) && (
                 <div className="ml-2 pl-3 border-l border-white/10 space-y-1 mt-1">
                   {item.children.map((c) => (
-                    <Link
-                      key={c.label}
-                      href={c.href}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                      <Link
+                        key={c.label}
+                        href={c.href}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                         isActive(c.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
                       }`}
                     >
@@ -88,11 +88,21 @@ export default function SidebarLaporanMenu({ title = "Laporan" }) {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
+                item.label.toLowerCase() === "dashboard"
+                  ? isActive(item.href)
+                    ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white shadow-[0_10px_30px_rgba(79,70,229,0.45)] ring-1 ring-white/20"
+                    : "bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 text-white/90 hover:text-white hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm hover:shadow-[0_8px_22px_rgba(59,130,246,0.3)]"
+                  : isActive(item.href)
+                  ? "bg-white/20 text-white"
+                  : "hover:bg-white/10"
               }`}
             >
-              <span className="text-white/90">{item.icon}</span>
+              <span className="text-white/90">
+                {React.cloneElement(item.icon, {
+                  className: item.label.toLowerCase() === "dashboard" ? "w-6 h-6" : "w-4 h-4",
+                })}
+              </span>
               <span className="text-sm font-medium">{item.label}</span>
             </Link>
           )
