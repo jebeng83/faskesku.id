@@ -1,12 +1,23 @@
 import React from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { FlaskConical, ClipboardList, TestTube } from "lucide-react";
+import { FlaskConical, ClipboardList, TestTube, LayoutDashboard } from "lucide-react";
 
 export default function SidebarLaboratoriumMenu({ title = "Laboratorium" }) {
   const { url } = usePage();
 
   const items = [
+    {
+      label: "Dashboard",
+      href: (() => {
+        try {
+          return route("dashboard", {}, false);
+        } catch {
+          return "/dashboard";
+        }
+      })(),
+      icon: <LayoutDashboard className="w-4 h-4" />,
+    },
     { label: "Permintaan Lab", href: route("laboratorium.permintaan-lab.index"), icon: <ClipboardList className="w-4 h-4" /> },
     { label: "Tarif Lab", href: route("daftar-tarif.index", { category: "laboratorium" }), icon: <TestTube className="w-4 h-4" /> },
     { label: "Template Lab", href: route("daftar-tarif.index", { category: "laboratorium" }), icon: <TestTube className="w-4 h-4" /> },
