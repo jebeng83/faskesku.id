@@ -1638,7 +1638,6 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
             return updated;
         });
         setRows(normalized);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     if (!isOpen) return null;

@@ -561,7 +561,7 @@ export default function MappingAlergiPasien({ initialMappings = [], itemAlergi =
                                                 <div className="flex items-center gap-2 bg-white/80 p-2 rounded-lg mt-1 border border-teal-100">
                                                     <div className="flex-1">
                                                         <div className="text-xs font-bold text-teal-700">{formData.manifestation_display}</div>
-                                                        <div className="text-[10px] text-teal-500 font-mono italic italic">SCT: {formData.manifestation_code}</div>
+                                                        <div className="text-[10px] text-teal-500 font-mono italic">SCT: {formData.manifestation_code}</div>
                                                     </div>
                                                     <button
                                                         type="button"
