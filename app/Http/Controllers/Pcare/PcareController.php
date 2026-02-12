@@ -3751,6 +3751,48 @@ class PcareController extends Controller
                 $lastResponseBody = $responseBody;
                 $lastError = $e->getMessage();
 
+                $processedError = null;
+                try {
+                    $processedError = $this->maybeDecryptAndDecompress($responseBody, '');
+                } catch (\Throwable $ignore) {
+                }
+
+                $metaMessage = is_array($processedError) ? (string) ($processedError['metaData']['message'] ?? '') : '';
+                $haystack = strtolower($metaMessage.' '.$lastError);
+                if ($responseStatus === 500 && (str_contains($haystack, 'peserta tidak ditemukan') || str_contains($haystack, 'terdaftar di faskes lain'))) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => $metaMessage !== '' ? $metaMessage : 'Peserta tidak ditemukan atau peserta terdaftar di faskes lain',
+                            'code' => 404,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], 404);
+                }
+
+                $processedError = null;
+                try {
+                    $processedError = $this->maybeDecryptAndDecompress($responseBody, '');
+                } catch (\Throwable $ignore) {
+                }
+
+                $metaMessage = is_array($processedError) ? (string) ($processedError['metaData']['message'] ?? '') : '';
+                $haystack = strtolower($metaMessage.' '.$lastError);
+                if ($responseStatus === 500 && (str_contains($haystack, 'peserta tidak ditemukan') || str_contains($haystack, 'terdaftar di faskes lain'))) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => $metaMessage !== '' ? $metaMessage : 'Peserta tidak ditemukan atau peserta terdaftar di faskes lain',
+                            'code' => 404,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], 404);
+                }
+
                 if ($responseStatus === 412) {
                     return response()->json([
                         'metaData' => [
@@ -3824,8 +3866,8 @@ class PcareController extends Controller
     public function getDetailPesertaSrk(Request $request)
     {
         $q = trim((string) $request->query('q', $request->query('peserta', '')));
-        $start = (int) $request->query('start', 0);
-        $limit = (int) $request->query('limit', 25);
+        $start = max(1, (int) $request->query('start', 1));
+        $limit = max(1, (int) $request->query('limit', 25));
 
         if ($q === '') {
             return response()->json([
@@ -3840,7 +3882,7 @@ class PcareController extends Controller
             ], 422);
         }
 
-        $qEnc = urlencode($q);
+        $qEnc = rawurlencode($q);
         $endpoints = [
             'skrinning/peserta/'.$qEnc.'/'.$start.'/'.$limit,
             'skrining/peserta/'.$qEnc.'/'.$start.'/'.$limit,
@@ -3872,6 +3914,27 @@ class PcareController extends Controller
                 $lastResponseBody = $responseBody;
                 $lastError = $e->getMessage();
 
+                $processedError = null;
+                try {
+                    $processedError = $this->maybeDecryptAndDecompress($responseBody, '');
+                } catch (\Throwable $ignore) {
+                }
+
+                $metaMessage = is_array($processedError) ? (string) ($processedError['metaData']['message'] ?? '') : '';
+                $haystack = strtolower($metaMessage.' '.$lastError);
+                if ($responseStatus === 500 && (str_contains($haystack, 'peserta tidak ditemukan') || str_contains($haystack, 'terdaftar di faskes lain'))) {
+                    return response()->json([
+                        'metaData' => [
+                            'message' => $metaMessage !== '' ? $metaMessage : 'Peserta tidak ditemukan atau peserta terdaftar di faskes lain',
+                            'code' => 404,
+                        ],
+                        'response' => [
+                            'count' => 0,
+                            'list' => [],
+                        ],
+                    ], 404);
+                }
+
                 if ($responseStatus === 412) {
                     return response()->json([
                         'metaData' => [
@@ -3896,12 +3959,8 @@ class PcareController extends Controller
                     continue;
                 }
 
-                try {
-                    $processed = $this->maybeDecryptAndDecompress($responseBody, '');
-                    if (is_array($processed) && isset($processed['metaData']['message'])) {
-                        return response()->json($processed, $responseStatus);
-                    }
-                } catch (\Throwable $ignore) {
+                if (is_array($processedError) && isset($processedError['metaData']['message'])) {
+                    return response()->json($processedError, $responseStatus);
                 }
 
                 return response()->json([

@@ -10,6 +10,7 @@ import poli from './poli'
 import rs from './rs'
 import tindakan from './tindakan'
 import srk from './srk'
+import prolanis from './prolanis'
 import peserta from './peserta'
 import kunjungan from './kunjungan'
 import pendaftaran from './pendaftaran'
@@ -419,6 +420,7 @@ const pcare = {
     rs: Object.assign(rs, rs),
     tindakan: Object.assign(tindakan, tindakan),
     srk: Object.assign(srk, srk),
+    prolanis: Object.assign(prolanis, prolanis),
     peserta: Object.assign(peserta, peserta),
     kunjungan: Object.assign(kunjungan, kunjungan),
     pendaftaran: Object.assign(pendaftaran, pendaftaran),

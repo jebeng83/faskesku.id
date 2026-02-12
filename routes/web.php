@@ -3097,6 +3097,28 @@ Route::middleware('auth')->group(function () {
             ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
             ->name('srk.rekap.api.test');
 
+        Route::get('/api/srk/peserta/test', [\App\Http\Controllers\Pcare\PcareController::class, 'getDetailPesertaSrk'])
+            ->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('srk.peserta.api.test');
+
+        Route::get('/api/prolanis/dm/test', function (\Illuminate\Http\Request $request) {
+            $q = trim((string) $request->query('q', ''));
+            $start = max(1, (int) $request->query('start', 1));
+            $limit = max(1, (int) $request->query('limit', 25));
+
+            return app(\App\Http\Controllers\Pcare\PcareController::class)->getProlanisDm($q, $start, $limit);
+        })->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('prolanis.dm.api.test');
+
+        Route::get('/api/prolanis/ht/test', function (\Illuminate\Http\Request $request) {
+            $q = trim((string) $request->query('q', ''));
+            $start = max(1, (int) $request->query('start', 1));
+            $limit = max(1, (int) $request->query('limit', 25));
+
+            return app(\App\Http\Controllers\Pcare\PcareController::class)->getProlanisHt($q, $start, $limit);
+        })->withoutMiddleware(['auth', \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+            ->name('prolanis.ht.api.test');
+
         // API: Get Peserta by NIK dari BPJS PCare
         Route::get('/api/peserta/nik', [\App\Http\Controllers\Pcare\PcareController::class, 'pesertaByNik'])
             ->name('peserta.nik.api');

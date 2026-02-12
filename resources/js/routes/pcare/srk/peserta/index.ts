@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
+import api3b9ccf from './api'
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3824
+* @see app/Http/Controllers/Pcare/PcareController.php:3866
 * @route '/pcare/api/srk/peserta'
 */
 export const api = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +17,7 @@ api.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3824
+* @see app/Http/Controllers/Pcare/PcareController.php:3866
 * @route '/pcare/api/srk/peserta'
 */
 api.url = (options?: RouteQueryOptions) => {
@@ -25,7 +26,7 @@ api.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3824
+* @see app/Http/Controllers/Pcare/PcareController.php:3866
 * @route '/pcare/api/srk/peserta'
 */
 api.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +36,7 @@ api.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::api
-* @see app/Http/Controllers/Pcare/PcareController.php:3824
+* @see app/Http/Controllers/Pcare/PcareController.php:3866
 * @route '/pcare/api/srk/peserta'
 */
 api.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +45,7 @@ api.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 const peserta = {
-    api: Object.assign(api, api),
+    api: Object.assign(api, api3b9ccf),
 }
 
 export default peserta
