@@ -19,6 +19,34 @@ class SatuSehatRajalController extends Controller
         return $this->satusehatOrganizationReference();
     }
 
+    private function normalizeSatusehatDateTime(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace('/(T\d{2}:\d{2}:\d{2}):\d{2}([+-]\d{2}:\d{2})$/', '$1$2', $value) ?? $value;
+
+        try {
+            $dt = \Carbon\Carbon::parse($value, 'Asia/Jakarta');
+        } catch (\Throwable) {
+            return '';
+        }
+
+        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
+        if ($dt->lt($min)) {
+            $dt = $min;
+        }
+
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        if ($dt->gt($now)) {
+            $dt = $now;
+        }
+
+        return $dt->toIso8601String();
+    }
+
     public function createEncounter(Request $request)
     {
         $patientId = trim((string) $request->input('patient_id', ''));
@@ -72,12 +100,20 @@ class SatuSehatRajalController extends Controller
             if ($start !== '' || $end !== '') {
                 $period = [];
                 if ($start !== '') {
-                    $period['start'] = $start;
+                    $normStart = $this->normalizeSatusehatDateTime($start);
+                    if ($normStart !== '') {
+                        $period['start'] = $normStart;
+                    }
                 }
                 if ($end !== '') {
-                    $period['end'] = $end;
+                    $normEnd = $this->normalizeSatusehatDateTime($end);
+                    if ($normEnd !== '') {
+                        $period['end'] = $normEnd;
+                    }
                 }
-                $body['period'] = $period;
+                if (! empty($period)) {
+                    $body['period'] = $period;
+                }
             }
 
             $orgIhs = $this->satusehatOrganizationId();
@@ -100,18 +136,6 @@ class SatuSehatRajalController extends Controller
                     'use' => 'official',
                     'value' => $patientId.'-'.($start ?: date('Y-m-d\TH:i:s+07:00')),
                 ]];
-            }
-            if ($start !== '') {
-                $body['statusHistory'] = [
-                    [
-                        'status' => 'arrived',
-                        'period' => ['start' => $start],
-                    ],
-                    [
-                        'status' => 'in-progress',
-                        'period' => ['start' => $start],
-                    ],
-                ];
             }
         }
 
@@ -610,7 +634,6 @@ class SatuSehatRajalController extends Controller
     {
         $encounterId = trim((string) $request->input('encounter_id', ''));
         $status = trim((string) $request->input('status', 'finished'));
-        $tz = trim((string) $request->input('tz_offset', '+07:00'));
         $endOverride = trim((string) $request->input('end', ''));
 
         if ($encounterId === '') {
@@ -633,9 +656,17 @@ class SatuSehatRajalController extends Controller
             ], 404);
         }
 
-        $end = $endOverride !== ''
+        $endCandidate = $endOverride !== ''
             ? $endOverride
-            : ((string) ($row->tgl_perawatan ?? '').'T'.(string) ($row->jam_rawat ?? '').$tz);
+            : ((string) ($row->tgl_perawatan ?? '').' '.(string) ($row->jam_rawat ?? ''));
+        $end = $this->normalizeSatusehatDateTime($endCandidate);
+        if ($end === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Nilai end tidak valid untuk SATUSEHAT',
+                'end' => $endCandidate,
+            ], 422);
+        }
 
         // Derive start from Encounter payload or from reg_periksa
         $reg = FacadesDB::table('reg_periksa')->where('no_rawat', $no_rawat)->first(['tgl_registrasi', 'jam_reg']);
@@ -656,11 +687,17 @@ class SatuSehatRajalController extends Controller
         $payload['status'] = $status ?: 'finished';
         $period = is_array($payload['period'] ?? null) ? $payload['period'] : [];
         $period['end'] = $end;
-        if (empty($period['start'])) {
-            $period['start'] = ($reg && ! empty($reg->tgl_registrasi) && ! empty($reg->jam_reg))
-                ? ((string) $reg->tgl_registrasi.'T'.(string) $reg->jam_reg.$tz)
-                : $end;
+
+        $startCandidate = '';
+        if ($reg && ! empty($reg->tgl_registrasi) && ! empty($reg->jam_reg)) {
+            $startCandidate = (string) $reg->tgl_registrasi.' '.(string) $reg->jam_reg;
         }
+        $existingStart = trim((string) ($period['start'] ?? ''));
+        $start = $this->normalizeSatusehatDateTime($existingStart !== '' ? $existingStart : ($startCandidate !== '' ? $startCandidate : $end));
+        if ($start === '') {
+            $start = $end;
+        }
+        $period['start'] = $start;
         $payload['period'] = $period;
 
         $startVal = (string) ($period['start'] ?? '');
@@ -672,55 +709,8 @@ class SatuSehatRajalController extends Controller
         $newSh[] = ['status' => 'finished', 'period' => ['start' => $end, 'end' => $end]];
         $payload['statusHistory'] = $newSh;
 
-        // Ensure Encounter.diagnosis exists by creating Condition from local diagnosa_pasien if missing
-        $hasDiagnosis = is_array($payload['diagnosis'] ?? null) && count($payload['diagnosis']) > 0;
-        if (! $hasDiagnosis) {
-            $patientRef = (string) ($payload['subject']['reference'] ?? '');
-            $patientId = '';
-            if (strpos($patientRef, 'Patient/') === 0) {
-                $patientId = substr($patientRef, strlen('Patient/'));
-            }
-            $pracRef = '';
-            if (is_array($payload['participant'] ?? null) && isset($payload['participant'][0]['individual']['reference'])) {
-                $pracRef = (string) $payload['participant'][0]['individual']['reference'];
-            }
-            $pracId = '';
-            if (strpos($pracRef, 'Practitioner/') === 0) {
-                $pracId = substr($pracRef, strlen('Practitioner/'));
-            }
-            $dxList = FacadesDB::table('diagnosa_pasien')
-                ->where('no_rawat', $no_rawat)
-                ->orderBy('prioritas', 'asc')
-                ->limit(3)
-                ->get(['kd_penyakit']);
-            $diagEntries = [];
-            foreach ($dxList as $i => $dx) {
-                $icd10 = trim((string) ($dx->kd_penyakit ?? ''));
-                if ($icd10 === '' || $patientId === '') {
-                    continue;
-                }
-                $condBody = [
-                    'resourceType' => 'Condition',
-                    'clinicalStatus' => ['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/condition-clinical', 'code' => 'active']]],
-                    'category' => [['coding' => [['system' => 'http://terminology.hl7.org/CodeSystem/condition-category', 'code' => 'encounter-diagnosis']]]],
-                    'code' => ['coding' => [['system' => 'http://hl7.org/fhir/sid/icd-10', 'code' => $icd10, 'display' => $icd10]], 'text' => $icd10],
-                    'subject' => ['reference' => 'Patient/'.$patientId],
-                    'encounter' => ['reference' => 'Encounter/'.$encounterId],
-                ];
-                if ($pracId !== '') {
-                    $condBody['asserter'] = ['reference' => 'Practitioner/'.$pracId];
-                }
-                $cRes = $this->satusehatRequest('POST', 'Condition', $condBody, ['prefer_representation' => true]);
-                if ($cRes['ok'] && is_array($cRes['json'] ?? null)) {
-                    $cid = (string) ($cRes['json']['id'] ?? '');
-                    if ($cid !== '') {
-                        $diagEntries[] = ['condition' => ['reference' => 'Condition/'.$cid], 'rank' => $i + 1];
-                    }
-                }
-            }
-            if (! empty($diagEntries)) {
-                $payload['diagnosis'] = $diagEntries;
-            }
+        if (isset($payload['diagnosis'])) {
+            unset($payload['diagnosis']);
         }
 
         $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $payload, [

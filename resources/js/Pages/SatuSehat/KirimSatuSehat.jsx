@@ -4,6 +4,19 @@ import { BridingMenu } from "@/Layouts/SidebarBriding";
 import axios from "axios";
 import Toaster from "@/Components/ui/Toaster";
 
+const STEP_MODEL = [
+    { order: 1, code: "encounter_create", title: "Encounter", detail: "Create Encounter" },
+    { order: 2, code: "condition", title: "Condition", detail: "Diagnosa dari diagnosa_pasien" },
+    { order: 3, code: "observation", title: "Observation", detail: "Pemeriksaan_ralan (timeline)" },
+    { order: 4, code: "procedure", title: "Procedure", detail: "Tindakan dari prosedur_pasien" },
+    { order: 5, code: "allergy_intolerance", title: "AllergyIntolerance", detail: "Riwayat alergi pasien" },
+    { order: 6, code: "medication", title: "Medication", detail: "Pastikan master obat (KFA/mapping)" },
+    { order: 7, code: "medication_request", title: "MedicationRequest", detail: "Resep dari resep_obat + resep_dokter" },
+    { order: 8, code: "medication_dispense", title: "MedicationDispense", detail: "Penyerahan obat dari detail_pemberian_obat" },
+    { order: 9, code: "encounter_finish", title: "Encounter Finished", detail: "Update Encounter status finished" },
+    { order: 10, code: "composition", title: "Composition", detail: "SOAP/Resume dan linking" },
+];
+
 function dateToYmd(d) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -46,12 +59,30 @@ export default function KirimSatuSehat() {
 
     const pollRef = useRef(null);
 
+    const runnerRef = useRef(null);
+    const tickInFlightRef = useRef(false);
+    const [clientRunnerOn, setClientRunnerOn] = useState(false);
+
     const [consoleLines, setConsoleLines] = useState([]);
     const [autoScroll, setAutoScroll] = useState(true);
     const consoleBoxRef = useRef(null);
     const seenItemIdsRef = useRef(new Set());
 
     const fmt = (v) => (v === null || v === undefined ? "" : String(v));
+
+    const stepMap = useMemo(() => {
+        const m = {};
+        STEP_MODEL.forEach((s) => {
+            m[s.code] = s;
+        });
+        return m;
+    }, []);
+
+    const formatStep = (stepCode) => {
+        const code = fmt(stepCode);
+        const s = stepMap[code];
+        return s ? `${s.order}. ${s.title}` : code;
+    };
 
     const nowStamp = () => {
         const iso = new Date().toISOString();
@@ -78,6 +109,44 @@ export default function KirimSatuSehat() {
         if (parts.length) detail = `${detail} (${parts.join(", ")})`;
         return detail;
     };
+
+    const stopClientRunner = () => {
+        if (runnerRef.current) {
+            clearInterval(runnerRef.current);
+            runnerRef.current = null;
+        }
+        setClientRunnerOn(false);
+    };
+
+    const startClientRunner = (tickMs) => {
+        if (runnerRef.current) {
+            clearInterval(runnerRef.current);
+            runnerRef.current = null;
+        }
+        runnerRef.current = setInterval(() => {
+            runOnce();
+        }, Math.max(1000, Number(tickMs) || 3000));
+        setClientRunnerOn(true);
+    };
+
+    async function runOnce() {
+        if (!batchId) return;
+        if (tickInFlightRef.current) return;
+        tickInFlightRef.current = true;
+
+        try {
+            const res = await axios.post(
+                `/api/satusehat/dispatch/batches/${encodeURIComponent(batchId)}/run-once`
+            );
+            setBatch(res?.data?.batch || null);
+            setRecentItems(Array.isArray(res?.data?.recent_items) ? res.data.recent_items : []);
+        } catch (e) {
+            addToast("error", "Gagal", formatError(e, "Gagal memproses 1 langkah"));
+            appendConsoleLines([`${nowStamp()} ! run-once failed: ${formatError(e, "Gagal memproses 1 langkah")}`]);
+        } finally {
+            tickInFlightRef.current = false;
+        }
+    }
 
     async function createBatch() {
         setLoadingCreate(true);
@@ -115,7 +184,9 @@ export default function KirimSatuSehat() {
             await axios.post(`/api/satusehat/dispatch/batches/${encodeURIComponent(batchId)}/start`);
             addToast("success", "Diproses", `Batch #${batchId} dimulai`);
             appendConsoleLines([`${nowStamp()} $ dispatch start --batch=${batchId}`]);
-            await refreshBatch();
+
+            await runOnce();
+            startClientRunner((Number(intervalSeconds) || 3) * 1000);
         } catch (e) {
             addToast("error", "Gagal", formatError(e, "Gagal memulai batch"));
             appendConsoleLines([`${nowStamp()} ! start failed: ${formatError(e, "Gagal memulai batch")}`]);
@@ -207,7 +278,7 @@ export default function KirimSatuSehat() {
             const status = fmt(it?.status || "-").toLowerCase();
             const badge = status === "done" ? "OK" : status === "failed" ? "ERR" : status === "processing" ? "RUN" : status;
             const noRawat = fmt(it?.no_rawat || "-");
-            const step = fmt(it?.step || "-");
+            const step = formatStep(it?.step || "-");
             const attempts = fmt(it?.attempts || "0");
             const updated = fmt(it?.updated_at || nowStamp());
             const err = fmt(it?.last_error || "");
@@ -254,6 +325,27 @@ export default function KirimSatuSehat() {
 
     useEffect(() => {
         if (!batchId) {
+            stopClientRunner();
+            return;
+        }
+
+        return () => {
+            stopClientRunner();
+        };
+    }, [batchId]);
+
+    useEffect(() => {
+        const st = fmt(batch?.status || "").toLowerCase();
+        if (!batchId) return;
+
+        if (st === "finished" || st === "cancelled") {
+            stopClientRunner();
+            appendConsoleLines([`${nowStamp()} $ dispatch stopped --batch=${batchId} --status=${st}`]);
+        }
+    }, [batchId, batch?.status]);
+
+    useEffect(() => {
+        if (!batchId) {
             setBatch(null);
             setRecentItems([]);
             setItems([]);
@@ -284,7 +376,7 @@ export default function KirimSatuSehat() {
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Kirim SatuSehat</h1>
-                        <p className="text-xs text-slate-500">Batch kirim data rajal + monitoring retry</p>
+                        <p className="text-xs text-slate-500">Batch kirim data rajal step-by-step + monitoring retry</p>
                     </div>
                 </div>
 
@@ -373,14 +465,23 @@ export default function KirimSatuSehat() {
                                             <button
                                                 type="button"
                                                 disabled={!batchId || loadingStart}
-                                                onClick={startBatch}
+                                                onClick={() => {
+                                                    if (clientRunnerOn) {
+                                                        stopClientRunner();
+                                                        appendConsoleLines([`${nowStamp()} $ dispatch stop --batch=${batchId}`]);
+                                                    } else {
+                                                        startBatch();
+                                                    }
+                                                }}
                                                 className={`rounded-md px-3 py-2 text-sm font-medium text-white ${
                                                     !batchId || loadingStart
                                                         ? "bg-slate-400"
-                                                        : "bg-emerald-600 hover:bg-emerald-700"
+                                                        : clientRunnerOn
+                                                          ? "bg-rose-600 hover:bg-rose-700"
+                                                          : "bg-emerald-600 hover:bg-emerald-700"
                                                 }`}
                                             >
-                                                {loadingStart ? "Memulai..." : "Start"}
+                                                {loadingStart ? "Memulai..." : clientRunnerOn ? "Stop" : "Start"}
                                             </button>
                                             <button
                                                 type="button"
@@ -442,6 +543,18 @@ export default function KirimSatuSehat() {
                                     </div>
                                 ) : null}
 
+                                <div className="mt-3 rounded-lg bg-slate-50 p-3">
+                                    <div className="text-[10px] text-slate-500 mb-2">Model Step</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                                        {STEP_MODEL.map((s) => (
+                                            <div key={s.code} className="text-xs text-slate-700">
+                                                <span className="font-medium">{s.order}. {s.title}</span>
+                                                <span className="text-slate-500"> {s.detail}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <div className="mt-4 flex flex-col md:flex-row md:items-end gap-2">
                                     <div className="flex-1">
                                         <label className="block text-xs text-slate-600 mb-1">Retry failed (no_rawat opsional)</label>
@@ -489,7 +602,7 @@ export default function KirimSatuSehat() {
                                                 recentItems.map((it) => (
                                                     <tr key={it.id} className="border-b last:border-b-0">
                                                         <td className="py-2 pr-3 text-xs text-slate-800 break-all">{fmt(it.no_rawat)}</td>
-                                                        <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.step)}</td>
+                                                        <td className="py-2 pr-3 text-xs text-slate-700">{formatStep(it.step)}</td>
                                                         <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.status)}</td>
                                                         <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.attempts)}</td>
                                                         <td className="py-2 pr-3 text-xs text-slate-600">{fmt(it.updated_at)}</td>
@@ -575,7 +688,7 @@ export default function KirimSatuSehat() {
                                                 items.map((it) => (
                                                     <tr key={it.id} className="border-b last:border-b-0">
                                                         <td className="py-2 pr-3 text-xs text-slate-800 break-all">{fmt(it.no_rawat)}</td>
-                                                        <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.step)}</td>
+                                                        <td className="py-2 pr-3 text-xs text-slate-700">{formatStep(it.step)}</td>
                                                         <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.status)}</td>
                                                         <td className="py-2 pr-3 text-xs text-slate-700">{fmt(it.attempts)}</td>
                                                     </tr>
@@ -667,7 +780,9 @@ export default function KirimSatuSehat() {
                         >
                             <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
                                 <div className="text-[11px] text-slate-300">batch: {batchId || "-"}</div>
-                                <div className="text-[11px] text-slate-400">status: {batchSummary.status || "-"}</div>
+                                <div className="text-[11px] text-slate-400">
+                                    status: {batchSummary.status || "-"} | runner: {clientRunnerOn ? "ON" : "OFF"}
+                                </div>
                             </div>
                             <div ref={consoleBoxRef} className="h-64 overflow-auto px-3 py-2">
                                 {consoleLines.length ? (

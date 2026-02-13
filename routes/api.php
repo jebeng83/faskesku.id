@@ -864,6 +864,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::prefix('dispatch')->group(function () {
             Route::post('/batches', [SatuSehatController::class, 'dispatchCreateBatch'])->name('api.satusehat.dispatch.batches.create');
             Route::post('/batches/{batchId}/start', [SatuSehatController::class, 'dispatchStartBatch'])->name('api.satusehat.dispatch.batches.start');
+            Route::post('/batches/{batchId}/run-once', [SatuSehatController::class, 'dispatchRunOnce'])->name('api.satusehat.dispatch.batches.run_once');
             Route::get('/batches/{batchId}', [SatuSehatController::class, 'dispatchGetBatch'])->name('api.satusehat.dispatch.batches.get');
             Route::get('/batches/{batchId}/items', [SatuSehatController::class, 'dispatchListItems'])->name('api.satusehat.dispatch.items.list');
             Route::post('/batches/{batchId}/retry-failed', [SatuSehatController::class, 'dispatchRetryFailed'])->name('api.satusehat.dispatch.items.retry_failed');

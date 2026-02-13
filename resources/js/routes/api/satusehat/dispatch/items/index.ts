@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::list
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:565
 * @route '/api/satusehat/dispatch/batches/{batchId}/items'
 */
 export const list = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ list.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::list
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:565
 * @route '/api/satusehat/dispatch/batches/{batchId}/items'
 */
 list.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ list.url = (args: { batchId: string | number } | [batchId: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::list
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:565
 * @route '/api/satusehat/dispatch/batches/{batchId}/items'
 */
 list.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ list.get = (args: { batchId: string | number } | [batchId: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::list
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:565
 * @route '/api/satusehat/dispatch/batches/{batchId}/items'
 */
 list.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ list.head = (args: { batchId: string | number } | [batchId: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::retry_failed
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:601
 * @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
 */
 export const retry_failed = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -78,7 +78,7 @@ retry_failed.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::retry_failed
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:601
 * @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
 */
 retry_failed.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ retry_failed.url = (args: { batchId: string | number } | [batchId: string | numb
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::retry_failed
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:601
 * @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
 */
 retry_failed.post = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({

@@ -134,6 +134,161 @@ class MedicationRequestService
         ];
     }
 
+    public function ensureMedicationsForNoRawat(string $noRawat): array
+    {
+        $noRawat = trim((string) $noRawat);
+        if ($noRawat === '') {
+            return [
+                'ok' => false,
+                'message' => 'no_rawat kosong',
+            ];
+        }
+
+        $resepList = DB::table('resep_obat')
+            ->where('no_rawat', $noRawat)
+            ->orderBy('tgl_peresepan', 'asc')
+            ->orderBy('jam_peresepan', 'asc')
+            ->get(['no_resep']);
+
+        if ($resepList->isEmpty()) {
+            return [
+                'ok' => true,
+                'skipped' => true,
+                'no_rawat' => $noRawat,
+                'reason' => 'resep_obat kosong',
+                'ensured' => [],
+            ];
+        }
+
+        $kodeSet = [];
+        foreach ($resepList as $r) {
+            $noResep = trim((string) ($r->no_resep ?? ''));
+            if ($noResep === '') {
+                continue;
+            }
+
+            $nonRacikan = DB::table('resep_dokter')
+                ->where('no_resep', $noResep)
+                ->pluck('kode_brng')
+                ->all();
+            foreach ($nonRacikan as $kb) {
+                $kb = trim((string) $kb);
+                if ($kb !== '') {
+                    $kodeSet[$kb] = true;
+                }
+            }
+
+            $racikanDetail = DB::table('resep_dokter_racikan_detail')
+                ->where('no_resep', $noResep)
+                ->pluck('kode_brng')
+                ->all();
+            foreach ($racikanDetail as $kb) {
+                $kb = trim((string) $kb);
+                if ($kb !== '') {
+                    $kodeSet[$kb] = true;
+                }
+            }
+        }
+
+        if (empty($kodeSet)) {
+            return [
+                'ok' => true,
+                'skipped' => true,
+                'no_rawat' => $noRawat,
+                'reason' => 'kode_brng kosong pada resep',
+                'ensured' => [],
+            ];
+        }
+
+        $ensured = [];
+        foreach (array_keys($kodeSet) as $kodeBrng) {
+            $id = $this->ensureMedicationIhsIdFromKodeBrng($kodeBrng);
+            if (! $id) {
+                return [
+                    'ok' => false,
+                    'no_rawat' => $noRawat,
+                    'kode_brng' => $kodeBrng,
+                    'message' => 'Gagal memastikan Medication untuk kode_brng: '.$kodeBrng,
+                ];
+            }
+            $ensured[] = ['kode_brng' => $kodeBrng, 'medication_id' => $id];
+        }
+
+        return [
+            'ok' => true,
+            'no_rawat' => $noRawat,
+            'ensured' => $ensured,
+        ];
+    }
+
+    public function sendMedicationRequestsForNoRawat(string $noRawat): array
+    {
+        $noRawat = trim((string) $noRawat);
+        if ($noRawat === '') {
+            return [
+                'ok' => false,
+                'message' => 'no_rawat kosong',
+            ];
+        }
+
+        $resepList = DB::table('resep_obat')
+            ->where('no_rawat', $noRawat)
+            ->orderBy('tgl_peresepan', 'asc')
+            ->orderBy('jam_peresepan', 'asc')
+            ->get(['no_resep']);
+
+        if ($resepList->isEmpty()) {
+            return [
+                'ok' => true,
+                'skipped' => true,
+                'no_rawat' => $noRawat,
+                'reason' => 'resep_obat kosong',
+                'results' => [],
+            ];
+        }
+
+        $results = [];
+        foreach ($resepList as $r) {
+            $noResep = trim((string) ($r->no_resep ?? ''));
+            if ($noResep === '') {
+                continue;
+            }
+
+            $res = $this->sendMedicationRequestsForResep($noResep);
+            $results[] = $res;
+
+            if (! ($res['ok'] ?? false)) {
+                return [
+                    'ok' => false,
+                    'no_rawat' => $noRawat,
+                    'no_resep' => $noResep,
+                    'message' => $res['message'] ?? 'Gagal kirim MedicationRequest',
+                    'detail' => $res,
+                ];
+            }
+
+            $perItem = is_array($res['results'] ?? null) ? $res['results'] : [];
+            foreach ($perItem as $it) {
+                $action = is_array($it) ? (string) ($it['action'] ?? '') : '';
+                if ($action === 'failed') {
+                    return [
+                        'ok' => false,
+                        'no_rawat' => $noRawat,
+                        'no_resep' => $noResep,
+                        'message' => (string) ($it['error'] ?? 'Ada item MedicationRequest gagal'),
+                        'detail' => $it,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'ok' => true,
+            'no_rawat' => $noRawat,
+            'results' => $results,
+        ];
+    }
+
     private function sendOneMedicationRequest(
         string $noResep,
         string $kodeBrng,

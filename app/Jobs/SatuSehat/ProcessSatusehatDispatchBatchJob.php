@@ -2,7 +2,14 @@
 
 namespace App\Jobs\SatuSehat;
 
+use App\Services\SatuSehat\AllergyIntoleranceService;
+use App\Services\SatuSehat\CompositionService;
+use App\Services\SatuSehat\ConditionService;
 use App\Services\SatuSehat\EncounterService;
+use App\Services\SatuSehat\MedicationDispenseService;
+use App\Services\SatuSehat\MedicationRequestService;
+use App\Services\SatuSehat\ObservationService;
+use App\Services\SatuSehat\ProcedureService;
 use App\Services\SatuSehat\RajalPipelineService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,7 +31,17 @@ class ProcessSatusehatDispatchBatchJob implements ShouldQueue
         $this->batchId = $batchId;
     }
 
-    public function handle(EncounterService $encounterService, RajalPipelineService $pipelineService): void
+    public function handle(
+        EncounterService $encounterService,
+        RajalPipelineService $pipelineService,
+        ConditionService $conditionService,
+        ObservationService $observationService,
+        ProcedureService $procedureService,
+        AllergyIntoleranceService $allergyService,
+        MedicationRequestService $medicationRequestService,
+        MedicationDispenseService $medicationDispenseService,
+        CompositionService $compositionService
+    ): void
     {
         $batchesOk = Schema::hasTable('satusehat_dispatch_batches');
         $itemsOk = Schema::hasTable('satusehat_dispatch_items');
@@ -150,6 +167,132 @@ class ProcessSatusehatDispatchBatchJob implements ShouldQueue
                 $ok = (bool) ($response['ok'] ?? false);
                 if (! $ok) {
                     $errorText = (string) ($response['message'] ?? ($response['error'] ?? 'Gagal update Encounter'));
+                }
+            } elseif ($step === 'condition') {
+                $dxList = DB::table('diagnosa_pasien')
+                    ->where('no_rawat', $noRawat)
+                    ->orderBy('prioritas', 'asc')
+                    ->get(['kd_penyakit', 'prioritas']);
+
+                if ($dxList->isEmpty()) {
+                    $response = ['ok' => true, 'skipped' => true, 'reason' => 'diagnosa_pasien kosong'];
+                    $ok = true;
+                } else {
+                    $sent = [];
+                    foreach ($dxList as $dx) {
+                        $kd = trim((string) ($dx->kd_penyakit ?? ''));
+                        if ($kd === '') {
+                            continue;
+                        }
+                        $r = $conditionService->createCondition($noRawat, $kd, 'Ralan');
+                        if (! is_array($r) || empty($r['id'])) {
+                            $ok = false;
+                            $errorText = 'Gagal kirim Condition untuk kd_penyakit: '.$kd;
+                            $response = ['ok' => false, 'kd_penyakit' => $kd];
+                            break;
+                        }
+                        $sent[] = ['kd_penyakit' => $kd, 'id' => (string) ($r['id'] ?? '')];
+                    }
+
+                    if ($errorText === null) {
+                        $response = ['ok' => true, 'sent' => $sent];
+                        $ok = true;
+                    }
+                }
+            } elseif ($step === 'observation') {
+                $rows = DB::table('pemeriksaan_ralan')
+                    ->where('no_rawat', $noRawat)
+                    ->orderBy('tgl_perawatan', 'asc')
+                    ->orderBy('jam_rawat', 'asc')
+                    ->get(['tgl_perawatan', 'jam_rawat']);
+
+                if ($rows->isEmpty()) {
+                    $response = ['ok' => true, 'skipped' => true, 'reason' => 'pemeriksaan_ralan kosong'];
+                    $ok = true;
+                } else {
+                    $results = [];
+                    foreach ($rows as $r) {
+                        $tgl = trim((string) ($r->tgl_perawatan ?? ''));
+                        $jam = trim((string) ($r->jam_rawat ?? ''));
+                        if ($tgl === '' || $jam === '') {
+                            continue;
+                        }
+                        $resObs = $observationService->sendVitalSigns($noRawat, $tgl, $jam);
+                        $success = (bool) ($resObs['success'] ?? false);
+                        $results[] = ['tgl_perawatan' => $tgl, 'jam_rawat' => $jam, 'success' => $success];
+                        if (! $success) {
+                            $ok = false;
+                            $errorText = (string) ($resObs['message'] ?? 'Gagal kirim Observation');
+                            $response = ['ok' => false, 'tgl_perawatan' => $tgl, 'jam_rawat' => $jam, 'detail' => $resObs];
+                            break;
+                        }
+                    }
+
+                    if ($errorText === null) {
+                        $response = ['ok' => true, 'results' => $results];
+                        $ok = true;
+                    }
+                }
+            } elseif ($step === 'procedure') {
+                $response = $procedureService->sendProceduresForEncounter($noRawat, 'Ralan');
+                $ok = (bool) ($response['ok'] ?? false);
+                if (! $ok) {
+                    $errorText = (string) ($response['message'] ?? ($response['error'] ?? 'Gagal kirim Procedure'));
+                }
+            } elseif ($step === 'allergy_intolerance') {
+                $response = $allergyService->sendAllergyIntolerance($noRawat);
+                $ok = (bool) ($response['success'] ?? false);
+                if (! $ok) {
+                    $errorText = (string) ($response['message'] ?? 'Gagal kirim AllergyIntolerance');
+                }
+            } elseif ($step === 'medication') {
+                $response = $medicationRequestService->ensureMedicationsForNoRawat($noRawat);
+                $ok = (bool) ($response['ok'] ?? false);
+                if (! $ok) {
+                    $errorText = (string) ($response['message'] ?? 'Gagal memastikan Medication');
+                }
+            } elseif ($step === 'medication_request') {
+                $response = $medicationRequestService->sendMedicationRequestsForNoRawat($noRawat);
+                $ok = (bool) ($response['ok'] ?? false);
+                if (! $ok) {
+                    $errorText = (string) ($response['message'] ?? 'Gagal kirim MedicationRequest');
+                }
+            } elseif ($step === 'medication_dispense') {
+                $response = $medicationDispenseService->sendMedicationDispensesForNoRawat($noRawat);
+                $ok = (bool) ($response['ok'] ?? false);
+                if (! $ok) {
+                    $errorText = (string) ($response['message'] ?? 'Gagal kirim MedicationDispense');
+                }
+            } elseif ($step === 'composition') {
+                $enc = DB::table('satusehat_encounter')->where('no_rawat', $noRawat)->first(['satusehat_id', 'patient_id', 'practitioner_id']);
+                $encounterId = $enc ? trim((string) ($enc->satusehat_id ?? '')) : '';
+                $patientId = $enc ? trim((string) ($enc->patient_id ?? '')) : '';
+                $practitionerId = $enc ? trim((string) ($enc->practitioner_id ?? '')) : '';
+
+                if ($encounterId === '' || $patientId === '') {
+                    $legacy = DB::table('satu_sehat_encounter')->where('no_rawat', $noRawat)->first(['id_encounter_2', 'id_encounter', 'id_pasien_satusehat', 'id_dokter_satusehat']);
+                    if ($legacy) {
+                        $encounterId = $encounterId !== '' ? $encounterId : (trim((string) ($legacy->id_encounter_2 ?? '')) ?: trim((string) ($legacy->id_encounter ?? '')));
+                        $patientId = $patientId !== '' ? $patientId : trim((string) ($legacy->id_pasien_satusehat ?? ''));
+                        $practitionerId = $practitionerId !== '' ? $practitionerId : trim((string) ($legacy->id_dokter_satusehat ?? ''));
+                    }
+                }
+
+                if ($encounterId === '' || $patientId === '') {
+                    $ok = false;
+                    $errorText = 'Encounter atau Patient ID belum tersedia untuk kirim Composition';
+                    $response = ['ok' => false, 'encounter_id' => $encounterId, 'patient_id' => $patientId];
+                } else {
+                    $pem = DB::table('pemeriksaan_ralan')->where('no_rawat', $noRawat)->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat')->first(['tgl_perawatan', 'jam_rawat']);
+                    $localDateTime = $pem && ! empty($pem->tgl_perawatan) && ! empty($pem->jam_rawat)
+                        ? (string) $pem->tgl_perawatan.'T'.(string) $pem->jam_rawat.'+07:00'
+                        : '';
+
+                    $response = $compositionService->sendRajalCompositionAutoFromNoRawat($noRawat, $patientId, $encounterId, $practitionerId, $localDateTime);
+                    $ok = (bool) ($response['ok'] ?? false);
+                    if (! $ok) {
+                        $errorText = (string) ($response['message'] ?? 'Gagal kirim Composition');
+                    }
                 }
             } elseif ($step === 'rajal_pipeline') {
                 $response = $pipelineService->pipelineByRawat($noRawat, $tzOffset);

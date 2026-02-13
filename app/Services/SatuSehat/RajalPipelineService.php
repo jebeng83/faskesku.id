@@ -11,6 +11,34 @@ class RajalPipelineService
 {
     use SatuSehatTraits;
 
+    private function normalizeSatusehatDateTime(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace('/(T\d{2}:\d{2}:\d{2}):\d{2}([+-]\d{2}:\d{2})$/', '$1$2', $value) ?? $value;
+
+        try {
+            $dt = \Carbon\Carbon::parse($value, 'Asia/Jakarta');
+        } catch (\Throwable) {
+            return '';
+        }
+
+        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
+        if ($dt->lt($min)) {
+            $dt = $min;
+        }
+
+        $now = \Carbon\Carbon::now('Asia/Jakarta');
+        if ($dt->gt($now)) {
+            $dt = $now;
+        }
+
+        return $dt->toIso8601String();
+    }
+
     public function updateEncounterByRawat(string $noRawat, string $encounterId, string $status = 'finished', string $tzOffset = '+07:00', string $endOverride = '', bool $dispatchCompositionJob = true): array
     {
         $status = strtolower(trim((string) $status)) ?: 'finished';
@@ -33,9 +61,18 @@ class RajalPipelineService
             ];
         }
 
-        $periodEndLocal = trim((string) $endOverride);
-        if ($periodEndLocal === '' && $pem) {
-            $periodEndLocal = trim((string) ($pem->tgl_perawatan ?? '')).'T'.trim((string) ($pem->jam_rawat ?? '')).':00'.$tzOffset;
+        $periodEndCandidate = trim((string) $endOverride);
+        if ($periodEndCandidate === '' && $pem) {
+            $periodEndCandidate = trim((string) ($pem->tgl_perawatan ?? '')).' '.trim((string) ($pem->jam_rawat ?? ''));
+        }
+        $periodEndLocal = $this->normalizeSatusehatDateTime($periodEndCandidate);
+        if ($periodEndLocal === '') {
+            return [
+                'ok' => false,
+                'status' => 422,
+                'message' => 'Nilai period.end tidak valid untuk SATUSEHAT',
+                'end' => $periodEndCandidate,
+            ];
         }
 
         $encRead = $this->satusehatRequest('GET', 'Encounter/'.$encounterId);
@@ -57,30 +94,38 @@ class RajalPipelineService
         }
 
         $payload = $encRead['json'];
+        $payload['resourceType'] = 'Encounter';
+        $payload['id'] = $encounterId;
         $payload['status'] = $status;
 
-        $period = $payload['period'] ?? [];
-        if (! is_array($period)) {
-            $period = [];
-        }
-        if (! empty($periodEndLocal)) {
-            $period['end'] = $periodEndLocal;
-        }
-        $payload['period'] = $period;
+        $period = is_array($payload['period'] ?? null) ? $payload['period'] : [];
+        $existingStart = trim((string) ($period['start'] ?? ''));
 
-        $nowLocal = date('Y-m-d\TH:i:s').$tzOffset;
-        $statusHistory = $payload['statusHistory'] ?? [];
-        if (! is_array($statusHistory)) {
-            $statusHistory = [];
+        $startCandidate = '';
+        $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first(['tgl_registrasi', 'jam_reg']);
+        if ($reg && ! empty($reg->tgl_registrasi) && ! empty($reg->jam_reg)) {
+            $startCandidate = trim((string) $reg->tgl_registrasi).' '.trim((string) $reg->jam_reg);
         }
-        $statusHistory[] = [
-            'status' => $status,
-            'period' => [
-                'start' => $nowLocal,
-                'end' => $periodEndLocal ?: $nowLocal,
-            ],
+
+        $periodStartLocal = $this->normalizeSatusehatDateTime($existingStart !== '' ? $existingStart : ($startCandidate !== '' ? $startCandidate : $periodEndLocal));
+        if ($periodStartLocal === '') {
+            $periodStartLocal = $periodEndLocal;
+        }
+
+        $payload['period'] = [
+            'start' => $periodStartLocal,
+            'end' => $periodEndLocal,
         ];
-        $payload['statusHistory'] = $statusHistory;
+
+        $payload['statusHistory'] = [
+            ['status' => 'arrived', 'period' => ['start' => $periodStartLocal, 'end' => $periodStartLocal]],
+            ['status' => 'in-progress', 'period' => ['start' => $periodStartLocal, 'end' => $periodEndLocal]],
+            ['status' => 'finished', 'period' => ['start' => $periodEndLocal, 'end' => $periodEndLocal]],
+        ];
+
+        if (isset($payload['diagnosis'])) {
+            unset($payload['diagnosis']);
+        }
 
         $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $payload, [
             'prefer_representation' => true,

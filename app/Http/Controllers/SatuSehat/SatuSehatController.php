@@ -426,7 +426,7 @@ class SatuSehatController extends Controller
             'limit_rows' => $limitRows,
             'interval_seconds' => $intervalSeconds,
             'status' => 'pending',
-            'total_items' => count($noRawatList) * 3,
+            'total_items' => count($noRawatList) * 10,
             'done_items' => 0,
             'failed_items' => 0,
             'created_by' => optional($request->user())->id,
@@ -434,38 +434,33 @@ class SatuSehatController extends Controller
             'updated_at' => now(),
         ]);
 
+        $steps = [
+            ['step' => 'encounter_create', 'order' => 1],
+            ['step' => 'condition', 'order' => 2],
+            ['step' => 'observation', 'order' => 3],
+            ['step' => 'procedure', 'order' => 4],
+            ['step' => 'allergy_intolerance', 'order' => 5],
+            ['step' => 'medication', 'order' => 6],
+            ['step' => 'medication_request', 'order' => 7],
+            ['step' => 'medication_dispense', 'order' => 8],
+            ['step' => 'encounter_finish', 'order' => 9],
+            ['step' => 'composition', 'order' => 10],
+        ];
+
         $rows = [];
         foreach ($noRawatList as $noRawat) {
-            $rows[] = [
-                'batch_id' => $batchId,
-                'no_rawat' => (string) $noRawat,
-                'step' => 'encounter_create',
-                'step_order' => 1,
-                'status' => 'pending',
-                'attempts' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-            $rows[] = [
-                'batch_id' => $batchId,
-                'no_rawat' => (string) $noRawat,
-                'step' => 'encounter_finish',
-                'step_order' => 2,
-                'status' => 'pending',
-                'attempts' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-            $rows[] = [
-                'batch_id' => $batchId,
-                'no_rawat' => (string) $noRawat,
-                'step' => 'rajal_pipeline',
-                'step_order' => 3,
-                'status' => 'pending',
-                'attempts' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            foreach ($steps as $st) {
+                $rows[] = [
+                    'batch_id' => $batchId,
+                    'no_rawat' => (string) $noRawat,
+                    'step' => (string) $st['step'],
+                    'step_order' => (int) $st['order'],
+                    'status' => 'pending',
+                    'attempts' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
         }
         foreach (array_chunk($rows, 500) as $chunk) {
             if (! empty($chunk)) {
@@ -482,7 +477,7 @@ class SatuSehatController extends Controller
             'limit_rows' => $limitRows,
             'interval_seconds' => $intervalSeconds,
             'no_rawat_count' => count($noRawatList),
-            'total_items' => count($noRawatList) * 3,
+            'total_items' => count($noRawatList) * 10,
         ]);
     }
 
@@ -510,8 +505,37 @@ class SatuSehatController extends Controller
         ]);
 
         \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatch($batchId);
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatchSync($batchId);
 
         return response()->json(['ok' => true, 'batch_id' => $batchId]);
+    }
+
+    public function dispatchRunOnce(int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        if (! $batch) {
+            return response()->json(['ok' => false, 'message' => 'Batch tidak ditemukan'], 404);
+        }
+
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatchSync($batchId);
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        $items = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')
+            ->where('batch_id', $batchId)
+            ->orderByDesc('updated_at')
+            ->limit(25)
+            ->get(['id', 'no_rawat', 'step', 'step_order', 'status', 'attempts', 'last_error', 'updated_at']);
+
+        return response()->json([
+            'ok' => true,
+            'batch_id' => $batchId,
+            'batch' => $batch,
+            'recent_items' => $items,
+        ]);
     }
 
     public function dispatchGetBatch(int $batchId)

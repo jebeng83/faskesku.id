@@ -143,14 +143,6 @@ class EncounterService
                 'value' => $regPeriksa->no_rawat
             ]],
             'status' => $this->mapStatus($regPeriksa->stts),
-            'statusHistory' => [
-                [
-                    'status' => 'arrived',
-                    'period' => [
-                        'start' => $periodStart
-                    ]
-                ]
-            ],
             'class' => [
                 'system' => 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
                 'code' => ($regPeriksa->status_lanjut === 'Ralan' || $regPeriksa->status_lanjut === 'Rawat Jalan') ? 'AMB' : 'IMP',
@@ -359,6 +351,40 @@ class EncounterService
             $encounter['reasonCode'] = $reasonCodes;
         }
 
+        if (isset($encounter['statusHistory']) && is_array($encounter['statusHistory'])) {
+            $fixed = [];
+            foreach ($encounter['statusHistory'] as $h) {
+                if (! is_array($h)) {
+                    continue;
+                }
+                $period = is_array($h['period'] ?? null) ? $h['period'] : [];
+                $s = trim((string) ($period['start'] ?? ''));
+                $e = trim((string) ($period['end'] ?? ''));
+                if ($s === '' && $e === '') {
+                    continue;
+                }
+                if ($s === '') {
+                    $s = $e;
+                }
+                if ($e === '') {
+                    $e = $s;
+                }
+                $fixed[] = [
+                    'status' => (string) ($h['status'] ?? 'in-progress'),
+                    'period' => ['start' => $s, 'end' => $e],
+                ];
+            }
+            if (empty($fixed)) {
+                unset($encounter['statusHistory']);
+            } else {
+                $encounter['statusHistory'] = $fixed;
+            }
+        }
+
+        if (isset($encounter['diagnosis'])) {
+            unset($encounter['diagnosis']);
+        }
+
         if (is_array($encounter)) {
             $encounter = $this->ensureEncounterReferences($encounter, (string) $noRawat, $regPeriksa);
         }
@@ -537,24 +563,9 @@ class EncounterService
         if (isset($updates['status'])) {
             $encounter['status'] = $updates['status'];
         }
-        
-        if (isset($updates['diagnosis_ids']) && is_array($updates['diagnosis_ids'])) {
-            $encounter['diagnosis'] = [];
-            foreach ($updates['diagnosis_ids'] as $idx => $conditionId) {
-                $encounter['diagnosis'][] = [
-                    'condition' => [
-                        'reference' => "Condition/{$conditionId}"
-                    ],
-                    'use' => [
-                        'coding' => [[
-                            'system' => 'http://terminology.hl7.org/CodeSystem/diagnosis-role',
-                            'code' => $idx === 0 ? 'AD' : 'DD',
-                            'display' => $idx === 0 ? 'Admission diagnosis' : 'Discharge diagnosis'
-                        ]]
-                    ],
-                    'rank' => $idx + 1
-                ];
-            }
+
+        if (isset($encounter['diagnosis'])) {
+            unset($encounter['diagnosis']);
         }
         
         // Update via PUT

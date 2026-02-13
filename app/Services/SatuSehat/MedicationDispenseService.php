@@ -11,6 +11,85 @@ class MedicationDispenseService
 {
     use SatuSehatTraits;
 
+    public function sendMedicationDispensesForNoRawat(string $noRawat): array
+    {
+        $noRawat = trim((string) $noRawat);
+        if ($noRawat === '') {
+            return [
+                'ok' => false,
+                'message' => 'no_rawat kosong',
+            ];
+        }
+
+        $stamps = DB::table('detail_pemberian_obat')
+            ->where('no_rawat', $noRawat)
+            ->select('tgl_perawatan', 'jam')
+            ->distinct()
+            ->orderBy('tgl_perawatan', 'asc')
+            ->orderBy('jam', 'asc')
+            ->get();
+
+        if ($stamps->isEmpty()) {
+            return [
+                'ok' => true,
+                'skipped' => true,
+                'no_rawat' => $noRawat,
+                'reason' => 'detail_pemberian_obat kosong',
+                'results' => [],
+            ];
+        }
+
+        $noResep = (string) (DB::table('resep_obat')
+            ->where('no_rawat', $noRawat)
+            ->orderByDesc('tgl_peresepan')
+            ->orderByDesc('jam_peresepan')
+            ->value('no_resep') ?? '');
+        $noResep = trim($noResep);
+        if ($noResep === '') {
+            $noResep = 'UNKNOWN';
+        }
+
+        $results = [];
+        foreach ($stamps as $s) {
+            $tgl = trim((string) ($s->tgl_perawatan ?? ''));
+            $jam = trim((string) ($s->jam ?? ''));
+            if ($tgl === '' || $jam === '') {
+                continue;
+            }
+
+            $res = $this->sendMedicationDispensesForPenyerahan($noResep, $noRawat, $tgl, $jam);
+            $results[] = $res;
+
+            if (! ($res['ok'] ?? false)) {
+                return [
+                    'ok' => false,
+                    'no_rawat' => $noRawat,
+                    'message' => $res['message'] ?? 'Gagal kirim MedicationDispense',
+                    'detail' => $res,
+                ];
+            }
+
+            $perItem = is_array($res['results'] ?? null) ? $res['results'] : [];
+            foreach ($perItem as $it) {
+                $action = is_array($it) ? (string) ($it['action'] ?? '') : '';
+                if ($action === 'failed') {
+                    return [
+                        'ok' => false,
+                        'no_rawat' => $noRawat,
+                        'message' => (string) ($it['error'] ?? 'Ada item MedicationDispense gagal'),
+                        'detail' => $it,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'ok' => true,
+            'no_rawat' => $noRawat,
+            'results' => $results,
+        ];
+    }
+
     public function sendMedicationDispensesForPenyerahan(string $noResep, string $noRawat, string $tglPerawatan, string $jam): array
     {
         $noResep = trim($noResep);
