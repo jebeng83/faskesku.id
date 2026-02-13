@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+import Modal from '@/Components/Modal';
 
 export default function PermintaanLab({ noRawat = '', initialDokter = '', initialDokterNama = '' }) {
     const [selectedTests, setSelectedTests] = useState([]);
@@ -45,6 +46,10 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
         informasi_tambahan: '-',
         diagnosa_klinis: '-'
     });
+    const csrfToken =
+        typeof document !== 'undefined'
+            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            : '';
 
     // Fetch available lab tests
     useEffect(() => {
@@ -333,6 +338,7 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
             };
 
             router.post(route('laboratorium.permintaan-lab.store'), submitData, {
+                headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
                 onSuccess: async (page) => {
                     // Reset form after successful submission
                     setSelectedTests([]);
@@ -356,91 +362,14 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                         noorder = match[1];
                     }
                     
-                    // Otomatis staging dan posting jurnal jika noorder ditemukan
-                    if (noorder) {
-                        try {
-                            setIsSubmitting(true);
-                            
-                            // 1. Stage jurnal dari permintaan lab
-                            const stageRes = await fetch('/api/permintaan-lab/stage-lab', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                },
-                                body: JSON.stringify({ noorder })
-                            });
-                            
-                            const stageData = await stageRes.json();
-                            
-                            if (!stageRes.ok || !stageData.success || !stageData.meta?.balanced) {
-                                const errMsg = stageData?.message || 'Staging jurnal gagal atau tidak seimbang. Posting dibatalkan.';
-                                alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun staging jurnal gagal: ${errMsg}`);
-                                setIsSubmitting(false);
-                                return;
-                            }
-                            
-                            // 2. Posting jurnal dari tampjurnal2 (menggunakan JurnalPostingService yang menggabungkan tampjurnal + tampjurnal2)
-                            try {
-                                const postRes = await fetch('/api/akutansi/jurnal/post', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                        'X-Requested-With': 'XMLHttpRequest'
-                                    },
-                                    body: JSON.stringify({
-                                        no_bukti: noorder,
-                                        keterangan: `Posting otomatis permintaan Laboratorium noorder ${noorder}${noRawat ? ` (no_rawat ${noRawat})` : ''}`
-                                    })
-                                });
-                                
-                                let postData = {};
-                                try {
-                                    const text = await postRes.text();
-                                    postData = text ? JSON.parse(text) : {};
-                                } catch (parseError) {
-                                    console.error('Error parsing JSON response:', parseError);
-                                    postData = { message: `Gagal parsing response (Status: ${postRes.status})` };
-                                }
-                                
-                                if (postRes.status === 201 && postData.no_jurnal) {
-                                    const noJurnal = postData.no_jurnal;
-                                    alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}) dan jurnal diposting (No: ${noJurnal}).`);
-                                } else {
-                                    // Error dari backend (400, 500, dll)
-                                    const errMsg = postData?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
-                                    console.warn('Posting jurnal gagal:', {
-                                        status: postRes.status,
-                                        statusText: postRes.statusText,
-                                        data: postData,
-                                        message: errMsg
-                                    });
-                                    alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun posting jurnal gagal: ${errMsg}`);
-                                }
-                            } catch (postError) {
-                                // Network error atau parsing error
-                                console.error('Auto Stage→Post error:', postError);
-                                const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
-                                alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat posting jurnal: ${errMsg}`);
-                            }
-                        } catch (e) {
-                            console.error('Auto Stage→Post error:', e);
-                            const errMsg = e?.response?.data?.message || e?.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
-                            alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}), namun terjadi kesalahan saat staging/posting jurnal: ${errMsg}`);
-                        } finally {
-                            setIsSubmitting(false);
-                        }
+                    if (successMsg) {
+                        alert(successMsg);
+                    } else if (noorder) {
+                        alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}).`);
                     } else {
-                        // Show success message from flash session
-                        if (successMsg) {
-                            alert(successMsg);
-                        } else {
-                            alert('Permintaan laboratorium berhasil disimpan');
-                        }
-                        setIsSubmitting(false);
+                        alert('Permintaan laboratorium berhasil disimpan');
                     }
+                    setIsSubmitting(false);
                 },
                 onError: (errors) => {
                     console.error('Error:', errors);
@@ -982,12 +911,19 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
     const [riwayatPermintaan, setRiwayatPermintaan] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedItems, setExpandedItems] = useState(new Set());
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewNoorder, setPreviewNoorder] = useState('');
+    const [previewTemplates, setPreviewTemplates] = useState([]);
+    const [selectedPreviewTemplate, setSelectedPreviewTemplate] = useState('default');
 
     // Fetch riwayat permintaan lab
     useEffect(() => {
-        if (noRawat) {
+        if (!noRawat) return;
+        fetchRiwayatPermintaan();
+        const intervalId = setInterval(() => {
             fetchRiwayatPermintaan();
-        }
+        }, 30000);
+        return () => clearInterval(intervalId);
     }, [noRawat]);
 
     const fetchRiwayatPermintaan = async () => {
@@ -1050,6 +986,62 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
         setExpandedItems(newExpanded);
     };
 
+    const handleInputHasil = (noorder) => {
+        const url = route('laboratorium.permintaan-lab.input-hasil', { permintaan_lab: noorder });
+        window.open(url, '_blank');
+    };
+
+    const normalizeTemplateOptions = (templates) => {
+        if (!Array.isArray(templates)) return [];
+        return templates.map((template, index) => {
+            if (typeof template === 'string') {
+                return { value: template, label: template };
+            }
+            if (template?.value) {
+                return { value: template.value, label: template.label || template.value };
+            }
+            if (template?.id) {
+                return {
+                    value: template.id,
+                    label: template.nama || template.name || `Template ${index + 1}`
+                };
+            }
+            return { value: String(template), label: String(template) };
+        });
+    };
+
+    const openPreviewDialog = (permintaan) => {
+        const templateOptions = normalizeTemplateOptions(
+            permintaan?.templates_cetak || permintaan?.template_cetak || permintaan?.templates || []
+        );
+        const finalTemplates = templateOptions.length > 0
+            ? templateOptions
+            : [{ value: 'default', label: 'Default' }];
+
+        setPreviewTemplates(finalTemplates);
+        setSelectedPreviewTemplate(finalTemplates[0]?.value || 'default');
+        setPreviewNoorder(permintaan.noorder);
+        setIsPreviewOpen(true);
+    };
+
+    const handlePreview = () => {
+        if (!previewNoorder) return;
+        const url = route('laboratorium.permintaan-lab.preview', {
+            permintaan_lab: previewNoorder,
+            template: selectedPreviewTemplate
+        });
+        window.open(url, '_blank');
+    };
+
+    const handleCetak = () => {
+        if (!previewNoorder) return;
+        const url = route('laboratorium.permintaan-lab.cetak', {
+            permintaan_lab: previewNoorder,
+            template: selectedPreviewTemplate
+        });
+        window.open(url, '_blank');
+    };
+
     const getStatusBadge = (status) => {
         const statusClasses = {
             'ralan': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
@@ -1068,6 +1060,60 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
                  status === 'batal' ? 'Batal' : status}
             </span>
         );
+    };
+
+    const getHasilStatusInfo = (permintaan) => {
+        if (!permintaan) {
+            return {
+                hasHasil: false,
+                tglSampel: false,
+                statusText: 'Data Tidak Tersedia',
+                statusClass: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            };
+        }
+
+        const isValidDateValue = (value) => {
+            if (!value) return false;
+            const dateStr = String(value).trim();
+            if (!dateStr || dateStr.startsWith('-')) return false;
+            const invalidDates = [
+                '0000-00-00',
+                '0000-00-00 00:00:00',
+                '-0001-11-30',
+                '-0001-11-30 00:00:00',
+                '-0001-11-29',
+                '1970-01-01',
+                '1970-01-01 00:00:00'
+            ];
+            return !invalidDates.some((invalid) => dateStr.includes(invalid));
+        };
+
+        const tglSampel = isValidDateValue(permintaan.tgl_sampel);
+        const hasHasilFromFlag = permintaan.has_hasil !== undefined
+            ? (typeof permintaan.has_hasil === 'string'
+                ? ['1', 'true', 'yes'].includes(permintaan.has_hasil.toLowerCase())
+                : Boolean(permintaan.has_hasil))
+            : null;
+        const hasHasil = hasHasilFromFlag !== null
+            ? hasHasilFromFlag && isValidDateValue(permintaan.tgl_hasil)
+            : isValidDateValue(permintaan.tgl_hasil);
+        const isBatal = permintaan.status === 'batal' || permintaan.status === 'dibatalkan';
+
+        let statusText = 'Baru';
+        let statusClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+
+        if (isBatal) {
+            statusText = 'Dibatalkan';
+            statusClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+        } else if (hasHasil) {
+            statusText = 'Hasil Tersedia';
+            statusClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        } else if (tglSampel) {
+            statusText = 'Sampel Diambil';
+            statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+        }
+
+        return { hasHasil, tglSampel, statusText, statusClass, isBatal };
     };
 
     const formatDate = (date) => {
@@ -1111,7 +1157,11 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
                     </div>
                 ) : riwayatPermintaan.length > 0 ? (
                     <div className="space-y-4">
-                        {riwayatPermintaan.map((permintaan) => (
+                        {riwayatPermintaan.map((permintaan) => {
+                            const statusInfo = getHasilStatusInfo(permintaan);
+                            const showInputHasil = !statusInfo.hasHasil && !statusInfo.isBatal;
+                            const showPreviewHasil = statusInfo.hasHasil;
+                            return (
                             <div key={permintaan.noorder} className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                                 <div className="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
                                     <div className="flex items-center justify-between">
@@ -1125,6 +1175,52 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
                                             <span className="text-sm text-gray-500 dark:text-gray-400">
                                                 {formatDate(permintaan.tgl_permintaan)} {formatTime(permintaan.jam_permintaan)}
                                             </span>
+                                            {(() => {
+                                                const { hasHasil, statusText, statusClass, isBatal } = statusInfo;
+                                                const statusDate = isBatal
+                                                    ? '-'
+                                                    : hasHasil
+                                                    ? `${formatDate(permintaan.tgl_hasil)} ${formatTime(permintaan.jam_hasil)}`
+                                                    : statusInfo.tglSampel
+                                                    ? `${formatDate(permintaan.tgl_sampel)} ${formatTime(permintaan.jam_sampel)}`
+                                                    : '-';
+                                                return (
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}`}>
+                                                            {statusText}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {statusDate}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })()}
+                                            {showInputHasil && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleInputHasil(permintaan.noorder)}
+                                                        className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 p-1 rounded transition-colors"
+                                                        title="Input Hasil"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                </>
+                                            )}
+                                            {showPreviewHasil && (
+                                                <>
+                                                    <button
+                                                        onClick={() => openPreviewDialog(permintaan)}
+                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded transition-colors"
+                                                        title="Preview & Cetak Hasil"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                        </svg>
+                                                    </button>
+                                                </>
+                                            )}
                                             <button
                                                 onClick={() => handleDeletePermintaan(permintaan.noorder)}
                                                 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors"
@@ -1218,7 +1314,8 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
                                     </div>
                                 )}
                             </div>
-                        ))}
+                        );
+                        })}
                     </div>
                 ) : (
                     <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -1230,6 +1327,56 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
                     </div>
                 )}
             </div>
+            <Modal
+                show={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                title="Preview & Cetak Hasil"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                        No. Permintaan: <span className="font-medium text-gray-900 dark:text-white">{previewNoorder || '-'}</span>
+                    </div>
+                    {previewTemplates.length > 1 && (
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Template Cetak
+                            </label>
+                            <select
+                                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={selectedPreviewTemplate}
+                                onChange={(e) => setSelectedPreviewTemplate(e.target.value)}
+                            >
+                                {previewTemplates.map((template) => (
+                                    <option key={template.value} value={template.value}>
+                                        {template.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => setIsPreviewOpen(false)}
+                            className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                            Tutup
+                        </button>
+                        <button
+                            onClick={handlePreview}
+                            className="px-3 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            Preview
+                        </button>
+                        <button
+                            onClick={handleCetak}
+                            className="px-3 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            Cetak PDF
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
