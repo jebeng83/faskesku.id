@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import CopyResep from "./CopyResep";
@@ -59,6 +59,19 @@ export default function Resep({
         const s = (t || "").toString().trim();
         return s || "-";
     };
+    const formatCacheTime = (ts) => {
+        if (!ts) return "-";
+        const tz = getAppTimeZone();
+        try {
+            return new Date(ts).toLocaleString("id-ID", {
+                timeZone: tz,
+                dateStyle: "medium",
+                timeStyle: "short",
+            });
+        } catch (_) {
+            return "-";
+        }
+    };
 
     // State untuk Aturan Pakai Autocomplete
     const [aturanOptions, setAturanOptions] = useState([]);
@@ -83,6 +96,125 @@ export default function Resep({
     const [masterAturanInput, setMasterAturanInput] = useState("");
     const [masterAturanSaving, setMasterAturanSaving] = useState(false);
     const [masterAturanItemId, setMasterAturanItemId] = useState(null);
+    const cacheStorageKey = "resep_obat_cache_v1";
+    const [cacheStore, setCacheStore] = useState({ items: {}, updatedAt: null });
+    const [cacheSource, setCacheSource] = useState("localStorage");
+    const [cacheError, setCacheError] = useState(null);
+    const [cacheRefreshing, setCacheRefreshing] = useState(false);
+
+    const readCacheStorage = () => {
+        if (typeof window === "undefined") return;
+        setCacheError(null);
+        let raw = null;
+        let source = "localStorage";
+        try {
+            raw = window.localStorage.getItem(cacheStorageKey);
+        } catch (_) {
+            raw = null;
+        }
+        if (!raw) {
+            try {
+                raw = window.sessionStorage.getItem(cacheStorageKey);
+                source = "sessionStorage";
+            } catch (_) {
+                raw = null;
+            }
+        }
+        setCacheSource(source);
+        if (!raw) {
+            setCacheStore({ items: {}, updatedAt: null });
+            return;
+        }
+        try {
+            const parsed = JSON.parse(raw);
+            const items = parsed?.items && typeof parsed.items === "object" ? parsed.items : {};
+            const updatedAt = parsed?.updatedAt || null;
+            setCacheStore({ items, updatedAt });
+        } catch (_) {
+            setCacheError("Cache tidak dapat dibaca");
+            setCacheStore({ items: {}, updatedAt: null });
+        }
+    };
+
+    const mergeCacheFromRiwayat = (list) => {
+        if (!Array.isArray(list) || list.length === 0) return;
+        setCacheStore((prev) => {
+            const items = { ...(prev.items || {}) };
+            let changed = false;
+            list.forEach((resep) => {
+                const tgl = resep?.tgl_peresepan || "";
+                const jam = resep?.jam_peresepan || "";
+                const time = tgl && jam ? new Date(`${tgl}T${jam}`).getTime() : Date.now();
+                const timestamp = Number.isFinite(time) ? time : Date.now();
+                (resep?.detail_obat || []).forEach((obat) => {
+                    const kodeObat = (obat?.kode_brng || "").toString().trim();
+                    const nama = (obat?.nama_brng || obat?.kode_brng || "").toString().trim();
+                    const aturanPakai = formatAturanPakai(obat?.aturan_pakai);
+                    const jumlah = obat?.jml ?? "";
+                    if (!nama) return;
+                    const key = `${kodeObat || nama}__${jumlah}__${aturanPakai}`;
+                    if (!items[key]) {
+                        items[key] = {
+                            id: key,
+                            kodeObat,
+                            nama,
+                            jumlah,
+                            aturanPakai,
+                            count: 1,
+                            lastUsed: timestamp,
+                        };
+                    } else {
+                        items[key] = {
+                            ...items[key],
+                            kodeObat: items[key].kodeObat || kodeObat,
+                            count: (items[key].count || 0) + 1,
+                            lastUsed: Math.max(items[key].lastUsed || 0, timestamp),
+                        };
+                    }
+                    changed = true;
+                });
+            });
+            if (!changed) return prev;
+            return { items, updatedAt: Date.now() };
+        });
+    };
+
+    useEffect(() => {
+        readCacheStorage();
+    }, []);
+
+    useEffect(() => {
+        mergeCacheFromRiwayat(riwayatResep);
+    }, [riwayatResep]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            window.localStorage.setItem(
+                cacheStorageKey,
+                JSON.stringify(cacheStore)
+            );
+        } catch (_) {
+        }
+    }, [cacheStore]);
+
+    const handleRefreshCache = async () => {
+        setCacheRefreshing(true);
+        try {
+            readCacheStorage();
+            mergeCacheFromRiwayat(riwayatResep);
+        } finally {
+            setCacheRefreshing(false);
+        }
+    };
+
+    const cachedTopItems = useMemo(() => {
+        const values = Object.values(cacheStore.items || {});
+        return values
+            .filter((it) => it && it.nama)
+            .sort((a, b) => (b.count || 0) - (a.count || 0))
+            .slice(0, 12);
+    }, [cacheStore]);
 
     // Fetch obat dari API dengan validasi stok yang lebih baik
     const fetchObat = async (search = "") => {
@@ -601,6 +733,75 @@ export default function Resep({
             )
         );
         setShowDropdown((prev) => ({ ...prev, [itemId]: false }));
+    };
+
+    const handleSelectCachedEntry = async (entry) => {
+        if (!entry?.nama) return;
+        let targetId = null;
+        setItems((prev) => {
+            const emptyIndex = prev.findIndex(
+                (it) =>
+                    !it.namaObat &&
+                    !it.aturanPakai &&
+                    (!it.jumlah || Number(it.jumlah) === 0)
+            );
+            if (emptyIndex === -1) {
+                targetId = Date.now();
+                return [
+                    ...prev,
+                    {
+                        id: targetId,
+                        kodeObat: entry.kodeObat || "",
+                        namaObat: entry.nama,
+                        aturanPakai: entry.aturanPakai || "",
+                        jumlah: entry.jumlah || "",
+                        satuan: "",
+                        stokTersedia: 0,
+                        harga: 0,
+                    },
+                ];
+            }
+            targetId = prev[emptyIndex].id;
+            return prev.map((it) =>
+                it.id === targetId
+                    ? {
+                          ...it,
+                          kodeObat: entry.kodeObat || "",
+                          namaObat: entry.nama,
+                          aturanPakai: entry.aturanPakai || "",
+                          jumlah: entry.jumlah || "",
+                      }
+                    : it
+            );
+        });
+        const kode = (entry.kodeObat || "").toString().trim();
+        const nama = (entry.nama || "").toString().trim();
+        if (kode) {
+            await selectObat(targetId, {
+                kode_brng: kode,
+                nama_brng: nama,
+                kode_satbesar: "",
+                total_stok: 0,
+                ralan: 0,
+            });
+        } else if (nama) {
+            const found = (obatOptions || []).find(
+                (o) =>
+                    String(o.nama_brng || "").toLowerCase() ===
+                    nama.toLowerCase()
+            );
+            if (found) {
+                await selectObat(targetId, found);
+            }
+        }
+        if (targetId) {
+            if (entry.jumlah) {
+                updateItem(targetId, "jumlah", entry.jumlah);
+            }
+            if (entry.aturanPakai) {
+                updateItem(targetId, "aturanPakai", entry.aturanPakai);
+            }
+        }
     };
 
     const addRacikanGroup = () => {
@@ -1311,6 +1512,73 @@ export default function Resep({
                                 </>
                             )}
                         </select>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    Riwayat Obat Sering Digunakan
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    Sumber: {cacheSource} • Update: {formatCacheTime(cacheStore.updatedAt)}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleRefreshCache}
+                                disabled={cacheRefreshing}
+                                className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                            >
+                                {cacheRefreshing ? "Menyegarkan..." : "Refresh Cache"}
+                            </button>
+                        </div>
+
+                        {cacheError && (
+                            <div className="mt-3 text-xs text-red-600 dark:text-red-400">
+                                {cacheError}
+                            </div>
+                        )}
+
+                        {!cacheError && cachedTopItems.length === 0 && (
+                            <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                                {loadingRiwayat
+                                    ? "Memuat riwayat dari server..."
+                                    : "Cache kosong. Gunakan resep untuk mengisi cache."}
+                            </div>
+                        )}
+
+                        {!cacheError && cachedTopItems.length > 0 && (
+                            <div className="mt-1.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1">
+                                {cachedTopItems.map((entry) => (
+                                    <button
+                                        key={entry.id}
+                                        type="button"
+                                        onClick={() => handleSelectCachedEntry(entry)}
+                                        className="w-full text-left rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 p-1 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors"
+                                    >
+                                        <div className="flex items-start justify-between gap-1">
+                                            <div className="min-w-0">
+                                                <div className="text-[10px] font-semibold text-gray-900 dark:text-white truncate">
+                                                    {entry.nama}
+                                                </div>
+                                                <div className="text-[9px] text-black dark:text-white">
+                                                    Jml: {entry.jumlah || "-"} • Aturan: {entry.aturanPakai || "-"}
+                                                </div>
+                                            </div>
+                                            <div className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">
+                                                {entry.count || 0}x
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        {!cacheError && (
+                            <div className="mt-1 text-[10px] text-gray-700 dark:text-gray-300">
+                                Cache: {Object.keys(cacheStore.items || {}).length} item tersimpan
+                            </div>
+                        )}
                     </div>
 
                     {/* Input Resep Section */}

@@ -10,6 +10,7 @@ import { DWFKTP_TEMPLATES } from '../../../data/dwfktpTemplates.js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
 import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, User, MessageCircle, Stethoscope, Thermometer, Heart, Wind, Percent, Ruler, Scale, Brain, CircleDot, Pill } from 'lucide-react';
 import toast from '@/tools/toast';
+import { buildCopyFormData } from './cpptSoapCopy.js';
 
 export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
@@ -3414,33 +3415,10 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const normalize = (v) => (v === 'N/A' ? '' : (v || ''));
-                                                                    const d = new Date();
-                                                                    const tgl = d.toISOString().slice(0, 10);
-                                                                    const jam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                                                                    setFormData({
-                                                                        tgl_perawatan: tgl,
-                                                                        jam_rawat: jam,
-                                                                        suhu_tubuh: normalize(row.suhu_tubuh),
-                                                                        tensi: normalize(row.tensi),
-                                                                        nadi: normalize(row.nadi),
-                                                                        respirasi: normalize(row.respirasi),
-                                                                        tinggi: normalize(row.tinggi),
-                                                                        berat: normalize(row.berat),
-                                                                        spo2: normalize(row.spo2),
-                                                                        gcs: normalize(row.gcs),
-                                                                        kesadaran: row.kesadaran || 'Compos Mentis',
-                                                                        keluhan: row.keluhan || '',
-                                                                        pemeriksaan: row.pemeriksaan || '',
-                                                                        alergi: row.alergi || '',
-                                                                        lingkar_perut: normalize(row.lingkar_perut),
-                                                                        rtl: row.rtl || '',
-                                                                        penilaian: row.penilaian || '',
-                                                                        instruksi: row.instruksi || '',
-                                                                        evaluasi: row.evaluasi || '',
-                                                                        nip: row.nip || '',
-                                                                    });
-                                                                    setPegawaiQuery('');
+                                                                    setFormData((prev) => ({
+                                                                        ...prev,
+                                                                        ...buildCopyFormData(row),
+                                                                    }));
                                                                     setEditKey(null);
                                                                     setMessage(null);
                                                                     setError(null);
