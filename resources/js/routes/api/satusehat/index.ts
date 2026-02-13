@@ -4,6 +4,7 @@ import location from './location'
 import config from './config'
 import practitioner from './practitioner'
 import patient from './patient'
+import dispatch from './dispatch'
 import rajal from './rajal'
 import mapping from './mapping'
 import ranap from './ranap'
@@ -307,6 +308,7 @@ const satusehat = {
     config: Object.assign(config, config),
     practitioner: Object.assign(practitioner, practitioner),
     patient: Object.assign(patient, patient),
+    dispatch: Object.assign(dispatch, dispatch),
     rajal: Object.assign(rajal, rajal),
     mapping: Object.assign(mapping, mapping),
     ranap: Object.assign(ranap, ranap),

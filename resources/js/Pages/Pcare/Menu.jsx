@@ -735,6 +735,19 @@ const cardsByTab = {
         </svg>
       )
     },
+    {
+      key: 'satusehatKirimBatch',
+      title: 'Kirim Batch',
+      desc: 'Batch kirim & monitor',
+      href: route('satusehat.kirim'),
+      gradient: 'from-emerald-500 to-teal-600',
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M22 2L11 13" />
+          <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+        </svg>
+      )
+    },
   ],
 };
 

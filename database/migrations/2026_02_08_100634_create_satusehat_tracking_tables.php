@@ -63,6 +63,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('satusehat_tracking_tables');
+        Schema::dropIfExists('satusehat_resources');
+        Schema::dropIfExists('satusehat_patient_mapping');
+        Schema::dropIfExists('satusehat_encounter');
     }
 };

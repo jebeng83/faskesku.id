@@ -860,6 +860,15 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/practitioner', [SatuSehatController::class, 'practitionerSearch'])->name('api.satusehat.practitioner.search');
         // Patient search by NIK
         Route::get('/patient', [SatuSehatController::class, 'patientSearch'])->name('api.satusehat.patient.search');
+
+        Route::prefix('dispatch')->group(function () {
+            Route::post('/batches', [SatuSehatController::class, 'dispatchCreateBatch'])->name('api.satusehat.dispatch.batches.create');
+            Route::post('/batches/{batchId}/start', [SatuSehatController::class, 'dispatchStartBatch'])->name('api.satusehat.dispatch.batches.start');
+            Route::get('/batches/{batchId}', [SatuSehatController::class, 'dispatchGetBatch'])->name('api.satusehat.dispatch.batches.get');
+            Route::get('/batches/{batchId}/items', [SatuSehatController::class, 'dispatchListItems'])->name('api.satusehat.dispatch.items.list');
+            Route::post('/batches/{batchId}/retry-failed', [SatuSehatController::class, 'dispatchRetryFailed'])->name('api.satusehat.dispatch.items.retry_failed');
+        });
+
         Route::prefix('rajal')->group(function () {
             Route::post('/encounter', [SatuSehatRajalController::class, 'createEncounter'])->name('api.satusehat.rajal.encounter.create');
             Route::put('/encounter/by-rawat/{no_rawat}', [SatuSehatRajalController::class, 'updateEncounterByRawat'])->where('no_rawat', '.*')->name('api.satusehat.rajal.encounter.update-by-rawat');

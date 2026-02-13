@@ -3272,6 +3272,10 @@ Route::middleware('auth')->group(function () {
             return Inertia::render('SatuSehat/Interoperabilitas/PelayananRawatJalan/ProsedurTindakan');
         })->name('interoperabilitas.rajal.prosedur_tindakan');
 
+        Route::get('/kirim', function () {
+            return Inertia::render('SatuSehat/KirimSatuSehat');
+        })->name('kirim');
+
         // Mapping Routes (Inertia pages)
         Route::get('/mapping-practitioner', function () {
             return Inertia::render('SatuSehat/Prerequisites/MappingPractitioner');

@@ -221,7 +221,7 @@ organizationSubunits.head = (options?: RouteQueryOptions): RouteDefinition<'head
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organizationUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:793
 * @route '/api/satusehat/organization/{id}'
 */
 export const organizationUpdate = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -236,7 +236,7 @@ organizationUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organizationUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:793
 * @route '/api/satusehat/organization/{id}'
 */
 organizationUpdate.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -263,7 +263,7 @@ organizationUpdate.url = (args: { id: string | number } | [id: string | number ]
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::organizationUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:793
 * @route '/api/satusehat/organization/{id}'
 */
 organizationUpdate.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -273,7 +273,7 @@ organizationUpdate.put = (args: { id: string | number } | [id: string | number ]
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:864
 * @route '/api/satusehat/location'
 */
 export const locationSearch = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -288,7 +288,7 @@ locationSearch.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:864
 * @route '/api/satusehat/location'
 */
 locationSearch.url = (options?: RouteQueryOptions) => {
@@ -297,7 +297,7 @@ locationSearch.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:864
 * @route '/api/satusehat/location'
 */
 locationSearch.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -307,7 +307,7 @@ locationSearch.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:616
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:864
 * @route '/api/satusehat/location'
 */
 locationSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -317,7 +317,7 @@ locationSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationPatch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1708
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1956
 * @route '/api/satusehat/location/{id}'
 */
 export const locationPatch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -332,7 +332,7 @@ locationPatch.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationPatch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1708
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1956
 * @route '/api/satusehat/location/{id}'
 */
 locationPatch.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -359,7 +359,7 @@ locationPatch.url = (args: { id: string | number } | [id: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::locationPatch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1708
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1956
 * @route '/api/satusehat/location/{id}'
 */
 locationPatch.patch = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -369,7 +369,7 @@ locationPatch.patch = (args: { id: string | number } | [id: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:847
 * @route '/api/satusehat/config/coordinates'
 */
 export const coordinates = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -384,7 +384,7 @@ coordinates.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:847
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.url = (options?: RouteQueryOptions) => {
@@ -393,7 +393,7 @@ coordinates.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:847
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -403,7 +403,7 @@ coordinates.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::coordinates
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:599
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:847
 * @route '/api/satusehat/config/coordinates'
 */
 coordinates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -413,7 +413,7 @@ coordinates.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1804
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:2052
 * @route '/api/satusehat/patient'
 */
 export const patientSearch = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -428,7 +428,7 @@ patientSearch.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1804
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:2052
 * @route '/api/satusehat/patient'
 */
 patientSearch.url = (options?: RouteQueryOptions) => {
@@ -437,7 +437,7 @@ patientSearch.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1804
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:2052
 * @route '/api/satusehat/patient'
 */
 patientSearch.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -447,7 +447,7 @@ patientSearch.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::patientSearch
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1804
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:2052
 * @route '/api/satusehat/patient'
 */
 patientSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -456,8 +456,270 @@ patientSearch.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchCreateBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:390
+* @route '/api/satusehat/dispatch/batches'
+*/
+export const dispatchCreateBatch = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchCreateBatch.url(options),
+    method: 'post',
+})
+
+dispatchCreateBatch.definition = {
+    methods: ["post"],
+    url: '/api/satusehat/dispatch/batches',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchCreateBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:390
+* @route '/api/satusehat/dispatch/batches'
+*/
+dispatchCreateBatch.url = (options?: RouteQueryOptions) => {
+    return dispatchCreateBatch.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchCreateBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:390
+* @route '/api/satusehat/dispatch/batches'
+*/
+dispatchCreateBatch.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchCreateBatch.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchStartBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:489
+* @route '/api/satusehat/dispatch/batches/{batchId}/start'
+*/
+export const dispatchStartBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchStartBatch.url(args, options),
+    method: 'post',
+})
+
+dispatchStartBatch.definition = {
+    methods: ["post"],
+    url: '/api/satusehat/dispatch/batches/{batchId}/start',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchStartBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:489
+* @route '/api/satusehat/dispatch/batches/{batchId}/start'
+*/
+dispatchStartBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { batchId: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            batchId: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        batchId: args.batchId,
+    }
+
+    return dispatchStartBatch.definition.url
+            .replace('{batchId}', parsedArgs.batchId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchStartBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:489
+* @route '/api/satusehat/dispatch/batches/{batchId}/start'
+*/
+dispatchStartBatch.post = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchStartBatch.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchGetBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:517
+* @route '/api/satusehat/dispatch/batches/{batchId}'
+*/
+export const dispatchGetBatch = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dispatchGetBatch.url(args, options),
+    method: 'get',
+})
+
+dispatchGetBatch.definition = {
+    methods: ["get","head"],
+    url: '/api/satusehat/dispatch/batches/{batchId}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchGetBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:517
+* @route '/api/satusehat/dispatch/batches/{batchId}'
+*/
+dispatchGetBatch.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { batchId: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            batchId: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        batchId: args.batchId,
+    }
+
+    return dispatchGetBatch.definition.url
+            .replace('{batchId}', parsedArgs.batchId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchGetBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:517
+* @route '/api/satusehat/dispatch/batches/{batchId}'
+*/
+dispatchGetBatch.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dispatchGetBatch.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchGetBatch
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:517
+* @route '/api/satusehat/dispatch/batches/{batchId}'
+*/
+dispatchGetBatch.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dispatchGetBatch.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchListItems
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @route '/api/satusehat/dispatch/batches/{batchId}/items'
+*/
+export const dispatchListItems = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dispatchListItems.url(args, options),
+    method: 'get',
+})
+
+dispatchListItems.definition = {
+    methods: ["get","head"],
+    url: '/api/satusehat/dispatch/batches/{batchId}/items',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchListItems
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @route '/api/satusehat/dispatch/batches/{batchId}/items'
+*/
+dispatchListItems.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { batchId: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            batchId: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        batchId: args.batchId,
+    }
+
+    return dispatchListItems.definition.url
+            .replace('{batchId}', parsedArgs.batchId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchListItems
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @route '/api/satusehat/dispatch/batches/{batchId}/items'
+*/
+dispatchListItems.get = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: dispatchListItems.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchListItems
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:541
+* @route '/api/satusehat/dispatch/batches/{batchId}/items'
+*/
+dispatchListItems.head = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: dispatchListItems.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchRetryFailed
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
+*/
+export const dispatchRetryFailed = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchRetryFailed.url(args, options),
+    method: 'post',
+})
+
+dispatchRetryFailed.definition = {
+    methods: ["post"],
+    url: '/api/satusehat/dispatch/batches/{batchId}/retry-failed',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchRetryFailed
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
+*/
+dispatchRetryFailed.url = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { batchId: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            batchId: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        batchId: args.batchId,
+    }
+
+    return dispatchRetryFailed.definition.url
+            .replace('{batchId}', parsedArgs.batchId.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SatuSehat\SatuSehatController::dispatchRetryFailed
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:577
+* @route '/api/satusehat/dispatch/batches/{batchId}/retry-failed'
+*/
+dispatchRetryFailed.post = (args: { batchId: string | number } | [batchId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: dispatchRetryFailed.url(args, options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:621
 * @route '/api/satusehat/mapping/departemen'
 */
 export const mappingDepartemenIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -472,7 +734,7 @@ mappingDepartemenIndex.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:621
 * @route '/api/satusehat/mapping/departemen'
 */
 mappingDepartemenIndex.url = (options?: RouteQueryOptions) => {
@@ -481,7 +743,7 @@ mappingDepartemenIndex.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:621
 * @route '/api/satusehat/mapping/departemen'
 */
 mappingDepartemenIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -491,7 +753,7 @@ mappingDepartemenIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:373
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:621
 * @route '/api/satusehat/mapping/departemen'
 */
 mappingDepartemenIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -501,7 +763,7 @@ mappingDepartemenIndex.head = (options?: RouteQueryOptions): RouteDefinition<'he
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:651
 * @route '/api/satusehat/mapping/departemen'
 */
 export const mappingDepartemenStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -516,7 +778,7 @@ mappingDepartemenStore.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:651
 * @route '/api/satusehat/mapping/departemen'
 */
 mappingDepartemenStore.url = (options?: RouteQueryOptions) => {
@@ -525,7 +787,7 @@ mappingDepartemenStore.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:403
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:651
 * @route '/api/satusehat/mapping/departemen'
 */
 mappingDepartemenStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -535,7 +797,7 @@ mappingDepartemenStore.post = (options?: RouteQueryOptions): RouteDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:748
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 export const mappingDepartemenUpdate = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -550,7 +812,7 @@ mappingDepartemenUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:748
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 mappingDepartemenUpdate.url = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -577,7 +839,7 @@ mappingDepartemenUpdate.url = (args: { dep_id: string | number } | [dep_id: stri
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:500
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:748
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 mappingDepartemenUpdate.put = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -587,7 +849,7 @@ mappingDepartemenUpdate.put = (args: { dep_id: string | number } | [dep_id: stri
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:777
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 export const mappingDepartemenDestroy = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -602,7 +864,7 @@ mappingDepartemenDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:777
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 mappingDepartemenDestroy.url = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -629,7 +891,7 @@ mappingDepartemenDestroy.url = (args: { dep_id: string | number } | [dep_id: str
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingDepartemenDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:529
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:777
 * @route '/api/satusehat/mapping/departemen/{dep_id}'
 */
 mappingDepartemenDestroy.delete = (args: { dep_id: string | number } | [dep_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -639,7 +901,7 @@ mappingDepartemenDestroy.delete = (args: { dep_id: string | number } | [dep_id: 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:689
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:937
 * @route '/api/satusehat/mapping/lokasi'
 */
 export const mappingLokasiIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -654,7 +916,7 @@ mappingLokasiIndex.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:689
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:937
 * @route '/api/satusehat/mapping/lokasi'
 */
 mappingLokasiIndex.url = (options?: RouteQueryOptions) => {
@@ -663,7 +925,7 @@ mappingLokasiIndex.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:689
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:937
 * @route '/api/satusehat/mapping/lokasi'
 */
 mappingLokasiIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -673,7 +935,7 @@ mappingLokasiIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:689
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:937
 * @route '/api/satusehat/mapping/lokasi'
 */
 mappingLokasiIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -683,7 +945,7 @@ mappingLokasiIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:717
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:965
 * @route '/api/satusehat/mapping/lokasi'
 */
 export const mappingLokasiStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -698,7 +960,7 @@ mappingLokasiStore.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:717
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:965
 * @route '/api/satusehat/mapping/lokasi'
 */
 mappingLokasiStore.url = (options?: RouteQueryOptions) => {
@@ -707,7 +969,7 @@ mappingLokasiStore.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:717
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:965
 * @route '/api/satusehat/mapping/lokasi'
 */
 mappingLokasiStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -717,7 +979,7 @@ mappingLokasiStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'>
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:936
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1184
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 export const mappingLokasiUpdate = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -732,7 +994,7 @@ mappingLokasiUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:936
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1184
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 mappingLokasiUpdate.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -759,7 +1021,7 @@ mappingLokasiUpdate.url = (args: { kd_poli: string | number } | [kd_poli: string
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:936
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1184
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 mappingLokasiUpdate.put = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -769,7 +1031,7 @@ mappingLokasiUpdate.put = (args: { kd_poli: string | number } | [kd_poli: string
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1320
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 export const mappingLokasiDestroy = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -784,7 +1046,7 @@ mappingLokasiDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1320
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 mappingLokasiDestroy.url = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -811,7 +1073,7 @@ mappingLokasiDestroy.url = (args: { kd_poli: string | number } | [kd_poli: strin
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1072
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1320
 * @route '/api/satusehat/mapping/lokasi/{kd_poli}'
 */
 mappingLokasiDestroy.delete = (args: { kd_poli: string | number } | [kd_poli: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -821,7 +1083,7 @@ mappingLokasiDestroy.delete = (args: { kd_poli: string | number } | [kd_poli: st
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1086
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1334
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 export const mappingLokasiRanapIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -836,7 +1098,7 @@ mappingLokasiRanapIndex.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1086
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1334
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 mappingLokasiRanapIndex.url = (options?: RouteQueryOptions) => {
@@ -845,7 +1107,7 @@ mappingLokasiRanapIndex.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1086
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1334
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 mappingLokasiRanapIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -855,7 +1117,7 @@ mappingLokasiRanapIndex.get = (options?: RouteQueryOptions): RouteDefinition<'ge
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1086
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1334
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 mappingLokasiRanapIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -865,7 +1127,7 @@ mappingLokasiRanapIndex.head = (options?: RouteQueryOptions): RouteDefinition<'h
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1114
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1362
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 export const mappingLokasiRanapStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -880,7 +1142,7 @@ mappingLokasiRanapStore.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1114
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1362
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 mappingLokasiRanapStore.url = (options?: RouteQueryOptions) => {
@@ -889,7 +1151,7 @@ mappingLokasiRanapStore.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1114
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1362
 * @route '/api/satusehat/mapping/lokasi-ranap'
 */
 mappingLokasiRanapStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -899,7 +1161,7 @@ mappingLokasiRanapStore.post = (options?: RouteQueryOptions): RouteDefinition<'p
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1273
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1521
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 export const mappingLokasiRanapUpdate = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -914,7 +1176,7 @@ mappingLokasiRanapUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1273
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1521
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 mappingLokasiRanapUpdate.url = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -941,7 +1203,7 @@ mappingLokasiRanapUpdate.url = (args: { kd_kamar: string | number } | [kd_kamar:
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1273
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1521
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 mappingLokasiRanapUpdate.put = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -951,7 +1213,7 @@ mappingLokasiRanapUpdate.put = (args: { kd_kamar: string | number } | [kd_kamar:
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1355
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1603
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 export const mappingLokasiRanapDestroy = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -966,7 +1228,7 @@ mappingLokasiRanapDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1355
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1603
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 mappingLokasiRanapDestroy.url = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -993,7 +1255,7 @@ mappingLokasiRanapDestroy.url = (args: { kd_kamar: string | number } | [kd_kamar
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiRanapDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1355
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1603
 * @route '/api/satusehat/mapping/lokasi-ranap/{kd_kamar}'
 */
 mappingLokasiRanapDestroy.delete = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1003,7 +1265,7 @@ mappingLokasiRanapDestroy.delete = (args: { kd_kamar: string | number } | [kd_ka
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamarList
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1663
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1911
 * @route '/api/satusehat/ranap/kamar'
 */
 export const kamarList = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1018,7 +1280,7 @@ kamarList.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamarList
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1663
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1911
 * @route '/api/satusehat/ranap/kamar'
 */
 kamarList.url = (options?: RouteQueryOptions) => {
@@ -1027,7 +1289,7 @@ kamarList.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamarList
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1663
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1911
 * @route '/api/satusehat/ranap/kamar'
 */
 kamarList.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1037,7 +1299,7 @@ kamarList.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::kamarList
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1663
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1911
 * @route '/api/satusehat/ranap/kamar'
 */
 kamarList.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1047,7 +1309,7 @@ kamarList.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1366
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1614
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 export const mappingLokasiFarmasiIndex = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1062,7 +1324,7 @@ mappingLokasiFarmasiIndex.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1366
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1614
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 mappingLokasiFarmasiIndex.url = (options?: RouteQueryOptions) => {
@@ -1071,7 +1333,7 @@ mappingLokasiFarmasiIndex.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1366
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1614
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 mappingLokasiFarmasiIndex.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1081,7 +1343,7 @@ mappingLokasiFarmasiIndex.get = (options?: RouteQueryOptions): RouteDefinition<'
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiIndex
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1366
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1614
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 mappingLokasiFarmasiIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -1091,7 +1353,7 @@ mappingLokasiFarmasiIndex.head = (options?: RouteQueryOptions): RouteDefinition<
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1402
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1650
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 export const mappingLokasiFarmasiStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1106,7 +1368,7 @@ mappingLokasiFarmasiStore.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1402
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1650
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 mappingLokasiFarmasiStore.url = (options?: RouteQueryOptions) => {
@@ -1115,7 +1377,7 @@ mappingLokasiFarmasiStore.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiStore
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1402
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1650
 * @route '/api/satusehat/mapping/lokasi-farmasi'
 */
 mappingLokasiFarmasiStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1125,7 +1387,7 @@ mappingLokasiFarmasiStore.post = (options?: RouteQueryOptions): RouteDefinition<
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1548
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1796
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 export const mappingLokasiFarmasiUpdate = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -1140,7 +1402,7 @@ mappingLokasiFarmasiUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1548
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1796
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 mappingLokasiFarmasiUpdate.url = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1167,7 +1429,7 @@ mappingLokasiFarmasiUpdate.url = (args: { kd_bangsal: string | number } | [kd_ba
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiUpdate
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1548
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1796
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 mappingLokasiFarmasiUpdate.put = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -1177,7 +1439,7 @@ mappingLokasiFarmasiUpdate.put = (args: { kd_bangsal: string | number } | [kd_ba
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1644
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1892
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 export const mappingLokasiFarmasiDestroy = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1192,7 +1454,7 @@ mappingLokasiFarmasiDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1644
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1892
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 mappingLokasiFarmasiDestroy.url = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1219,7 +1481,7 @@ mappingLokasiFarmasiDestroy.url = (args: { kd_bangsal: string | number } | [kd_b
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::mappingLokasiFarmasiDestroy
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1644
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:1892
 * @route '/api/satusehat/mapping/lokasi-farmasi/{kd_bangsal}'
 */
 mappingLokasiFarmasiDestroy.delete = (args: { kd_bangsal: string | number } | [kd_bangsal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -1340,6 +1602,6 @@ getResource.head = (args: { resource: string | number, id: string | number } | [
     method: 'head',
 })
 
-const SatuSehatController = { token, tokenDebug, metadata, organization, organizationSubunits, organizationUpdate, locationSearch, locationPatch, coordinates, patientSearch, mappingDepartemenIndex, mappingDepartemenStore, mappingDepartemenUpdate, mappingDepartemenDestroy, mappingLokasiIndex, mappingLokasiStore, mappingLokasiUpdate, mappingLokasiDestroy, mappingLokasiRanapIndex, mappingLokasiRanapStore, mappingLokasiRanapUpdate, mappingLokasiRanapDestroy, kamarList, mappingLokasiFarmasiIndex, mappingLokasiFarmasiStore, mappingLokasiFarmasiUpdate, mappingLokasiFarmasiDestroy, createResource, getResource }
+const SatuSehatController = { token, tokenDebug, metadata, organization, organizationSubunits, organizationUpdate, locationSearch, locationPatch, coordinates, patientSearch, dispatchCreateBatch, dispatchStartBatch, dispatchGetBatch, dispatchListItems, dispatchRetryFailed, mappingDepartemenIndex, mappingDepartemenStore, mappingDepartemenUpdate, mappingDepartemenDestroy, mappingLokasiIndex, mappingLokasiStore, mappingLokasiUpdate, mappingLokasiDestroy, mappingLokasiRanapIndex, mappingLokasiRanapStore, mappingLokasiRanapUpdate, mappingLokasiRanapDestroy, kamarList, mappingLokasiFarmasiIndex, mappingLokasiFarmasiStore, mappingLokasiFarmasiUpdate, mappingLokasiFarmasiDestroy, createResource, getResource }
 
 export default SatuSehatController
