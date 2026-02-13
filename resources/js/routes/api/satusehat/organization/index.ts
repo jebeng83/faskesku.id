@@ -45,7 +45,7 @@ subunits.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:817
 * @route '/api/satusehat/organization/{id}'
 */
 export const update = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -60,7 +60,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:817
 * @route '/api/satusehat/organization/{id}'
 */
 update.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -87,7 +87,7 @@ update.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\SatuSehat\SatuSehatController::update
-* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:545
+* @see app/Http/Controllers/SatuSehat/SatuSehatController.php:817
 * @route '/api/satusehat/organization/{id}'
 */
 update.put = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({

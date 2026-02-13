@@ -761,7 +761,7 @@ alergi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::statuspulang
-* @see app/Http/Controllers/Pcare/PcareController.php:3965
+* @see app/Http/Controllers/Pcare/PcareController.php:4024
 * @route '/api/pcare/statuspulang'
 */
 export const statuspulang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -776,7 +776,7 @@ statuspulang.definition = {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::statuspulang
-* @see app/Http/Controllers/Pcare/PcareController.php:3965
+* @see app/Http/Controllers/Pcare/PcareController.php:4024
 * @route '/api/pcare/statuspulang'
 */
 statuspulang.url = (options?: RouteQueryOptions) => {
@@ -785,7 +785,7 @@ statuspulang.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::statuspulang
-* @see app/Http/Controllers/Pcare/PcareController.php:3965
+* @see app/Http/Controllers/Pcare/PcareController.php:4024
 * @route '/api/pcare/statuspulang'
 */
 statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -795,7 +795,7 @@ statuspulang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Pcare\PcareController::statuspulang
-* @see app/Http/Controllers/Pcare/PcareController.php:3965
+* @see app/Http/Controllers/Pcare/PcareController.php:4024
 * @route '/api/pcare/statuspulang'
 */
 statuspulang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

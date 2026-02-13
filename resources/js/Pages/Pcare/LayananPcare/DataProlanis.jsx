@@ -28,7 +28,9 @@ export default function DataProlanis() {
     if (!nomorPeserta || nomorPeserta.trim() === '') return null;
     const encoded = encodeURIComponent(nomorPeserta.trim());
     const endpoint = activeTab === 'dm' ? 'prolanis/dm' : 'prolanis/ht';
-    return `/api/pcare/${endpoint}/${encoded}/${start}/${limit}`;
+    const st = Math.max(1, Number(start) || 1);
+    const lim = Math.max(1, Number(limit) || 25);
+    return `/api/pcare/${endpoint}/${encoded}/${st}/${lim}`;
   }, [activeTab, nomorPeserta, start, limit]);
 
   const fetchData = async () => {
@@ -157,7 +159,7 @@ export default function DataProlanis() {
           type="button"
           onClick={() => {
             setActiveTab('dm');
-            setStart(0);
+            setStart(1);
             setData([]);
             setCount(0);
             setError('');
@@ -174,7 +176,7 @@ export default function DataProlanis() {
           type="button"
           onClick={() => {
             setActiveTab('ht');
-            setStart(0);
+            setStart(1);
             setData([]);
             setCount(0);
             setError('');
@@ -194,7 +196,7 @@ export default function DataProlanis() {
         variants={itemVariants} 
         onSubmit={(e) => { 
           e.preventDefault(); 
-          setStart(0); 
+          setStart(1); 
           fetchData(); 
         }} 
         className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl shadow-purple-500/5"

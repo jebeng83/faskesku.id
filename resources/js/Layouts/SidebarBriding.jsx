@@ -58,6 +58,7 @@ function useBridingNavigation() {
         "satusehat.interoperabilitas.rajal.prosedur_tindakan",
         "/satusehat/interoperabilitas/rajal/prosedur-tindakan"
       ),
+      ssKirim: safeRoute("satusehat.kirim", "/satusehat/kirim"),
       ssMapPractitioner: safeRoute(
         "satusehat.mapping-practitioner",
         "/satusehat/mapping-practitioner"
@@ -114,6 +115,7 @@ function useBridingNavigation() {
       { href: paths.ssMapObat, label: "Mapping Obat", icon: Pill, permission: "satusehat.index" },
       { href: paths.ssPrPatient, label: "Referensi Pasien", icon: User, permission: "satusehat.index" },
       { href: paths.ssInteropRajalEncounter, label: "Encounter Rajal", icon: HeartPulse, permission: "satusehat.index" },
+      { href: paths.ssKirim, label: "Kirim Batch Satu Sehat", icon: LucideLink, permission: "satusehat.index" },
       { href: paths.ssInteropRajalProsedurTindakan, label: "Prosedur/Tindakan Rajal", icon: NotebookTabs, permission: "satusehat.index" },
     ].filter((l) => !l.permission || can(l.permission)),
     [paths, permissions]

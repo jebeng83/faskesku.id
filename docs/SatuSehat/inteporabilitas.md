@@ -889,6 +889,190 @@ Menyelaraskan **siklus klinis** (Encounter, Composition, dst.) dengan **siklus k
 
 ---
 
+### 5.4. Grand Design: Job Queue Berurutan “Kirim Ke SATUSEHAT” (Full Pipeline per no_rawat)
+
+**Tujuan**
+
+- Saat user klik tombol **Kirim Ke SATUSEHAT**, sistem membuat **rencana pengiriman** (batch) dan mengirim data **berurutan** per `no_rawat`.
+- Untuk setiap `no_rawat`, pengiriman dilakukan **urutan tetap** (pipeline):
+  - Encounter
+  - Condition
+  - Observation
+  - Procedure
+  - AllergyIntolerance
+  - Medication
+  - MedicationRequest
+  - MedicationDispense
+  - Composition
+- Pengiriman tidak boleh berjalan paralel (tidak ada pengiriman “bersamaan” yang membuat urutan kacau).
+- Eksekusi dapat dijadwalkan pada waktu tertentu (mis. mulai jam tertentu, atau interval antar kunjungan).
+
+#### Prinsip desain
+
+1. **Satu kunjungan = satu unit orkestrasi**
+   - Kunci utama orkestrasi: `reg_periksa.no_rawat`.
+   - Semua step untuk kunjungan tersebut harus selesai dulu sebelum pindah ke `no_rawat` berikutnya.
+
+2. **Idempotent & resumable**
+   - Step Encounter/Composition wajib bisa diulang tanpa membuat duplikasi di SATUSEHAT.
+   - Jika batch berhenti di tengah (error/maintenance), proses bisa dilanjutkan dari item terakhir.
+
+3. **Kontrol laju kirim (rate limit friendly)**
+   - Ada interval antar item (mis. 3–10 detik) dan backoff jika menerima 429/5xx.
+
+4. **Single-flight (anti dobel kirim)**
+   - Untuk satu `no_rawat`, hanya boleh ada satu proses aktif.
+   - Batch untuk tombol klik berulang harus terdeteksi (dedup) atau dibuat batch baru yang tidak menabrak item yang sedang jalan.
+
+#### Komponen arsitektur
+
+**A) Endpoint trigger (UI → Backend)**
+
+- `POST /api/satusehat/dispatch/rajal`
+  - Body contoh:
+    - `no_rawat_list: string[]` (wajib)
+    - `start_at: string|null` (opsional, ISO-8601; default: sekarang)
+    - `interval_seconds: number` (opsional; default: 5)
+    - `mode: "encounter_composition" | "pipeline_full"` (opsional; default: `encounter_composition`)
+  - Respon:
+    - `batch_id`
+    - ringkasan jumlah item & waktu mulai
+
+**B) Tabel tracking orkestrasi (disarankan)**
+
+- `satusehat_dispatch_batches`
+  - `id`
+  - `created_by` (user id / actor)
+  - `mode`
+  - `start_at`, `interval_seconds`
+  - `status`: `queued|running|paused|completed|failed`
+  - `current_index` / `cursor_no_rawat` (untuk resume)
+  - `last_error`, `last_error_at`
+
+- `satusehat_dispatch_items`
+  - `id`, `batch_id`
+  - `no_rawat`
+  - `run_at` (jadwal eksekusi)
+  - `status`: `queued|processing|done|failed|skipped`
+  - `step`: `encounter|condition|observation|procedure|allergy|medication|medication_request|medication_dispense|composition` (step terakhir yang sedang/terakhir diproses)
+  - `attempts`, `last_error`, `last_error_at`
+  - `encounter_id`, `composition_id` (hasil sukses bila ada)
+  - `condition_ids`, `observation_ids`, `procedure_ids`, `allergy_ids` (opsional, bila butuh ringkasan)
+  - `medication_ids`, `medication_request_ids`, `medication_dispense_ids` (opsional, bila butuh ringkasan)
+
+Catatan: tabel ini berbeda dengan tabel “tracking resource” (mis. `satu_sehat_encounter`). Tracking resource tetap dipakai untuk idempotensi; tabel dispatch fokus ke orkestrasi.
+
+**C) Queue & worker policy**
+
+- Gunakan queue khusus: mis. `satusehat-seq`.
+- Konfigurasi worker dibuat **single concurrency** untuk queue tersebut (hanya 1 job aktif pada satu waktu) sehingga urutan batch terjaga.
+- Tambahkan lock per `no_rawat` (cache lock/DB lock) agar tidak ada dua job memproses kunjungan yang sama.
+
+#### Orkestrasi job (alur runtime)
+
+1. UI mengirim daftar `no_rawat` → backend membuat `batch` + `items`.
+2. Backend menghitung `run_at` per item:
+   - `run_at[i] = start_at + i * interval_seconds`.
+3. Backend men-dispatch job awal:
+   - `ProcessSatuSehatDispatchItemJob(batch_id, item_id)` dengan `delay(run_at)`.
+4. Job memproses 1 item secara sinkron di worker (tetap di background):
+   - **Step 1 (Encounter)**
+     - Ambil `encounter_id` dari tabel lokal (`satu_sehat_encounter`) atau query ke FHIR by identifier.
+     - Jika belum ada: create Encounter (atau gunakan endpoint/service yang sudah ada).
+     - Jika kebijakan mengharuskan selesai: jalankan `updateEncounterByRawat` untuk `finished`.
+   - **Step 2 (Condition)**
+     - Kirim diagnosa dari `diagnosa_pasien` sebagai Condition (dan/atau pastikan `Encounter.diagnosis` terisi).
+   - **Step 3 (Observation)**
+     - Kirim **seluruh entri** `pemeriksaan_ralan` untuk `no_rawat` sebagai rangkaian Observation (bukan hanya vital signs).
+       - Ambil semua row `pemeriksaan_ralan` (order: `tgl_perawatan` + `jam_rawat` ASC) untuk membentuk timeline pemeriksaan.
+       - Untuk setiap row, kirim Observation per kategori data:
+         - Vital signs (TTV): `suhu_tubuh`, `tensi` (panel sistolik/diastolik), `nadi`, `respirasi`, `spo2`, `tinggi`, `berat`.
+         - Status klinis lain yang tersedia: `gcs`, `kesadaran` (jika memungkinkan dimodelkan sebagai Observation dengan code/terminologi yang jelas).
+         - Narasi pemeriksaan: `keluhan`, `pemeriksaan`, `penilaian`, `instruksi` dikirim sebagai Observation bertipe “clinical note” bila diperlukan untuk audit trail; ringkasan utamanya tetap sebaiknya masuk ke Composition (SOAP) agar struktur klinisnya rapi.
+       - Set `effectiveDateTime` mengikuti `tgl_perawatan` + `jam_rawat` (+ timezone), dan `performer` mengikuti petugas pemeriksaan (jika tersedia).
+   - **Step 4 (Procedure)**
+     - Kirim tindakan dari `prosedur_pasien` sebagai Procedure.
+   - **Step 5 (AllergyIntolerance)**
+     - Kirim alergi pasien dari field pemeriksaan/alergi mapping sebagai AllergyIntolerance.
+   - **Step 6 (Medication)**
+     - Pastikan master obat sudah termapping (KFA) dan resource Medication tersedia bila dibutuhkan oleh step berikutnya.
+   - **Step 7 (MedicationRequest)**
+     - Kirim resep sebagai MedicationRequest (berdasarkan `resep_obat` + `resep_dokter`).
+   - **Step 8 (MedicationDispense)**
+     - Kirim penyerahan obat sebagai MedicationDispense (berdasarkan timestamp penyerahan).
+   - **Step 9 (Composition)**
+     - Build payload Composition (resume/SOAP) dari data RME.
+     - Jika Composition membutuhkan referensi resource lain, lakukan linking ke Encounter/Condition/Observation/Procedure/Medication* yang sudah dibuat.
+     - Kirim Composition dan simpan `composition_id` untuk idempotensi.
+   - Tandai item `done`.
+5. Job berikutnya akan berjalan sesuai `run_at` yang sudah dijadwalkan, tetap berurutan karena worker single concurrency.
+
+#### Kebijakan error (disarankan)
+
+- Jika gagal pada item N:
+  - Item ditandai `failed` + simpan `last_error`.
+  - Batch ditandai `failed` (mode strict) agar urutan tidak “lompat” tanpa audit.
+  - UI menyediakan tombol **Retry item** atau **Resume batch** setelah masalah diperbaiki.
+
+#### Idempotensi (wajib)
+
+- Encounter:
+  - Kunci idempotensi: `Encounter.identifier.system|value` berbasis `orgIhs` + `no_rawat`.
+  - Sebelum POST, selalu cek:
+    - tabel lokal `satu_sehat_encounter`, lalu
+    - fallback query ke FHIR `Encounter?identifier=...`.
+
+- Condition:
+  - Kunci idempotensi disarankan: `Condition.identifier` berbasis `no_rawat + kd_penyakit (+ rank)`.
+  - Jika implementasi memilih hanya 1 Condition utama, tetapkan aturan pemilihan (rank=1).
+
+- Observation:
+  - Kunci idempotensi disarankan: `Observation.identifier` berbasis `no_rawat + loinc_code + effectiveDateTime`.
+  - Untuk panel (mis. tekanan darah), gunakan 1 identifier untuk resource panel.
+
+- Procedure:
+  - Kunci idempotensi disarankan: `Procedure.identifier` berbasis `no_rawat + kode_tindakan + performedDateTime`.
+
+- AllergyIntolerance:
+  - Kunci idempotensi disarankan: `AllergyIntolerance.identifier` berbasis `no_rawat + kode_alergi/teks`.
+  - Jika hanya ada teks bebas, normalisasi string (trim/lowercase) sebelum membentuk key.
+
+- Medication:
+  - Kunci idempotensi disarankan: `Medication.code` (KFA) dan mapping lokal (kode barang → KFA).
+  - Jika Medication dibuat sebagai prerequisite, cache hasil (KFA → Medication.id) agar tidak membuat duplikasi.
+
+- MedicationRequest:
+  - Kunci idempotensi disarankan: `MedicationRequest.identifier` berbasis `no_resep` (dan item index jika per item).
+
+- MedicationDispense:
+  - Kunci idempotensi disarankan: `MedicationDispense.identifier` berbasis `no_resep + tgl/jam penyerahan` (dan item index jika per item).
+
+- Composition:
+  - Kunci idempotensi disarankan: `Composition.identifier` berbasis `no_rawat + jenis_resume + versi`.
+  - Simpan `composition_id` per `no_rawat` (dan versi/resume type jika ada).
+  - Jika sudah ada `composition_id` sukses untuk batch yang sama, item bisa `skipped` atau `done`.
+
+#### Endpoint monitoring (untuk UI)
+
+- `GET /api/satusehat/dispatch/{batch_id}`
+  - ringkasan status batch, progress, daftar item (paged), error terakhir.
+- `POST /api/satusehat/dispatch/{batch_id}/resume`
+  - melanjutkan dari item terakhir yang belum `done`.
+- `POST /api/satusehat/dispatch/items/{item_id}/retry`
+  - retry 1 item.
+
+#### Integrasi dengan flow yang sudah ada
+
+- Flow Billing di bagian 5.3 tetap valid sebagai “trigger otomatis” untuk kunjungan tertentu.
+- Tombol **Kirim Ke SATUSEHAT** diposisikan sebagai:
+  - trigger manual untuk backfill (kirim ulang kunjungan yang tertinggal), atau
+  - trigger terjadwal (mulai jam tertentu) untuk menghindari beban saat jam sibuk.
+- `pipelineByRawat` yang sekarang bersifat synchronous dapat:
+  - tetap dipakai untuk `mode=pipeline_full` (setelah dipecah menjadi service step-step), atau
+  - digantikan bertahap oleh `CompositionService` dan service lain supaya tiap step bisa diorkestrasi oleh job.
+
+---
+
 ## 6. Best Practices Implementasi di Aplikasi Ini
 
 1. **Selalu pakai Service SATUSEHAT per resource**

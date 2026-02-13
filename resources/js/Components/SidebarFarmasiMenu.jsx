@@ -1,13 +1,30 @@
 import React from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { Gauge, Pill, ShoppingCart, Truck, Boxes, ClipboardList } from "lucide-react";
+import {
+  Pill,
+  ShoppingCart,
+  Truck,
+  Boxes,
+  ClipboardList,
+  LayoutDashboard,
+} from "lucide-react";
 
 export default function SidebarFarmasiMenu({ title = "Farmasi" }) {
   const { url } = usePage();
 
   const items = [
-    { label: "Dashboard", href: (() => { try { return route("dashboard", {}, false); } catch { return "/dashboard"; } })(), icon: <Gauge className="w-4 h-4" /> },
+    {
+      label: "Dashboard",
+      href: (() => {
+        try {
+          return route("dashboard", {}, false);
+        } catch {
+          return "/dashboard";
+        }
+      })(),
+      icon: <LayoutDashboard className="w-4 h-4" />,
+    },
     { label: "Home", href: (() => { try { return route("farmasi.index", {}, false); } catch { return "/farmasi"; } })(), icon: <Pill className="w-4 h-4" /> },
     { label: "Permintaan Resep", href: "/farmasi/permintaan-resep", icon: <ClipboardList className="w-4 h-4" /> },
     { label: "Penjualan Obat", href: "/farmasi/penjualan-obat", icon: <ShoppingCart className="w-4 h-4" /> },

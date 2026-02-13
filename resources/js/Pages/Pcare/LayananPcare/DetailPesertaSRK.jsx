@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import LayoutUtama from '@/Pages/LayoutUtama';
 import { BridingMenu } from '@/Layouts/SidebarBriding';
+import { Head } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowPathIcon,
@@ -55,7 +56,7 @@ export default function DetailPesertaSRK() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [peserta, setPeserta] = useState('');
-  const [start, setStart] = useState(0);
+  const [start, setStart] = useState(1);
   const [limit, setLimit] = useState(25);
   const [openKey, setOpenKey] = useState(null);
 
@@ -90,7 +91,7 @@ export default function DetailPesertaSRK() {
     try {
       const params = new URLSearchParams();
       params.set('q', q);
-      params.set('start', String(Number(start) || 0));
+      params.set('start', String(Math.max(1, Number(start) || 1)));
       params.set('limit', String(Number(limit) || 25));
 
       const res = await fetch(`/pcare/api/srk/peserta?${params.toString()}`, {
@@ -119,7 +120,13 @@ export default function DetailPesertaSRK() {
   };
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
+    <LayoutUtama
+      title="Layanan PCare"
+      left={<BridingMenu />}
+    >
+      <Head title="Detail Peserta SRK" />
+
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4">
       <motion.div variants={itemVariants} className="mb-4">
         <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/50 shadow-xl">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
@@ -188,9 +195,9 @@ export default function DetailPesertaSRK() {
                 <input
                   id="start"
                   type="number"
-                  min={0}
+                  min={1}
                   value={start}
-                  onChange={(e) => setStart(e.target.value === '' ? 0 : Number(e.target.value))}
+                  onChange={(e) => setStart(e.target.value === '' ? 1 : Math.max(1, Number(e.target.value)))}
                   className="mt-1 w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2 text-sm"
                 />
               </div>
@@ -209,7 +216,7 @@ export default function DetailPesertaSRK() {
                 <button
                   type="button"
                   onClick={() => {
-                    setStart(0);
+                    setStart(1);
                     setLimit(25);
                   }}
                   className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -342,12 +349,7 @@ export default function DetailPesertaSRK() {
           </table>
         </div>
       </motion.div>
-    </motion.div>
+      </motion.div>
+    </LayoutUtama>
   );
 }
-
-DetailPesertaSRK.layout = (page) => (
-  <LayoutUtama title="Layanan PCare" left={<BridingMenu />}>
-    {page}
-  </LayoutUtama>
-);

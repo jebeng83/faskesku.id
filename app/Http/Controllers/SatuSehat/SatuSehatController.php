@@ -367,6 +367,278 @@ class SatuSehatController extends Controller
         return response()->json($res, $res['ok'] ? 200 : ($res['status'] ?: 500));
     }
 
+    private function ensureDispatchTablesOrFail()
+    {
+        $batchesOk = \Illuminate\Support\Facades\Schema::hasTable('satusehat_dispatch_batches');
+        $itemsOk = \Illuminate\Support\Facades\Schema::hasTable('satusehat_dispatch_items');
+
+        if ($batchesOk && $itemsOk) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Tabel dispatch SATUSEHAT belum tersedia. Jalankan migrasi database terlebih dahulu.',
+            'missing' => [
+                'satusehat_dispatch_batches' => ! $batchesOk,
+                'satusehat_dispatch_items' => ! $itemsOk,
+            ],
+            'hint' => 'php artisan migrate',
+        ], 503);
+    }
+
+    public function dispatchCreateBatch(Request $request)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $data = $request->validate([
+            'name' => ['nullable', 'string', 'max:100'],
+            'scope' => ['sometimes', 'string', 'max:30'],
+            'tgl_from' => ['required', 'date'],
+            'tgl_to' => ['required', 'date'],
+            'limit_rows' => ['sometimes', 'integer', 'min:1', 'max:2000'],
+            'interval_seconds' => ['sometimes', 'integer', 'min:1', 'max:60'],
+        ]);
+
+        $scope = trim((string) ($data['scope'] ?? 'rajal')) ?: 'rajal';
+        $limitRows = (int) ($data['limit_rows'] ?? 200);
+        $intervalSeconds = (int) ($data['interval_seconds'] ?? 3);
+
+        $noRawatList = \Illuminate\Support\Facades\DB::table('pemeriksaan_ralan as pr')
+            ->join('reg_periksa as rp', 'pr.no_rawat', '=', 'rp.no_rawat')
+            ->whereBetween('pr.tgl_perawatan', [$data['tgl_from'], $data['tgl_to']])
+            ->whereIn('rp.status_lanjut', ['Ralan', 'Rawat Jalan'])
+            ->select('pr.no_rawat')
+            ->distinct()
+            ->orderBy('pr.no_rawat')
+            ->limit($limitRows)
+            ->pluck('pr.no_rawat')
+            ->values()
+            ->all();
+
+        $batchId = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->insertGetId([
+            'name' => $data['name'] ?? null,
+            'scope' => $scope,
+            'tgl_from' => $data['tgl_from'],
+            'tgl_to' => $data['tgl_to'],
+            'limit_rows' => $limitRows,
+            'interval_seconds' => $intervalSeconds,
+            'status' => 'pending',
+            'total_items' => count($noRawatList) * 10,
+            'done_items' => 0,
+            'failed_items' => 0,
+            'created_by' => optional($request->user())->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $steps = [
+            ['step' => 'encounter_create', 'order' => 1],
+            ['step' => 'condition', 'order' => 2],
+            ['step' => 'observation', 'order' => 3],
+            ['step' => 'procedure', 'order' => 4],
+            ['step' => 'allergy_intolerance', 'order' => 5],
+            ['step' => 'medication', 'order' => 6],
+            ['step' => 'medication_request', 'order' => 7],
+            ['step' => 'medication_dispense', 'order' => 8],
+            ['step' => 'encounter_finish', 'order' => 9],
+            ['step' => 'composition', 'order' => 10],
+        ];
+
+        $rows = [];
+        foreach ($noRawatList as $noRawat) {
+            foreach ($steps as $st) {
+                $rows[] = [
+                    'batch_id' => $batchId,
+                    'no_rawat' => (string) $noRawat,
+                    'step' => (string) $st['step'],
+                    'step_order' => (int) $st['order'],
+                    'status' => 'pending',
+                    'attempts' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+        foreach (array_chunk($rows, 500) as $chunk) {
+            if (! empty($chunk)) {
+                \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')->insert($chunk);
+            }
+        }
+
+        return response()->json([
+            'ok' => true,
+            'batch_id' => $batchId,
+            'scope' => $scope,
+            'tgl_from' => $data['tgl_from'],
+            'tgl_to' => $data['tgl_to'],
+            'limit_rows' => $limitRows,
+            'interval_seconds' => $intervalSeconds,
+            'no_rawat_count' => count($noRawatList),
+            'total_items' => count($noRawatList) * 10,
+        ]);
+    }
+
+    public function dispatchStartBatch(int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        if (! $batch) {
+            return response()->json(['ok' => false, 'message' => 'Batch tidak ditemukan'], 404);
+        }
+
+        $status = strtolower(trim((string) ($batch->status ?? 'pending')));
+        if ($status === 'finished') {
+            return response()->json(['ok' => false, 'message' => 'Batch sudah selesai'], 409);
+        }
+
+        \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->update([
+            'status' => 'running',
+            'started_at' => $batch->started_at ?: now(),
+            'finished_at' => null,
+            'updated_at' => now(),
+        ]);
+
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatch($batchId);
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatchSync($batchId);
+
+        return response()->json(['ok' => true, 'batch_id' => $batchId]);
+    }
+
+    public function dispatchRunOnce(int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        if (! $batch) {
+            return response()->json(['ok' => false, 'message' => 'Batch tidak ditemukan'], 404);
+        }
+
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatchSync($batchId);
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        $items = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')
+            ->where('batch_id', $batchId)
+            ->orderByDesc('updated_at')
+            ->limit(25)
+            ->get(['id', 'no_rawat', 'step', 'step_order', 'status', 'attempts', 'last_error', 'updated_at']);
+
+        return response()->json([
+            'ok' => true,
+            'batch_id' => $batchId,
+            'batch' => $batch,
+            'recent_items' => $items,
+        ]);
+    }
+
+    public function dispatchGetBatch(int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        if (! $batch) {
+            return response()->json(['ok' => false, 'message' => 'Batch tidak ditemukan'], 404);
+        }
+
+        $items = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')
+            ->where('batch_id', $batchId)
+            ->orderByDesc('updated_at')
+            ->limit(25)
+            ->get(['id', 'no_rawat', 'step', 'step_order', 'status', 'attempts', 'last_error', 'updated_at']);
+
+        return response()->json([
+            'ok' => true,
+            'batch' => $batch,
+            'recent_items' => $items,
+        ]);
+    }
+
+    public function dispatchListItems(Request $request, int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $start = max(0, (int) $request->query('start', 0));
+        $limit = max(1, min(500, (int) $request->query('limit', 50)));
+        $status = trim((string) $request->query('status', ''));
+        $noRawat = trim((string) $request->query('no_rawat', ''));
+
+        $builder = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')->where('batch_id', $batchId);
+        if ($status !== '') {
+            $builder->where('status', $status);
+        }
+        if ($noRawat !== '') {
+            $builder->where('no_rawat', $noRawat);
+        }
+
+        $total = (clone $builder)->count();
+        $rows = $builder
+            ->orderBy('no_rawat')
+            ->orderBy('step_order')
+            ->offset($start)
+            ->limit($limit)
+            ->get(['id', 'no_rawat', 'step', 'step_order', 'status', 'attempts', 'started_at', 'finished_at', 'last_error', 'updated_at']);
+
+        return response()->json([
+            'ok' => true,
+            'total' => $total,
+            'start' => $start,
+            'limit' => $limit,
+            'list' => $rows,
+        ]);
+    }
+
+    public function dispatchRetryFailed(Request $request, int $batchId)
+    {
+        if ($resp = $this->ensureDispatchTablesOrFail()) {
+            return $resp;
+        }
+
+        $batch = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->first();
+        if (! $batch) {
+            return response()->json(['ok' => false, 'message' => 'Batch tidak ditemukan'], 404);
+        }
+
+        $noRawat = trim((string) $request->input('no_rawat', ''));
+        $builder = \Illuminate\Support\Facades\DB::table('satusehat_dispatch_items')
+            ->where('batch_id', $batchId)
+            ->where('status', 'failed');
+        if ($noRawat !== '') {
+            $builder->where('no_rawat', $noRawat);
+        }
+
+        $updated = $builder->update([
+            'status' => 'pending',
+            'next_run_at' => null,
+            'last_error' => null,
+            'updated_at' => now(),
+        ]);
+
+        \Illuminate\Support\Facades\DB::table('satusehat_dispatch_batches')->where('id', $batchId)->update([
+            'status' => 'running',
+            'finished_at' => null,
+            'updated_at' => now(),
+        ]);
+
+        \App\Jobs\SatuSehat\ProcessSatusehatDispatchBatchJob::dispatch($batchId);
+
+        return response()->json([
+            'ok' => true,
+            'batch_id' => $batchId,
+            'retried_items' => (int) $updated,
+        ]);
+    }
+
     /**
      * ===== CRUD Mapping Departemen ↔ SATUSEHAT Organization Subunit =====
      */
