@@ -1,5 +1,4 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 import ralan8ecbc2 from './ralan'
 /**
 * @see \App\Http\Controllers\PembayaranController::index

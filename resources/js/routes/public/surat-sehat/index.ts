@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
-s/RawatJalan/RawatJalanController.php:1338
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::show
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1338
 * @route '/surat-sehat'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({

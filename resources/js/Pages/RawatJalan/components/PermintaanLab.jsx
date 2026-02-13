@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
@@ -10,6 +10,14 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmMessage, setConfirmMessage] = useState('');
+    const [confirmReady, setConfirmReady] = useState(false);
+    const [confirmError, setConfirmError] = useState('');
+    const confirmReadyRef = useRef(false);
+    const [pendingNoorder, setPendingNoorder] = useState('');
+    const [pendingNoorderDraft, setPendingNoorderDraft] = useState('');
     const [activeCategory, setActiveCategory] = useState('PK'); // PK, PA, MB
     
     // Dokter Perujuk State
@@ -287,8 +295,72 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
         setFormData(prev => ({ ...prev, [key]: value }));
     };
 
+    useEffect(() => {
+        confirmReadyRef.current = confirmReady;
+    }, [confirmReady]);
+
+    useEffect(() => {
+        if (!confirmOpen) {
+            setConfirmReady(false);
+            setConfirmError('');
+            return;
+        }
+        let active = true;
+        const setReady = () => {
+            if (!active) return;
+            setConfirmReady(true);
+            console.warn('permintaanLab: confirm-ready');
+        };
+        const raf1 = requestAnimationFrame(() => {
+            const raf2 = requestAnimationFrame(setReady);
+            if (!active) cancelAnimationFrame(raf2);
+        });
+        const timeoutId = setTimeout(() => {
+            if (!active) return;
+            if (!confirmReadyRef.current) {
+                setConfirmError('Notifikasi konfirmasi tidak muncul dalam 10 detik.');
+                console.error('permintaanLab: confirm-timeout');
+            }
+        }, 10000);
+        console.warn('permintaanLab: confirm-open');
+        return () => {
+            active = false;
+            cancelAnimationFrame(raf1);
+            clearTimeout(timeoutId);
+        };
+    }, [confirmOpen]);
+
+    const extractNoorder = (page) => {
+        const successMsg = page?.props?.flash?.success || '';
+        const match = successMsg.match(/nomor order:\s*([A-Z0-9]+)/i);
+        return match ? match[1] : null;
+    };
+
+    const submitOnce = (submitData) => {
+        return new Promise((resolve, reject) => {
+            router.post(route('laboratorium.permintaan-lab.store'), submitData, {
+                headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
+                onSuccess: (page) => resolve(page),
+                onError: (errors) => reject(errors)
+            });
+        });
+    };
+
+    const processSubmitError = (errors) => {
+        console.error('permintaanLab: submit-error', errors);
+        if (errors?.error) {
+            setSubmitError('Error: ' + errors.error);
+        } else if (errors && Object.keys(errors).length > 0) {
+            const errorMessages = Object.values(errors).flat();
+            setSubmitError('Validation Error: ' + errorMessages.join(', '));
+        } else {
+            setSubmitError('Terjadi kesalahan saat menyimpan permintaan');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitError('');
         
         // Validasi
         if (selectedTests.length === 0) {
@@ -316,8 +388,8 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
         }
 
         setIsSubmitting(true);
+        console.warn('permintaanLab: submit-start');
         try {
-            // Pastikan setiap detail_tests memiliki templates array yang tidak kosong
             const detailTests = selectedTests.map(test => {
                 const selectedTemplateIds = selectedTemplates[test.kd_jenis_prw] || [];
                 if (selectedTemplateIds.length === 0) {
@@ -326,7 +398,7 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                 return {
                     kd_jenis_prw: test.kd_jenis_prw,
                     stts_bayar: test.stts_bayar,
-                    templates: selectedTemplateIds // Array id_template yang dipilih (tidak boleh kosong)
+                    templates: selectedTemplateIds
                 };
             });
 
@@ -337,10 +409,12 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                 detail_tests: detailTests
             };
 
-            router.post(route('laboratorium.permintaan-lab.store'), submitData, {
-                headers: csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {},
-                onSuccess: async (page) => {
-                    // Reset form after successful submission
+            let lastError = null;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                console.warn('permintaanLab: submit-attempt', attempt);
+                try {
+                    const page = await submitOnce(submitData);
+                    const noorder = extractNoorder(page);
                     setSelectedTests([]);
                     setFormData({
                         tgl_permintaan: todayDateString(),
@@ -353,40 +427,32 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                     setDokterSearch('');
                     setSelectedTemplates({});
                     setTemplatesData({});
-                    
-                    // Extract noorder from success message
-                    let noorder = null;
-                    const successMsg = page.props.flash?.success || '';
-                    const match = successMsg.match(/nomor order:\s*([A-Z0-9]+)/i);
-                    if (match) {
-                        noorder = match[1];
+                    const successMsg = page?.props?.flash?.success || '';
+                    const msg = successMsg || (noorder ? `Permintaan laboratorium berhasil disimpan (No: ${noorder}).` : 'Permintaan laboratorium berhasil disimpan');
+                    setConfirmMessage(msg);
+                    setConfirmOpen(true);
+                    console.warn('permintaanLab: submit-success');
+                    if (noorder) {
+                        setPendingNoorderDraft(noorder);
                     }
-                    
-                    if (successMsg) {
-                        alert(successMsg);
-                    } else if (noorder) {
-                        alert(`Permintaan laboratorium berhasil disimpan (No: ${noorder}).`);
-                    } else {
-                        alert('Permintaan laboratorium berhasil disimpan');
-                    }
-                    setIsSubmitting(false);
-                },
-                onError: (errors) => {
-                    console.error('Error:', errors);
-                    
-                    // Handle validation errors
-                    if (errors.error) {
-                        alert('Error: ' + errors.error);
-                    } else if (Object.keys(errors).length > 0) {
-                        const errorMessages = Object.values(errors).flat();
-                        alert('Validation Error: ' + errorMessages.join(', '));
-                    } else {
-                        alert('Terjadi kesalahan saat menyimpan permintaan');
+                    lastError = null;
+                    break;
+                } catch (errors) {
+                    lastError = errors;
+                    console.error('permintaanLab: submit-failed', attempt, errors);
+                    if (attempt < 3) {
+                        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
                     }
                 }
-            });
+            }
+            if (lastError) {
+                processSubmitError(lastError);
+            }
+        } catch (error) {
+            processSubmitError(error);
         } finally {
             setIsSubmitting(false);
+            console.warn('permintaanLab: submit-end');
         }
     };
 
@@ -415,6 +481,16 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
             return total + biaya;
         }, 0);
     };
+
+    const handlePendingResolved = useCallback(() => {
+        console.warn('permintaanLab: pending-resolved');
+        setPendingNoorder('');
+    }, []);
+
+    const handlePendingFailed = useCallback((message) => {
+        console.error('permintaanLab: pending-failed', message);
+        setSubmitError(message);
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -791,7 +867,13 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                             </span>
                         )}
                     </div>
-                    <button 
+                    <div className="flex flex-col items-end gap-2">
+                        {submitError && (
+                            <div className="text-xs text-red-600 dark:text-red-400">
+                                {submitError}
+                            </div>
+                        )}
+                        <button 
                         type="submit" 
                         className="inline-flex items-center px-6 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" 
                         disabled={isSubmitting || selectedTests.length === 0}
@@ -812,12 +894,55 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                                 Kirim Permintaan Lab
                             </>
                         )}
-                    </button>
+                        </button>
+                    </div>
                 </div>
             </form>
             
             {/* Riwayat Permintaan Lab */}
-            <RiwayatPermintaanLab noRawat={noRawat} />
+            <RiwayatPermintaanLab
+                noRawat={noRawat}
+                pendingNoorder={pendingNoorder}
+                onPendingResolved={handlePendingResolved}
+                onPendingFailed={handlePendingFailed}
+            />
+            <Modal
+                show={confirmOpen}
+                onClose={() => {
+                    setConfirmOpen(false);
+                    setPendingNoorderDraft('');
+                }}
+                title="Konfirmasi Permintaan"
+                size="sm"
+            >
+                <div className="space-y-4">
+                    <div className="text-sm text-gray-700 dark:text-gray-200">
+                        {confirmMessage}
+                    </div>
+                    {confirmError && (
+                        <div className="text-sm text-red-600 dark:text-red-400">
+                            {confirmError}
+                        </div>
+                    )}
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => {
+                                if (!confirmReady) return;
+                                console.warn('permintaanLab: confirm-ok');
+                                if (pendingNoorderDraft) {
+                                    setPendingNoorder(pendingNoorderDraft);
+                                    setPendingNoorderDraft('');
+                                }
+                                setConfirmOpen(false);
+                            }}
+                            disabled={!confirmReady}
+                            className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
@@ -907,9 +1032,11 @@ function PermintaanLabGroups({ permintaan }) {
     );
 }
 
-export function RiwayatPermintaanLab({ noRawat = '' }) {
+export function RiwayatPermintaanLab({ noRawat = '', pendingNoorder = '', onPendingResolved = null, onPendingFailed = null }) {
     const [riwayatPermintaan, setRiwayatPermintaan] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [pendingLoading, setPendingLoading] = useState(false);
+    const [pendingError, setPendingError] = useState('');
     const [expandedItems, setExpandedItems] = useState(new Set());
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewNoorder, setPreviewNoorder] = useState('');
@@ -947,6 +1074,82 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!pendingNoorder || !noRawat) return;
+        let active = true;
+        let pollCount = 0;
+        let errorCount = 0;
+        let timeoutId = null;
+        const poll = async () => {
+            if (!active) return;
+            setPendingLoading(true);
+            setPendingError('');
+            console.warn('permintaanLab: polling-start', pendingNoorder);
+            try {
+                const response = await fetch(`/api/permintaan-lab/riwayat/${noRawat}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!response.ok) {
+                    errorCount += 1;
+                    console.error('permintaanLab: polling-response-error', response.status);
+                    if (errorCount >= 3) {
+                        const message = 'Gagal memuat permintaan baru setelah 3 percobaan.';
+                        setPendingError(message);
+                        setPendingLoading(false);
+                        if (typeof onPendingFailed === 'function') {
+                            onPendingFailed(message);
+                        }
+                        return;
+                    }
+                } else {
+                    const data = await response.json();
+                    const list = data.data || [];
+                    setRiwayatPermintaan(list);
+                    const found = list.some((item) => item.noorder === pendingNoorder);
+                    if (found) {
+                        console.warn('permintaanLab: polling-found', pendingNoorder);
+                        setPendingLoading(false);
+                        if (typeof onPendingResolved === 'function') {
+                            onPendingResolved();
+                        }
+                        return;
+                    }
+                }
+            } catch (error) {
+                errorCount += 1;
+                console.error('permintaanLab: polling-error', error);
+                if (errorCount >= 3) {
+                    const message = 'Gagal memuat permintaan baru setelah 3 percobaan.';
+                    setPendingError(message);
+                    setPendingLoading(false);
+                    if (typeof onPendingFailed === 'function') {
+                        onPendingFailed(message);
+                    }
+                    return;
+                }
+            }
+            pollCount += 1;
+            if (pollCount >= 20) {
+                const message = 'Permintaan baru belum tampil setelah beberapa percobaan.';
+                setPendingError(message);
+                setPendingLoading(false);
+                if (typeof onPendingFailed === 'function') {
+                    onPendingFailed(message);
+                }
+                return;
+            }
+            timeoutId = setTimeout(poll, 2000);
+        };
+        poll();
+        return () => {
+            active = false;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [pendingNoorder, noRawat, onPendingResolved, onPendingFailed]);
 
     const handleDeletePermintaan = async (noorder) => {
         if (!confirm('Apakah Anda yakin ingin menghapus permintaan laboratorium ini?')) {
@@ -1150,6 +1353,16 @@ export function RiwayatPermintaanLab({ noRawat = '' }) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Riwayat Permintaan Laboratorium</h3>
             
             <div>
+                {pendingLoading && (
+                    <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                        Memuat permintaan baru...
+                    </div>
+                )}
+                {pendingError && (
+                    <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {pendingError}
+                    </div>
+                )}
                 {isLoading ? (
                     <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
