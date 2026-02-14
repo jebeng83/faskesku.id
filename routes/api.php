@@ -39,6 +39,7 @@ use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\BangsalController;
 use App\Http\Controllers\KamarController;
+use App\Http\Controllers\SetHargaKamarController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RawatJalan\ObatController;
 use App\Http\Controllers\RawatJalan\RawatJalanController;
@@ -331,8 +332,18 @@ Route::post('/poli-voice-mapping', [\App\Http\Controllers\Antrian\PoliVoiceContr
 // Protected API endpoints (require authentication)
 // Use web session guard to fully support Inertia.js SPA with same-origin cookies
 Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/employees/lookup', [EmployeeController::class, 'pegawaiLookup'])->name('api.employees.lookup');
+    Route::get('/jabatan/lookup', [EmployeeController::class, 'jabatanLookup'])->name('api.jabatan.lookup');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('api.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('api.employees.destroy');
+
+    Route::prefix('employees/petugas')->group(function () {
+        Route::get('/describe', [EmployeeController::class, 'petugasDescribe'])->name('api.employees.petugas.describe');
+        Route::get('/', [EmployeeController::class, 'petugasIndex'])->name('api.employees.petugas.index');
+        Route::post('/', [EmployeeController::class, 'petugasStore'])->name('api.employees.petugas.store');
+        Route::put('/{nip}', [EmployeeController::class, 'petugasUpdate'])->where('nip', '.*')->name('api.employees.petugas.update');
+        Route::delete('/{nip}', [EmployeeController::class, 'petugasDestroy'])->where('nip', '.*')->name('api.employees.petugas.destroy');
+    });
 
     Route::get('/penjab/next-code', [PenjabController::class, 'nextCode'])->name('api.penjab.next-code');
     Route::post('/penjab', [PenjabController::class, 'store'])->name('api.penjab.store');
@@ -409,6 +420,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         ->name('api.reg-periksa.actions.update');
 
     Route::post('/kamar-inap', [KamarInapController::class, 'store'])->name('api.kamar-inap.store');
+    Route::post('/kamar-inap/checkout', [KamarInapController::class, 'checkout'])->name('api.kamar-inap.checkout');
+    Route::post('/kamar-inap/pindah', [KamarInapController::class, 'pindah'])->name('api.kamar-inap.pindah');
+    Route::post('/kamar-inap/gabung', [KamarInapController::class, 'gabung'])->name('api.kamar-inap.gabung');
+    Route::post('/kamar-inap/hapus-data-salah', [KamarInapController::class, 'hapusDataSalah'])->name('api.kamar-inap.hapus-data-salah');
 
     // User Management Routes
     Route::prefix('users')->group(function () {
@@ -1032,6 +1047,19 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::delete('/{kd_kamar}', [KamarController::class, 'apiDestroy'])->where('kd_kamar', '.*')->name('api.kamar.destroy');
     });
 
+    Route::prefix('set-harga-kamar')->group(function () {
+        Route::get('/', [SetHargaKamarController::class, 'apiIndex'])->name('api.set-harga-kamar.index');
+        Route::post('/', [SetHargaKamarController::class, 'apiStore'])->name('api.set-harga-kamar.store');
+        Route::put('/{kd_kamar}/{kd_pj}', [SetHargaKamarController::class, 'apiUpdate'])
+            ->where('kd_kamar', '[^/]+')
+            ->where('kd_pj', '[^/]+')
+            ->name('api.set-harga-kamar.update');
+        Route::delete('/{kd_kamar}/{kd_pj}', [SetHargaKamarController::class, 'apiDestroy'])
+            ->where('kd_kamar', '[^/]+')
+            ->where('kd_pj', '[^/]+')
+            ->name('api.set-harga-kamar.destroy');
+    });
+
     // Akutansi - Nota Jalan & Jurnal
     // Akutansi: Cek & buat nota_jalan
     Route::get('/akutansi/nota-jalan/exists', [NotaJalanController::class, 'exists'])->name('api.akutansi.nota-jalan.exists');
@@ -1088,7 +1116,21 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/total', [\App\Http\Controllers\Akutansi\BayarPiutangController::class, 'getTotalPiutang'])->name('api.akutansi.bayar-piutang.total');
     });
 
+
     Route::get('/payment-point', [PaymentPointController::class, 'index'])->name('api.payment-point.index');
     Route::post('/payment-point/modal-awal', [PaymentPointController::class, 'setModalAwal'])->name('api.payment-point.modal-awal');
     Route::get('/payment-point/report', [PaymentPointController::class, 'report'])->name('api.payment-point.report');
+
+    // Rawat Inap - Tindakan API Routes
+    Route::prefix('rawat-inap')->group(function () {
+        Route::get('/jenis-tindakan', [\App\Http\Controllers\RawatInapController::class, 'getJenisTindakan'])->name('api.rawat-inap.jenis-tindakan');
+        Route::get('/diagnosa', [\App\Http\Controllers\RawatInapController::class, 'getDiagnosaPasien'])->name('api.rawat-inap.diagnosa.index');
+        Route::post('/diagnosa', [\App\Http\Controllers\RawatInapController::class, 'storeDiagnosaPasien'])->name('api.rawat-inap.diagnosa.store');
+        Route::get('/cek-billing/{noRawat}', [\App\Http\Controllers\RawatInapController::class, 'cekBillingStatus'])
+            ->where('noRawat', '.*')
+            ->name('api.rawat-inap.cek-billing');
+        Route::post('/tindakan-dokter', [\App\Http\Controllers\RawatInapController::class, 'storeTindakanDokter'])->name('api.rawat-inap.tindakan-dokter.store');
+        Route::post('/tindakan-perawat', [\App\Http\Controllers\RawatInapController::class, 'storeTindakanPerawat'])->name('api.rawat-inap.tindakan-perawat.store');
+        Route::post('/tindakan-dokter-perawat', [\App\Http\Controllers\RawatInapController::class, 'storeTindakanDokterPerawat'])->name('api.rawat-inap.tindakan-dokter-perawat.store');
+    });
 }); // End of auth middleware group

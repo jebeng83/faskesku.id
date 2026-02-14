@@ -138,6 +138,8 @@ const DaftarPermintaanResep = () => {
                 // Ini memastikan filter selalu menggunakan tanggal terkini
                 parsedFilters.start_date = today;
                 parsedFilters.end_date = today;
+                parsedFilters.no_rawat = "";
+                parsedFilters.no_rkm_medis = "";
                 setFilters(parsedFilters);
             } else {
                 // Jika tidak ada saved filters, set default dengan tanggal hari ini
@@ -171,7 +173,11 @@ const DaftarPermintaanResep = () => {
         setError("");
         // Reset ke halaman 1 jika filter berubah (kecuali jika yang diubah adalah page)
         if (key !== "page") {
-            setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+            if (key === "jenis") {
+                setFilters((prev) => ({ ...prev, [key]: value, no_rawat: "", no_rkm_medis: "", kd_bangsal: "", kd_depo: "", page: 1 }));
+            } else {
+                setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
+            }
         } else {
             setFilters((prev) => ({ ...prev, [key]: value }));
         }
@@ -191,12 +197,16 @@ const DaftarPermintaanResep = () => {
             }
             // API mengembalikan array resep untuk no_rawat tersebut
             const dataArray = json.data || [];
-            setData(dataArray);
+            const selectedJenis = String(filters.jenis || "").toLowerCase();
+            const filteredArray = selectedJenis
+                ? dataArray.filter((r) => String(r?.status || "").toLowerCase() === selectedJenis)
+                : dataArray;
+            setData(filteredArray);
             // Set pagination untuk pencarian no_rawat (biasanya hanya 1 atau beberapa resep)
             setPagination({
-                total: dataArray.length,
+                total: filteredArray.length,
                 page: 1,
-                limit: dataArray.length || 20,
+                limit: filteredArray.length || 20,
                 has_more: false,
             });
         } catch (e) {
@@ -232,13 +242,18 @@ const DaftarPermintaanResep = () => {
                     json.message || "Gagal memuat data resep pasien"
                 );
             }
-            setData(json.data || []);
+            const dataArray = json.data || [];
+            const selectedJenis = String(filters.jenis || "").toLowerCase();
+            const filteredArray = selectedJenis
+                ? dataArray.filter((r) => String(r?.status || "").toLowerCase() === selectedJenis)
+                : dataArray;
+            setData(filteredArray);
             // Set pagination dari response backend
             setPagination({
-                total: json.total || 0,
+                total: filteredArray.length,
                 page: filters.page || 1,
                 limit: filters.limit || 20,
-                has_more: json.has_more || false,
+                has_more: false,
             });
         } catch (e) {
             setError(e.message);
@@ -408,6 +423,10 @@ const DaftarPermintaanResep = () => {
             const params = new URLSearchParams({ kode_brng: kodeBrng });
             if (detailContext?.kd_poli)
                 params.set("kd_poli", detailContext.kd_poli);
+            if (selectedResep?.no_rawat)
+                params.set("no_rawat", selectedResep.no_rawat);
+            if (selectedResep?.status)
+                params.set("status", selectedResep.status);
             const resp = await fetch(
                 `/api/resep/stok-info?${params.toString()}`
             );

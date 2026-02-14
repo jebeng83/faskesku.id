@@ -1,277 +1,269 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-    PlusIcon, 
-    MagnifyingGlassIcon, 
-    TrashIcon,
-    ClipboardDocumentListIcon,
-    ExclamationTriangleIcon,
-    CheckCircleIcon,
-    ClockIcon
-} from '@heroicons/react/24/outline';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import SearchableSelect from '../../../Components/SearchableSelect.jsx';
 
-const Diagnosa = () => {
-    const [diagnoses, setDiagnoses] = useState([]);
-    const [searchICD, setSearchICD] = useState('');
-    const [selectedDiagnosis, setSelectedDiagnosis] = useState(null);
-    const [diagnosisType, setDiagnosisType] = useState('primary');
-    const [activeTab, setActiveTab] = useState('add');
+export default function Diagnosa({ noRawat = '' }) {
+    const [doctorName, setDoctorName] = useState('');
+    const [kdPj, setKdPj] = useState('');
+    const [rows, setRows] = useState([{ kode: '', nama: '' }]);
+    const [savedList, setSavedList] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [saveStatus, setSaveStatus] = useState(null);
 
-    // Mock ICD-10 data
-    const icdCodes = [
-        { code: 'A09', name: 'Infectious gastroenteritis and colitis, unspecified' },
-        { code: 'B34.9', name: 'Viral infection, unspecified' },
-        { code: 'E11.9', name: 'Type 2 diabetes mellitus without complications' },
-        { code: 'I10', name: 'Essential (primary) hypertension' },
-        { code: 'J44.1', name: 'Chronic obstructive pulmonary disease with acute exacerbation' },
-        { code: 'K59.0', name: 'Constipation' },
-        { code: 'M79.3', name: 'Panniculitis, unspecified' },
-        { code: 'N39.0', name: 'Urinary tract infection, site not specified' },
-        { code: 'R50.9', name: 'Fever, unspecified' },
-        { code: 'Z51.11', name: 'Encounter for antineoplastic chemotherapy' }
-    ];
+    const getApiBaseCandidates = () => {
+        const list = [];
+        try {
+            list.push(window.location.origin);
+        } catch { }
+        try {
+            const envUrl = import.meta?.env?.VITE_BACKEND_URL;
+            if (envUrl) list.push(envUrl);
+        } catch { }
+        list.push('http://127.0.0.1:8000');
+        list.push('http://localhost:8000');
+        list.push('http://127.0.0.1:8080');
+        list.push('http://localhost:8080');
+        return Array.from(new Set(list.filter(Boolean)));
+    };
 
-    const filteredICDs = icdCodes.filter(icd => 
-        icd.code.toLowerCase().includes(searchICD.toLowerCase()) ||
-        icd.name.toLowerCase().includes(searchICD.toLowerCase())
-    );
+    const httpGet = async (path, config = {}) => {
+        const bases = getApiBaseCandidates();
+        let lastErr = null;
+        for (const base of bases) {
+            try {
+                const url = new URL(path, base).href;
+                const res = await axios.get(url, {
+                    withCredentials: true,
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    ...config,
+                });
+                const ct = String(res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '');
+                if (!ct.includes('application/json')) throw new Error('Non-JSON response');
+                return res;
+            } catch (e) {
+                lastErr = e;
+                const status = e?.response?.status;
+                if (status && status !== 404) throw e;
+            }
+        }
+        throw lastErr || new Error('API not reachable');
+    };
 
-    const addDiagnosis = () => {
-        if (!selectedDiagnosis) return;
-        
-        const newDiagnosis = {
-            id: Date.now(),
-            code: selectedDiagnosis.code,
-            name: selectedDiagnosis.name,
-            type: diagnosisType,
-            timestamp: new Date().toLocaleString('id-ID'),
-            status: 'active'
+    const httpPost = async (path, data, config = {}) => {
+        const bases = getApiBaseCandidates();
+        let lastErr = null;
+        for (const base of bases) {
+            try {
+                const url = new URL(path, base).href;
+                const res = await axios.post(url, data, {
+                    withCredentials: true,
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    ...config,
+                });
+                const ct = String(res?.headers?.['content-type'] || res?.headers?.['Content-Type'] || '');
+                if (!ct.includes('application/json')) throw new Error('Non-JSON response');
+                return res;
+            } catch (e) {
+                lastErr = e;
+                const status = e?.response?.status;
+                if (status && status !== 404) throw e;
+            }
+        }
+        throw lastErr || new Error('API not reachable');
+    };
+
+    useEffect(() => {
+        const loadRegistration = async () => {
+            if (!noRawat) return;
+            try {
+                const resp = await httpGet('/api/reg-periksa/by-rawat', {
+                    params: { no_rawat: noRawat },
+                });
+                const d = resp?.data?.data || {};
+                const nm = d?.dokter?.nm_dokter || d?.nm_dokter || '';
+                setDoctorName(nm);
+                setKdPj(d?.kd_pj || '');
+            } catch { }
         };
-        
-        setDiagnoses([...diagnoses, newDiagnosis]);
-        setSelectedDiagnosis(null);
-        setSearchICD('');
+        loadRegistration();
+    }, [noRawat]);
+
+    useEffect(() => {
+        const loadSaved = async () => {
+            if (!noRawat) return;
+            try {
+                try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); } catch { }
+                const response = await httpGet('/api/rawat-inap/diagnosa', {
+                    params: { no_rawat: noRawat },
+                });
+                const list = response?.data?.data || [];
+                const mapped = list.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+                setSavedList(mapped);
+            } catch { }
+        };
+        loadSaved();
+    }, [noRawat]);
+
+    const updateRow = (idx, key, value) => {
+        setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, [key]: key === 'kode' ? String(value).toUpperCase() : value } : r)));
     };
 
-    const removeDiagnosis = (id) => {
-        setDiagnoses(diagnoses.filter(d => d.id !== id));
+    const addRow = () => {
+        setRows((prev) => [...prev, { kode: '', nama: '' }]);
     };
 
-    const getTypeColor = (type) => {
-        switch(type) {
-            case 'primary': return 'bg-red-100 text-red-800 border-red-200';
-            case 'secondary': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'differential': return 'bg-blue-100 text-blue-800 border-blue-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    const removeRow = (idx) => {
+        setRows((prev) => prev.filter((_, i) => i !== idx));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            setSaveStatus(null);
+            try { await axios.get('/sanctum/csrf-cookie', { withCredentials: true }); } catch { }
+            const list = rows.filter((r) => r.kode && r.nama).map((r, i) => ({ kode: r.kode, nama: r.nama, type: i === 0 ? 'utama' : 'sekunder' }));
+            const response = await httpPost('/api/rawat-inap/diagnosa', { no_rawat: noRawat, list });
+            const saved = response?.data?.data || [];
+            const mapped = saved.map((it) => ({ kode: it.kode, nama: it.nama, type: it.type }));
+            setSavedList(mapped);
+            setRows([{ kode: '', nama: '' }]);
+            setSaveStatus({ type: 'success', message: 'Diagnosa berhasil disimpan' });
+        } catch (e) {
+            setSaveStatus({ type: 'error', message: e?.message || 'Gagal menyimpan diagnosa' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const getTypeIcon = (type) => {
-        switch(type) {
-            case 'primary': return <ExclamationTriangleIcon className="w-4 h-4" />;
-            case 'secondary': return <ClockIcon className="w-4 h-4" />;
-            case 'differential': return <CheckCircleIcon className="w-4 h-4" />;
-            default: return <ClipboardDocumentListIcon className="w-4 h-4" />;
-        }
-    };
+    const jenisLabel = (i) => (i === 0 ? 'Utama' : 'Sekunder');
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                        <ClipboardDocumentListIcon className="w-6 h-6 text-white" />
+        <div className="space-y-6 p-4 md:p-6">
+            <form onSubmit={handleSubmit} className="space-y-6 bg-[oklch(98.5%_0_0)]">
+                {saveStatus?.message && (
+                    <div className={`px-4 py-2 rounded-md border text-sm ${saveStatus.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
+                        }`}>
+                        {saveStatus.message}
                     </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Diagnosa Medis</h3>
-                        <p className="text-sm text-gray-600">Kelola diagnosis dan kode ICD-10</p>
+                )}
+
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold">Diagnosa</div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th className="px-3 py-2 text-left w-56">Dokter</th>
+                                    <th className="px-3 py-2 text-left">ICD-10 & Diagnosa</th>
+                                    <th className="px-3 py-2 text-left w-28">Jenis</th>
+                                    <th className="px-3 py-2 text-left w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {rows.map((row, idx) => (
+                                    <tr key={idx} className="bg-white dark:bg-gray-800">
+                                        <td className="px-3 py-2 align-top">
+                                            <input type="text" value={doctorName} readOnly className="w-full border rounded px-2 py-1 text-sm bg-gray-50 dark:bg-gray-700 dark:text-white" />
+                                        </td>
+                                        <td className="px-3 py-2 align-top">
+                                            <SearchableSelect
+                                                source={['BPJ', 'PBI'].includes(String(kdPj).toUpperCase()) ? "diagnosa" : "penyakit"}
+                                                value={row.kode}
+                                                displayKey="label"
+                                                defaultDisplay={row.kode && row.nama ? `${row.kode} — ${row.nama}` : ''}
+                                                onChange={(val) => updateRow(idx, 'kode', val)}
+                                                onSelect={(opt) => {
+                                                    const nm = opt?.nama || opt?.nmDiag || opt?.label?.split(' — ')[1] || '';
+                                                    updateRow(idx, 'nama', nm);
+                                                }}
+                                                placeholder="Cari Kode ICD atau Nama Diagnosa..."
+                                                className="text-sm"
+                                            />
+                                        </td>
+                                        <td className="px-3 py-2 align-top">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${idx === 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>{jenisLabel(idx)}</span>
+                                        </td>
+                                        <td className="px-3 py-2 align-top">
+                                            <button type="button" onClick={() => removeRow(idx)} aria-label="Hapus" className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-red-600 hover:bg-red-700 text-white disabled:opacity-50" disabled={rows.length <= 1 && idx === 0}>
+                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6h18M8 6V4h8v2M6 6h12l-1 14H7L6 6m4 4v6m4-6v6" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" onClick={addRow} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded bg-black text-white">+ Diagnosa</button>
                     </div>
                 </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                <button
-                    onClick={() => setActiveTab('add')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'add'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                >
-                    Tambah Diagnosa
-                </button>
-                <button
-                    onClick={() => setActiveTab('list')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'list'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                >
-                    Daftar Diagnosa ({diagnoses.length})
-                </button>
-            </div>
-
-            {activeTab === 'add' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                >
-                    <div className="space-y-6">
-                        {/* Diagnosis Type Selection */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Jenis Diagnosa
-                            </label>
-                            <div className="grid grid-cols-3 gap-3">
-                                {[
-                                    { value: 'primary', label: 'Primer', desc: 'Diagnosa utama' },
-                                    { value: 'secondary', label: 'Sekunder', desc: 'Diagnosa tambahan' },
-                                    { value: 'differential', label: 'Diferensial', desc: 'Diagnosa banding' }
-                                ].map((type) => (
-                                    <label key={type.value} className="cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="diagnosisType"
-                                            value={type.value}
-                                            checked={diagnosisType === type.value}
-                                            onChange={(e) => setDiagnosisType(e.target.value)}
-                                            className="sr-only"
-                                        />
-                                        <div className={`p-4 rounded-lg border-2 transition-all ${
-                                            diagnosisType === type.value
-                                                ? 'border-indigo-500 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}>
-                                            <div className="text-sm font-medium text-gray-900">{type.label}</div>
-                                            <div className="text-xs text-gray-500 mt-1">{type.desc}</div>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* ICD Search */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Cari Kode ICD-10
-                            </label>
-                            <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={searchICD}
-                                    onChange={(e) => setSearchICD(e.target.value)}
-                                    placeholder="Cari berdasarkan kode atau nama diagnosa..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        {/* ICD Results */}
-                        {searchICD && (
-                            <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
-                                {filteredICDs.map((icd) => (
-                                    <button
-                                        key={icd.code}
-                                        onClick={() => setSelectedDiagnosis(icd)}
-                                        className={`w-full text-left p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
-                                            selectedDiagnosis?.code === icd.code ? 'bg-indigo-50 border-indigo-200' : ''
-                                        }`}
-                                    >
-                                        <div className="font-medium text-indigo-700">{icd.code}</div>
-                                        <div className="text-sm text-gray-600 mt-1">{icd.name}</div>
-                                    </button>
-                                ))}
-                                {filteredICDs.length === 0 && (
-                                    <div className="p-4 text-center text-gray-500">
-                                        Tidak ada hasil ditemukan
-                                    </div>
-                                )}
-                            </div>
+                <div className="flex items-center justify-end pt-2">
+                    <button
+                        type="submit"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        disabled={isSubmitting || rows.filter((r) => r.kode && r.nama).length === 0}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Menyimpan...
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                Simpan Diagnosa
+                            </>
                         )}
+                    </button>
+                </div>
 
-                        {/* Selected Diagnosis */}
-                        {selectedDiagnosis && (
-                            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <div className="font-medium text-indigo-900">
-                                            {selectedDiagnosis.code} - {selectedDiagnosis.name}
-                                        </div>
-                                        <div className="text-sm text-indigo-700 mt-1">
-                                            Akan ditambahkan sebagai diagnosa {diagnosisType}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={addDiagnosis}
-                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-                                    >
-                                        <PlusIcon className="w-4 h-4" />
-                                        <span>Tambah</span>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </motion.div>
-            )}
-
-            {activeTab === 'list' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4"
-                >
-                    {diagnoses.length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                            <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Diagnosa</h3>
-                            <p className="text-gray-600">Tambahkan diagnosa untuk pasien ini</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {diagnoses.map((diagnosis) => (
-                                <motion.div
-                                    key={diagnosis.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium border ${getTypeColor(diagnosis.type)}`}>
-                                                    {getTypeIcon(diagnosis.type)}
-                                                    <span className="capitalize">{diagnosis.type}</span>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold">Diagnosa Tersimpan</div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <th className="px-3 py-2 text-left w-32">ICD-X</th>
+                                    <th className="px-3 py-2 text-left">Diagnosa</th>
+                                    <th className="px-3 py-2 text-left w-28">Jenis</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {savedList.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={3} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">Belum ada diagnosa tersimpan</td>
+                                    </tr>
+                                ) : (
+                                    savedList.map((row, idx) => (
+                                        <tr key={`${row.kode}-${idx}`} className="bg-white dark:bg-gray-800">
+                                            <td className="px-3 py-2">
+                                                <span className="font-mono">{row.kode}</span>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span>{row.nama}</span>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${String(row.type).toLowerCase() === 'utama' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>
+                                                    {String(row.type).toLowerCase() === 'utama' ? 'Utama' : 'Sekunder'}
                                                 </span>
-                                                <span className="text-xs text-gray-500">{diagnosis.timestamp}</span>
-                                            </div>
-                                            <div className="font-semibold text-gray-900 mb-1">
-                                                {diagnosis.code}
-                                            </div>
-                                            <div className="text-gray-700">
-                                                {diagnosis.name}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => removeDiagnosis(diagnosis.id)}
-                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <TrashIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
-                </motion.div>
-            )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
         </div>
     );
-};
-
-export default Diagnosa;
+}

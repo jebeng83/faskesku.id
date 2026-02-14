@@ -17,6 +17,16 @@ class SetLokasiController extends Controller
     {
         $current = SetLokasi::first();
         $bangsal = Bangsal::select('kd_bangsal', 'nm_bangsal')->orderBy('nm_bangsal')->get();
+        $bangsalRanap = FacadesDB::table('kamar as k')
+            ->join('bangsal as b', 'b.kd_bangsal', '=', 'k.kd_bangsal')
+            ->where('k.statusdata', '1')
+            ->whereNotNull('k.kd_bangsal')
+            ->where('k.kd_bangsal', '!=', '')
+            ->where('k.kd_bangsal', '!=', '-')
+            ->select(FacadesDB::raw('trim(k.kd_bangsal) as kd_bangsal'), 'b.nm_bangsal')
+            ->distinct()
+            ->orderBy('b.nm_bangsal')
+            ->get();
         $poliklinik = Poliklinik::select('kd_poli', 'nm_poli')->orderBy('nm_poli')->get();
         $ralanMappings = FacadesDB::table('set_depo_ralan as s')
             ->join('poliklinik as p', 'p.kd_poli', '=', 's.kd_poli')
@@ -39,6 +49,7 @@ class SetLokasiController extends Controller
         return Inertia::render('farmasi/SetLokasi', [
             'current' => $current,
             'bangsal' => $bangsal,
+            'bangsal_ranap' => $bangsalRanap,
             'poliklinik' => $poliklinik,
             'ralan_mappings' => $ralanMappings,
             'ranap_mappings' => $ranapMappings,
@@ -53,7 +64,7 @@ class SetLokasiController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            SetLokasi::truncate();
+            SetLokasi::query()->delete();
             SetLokasi::create([
                 'kd_bangsal' => $request->kd_bangsal,
                 'asal_stok' => $request->asal_stok
@@ -71,7 +82,7 @@ class SetLokasiController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            SetLokasi::truncate();
+            SetLokasi::query()->delete();
             SetLokasi::create([
                 'kd_bangsal' => $request->kd_bangsal,
                 'asal_stok' => $request->asal_stok
@@ -84,7 +95,7 @@ class SetLokasiController extends Controller
     public function destroy()
     {
         DB::transaction(function () {
-            SetLokasi::truncate();
+            SetLokasi::query()->delete();
         });
 
         return redirect()->back()->with('success', 'Pengaturan lokasi dihapus.');

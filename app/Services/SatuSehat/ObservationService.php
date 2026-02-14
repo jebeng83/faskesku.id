@@ -20,12 +20,19 @@ class ObservationService
      */
     public function sendVitalSigns($noRawat, $tglPerawatan, $jamRawat)
     {
-        // Ambil data pemeriksaan
         $pemeriksaan = DB::table('pemeriksaan_ralan')
             ->where('no_rawat', $noRawat)
             ->where('tgl_perawatan', $tglPerawatan)
             ->where('jam_rawat', $jamRawat)
             ->first();
+
+        if (! $pemeriksaan) {
+            $pemeriksaan = DB::table('pemeriksaan_ranap')
+                ->where('no_rawat', $noRawat)
+                ->where('tgl_perawatan', $tglPerawatan)
+                ->where('jam_rawat', $jamRawat)
+                ->first();
+        }
 
         if (!$pemeriksaan) {
             Log::warning('[OBSERVATION] Pemeriksaan tidak ditemukan', [

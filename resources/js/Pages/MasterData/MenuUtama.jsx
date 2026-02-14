@@ -95,6 +95,13 @@ const items = [
     accent: "from-cyan-500 to-blue-500",
   },
   {
+    title: "Petugas",
+    description: "Manajemen data petugas",
+    href: route("employees.petugas"),
+    icon: UsersIcon,
+    accent: "from-emerald-500 to-green-500",
+  },
+  {
     title: "Users",
     description: "Akun pengguna dan peran",
     href: route("users.index"),

@@ -2086,6 +2086,9 @@ Route::middleware('auth')->group(function () {
     });
 
     // Employee routes
+    Route::get('employees/petugas', function () {
+        return \Inertia\Inertia::render('Employees/Petugas');
+    })->name('employees.petugas');
     Route::resource('employees', EmployeeController::class);
 
     // Departemen routes (untuk popup)
@@ -2512,12 +2515,19 @@ Route::middleware('auth')->group(function () {
     // Pelayanan Medis routes
     Route::get('rawat-inap/lanjutan', [RawatInapController::class, 'lanjutan'])->name('rawat-inap.lanjutan');
     Route::get('rawat-inap/canvas', [RawatInapController::class, 'canvas'])->name('rawat-inap.canvas');
+    Route::get('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'pemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap');
+    Route::post('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'storePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.store');
+    Route::delete('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'deletePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.delete');
+    Route::put('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'updatePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.update');
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');
     Route::get('rawat-inap/kamar', function () {
         return Inertia::render('RawatInap/components/Kamar');
     })->name('rawat-inap.kamar');
+    Route::get('rawat-inap/set-harga-kamar', function () {
+        return Inertia::render('RawatInap/components/SetHargaKamar');
+    })->name('rawat-inap.set-harga-kamar');
     Route::resource('rawat-inap', RawatInapController::class);
     // Pastikan route spesifik IGD didefinisikan SEBELUM wildcard resource '/igd/{igd}'
     Route::prefix('igd')->name('igd.')->group(function () {

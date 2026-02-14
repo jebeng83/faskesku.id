@@ -729,6 +729,7 @@ export default function Resep({
                 no_rawat: noRawat,
                 kd_poli: kdPoli,
                 kd_dokter: selectedDokter,
+                status: "ralan",
                 groups: racikanGroups.map((g) => ({
                     no_racik: g.no_racik,
                     nama_racik: g.nama_racik,
@@ -1093,7 +1094,6 @@ export default function Resep({
                             ...prev,
                             tgl_penyerahan: tglPenyerahan,
                             jam_penyerahan: jamPenyerahan,
-                            status: "Sudah diserahkan",
                         };
                     }
                     return prev;
@@ -1152,6 +1152,7 @@ export default function Resep({
                 no_rawat: noRawat,
                 kd_poli: kdPoli,
                 kd_dokter: selectedDokter,
+                status: "ralan",
                 items: items
                     .filter((item) => item.kodeObat && item.jumlah > 0)
                     .map((item) => ({
@@ -2764,6 +2765,7 @@ export default function Resep({
                 noRkmMedis={noRkmMedis}
                 noRawat={noRawat}
                 kdPoli={kdPoli}
+                status="ralan"
                 onResepSaved={handleResepSaved}
             />
         </div>

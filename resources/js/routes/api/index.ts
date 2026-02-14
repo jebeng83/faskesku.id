@@ -8,6 +8,7 @@ import rawatJalan from './rawat-jalan'
 import queue from './queue'
 import poli from './poli'
 import employees from './employees'
+import jabatan from './jabatan'
 import penjab from './penjab'
 import pasien from './pasien'
 import permissions from './permissions'
@@ -47,8 +48,10 @@ import v1 from './v1'
 import poliklinik from './poliklinik'
 import bangsal from './bangsal'
 import kamar from './kamar'
+import setHargaKamar from './set-harga-kamar'
 import akutansi from './akutansi'
 import paymentPoint from './payment-point'
+import rawatInap from './rawat-inap'
 import antrianPoli2d4a79 from './antrian-poli'
 import menu from './menu'
 import racikanTemplate from './racikan-template'
@@ -235,6 +238,7 @@ const api = {
     queue: Object.assign(queue, queue),
     poli: Object.assign(poli, poli),
     employees: Object.assign(employees, employees),
+    jabatan: Object.assign(jabatan, jabatan),
     penjab: Object.assign(penjab, penjab),
     pasien: Object.assign(pasien, pasien),
     permissions: Object.assign(permissions, permissions),
@@ -276,8 +280,10 @@ const api = {
     poliklinik: Object.assign(poliklinik, poliklinik),
     bangsal: Object.assign(bangsal, bangsal),
     kamar: Object.assign(kamar, kamar),
+    setHargaKamar: Object.assign(setHargaKamar, setHargaKamar),
     akutansi: Object.assign(akutansi, akutansi),
     paymentPoint: Object.assign(paymentPoint, paymentPoint),
+    rawatInap: Object.assign(rawatInap, rawatInap),
     antrianPoli: Object.assign(antrianPoli, antrianPoli2d4a79),
     menu: Object.assign(menu, menu),
     racikanTemplate: Object.assign(racikanTemplate, racikanTemplate),

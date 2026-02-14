@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
 
-export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_mappings = [], ranap_mappings = [] }) {
+export default function SetLokasi({ current, bangsal, bangsal_ranap = [], poliklinik = [], ralan_mappings = [], ranap_mappings = [] }) {
     const { data, setData, post, put, processing, errors, recentlySuccessful } = useForm({
         kd_bangsal: current?.kd_bangsal || '',
         asal_stok: current?.asal_stok || 'Gunakan Stok Utama Obat'
@@ -32,15 +32,24 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
         setConfirmOpen(true);
     };
 
+    const requestDelete = async (url, payload = {}) => {
+        const fd = new FormData();
+        fd.append('_method', 'DELETE');
+        Object.entries(payload).forEach(([k, v]) => {
+            if (v !== undefined && v !== null) fd.append(k, String(v));
+        });
+        return axios.post(url, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+    };
+
     const performDelete = async () => {
         if (deleting) return;
         setDeleting(true);
         try {
-            await axios.delete(route('farmasi.set-lokasi.destroy'));
+            await requestDelete(route('farmasi.set-lokasi.destroy'));
             window.location.reload();
-        } catch (_err) {
+        } catch (err) {
             setDeleting(false);
-            alert('Gagal menghapus pengaturan lokasi');
+            alert(err?.response?.data?.message || 'Gagal menghapus pengaturan lokasi');
         }
     };
 
@@ -57,9 +66,11 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
 
     const handleDeleteRalanMapping = async (row) => {
         try {
-            await axios.delete(route('farmasi.set-lokasi.ralan-mapping.destroy'), { data: { kd_poli: row.kd_poli, kd_bangsal: row.kd_bangsal } });
+            await requestDelete(route('farmasi.set-lokasi.ralan-mapping.destroy'), { kd_poli: row.kd_poli, kd_bangsal: row.kd_bangsal });
             window.location.reload();
-        } catch (_e) {}
+        } catch (err) {
+            alert(err?.response?.data?.message || 'Gagal menghapus mapping ralan');
+        }
     };
 
     const handleAddRanapMapping = async () => {
@@ -75,9 +86,11 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
 
     const handleDeleteRanapMapping = async (row) => {
         try {
-            await axios.delete(route('farmasi.set-lokasi.ranap-mapping.destroy'), { data: { kd_bangsal: row.kd_bangsal, kd_depo: row.kd_depo } });
+            await requestDelete(route('farmasi.set-lokasi.ranap-mapping.destroy'), { kd_bangsal: row.kd_bangsal, kd_depo: row.kd_depo });
             window.location.reload();
-        } catch (_e) {}
+        } catch (err) {
+            alert(err?.response?.data?.message || 'Gagal menghapus mapping ranap');
+        }
     };
 
     const currentRow = useMemo(() => {
@@ -241,7 +254,7 @@ export default function SetLokasi({ current, bangsal, poliklinik = [], ralan_map
                                                 <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Bangsal Ranap</label>
                                                 <select value={ranapForm.kd_bangsal} onChange={(e) => setRanapForm((p) => ({ ...p, kd_bangsal: e.target.value }))} className="w-full h-10 rounded-md bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm ring-1 ring-gray-300/70 dark:ring-gray-600/60 focus:ring-2 focus:ring-blue-500/50 text-sm px-3">
                                                     <option value="">-- Pilih Bangsal Ranap --</option>
-                                                    {bangsal.map((b) => (
+                                                    {bangsal_ranap.map((b) => (
                                                         <option key={b.kd_bangsal} value={b.kd_bangsal}>{b.nm_bangsal} ({b.kd_bangsal})</option>
                                                     ))}
                                                 </select>

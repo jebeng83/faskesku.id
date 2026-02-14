@@ -11,10 +11,41 @@ import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/date
 import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, User, MessageCircle, Stethoscope, Thermometer, Heart, Wind, Percent, Ruler, Scale, Brain, CircleDot, Pill } from 'lucide-react';
 import toast from '@/tools/toast';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', context = 'ralan', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
+    const isRanap = String(context).toLowerCase() === 'ranap';
+    const pemeriksaanRouteNames = useMemo(() => ({
+        list: isRanap ? 'rawat-inap.pemeriksaan-ranap' : 'rawat-jalan.pemeriksaan-ralan',
+        store: isRanap ? 'rawat-inap.pemeriksaan-ranap.store' : 'rawat-jalan.pemeriksaan-ralan.store',
+        update: isRanap ? 'rawat-inap.pemeriksaan-ranap.update' : 'rawat-jalan.pemeriksaan-ralan.update',
+        delete: isRanap ? 'rawat-inap.pemeriksaan-ranap.delete' : 'rawat-jalan.pemeriksaan-ralan.delete',
+    }), [isRanap]);
+    const pemeriksaanBasePath = isRanap ? '/rawat-inap/pemeriksaan-ranap' : '/rawat-jalan/pemeriksaan-ralan';
+    const buildPemeriksaanUrl = useMemo(() => {
+        return (kind, params = undefined) => {
+            try {
+                return params ? route(pemeriksaanRouteNames[kind], params) : route(pemeriksaanRouteNames[kind]);
+            } catch {
+                if (kind === 'list') {
+                    const qs = new URLSearchParams();
+                    if (params && typeof params === 'object') {
+                        Object.entries(params).forEach(([k, v]) => {
+                            if (v === undefined || v === null) return;
+                            const s = String(v);
+                            if (s.trim() === '') return;
+                            qs.set(k, s);
+                        });
+                    }
+                    const q = qs.toString();
+                    return q ? `${pemeriksaanBasePath}?${q}` : pemeriksaanBasePath;
+                }
+                return pemeriksaanBasePath;
+            }
+        };
+    }, [pemeriksaanBasePath, pemeriksaanRouteNames]);
+    const pemeriksaanTableLabel = isRanap ? 'pemeriksaan_ranap' : 'pemeriksaan_ralan';
     // Template kustom yang lebih rinci
     const customTemplates = useMemo(() => ([
         {
@@ -1048,7 +1079,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         setIsSubmitting(true);
         try {
             const creating = !editKey;
-            const url = creating ? route('rawat-jalan.pemeriksaan-ralan.store') : route('rawat-jalan.pemeriksaan-ralan.update');
+            const url = creating ? buildPemeriksaanUrl('store') : buildPemeriksaanUrl('update');
             const vitalKeys = ['suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'spo2', 'tinggi', 'berat', 'gcs', 'lingkar_perut'];
             const textAreaKeys = ['keluhan', 'pemeriksaan', 'penilaian', 'rtl', 'instruksi', 'evaluasi'];
             const normalizedFormData = { ...formData };
@@ -1708,7 +1739,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
         if (!noRawat) return;
         setLoadingList(true);
         try {
-            const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: noRawat });
+            const url = buildPemeriksaanUrl('list', { no_rawat: noRawat });
             const res = await fetch(url);
             const json = await res.json();
             const rows = json.data || [];
@@ -1731,7 +1762,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 });
             }
         } catch (e) {
-            console.error('Gagal memuat pemeriksaan_ralan', e);
+            console.error(`Gagal memuat ${pemeriksaanTableLabel}`, e);
         } finally {
             setLoadingList(false);
         }
@@ -1760,7 +1791,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                 .map((r) => r?.no_rawat)
                 .filter(Boolean)
                 .map((nr) => {
-                    const url = route('rawat-jalan.pemeriksaan-ralan', { no_rawat: nr });
+                    const url = buildPemeriksaanUrl('list', { no_rawat: nr });
                     return fetch(url, { headers: { 'Accept': 'application/json' } })
                         .then((x) => x.json())
                         .then((j) => (Array.isArray(j.data) ? j.data : []))
@@ -2004,39 +2035,37 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                         <MessageCircle className="w-3 h-3 text-red-500" />
                                         Alergi
                                     </label>
-                                    <div className="relative w-full">
-                                        <SearchableSelect
-                                            source="alergi_local"
-                                            value={kdAlergi}
-                                            onChange={(val) => { setKdAlergi(val); }}
-                                            onSelect={(opt) => {
-                                                const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
-                                                setFormData((prev) => ({ ...prev, alergi: label }));
-                                                const jenis = typeof opt === 'object' ? (opt?.kode_jenis ?? null) : null;
-                                                if (jenis != null) setAlergiJenis(String(jenis));
-                                            }}
-                                            placeholder="Pilih alergi..."
-                                            searchPlaceholder="Cari alergi..."
-                                            defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
-                                            className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
-                                            displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600' : 'text-gray-800'}
-                                        />
+                                    <div className="flex items-center gap-2 w-full">
+                                        <div className="flex-1 min-w-0">
+                                            <SearchableSelect
+                                                source="alergi_local"
+                                                value={kdAlergi}
+                                                onChange={(val) => { setKdAlergi(val); }}
+                                                onSelect={(opt) => {
+                                                    const label = typeof opt === 'string' ? opt : (opt?.label ?? '');
+                                                    setFormData((prev) => ({ ...prev, alergi: label }));
+                                                    const jenis = typeof opt === 'object' ? (opt?.kode_jenis ?? null) : null;
+                                                    if (jenis != null) setAlergiJenis(String(jenis));
+                                                }}
+                                                placeholder="Pilih alergi..."
+                                                searchPlaceholder="Cari alergi..."
+                                                defaultDisplay={(formData.alergi || '').trim() !== '' ? formData.alergi : 'Tidak Ada'}
+                                                className="!h-8 !px-2 !py-0 !text-xs !rounded-md !shadow-none !bg-white !border-gray-200"
+                                                displayClassName={((formData.alergi || '').trim() !== '' && (formData.alergi || '').trim() !== '-') ? 'text-red-600' : 'text-gray-800'}
+                                            />
+                                        </div>
                                         <button
                                             type="button"
                                             onClick={() => setAlergiModalOpen(true)}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center p-1 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                                            className="inline-flex items-center justify-center h-8 w-8 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors shrink-0"
                                             aria-label="Tambah Data Alergi"
                                             title="Tambah Data Alergi"
                                         >
-                                            <Plus className="w-3.5 h-3.5 text-gray-600" />
+                                            <Plus className="w-4 h-4 text-gray-700" />
                                         </button>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-1.5 w-24 shrink-0">
-                                        <HelpCircle className="w-3 h-3 text-indigo-600" />
-                                        Template
-                                    </label>
                                     <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-2">
                                         <div className="w-full sm:w-40 md:w-40">
                                             <SearchableSelect
@@ -3933,7 +3962,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                                                 onClick={async () => {
                                                                     if (!confirm('Yakin ingin menghapus pemeriksaan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) return;
                                                                     try {
-                                                                        const url = route('rawat-jalan.pemeriksaan-ralan.delete');
+                                                                        const url = buildPemeriksaanUrl('delete');
                                                                         const res = await axios.delete(url, {
                                                                             data: {
                                                                                 no_rawat: row.no_rawat,

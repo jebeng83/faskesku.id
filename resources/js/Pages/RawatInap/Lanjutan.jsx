@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Head } from '@inertiajs/react';
 import LayoutUtama from '@/Pages/LayoutUtama';
 import SidebarRawatInapMenu from '@/Components/SidebarRawatInapMenu';
@@ -14,7 +15,8 @@ import Konsultasi from './components/Konsultasi';
 
 export default function Lanjutan({ rawatInap, params }) {
     const [activeTab, setActiveTab] = useState('cppt');
-    const [openAcc, setOpenAcc] = useState({ pemeriksaan: true });
+    const [openAcc, setOpenAcc] = useState({ pemeriksaan: true, patientInfo: false });
+    const shouldReduceMotion = useReducedMotion();
 
     const handleTabChange = (tab) => setActiveTab(tab);
     const toggle = (section) => setOpenAcc(prev => ({ ...prev, [section]: !prev[section] }));
@@ -56,7 +58,7 @@ export default function Lanjutan({ rawatInap, params }) {
         };
 
         switch (activeTab) {
-            case 'cppt': return <CpptSoap {...commonProps} onOpenResep={() => handleTabChange('resep')} />;
+            case 'cppt': return <CpptSoap {...commonProps} context="ranap" onOpenResep={() => handleTabChange('resep')} />;
             case 'operasi': return <Operasi {...commonProps} />;
             case 'konsultasi': return <Konsultasi {...commonProps} />;
             case 'tarifTindakan': return <TarifTindakan {...commonProps} />;
@@ -64,89 +66,126 @@ export default function Lanjutan({ rawatInap, params }) {
             case 'diagnosa': return <Diagnosa {...commonProps} kdPj={rawatInap?.kd_pj || rawatInap?.penjab?.kd_pj || ''} />;
             case 'lab': return <PermintaanLab {...commonProps} />;
             case 'radiologi': return <PermintaanRadiologi {...commonProps} />;
-            default: return <CpptSoap {...commonProps} />;
+            default: return <CpptSoap {...commonProps} context="ranap" />;
         }
     };
+
+    const parseYmdToLocalDate = (ymd) => {
+        if (!ymd) return null;
+        const s = String(ymd);
+        const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        const d = new Date(s);
+        return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const tglMasukRaw = rawatInap?.tgl_masuk || rawatInap?.tgl_registrasi || '';
+    const jamMasukRaw = rawatInap?.jam_masuk || rawatInap?.jam_reg || '';
+    const kamarRaw = rawatInap?.nm_bangsal || rawatInap?.kamar || '';
+
+    const lamaInapText = (() => {
+        const raw = rawatInap?.lama ?? rawatInap?.lama_inap;
+        if (raw !== null && raw !== undefined && String(raw) !== '') return String(raw);
+        const start = parseYmdToLocalDate(tglMasukRaw);
+        if (!start) return '-';
+        const end = parseYmdToLocalDate(rawatInap?.tgl_keluar) || new Date();
+        const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const diff = Math.floor((endDay.getTime() - startDay.getTime()) / msPerDay) + 1;
+        return String(Math.max(1, diff));
+    })();
 
     return (
         <LayoutUtama title="Lanjutan Rawat Inap" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
             <Head title={`Lanjutan Rawat Inap${params?.no_rawat ? ' - ' + params.no_rawat : ''}`} />
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold mb-2">Lanjutan Rawat Inap</h1>
-                                <p className="text-indigo-100 text-lg">Kelola pemeriksaan dan perawatan intensive pasien</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div className="px-4 sm:px-6 lg:px-8 pt-0 pb-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
                 {/* Patient Info */}
-                <div className="bg-white rounded-2xl border shadow-sm mb-8 overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div className="bg-white/80 dark:bg-gray-900/70 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl shadow-indigo-500/5 mb-8 overflow-hidden backdrop-blur-xl">
+                    <div className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/60 dark:to-gray-900/60 px-6 py-4 border-b border-gray-200/60 dark:border-gray-800/60 backdrop-blur-sm">
+                        <button
+                            type="button"
+                            onClick={() => toggle('patientInfo')}
+                            aria-expanded={!!openAcc.patientInfo}
+                            className="w-full flex items-center justify-between text-left rounded-lg transition-all duration-200"
+                        >
+                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Informasi Pasien
+                            </h3>
+                            <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openAcc.patientInfo ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
-                            Informasi Pasien
-                        </h3>
+                        </button>
                     </div>
-                    <div className="p-6">
-                        {rawatInap?.patient ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
-                                    <p className="text-xs font-medium text-indigo-600 uppercase">Nama Pasien</p>
-                                    <p className="text-sm font-semibold mt-1">{rawatInap.patient.nm_pasien || '-'}</p>
+                    {openAcc.patientInfo && (
+                        <div className="p-6">
+                            {rawatInap?.patient ? (
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">No Rawat</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{rawatInap?.no_rawat || '-'}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">Tgl Masuk</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{tglMasukRaw ? new Date(tglMasukRaw).toLocaleDateString('id-ID') : '-'}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">Kamar</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{kamarRaw || '-'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">Nama</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{rawatInap?.patient?.nm_pasien || '-'}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">Jam Masuk</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{jamMasukRaw || '-'}</div>
+                                        </div>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-24 text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">Lama Inap</div>
+                                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">:</div>
+                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{lamaInapText}</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
-                                    <p className="text-xs font-medium text-purple-600 uppercase">No. RM</p>
-                                    <p className="text-sm font-semibold mt-1 font-mono">{rawatInap.patient.no_rkm_medis || '-'}</p>
+                            ) : (
+                                <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
+                                    <h4 className="text-lg font-semibold text-yellow-800">Data Pasien Tidak Ditemukan</h4>
+                                    <p className="text-sm text-yellow-600 mt-1">No. Rawat: {params?.no_rawat || '-'}</p>
                                 </div>
-                                <div className="bg-pink-50 rounded-xl p-4 border border-pink-200">
-                                    <p className="text-xs font-medium text-pink-600 uppercase">No. Rawat</p>
-                                    <p className="text-sm font-semibold mt-1 font-mono">{rawatInap.no_rawat || '-'}</p>
-                                </div>
-                                <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-                                    <p className="text-xs font-medium text-orange-600 uppercase">Tanggal Masuk</p>
-                                    <p className="text-sm font-semibold mt-1">{rawatInap.tgl_registrasi ? new Date(rawatInap.tgl_registrasi).toLocaleDateString('id-ID') : '-'}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
-                                <h4 className="text-lg font-semibold text-yellow-800">Data Pasien Tidak Ditemukan</h4>
-                                <p className="text-sm text-yellow-600 mt-1">No. Rawat: {params?.no_rawat || '-'}</p>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="bg-white rounded-2xl border shadow-sm mb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                        <h3 className="text-lg font-semibold">Menu Perawatan Inap</h3>
-                        <p className="text-sm text-gray-500 mt-1">Pilih menu untuk mengelola perawatan pasien</p>
-                    </div>
-                    <div className="px-6 py-4 bg-gray-50 border-b">
+                <div className="bg-white/80 dark:bg-gray-900/70 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl shadow-indigo-500/5 mb-6 backdrop-blur-xl">
+                    <div className="px-6 py-4 bg-gray-50/60 dark:bg-gray-900/40 border-b border-gray-200/60 dark:border-gray-800/60">
                         <div className="flex flex-wrap gap-2">
                             {menuTabs.map((tab) => {
                                 const isActive = activeTab === tab.key;
                                 return (
-                                    <button
+                                    <motion.button
                                         key={tab.key}
                                         onClick={() => handleTabChange(tab.key)}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-sm ${getTabColorClasses(tab.color, isActive)} ${isActive ? 'border-current shadow-sm' : 'border-transparent'}`}
+                                        whileHover={shouldReduceMotion ? undefined : { y: -1, scale: 1.01 }}
+                                        whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}
                                     >
                                         {tab.icon}
                                         <span>{tab.title}</span>
-                                    </button>
+                                    </motion.button>
                                 );
                             })}
                         </div>
@@ -154,11 +193,11 @@ export default function Lanjutan({ rawatInap, params }) {
                 </div>
 
                 {/* Content Area */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[35%_65%] gap-6">
                     {/* Left - Medical History */}
-                    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden sticky top-6">
-                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3 border-b">
-                            <button onClick={() => toggle('pemeriksaan')} className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200">
+                    <div className="bg-white/80 dark:bg-gray-900/70 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl shadow-indigo-500/5 overflow-hidden sticky top-6 backdrop-blur-xl">
+                        <div className="bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-gray-800/60 dark:to-gray-900/60 px-4 py-3 border-b border-gray-200/60 dark:border-gray-800/60 backdrop-blur-sm">
+                            <button onClick={() => toggle('pemeriksaan')} className="w-full flex items-center justify-between text-left group rounded-lg p-2 transition-all duration-200 hover:bg-white/60">
                                 <div className="flex items-center gap-3">
                                     <div className={`w-3 h-3 rounded-full transition-colors ${openAcc.pemeriksaan ? 'bg-indigo-500' : 'bg-gray-400'}`}></div>
                                     <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,20 +226,18 @@ export default function Lanjutan({ rawatInap, params }) {
 
                     {/* Right - Active Tab Content */}
                     <div className="space-y-4">
-                        <div className="bg-white rounded-2xl border shadow-sm">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-100 rounded-lg">
-                                        {menuTabs.find(tab => tab.key === activeTab)?.icon}
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{menuTabs.find(tab => tab.key === activeTab)?.title}</h3>
-                                        <p className="text-sm text-gray-500">{menuTabs.find(tab => tab.key === activeTab)?.subtitle}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>{renderActiveTabContent()}</div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                                animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                                exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                                transition={{ duration: shouldReduceMotion ? 0 : 0.18 }}
+                                className="min-h-[140px]"
+                            >
+                                {renderActiveTabContent()}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
             </div>

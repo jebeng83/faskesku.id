@@ -1,5 +1,45 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
+* @see routes/web.php:2089
+* @route '/employees/petugas'
+*/
+export const petugas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: petugas.url(options),
+    method: 'get',
+})
+
+petugas.definition = {
+    methods: ["get","head"],
+    url: '/employees/petugas',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:2089
+* @route '/employees/petugas'
+*/
+petugas.url = (options?: RouteQueryOptions) => {
+    return petugas.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:2089
+* @route '/employees/petugas'
+*/
+petugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: petugas.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:2089
+* @route '/employees/petugas'
+*/
+petugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: petugas.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\EmployeeController::index
 * @see app/Http/Controllers/EmployeeController.php:17
 * @route '/employees'
@@ -384,6 +424,7 @@ destroy.delete = (args: { employee: number | { id: number } } | [employee: numbe
 })
 
 const employees = {
+    petugas: Object.assign(petugas, petugas),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),
