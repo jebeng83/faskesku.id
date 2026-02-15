@@ -49,6 +49,7 @@ import poliklinik from './poliklinik'
 import bangsal from './bangsal'
 import kamar from './kamar'
 import setHargaKamar from './set-harga-kamar'
+import setKamarInap from './set-kamar-inap'
 import akutansi from './akutansi'
 import paymentPoint from './payment-point'
 import rawatInap from './rawat-inap'
@@ -281,6 +282,7 @@ const api = {
     bangsal: Object.assign(bangsal, bangsal),
     kamar: Object.assign(kamar, kamar),
     setHargaKamar: Object.assign(setHargaKamar, setHargaKamar),
+    setKamarInap: Object.assign(setKamarInap, setKamarInap),
     akutansi: Object.assign(akutansi, akutansi),
     paymentPoint: Object.assign(paymentPoint, paymentPoint),
     rawatInap: Object.assign(rawatInap, rawatInap),

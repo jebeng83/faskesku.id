@@ -253,6 +253,46 @@ setHargaKamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
+* @see routes/web.php:2531
+* @route '/rawat-inap/setting-kamar-inap'
+*/
+export const settingKamarInap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: settingKamarInap.url(options),
+    method: 'get',
+})
+
+settingKamarInap.definition = {
+    methods: ["get","head"],
+    url: '/rawat-inap/setting-kamar-inap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web.php:2531
+* @route '/rawat-inap/setting-kamar-inap'
+*/
+settingKamarInap.url = (options?: RouteQueryOptions) => {
+    return settingKamarInap.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:2531
+* @route '/rawat-inap/setting-kamar-inap'
+*/
+settingKamarInap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: settingKamarInap.url(options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:2531
+* @route '/rawat-inap/setting-kamar-inap'
+*/
+settingKamarInap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: settingKamarInap.url(options),
+    method: 'head',
+})
+
+/**
 * @see \App\Http\Controllers\RawatInapController::index
 * @see app/Http/Controllers/RawatInapController.php:16
 * @route '/rawat-inap'
@@ -619,6 +659,7 @@ const rawatInap = {
     bangsal: Object.assign(bangsal, bangsal),
     kamar: Object.assign(kamar, kamar),
     setHargaKamar: Object.assign(setHargaKamar, setHargaKamar),
+    settingKamarInap: Object.assign(settingKamarInap, settingKamarInap),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
     store: Object.assign(store, store),

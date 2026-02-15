@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Search, RefreshCw, Globe } from 'lucide-react';
 import axios from 'axios';
 import LayoutUtama from '@/Pages/LayoutUtama';
@@ -17,6 +17,7 @@ export default function Index(props = {}) {
     const [bangsalFilter, setBangsalFilter] = useState(filters.kd_bangsal || '');
 
     const [busy, setBusy] = useState(false);
+    const [updatingHariRawat, setUpdatingHariRawat] = useState(false);
     const [actionError, setActionError] = useState('');
     const [actionSuccess, setActionSuccess] = useState('');
 
@@ -27,6 +28,10 @@ export default function Index(props = {}) {
     const [formGabung, setFormGabung] = useState({ no_rawat_bayi: '' });
     const [selectedRow, setSelectedRow] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [menuTab, setMenuTab] = useState('aksi');
+    const [setJamMinimal, setSetJamMinimal] = useState({ lamajam: 0, hariawal: 'No' });
+    const reduceMotion = useReducedMotion();
+    const softTransition = reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.22, 1, 0.36, 1] };
 
     const normalizedSttsPulangOptions = useMemo(() => {
         const base = Array.isArray(sttsPulangOptions) ? sttsPulangOptions : [];
@@ -35,6 +40,30 @@ export default function Index(props = {}) {
         const merged = Array.from(new Set([...fixed, ...defaults]));
         return merged.length > 0 ? merged : defaults;
     }, [sttsPulangOptions]);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const run = async () => {
+            try {
+                const res = await axios.get('/api/set-kamar-inap', {
+                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    withCredentials: true,
+                });
+                const data = res?.data?.data || {};
+                const lamajam = Number.isFinite(Number(data?.lamajam)) ? Number(data.lamajam) : 0;
+                const hariawal = data?.hariawal === 'Yes' ? 'Yes' : 'No';
+                if (mounted) setSetJamMinimal({ lamajam, hariawal });
+            } catch (_) {
+                if (mounted) setSetJamMinimal({ lamajam: 0, hariawal: 'No' });
+            }
+        };
+
+        run();
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const itemVariants = {
         hidden: { opacity: 0, y: 30, scale: 0.95 },
@@ -99,28 +128,46 @@ export default function Index(props = {}) {
         return `Rp ${new Intl.NumberFormat('id-ID').format(n)}`;
     };
 
-    const parseYmdToLocalDate = (ymd) => {
+    const parseYmdHmsToLocalDateTime = (ymd, hms) => {
         if (!ymd || typeof ymd !== 'string') return null;
         const m = ymd.match(/^(\d{4})-(\d{2})-(\d{2})/);
         if (!m) return null;
         const y = Number(m[1]);
         const mo = Number(m[2]) - 1;
         const d = Number(m[3]);
-        const dt = new Date(y, mo, d);
+
+        const t = typeof hms === 'string' ? hms : '';
+        const tm = t.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+        const hh = tm ? Number(tm[1]) : 0;
+        const mm = tm ? Number(tm[2]) : 0;
+        const ss = tm && tm[3] ? Number(tm[3]) : 0;
+
+        const dt = new Date(y, mo, d, hh, mm, ss);
         return Number.isNaN(dt.getTime()) ? null : dt;
     };
 
     const calcLamaInap = (row) => {
         if (row?.lama !== null && row?.lama !== undefined && row?.lama !== '') return String(row.lama);
-        const start = parseYmdToLocalDate(row?.tgl_masuk);
-        if (!start) return '-';
+        const startDt = parseYmdHmsToLocalDateTime(row?.tgl_masuk, row?.jam_masuk);
+        if (!startDt) return '-';
 
-        const endRaw = row?.tgl_keluar ? parseYmdToLocalDate(row.tgl_keluar) : null;
-        const end = endRaw || new Date();
+        const endDt = row?.tgl_keluar && row?.tgl_keluar !== '0000-00-00'
+            ? (parseYmdHmsToLocalDateTime(row?.tgl_keluar, row?.jam_keluar) || parseYmdHmsToLocalDateTime(row?.tgl_keluar, '00:00:00'))
+            : null;
+        const end = endDt || new Date();
+
+        const startDay = new Date(startDt.getFullYear(), startDt.getMonth(), startDt.getDate());
         const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
         const msPerDay = 24 * 60 * 60 * 1000;
-        const diff = Math.floor((endDay.getTime() - start.getTime()) / msPerDay) + 1;
-        return String(Math.max(1, diff));
+        const dayDiff = Math.max(0, Math.floor((endDay.getTime() - startDay.getTime()) / msPerDay));
+
+        const secondsDiff = Math.max(0, Math.floor((end.getTime() - startDt.getTime()) / 1000));
+        const lamajam = Number.isFinite(Number(setJamMinimal?.lamajam)) ? Number(setJamMinimal.lamajam) : 0;
+        const hariawal = setJamMinimal?.hariawal === 'Yes' ? 'Yes' : 'No';
+
+        const baseLama = dayDiff === 0 ? (secondsDiff > 3600 * lamajam ? 1 : 0) : dayDiff;
+        const lama = baseLama + (hariawal === 'Yes' ? 1 : 0);
+        return String(Math.max(0, lama));
     };
 
     const getGabungBadge = (role, pairRawat) => {
@@ -168,6 +215,7 @@ export default function Index(props = {}) {
     const openMenu = (row) => {
         setSelectedRow(row);
         setMenuOpen(true);
+        setMenuTab('aksi');
         setActionError('');
         setActionSuccess('');
     };
@@ -210,6 +258,40 @@ export default function Index(props = {}) {
         setModal({ type: 'hapus', row });
         setActionError('');
         setActionSuccess('');
+    };
+
+    const handleUpdateHariRawat = async () => {
+        setBusy(true);
+        setUpdatingHariRawat(true);
+        setActionError('');
+        setActionSuccess('');
+        let reloading = false;
+        try {
+            await ensureCsrf();
+            const res = await axios.post('/api/kamar-inap/update-hari-rawat', {}, {
+                withCredentials: true,
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const updated = res?.data?.data?.updated;
+            const suffix = Number.isFinite(Number(updated)) ? ` (${updated} data)` : '';
+            setActionSuccess((res?.data?.message || 'Hari rawat berhasil diperbarui') + suffix);
+            reloading = true;
+            router.reload({
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => {
+                    setBusy(false);
+                    setUpdatingHariRawat(false);
+                },
+            });
+        } catch (e) {
+            setActionError(parseApiError(e));
+        } finally {
+            if (!reloading) {
+                setBusy(false);
+                setUpdatingHariRawat(false);
+            }
+        }
     };
 
     const handleCheckIn = async () => {
@@ -491,12 +573,57 @@ export default function Index(props = {}) {
                 </div>
 
                 <div className="relative overflow-auto max-h-[70vh] rounded-2xl ring-1 ring-gray-200/50 dark:ring-gray-700/50 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl shadow-xl shadow-indigo-500/5">
-                    {actionError ? (
-                        <div className="px-6 pt-4 text-sm text-red-700 dark:text-red-400">{actionError}</div>
-                    ) : null}
-                    {actionSuccess ? (
-                        <div className="px-6 pt-4 text-sm text-green-700 dark:text-green-400">{actionSuccess}</div>
-                    ) : null}
+                    <AnimatePresence initial={false}>
+                        {updatingHariRawat ? (
+                            <motion.div
+                                key="updating-overlay"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={softTransition}
+                                className="absolute inset-0 z-20 bg-white/55 dark:bg-gray-950/45 backdrop-blur-sm flex items-center justify-center"
+                            >
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                                    transition={softTransition}
+                                    className="flex items-center gap-3 rounded-xl border border-emerald-200/70 dark:border-emerald-800/60 bg-white/90 dark:bg-gray-900/80 px-4 py-3 shadow-lg"
+                                >
+                                    <RefreshCw className="w-4 h-4 text-emerald-600 dark:text-emerald-300 animate-spin" />
+                                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">Mengupdate hari rawat...</div>
+                                </motion.div>
+                            </motion.div>
+                        ) : null}
+                    </AnimatePresence>
+                    <AnimatePresence initial={false}>
+                        {actionError ? (
+                            <motion.div
+                                key="table-action-error"
+                                className="px-6 pt-4 text-sm text-red-700 dark:text-red-400"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 6 }}
+                                transition={softTransition}
+                            >
+                                {actionError}
+                            </motion.div>
+                        ) : null}
+                    </AnimatePresence>
+                    <AnimatePresence initial={false}>
+                        {actionSuccess ? (
+                            <motion.div
+                                key="table-action-success"
+                                className="px-6 pt-4 text-sm text-green-700 dark:text-green-400"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 6 }}
+                                transition={softTransition}
+                            >
+                                {actionSuccess}
+                            </motion.div>
+                        ) : null}
+                    </AnimatePresence>
                     <table className="min-w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
                             <tr>
@@ -534,25 +661,7 @@ export default function Index(props = {}) {
                                             exit="exit"
                                             transition={{ delay: idx * 0.02 }}
                                         >
-                                            <td
-                                                className="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    try {
-                                                        const url = route('rawat-inap.canvas', {
-                                                            no_rawat: row?.no_rawat,
-                                                            no_rkm_medis: row?.patient?.no_rkm_medis || ''
-                                                        });
-                                                        router.visit(url);
-                                                    } catch (_) {
-                                                        const params = new URLSearchParams({
-                                                            no_rawat: row?.no_rawat || '',
-                                                            no_rkm_medis: row?.patient?.no_rkm_medis || ''
-                                                        }).toString();
-                                                        router.visit(`/rawat-inap/canvas?${params}`);
-                                                    }
-                                                }}
-                                            >
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-white">
                                                 {row.no_rawat}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.patient?.no_rkm_medis || '-'}</td>
@@ -588,7 +697,20 @@ export default function Index(props = {}) {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_masuk || '-'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_keluar ? new Date(row.tgl_keluar).toLocaleDateString('id-ID') : '-'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_keluar || '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{calcLamaInap(row)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                <AnimatePresence mode="wait" initial={false}>
+                                                    <motion.span
+                                                        key={`${row?.no_rawat || ''}-${row?.kd_kamar || ''}-${row?.tgl_masuk || ''}-${row?.jam_masuk || ''}-${calcLamaInap(row)}`}
+                                                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                                                        transition={softTransition}
+                                                        className="inline-block"
+                                                    >
+                                                        {calcLamaInap(row)}
+                                                    </motion.span>
+                                                </AnimatePresence>
+                                            </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formatRupiah(row.ttl_biaya)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.dokter?.nm_dokter || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(row.stts_pulang || '-')}</td>
@@ -678,53 +800,238 @@ export default function Index(props = {}) {
                         </div>
 
                         <div className="rounded-xl border border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-800/80 p-4">
-                            <div className="text-xs font-semibold text-gray-700 dark:text-gray-300">Aksi</div>
-                            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        closeMenu();
-                                        openCheckOut(selectedRow);
-                                    }}
-                                    disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
-                                    className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
-                                >
-                                    Check-out
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        closeMenu();
-                                        openPindah(selectedRow);
-                                    }}
-                                    disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
-                                    className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
-                                >
-                                    Pindah
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        closeMenu();
-                                        openGabung(selectedRow);
-                                    }}
-                                    disabled={busy || selectedRow.gabung_role === 'Bayi'}
-                                    className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || selectedRow.gabung_role === 'Bayi' ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
-                                >
-                                    Gabung
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        closeMenu();
-                                        openHapus(selectedRow);
-                                    }}
-                                    disabled={busy}
-                                    className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'}`}
-                                >
-                                    Hapus
-                                </button>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                    {[
+                                        { key: 'aksi', label: 'Aksi' },
+                                        { key: 'asuhan', label: 'Asuhan Pasien' },
+                                        { key: 'tindakan', label: 'Tindakan Pasien' },
+                                        { key: 'laporan', label: 'Laporan' },
+                                    ].map((t) => {
+                                        const active = menuTab === t.key;
+                                        return (
+                                            <button
+                                                key={t.key}
+                                                type="button"
+                                                onClick={() => setMenuTab(t.key)}
+                                                disabled={busy}
+                                                className={`h-9 px-3 rounded-md text-xs font-semibold border whitespace-nowrap transition-colors duration-100 ${
+                                                    active
+                                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                                } ${busy ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                            >
+                                                {t.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
+
+                            {menuTab === 'aksi' ? (
+                                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            openCheckOut(selectedRow);
+                                        }}
+                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
+                                    >
+                                        Check-out
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            openPindah(selectedRow);
+                                        }}
+                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                                    >
+                                        Pindah
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            openGabung(selectedRow);
+                                        }}
+                                        disabled={busy || selectedRow.gabung_role === 'Bayi'}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || selectedRow.gabung_role === 'Bayi' ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
+                                    >
+                                        Gabung
+                                    </button>
+                                    <motion.button
+                                        type="button"
+                                        onClick={() => handleUpdateHariRawat()}
+                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
+                                        whileHover={
+                                            !reduceMotion && !(busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-'))
+                                                ? { scale: 1.02, y: -1 }
+                                                : undefined
+                                        }
+                                        whileTap={
+                                            !reduceMotion && !(busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-'))
+                                                ? { scale: 0.98 }
+                                                : undefined
+                                        }
+                                        transition={softTransition}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
+                                    >
+                                        <span className="flex items-center justify-center gap-2">
+                                            <RefreshCw className={`w-4 h-4 ${updatingHariRawat ? 'animate-spin' : ''}`} />
+                                            {updatingHariRawat ? 'Mengupdate...' : 'Update Hari Rawat'}
+                                        </span>
+                                    </motion.button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            openHapus(selectedRow);
+                                        }}
+                                        disabled={busy}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'}`}
+                                    >
+                                        Hapus
+                                    </button>
+                                </div>
+                            ) : null}
+
+                            {menuTab === 'asuhan' ? (
+                                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            router.get(route('rawat-inap.lanjutan'), {
+                                                no_rawat: selectedRow?.no_rawat || '',
+                                                no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                            }, {
+                                                preserveScroll: true,
+                                                preserveState: true,
+                                            });
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
+                                    >
+                                        CPPT / SOAP
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            try {
+                                                const url = route('rawat-inap.canvas', {
+                                                    no_rawat: selectedRow?.no_rawat,
+                                                    no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                });
+                                                router.visit(url);
+                                            } catch (_) {
+                                                const params = new URLSearchParams({
+                                                    no_rawat: selectedRow?.no_rawat || '',
+                                                    no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                }).toString();
+                                                router.visit(`/rawat-inap/canvas?${params}`);
+                                            }
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                                    >
+                                        Canvas Ranap
+                                    </button>
+                                </div>
+                            ) : null}
+
+                            {menuTab === 'tindakan' ? (
+                                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            try {
+                                                const url = route('rawat-inap.canvas', {
+                                                    no_rawat: selectedRow?.no_rawat,
+                                                    no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                });
+                                                router.visit(url);
+                                            } catch (_) {
+                                                const params = new URLSearchParams({
+                                                    no_rawat: selectedRow?.no_rawat || '',
+                                                    no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                }).toString();
+                                                router.visit(`/rawat-inap/canvas?${params}`);
+                                            }
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
+                                    >
+                                        Input Tindakan
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            router.get(route('rawat-inap.lanjutan'), {
+                                                no_rawat: selectedRow?.no_rawat || '',
+                                                no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                            }, {
+                                                preserveScroll: true,
+                                                preserveState: true,
+                                            });
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat}
+                                        className={`h-10 min-w-[170px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
+                                    >
+                                        Tarif Tindakan
+                                    </button>
+                                </div>
+                            ) : null}
+
+                            {menuTab === 'laporan' ? (
+                                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            router.visit(route('akutansi.billing.page', { no_rawat: selectedRow.no_rawat }));
+                                        }}
+                                        disabled={busy || !selectedRow.no_rawat}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                                    >
+                                        Billing
+                                    </button>
+                                </div>
+                            ) : null}
+                            <AnimatePresence initial={false}>
+                                {actionError ? (
+                                    <motion.div
+                                        key="action-error"
+                                        className="mt-3 text-sm text-red-700 dark:text-red-400"
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 6 }}
+                                        transition={softTransition}
+                                    >
+                                        {actionError}
+                                    </motion.div>
+                                ) : null}
+                            </AnimatePresence>
+                            <AnimatePresence initial={false}>
+                                {actionSuccess ? (
+                                    <motion.div
+                                        key="action-success"
+                                        className="mt-3 text-sm text-green-700 dark:text-green-400"
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 6 }}
+                                        transition={softTransition}
+                                    >
+                                        {actionSuccess}
+                                    </motion.div>
+                                ) : null}
+                            </AnimatePresence>
                             <div className="mt-3 flex justify-end">
                                 <button
                                     type="button"

@@ -23,6 +23,7 @@ import PoliklinikController from './PoliklinikController'
 import BangsalController from './BangsalController'
 import KamarController from './KamarController'
 import SetHargaKamarController from './SetHargaKamarController'
+import SetKamarInapController from './SetKamarInapController'
 import Akutansi from './Akutansi'
 import RawatInapController from './RawatInapController'
 import AuthController from './AuthController'
@@ -76,6 +77,7 @@ const Controllers = {
     BangsalController: Object.assign(BangsalController, BangsalController),
     KamarController: Object.assign(KamarController, KamarController),
     SetHargaKamarController: Object.assign(SetHargaKamarController, SetHargaKamarController),
+    SetKamarInapController: Object.assign(SetKamarInapController, SetKamarInapController),
     Akutansi: Object.assign(Akutansi, Akutansi),
     RawatInapController: Object.assign(RawatInapController, RawatInapController),
     AuthController: Object.assign(AuthController, AuthController),

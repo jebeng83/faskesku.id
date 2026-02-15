@@ -428,6 +428,100 @@ class KamarInapController extends Controller
         }
     }
 
+    public function updateHariRawat(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'no_rawat' => 'nullable|string|exists:reg_periksa,no_rawat',
+            ]);
+
+            $setting = DB::table('set_jam_minimal')->first();
+            $lamajam = (int) ($setting->lamajam ?? 0);
+            $hariawal = (string) ($setting->hariawal ?? 'No');
+
+            $query = DB::table('kamar_inap')
+                ->where('stts_pulang', '-')
+                ->where(function ($w) {
+                    $w->whereNull('tgl_keluar')->orWhere('tgl_keluar', '0000-00-00');
+                });
+
+            if (! empty($validated['no_rawat'])) {
+                $query->where('no_rawat', $validated['no_rawat']);
+            }
+
+            $rows = $query
+                ->orderBy('no_rawat')
+                ->orderByDesc('tgl_masuk')
+                ->orderByDesc('jam_masuk')
+                ->get();
+
+            if ($rows->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => empty($validated['no_rawat'])
+                        ? 'Tidak ada kamar inap aktif untuk diperbarui'
+                        : 'Tidak ada data kamar inap aktif untuk no_rawat ini',
+                ], 422);
+            }
+
+            $end = Carbon::now();
+            $updated = 0;
+
+            foreach ($rows as $active) {
+                $noRawat = (string) ($active->no_rawat ?? '');
+                if ($noRawat === '') {
+                    continue;
+                }
+
+                $start = Carbon::parse($active->tgl_masuk.' '.$active->jam_masuk);
+                $dayDiff = max(0, $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay(), false));
+                $secondsDiff = max(0, $start->diffInSeconds($end, false));
+
+                $baseLama = $dayDiff === 0 ? (($secondsDiff > 3600 * $lamajam) ? 1 : 0) : $dayDiff;
+                $lama = $baseLama + ($hariawal === 'Yes' ? 1 : 0);
+                $lama = max(0, (int) $lama);
+
+                $tarif = (float) ($active->trf_kamar ?? 0);
+                if ($tarif <= 0) {
+                    $tarif = $this->resolveTarifKamar($noRawat, (string) $active->kd_kamar);
+                }
+                $ttlBiaya = $lama * $tarif;
+
+                $updated += DB::table('kamar_inap')
+                    ->where('no_rawat', $noRawat)
+                    ->where('kd_kamar', $active->kd_kamar)
+                    ->where('tgl_masuk', $active->tgl_masuk)
+                    ->where('jam_masuk', $active->jam_masuk)
+                    ->update([
+                        'lama' => $lama,
+                        'trf_kamar' => $tarif,
+                        'ttl_biaya' => $ttlBiaya,
+                    ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => empty($validated['no_rawat'])
+                    ? 'Hari rawat ranap aktif berhasil diperbarui'
+                    : 'Hari rawat berhasil diperbarui',
+                'data' => [
+                    'updated' => $updated,
+                ],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal update hari rawat: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function hapusDataSalah(Request $request): JsonResponse
     {
         try {

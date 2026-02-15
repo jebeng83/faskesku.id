@@ -39,6 +39,7 @@ use App\Http\Controllers\PermintaanRadiologiController;
 use App\Http\Controllers\PoliklinikController;
 use App\Http\Controllers\BangsalController;
 use App\Http\Controllers\KamarController;
+use App\Http\Controllers\SetKamarInapController;
 use App\Http\Controllers\SetHargaKamarController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RawatJalan\ObatController;
@@ -423,6 +424,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/kamar-inap/checkout', [KamarInapController::class, 'checkout'])->name('api.kamar-inap.checkout');
     Route::post('/kamar-inap/pindah', [KamarInapController::class, 'pindah'])->name('api.kamar-inap.pindah');
     Route::post('/kamar-inap/gabung', [KamarInapController::class, 'gabung'])->name('api.kamar-inap.gabung');
+    Route::post('/kamar-inap/update-hari-rawat', [KamarInapController::class, 'updateHariRawat'])->name('api.kamar-inap.update-hari-rawat');
     Route::post('/kamar-inap/hapus-data-salah', [KamarInapController::class, 'hapusDataSalah'])->name('api.kamar-inap.hapus-data-salah');
 
     // User Management Routes
@@ -1058,6 +1060,13 @@ Route::middleware(['web', 'auth'])->group(function () {
             ->where('kd_kamar', '[^/]+')
             ->where('kd_pj', '[^/]+')
             ->name('api.set-harga-kamar.destroy');
+    });
+
+    Route::prefix('set-kamar-inap')->group(function () {
+        Route::get('/', [SetKamarInapController::class, 'apiShow'])->name('api.set-kamar-inap.show');
+        Route::post('/', [SetKamarInapController::class, 'apiStore'])->name('api.set-kamar-inap.store');
+        Route::put('/', [SetKamarInapController::class, 'apiUpdate'])->name('api.set-kamar-inap.update');
+        Route::delete('/', [SetKamarInapController::class, 'apiDestroy'])->name('api.set-kamar-inap.destroy');
     });
 
     // Akutansi - Nota Jalan & Jurnal

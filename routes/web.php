@@ -2528,6 +2528,9 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-inap/set-harga-kamar', function () {
         return Inertia::render('RawatInap/components/SetHargaKamar');
     })->name('rawat-inap.set-harga-kamar');
+    Route::get('rawat-inap/setting-kamar-inap', function () {
+        return Inertia::render('RawatInap/components/SettingKamarInap');
+    })->name('rawat-inap.setting-kamar-inap');
     Route::resource('rawat-inap', RawatInapController::class);
     // Pastikan route spesifik IGD didefinisikan SEBELUM wildcard resource '/igd/{igd}'
     Route::prefix('igd')->name('igd.')->group(function () {

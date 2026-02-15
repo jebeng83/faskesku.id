@@ -3,6 +3,7 @@ import { Head, Link, usePage, router } from "@inertiajs/react";
 import {
   UserPlus,
   Stethoscope,
+  BedDouble,
   Ambulance,
   FlaskConical,
   Pill,
@@ -48,6 +49,7 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
     { href: route("igd.index"), label: "UGD", icon: Ambulance },
     { href: "/laboratorium/permintaan-lab", label: "Laborat", icon: FlaskConical },
     { href: "/farmasi/permintaan-resep", label: "Farmasi", icon: Pill },
+    { href: route("rawat-inap.index"), label: "Rawat Inap", icon: BedDouble },
     { href: "/akutansi/kasir-ralan", label: "Kasir", icon: CreditCard },
   ];
 

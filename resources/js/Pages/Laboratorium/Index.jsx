@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Head, router, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { motion } from "framer-motion";
@@ -69,8 +69,8 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
     const [endDate, setEndDate] = useState(defaultEndDate);
     const [isSearching, setIsSearching] = useState(false);
     
-    // Tab state - default berdasarkan filter status dari server, atau 'ralan' jika tidak ada
-    const [activeTab, setActiveTab] = useState((filters.status || "ralan").toLowerCase()); // 'ralan' atau 'ranap'
+    // Tab state - default berdasarkan filter status dari server, atau 'ranap' jika tidak ada
+    const [activeTab, setActiveTab] = useState((filters.status || "ranap").toLowerCase()); // 'ralan' atau 'ranap'
     const [activeSubTab, setActiveSubTab] = useState("permintaan"); // 'permintaan' atau 'item'
     
     // Alert state
@@ -228,12 +228,12 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         setDokter("");
         setStartDate(today);
         setEndDate(today);
-        // Reset tab ke ralan sebagai default
-        setActiveTab("ralan");
+        // Reset tab ke ranap sebagai default
+        setActiveTab("ranap");
         router.get(
             route("laboratorium.permintaan-lab.index"),
             { 
-                status: "ralan",
+                status: "ranap",
                 start_date: today,
                 end_date: today,
             },

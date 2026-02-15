@@ -58,7 +58,7 @@ class NotaJalanController extends Controller
             'besar_bayar' => ['nullable', 'numeric', 'min:0', 'required_with:nama_bayar'],
         ]);
 
-        $noRawat = $data['no_rawat'];
+        $noRawat = urldecode((string) $data['no_rawat']);
         $tanggal = $data['tanggal'] ?? null;
         $jam = $data['jam'] ?? null;
         $namaBayar = $data['nama_bayar'] ?? null;
@@ -67,9 +67,9 @@ class NotaJalanController extends Controller
         $date = $tanggal ? Carbon::parse($tanggal) : Carbon::now();
         $time = $jam ?: Carbon::now()->format('H:i:s');
 
-        // Format no_nota: YYYY/MM/DD/RJNNNN (contoh: 2025/06/20/RJ0002)
-        // Tanpa slash setelah RJ, langsung angka 4 digit
-        $prefix = $date->format('Y/m/d').'/RJ';
+        $statusLanjut = trim((string) DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('status_lanjut'));
+        $notaPrefix = strtoupper($statusLanjut) === 'RANAP' ? 'RI' : 'RJ';
+        $prefix = $date->format('Y/m/d').'/'.$notaPrefix;
 
         return DB::transaction(function () use ($noRawat, $date, $time, $prefix, $namaBayar, $besarBayar) {
             // Cek apakah sudah ada nota_jalan untuk no_rawat ini
@@ -78,6 +78,21 @@ class NotaJalanController extends Controller
                 ->first();
 
             if ($existingNota) {
+                $currentNoNota = trim((string) ($existingNota->no_nota ?? ''));
+                $desiredNoNota = $currentNoNota;
+                if ($currentNoNota !== '') {
+                    if (str_contains($prefix, '/RI')) {
+                        $desiredNoNota = preg_replace('~/RJ/?(\d{4})$~', '/RI$1', $currentNoNota) ?: $currentNoNota;
+                    } elseif (str_contains($prefix, '/RJ')) {
+                        $desiredNoNota = preg_replace('~/RI/?(\d{4})$~', '/RJ$1', $currentNoNota) ?: $currentNoNota;
+                    }
+                }
+
+                if ($desiredNoNota !== $currentNoNota && ! DB::table('nota_jalan')->where('no_nota', $desiredNoNota)->exists()) {
+                    DB::table('nota_jalan')->where('no_rawat', $noRawat)->update(['no_nota' => $desiredNoNota]);
+                    $existingNota->no_nota = $desiredNoNota;
+                }
+
                 if ($namaBayar && $besarBayar !== null) {
                     $akun = DB::table('akun_bayar')->where('nama_bayar', $namaBayar)->first();
                     $ppnPercent = $akun ? (float) ($akun->ppn ?? 0) : 0.0;

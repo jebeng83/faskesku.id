@@ -136,8 +136,42 @@ gabung.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
+* @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
 * @see app/Http/Controllers/API/KamarInapController.php:431
+* @route '/api/kamar-inap/update-hari-rawat'
+*/
+export const updateHariRawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: updateHariRawat.url(options),
+    method: 'post',
+})
+
+updateHariRawat.definition = {
+    methods: ["post"],
+    url: '/api/kamar-inap/update-hari-rawat',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
+* @see app/Http/Controllers/API/KamarInapController.php:431
+* @route '/api/kamar-inap/update-hari-rawat'
+*/
+updateHariRawat.url = (options?: RouteQueryOptions) => {
+    return updateHariRawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
+* @see app/Http/Controllers/API/KamarInapController.php:431
+* @route '/api/kamar-inap/update-hari-rawat'
+*/
+updateHariRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: updateHariRawat.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
+* @see app/Http/Controllers/API/KamarInapController.php:525
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 export const hapusDataSalah = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -152,7 +186,7 @@ hapusDataSalah.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
-* @see app/Http/Controllers/API/KamarInapController.php:431
+* @see app/Http/Controllers/API/KamarInapController.php:525
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 hapusDataSalah.url = (options?: RouteQueryOptions) => {
@@ -161,7 +195,7 @@ hapusDataSalah.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
-* @see app/Http/Controllers/API/KamarInapController.php:431
+* @see app/Http/Controllers/API/KamarInapController.php:525
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 hapusDataSalah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -174,6 +208,7 @@ const kamarInap = {
     checkout: Object.assign(checkout, checkout),
     pindah: Object.assign(pindah, pindah),
     gabung: Object.assign(gabung, gabung),
+    updateHariRawat: Object.assign(updateHariRawat, updateHariRawat),
     hapusDataSalah: Object.assign(hapusDataSalah, hapusDataSalah),
 }
 
