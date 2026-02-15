@@ -2199,7 +2199,9 @@ Route::middleware('auth')->group(function () {
     // Route::get('/premium-modules/{premiumModule}/status', [PremiumModuleController::class, 'status'])->name('premium-modules.status');
     // Route::post('/premium-modules/validate-license', [PremiumModuleController::class, 'validateLicense'])->name('premium-modules.validate-license');
 
-    Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])->name('rawat-jalan.lanjutan');
+    Route::get('rawat-jalan/lanjutan', [RawatJalanController::class, 'lanjutan'])
+        ->name('rawat-jalan.lanjutan')
+        ->middleware('permission:rawat-jalan.lanjutan');
     // Rawat Jalan landing/index page (Inertia)
     Route::get('rawat-jalan/canvas', function () {
         return Inertia::render('RawatJalan/CanvasRajal', [
@@ -2242,6 +2244,23 @@ Route::middleware('auth')->group(function () {
     Route::get('rawat-jalan/radiologi/{no_rawat}', [RawatJalanController::class, 'getRadiologiPublic'])
         ->name('rawat-jalan.radiologi')
         ->where('no_rawat', '.*');
+    Route::get('rawat-jalan/berkas-digital/kategori', [RawatJalanController::class, 'getBerkasDigitalKategori'])
+        ->name('rawat-jalan.berkas-digital.kategori')
+        ->middleware('permission:rawat-jalan.berkas-digital.kategori');
+    Route::get('rawat-jalan/berkas-digital/file/{path}', [RawatJalanController::class, 'getBerkasDigitalFile'])
+        ->name('rawat-jalan.berkas-digital.file')
+        ->middleware('permission:rawat-jalan.berkas-digital.list')
+        ->where('path', '.*');
+    Route::get('rawat-jalan/berkas-digital/{no_rawat}', [RawatJalanController::class, 'getBerkasDigital'])
+        ->name('rawat-jalan.berkas-digital.list')
+        ->middleware('permission:rawat-jalan.berkas-digital.list')
+        ->where('no_rawat', '.*');
+    Route::post('rawat-jalan/berkas-digital', [RawatJalanController::class, 'storeBerkasDigital'])
+        ->name('rawat-jalan.berkas-digital.store')
+        ->middleware('permission:rawat-jalan.berkas-digital.store');
+    Route::delete('rawat-jalan/berkas-digital', [RawatJalanController::class, 'deleteBerkasDigital'])
+        ->name('rawat-jalan.berkas-digital.delete')
+        ->middleware('permission:rawat-jalan.berkas-digital.delete');
     // Public doctor list for dropdowns in dev/preview (minimal fields)
     Route::get('rawat-jalan/dokter', [\App\Http\Controllers\API\DokterController::class, 'index'])
         ->name('rawat-jalan.dokter.public');

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -546,6 +548,235 @@ class RawatJalanController extends Controller
         $rows = self::getRadiologi($no_rawat);
 
         return response()->json(['data' => $rows]);
+    }
+
+    public function getBerkasDigitalKategori()
+    {
+        if (! Schema::hasTable('master_berkas_digital')) {
+            return response()->json(['data' => []]);
+        }
+
+        $query = DB::table('master_berkas_digital');
+        if (Schema::hasColumn('master_berkas_digital', 'no_urut')) {
+            $query->orderBy('no_urut');
+        }
+        if (Schema::hasColumn('master_berkas_digital', 'nama_berkas')) {
+            $query->orderBy('nama_berkas');
+        }
+
+        return response()->json(['data' => $query->get()]);
+    }
+
+    public function getBerkasDigital(Request $request, $no_rawat)
+    {
+        if (! Schema::hasTable('berkas_digital_perawatan')) {
+            return response()->json(['data' => []]);
+        }
+
+        if (! $no_rawat) {
+            return response()->json(['data' => []]);
+        }
+
+        $rows = DB::table('berkas_digital_perawatan')
+            ->where('no_rawat', $no_rawat)
+            ->orderBy('kode')
+            ->get();
+
+        $rows = $rows->map(function ($row) {
+            $path = (string) ($row->lokasi_file ?? '');
+            $url = $path;
+            if ($path !== '' && ! preg_match('/^https?:\/\//i', $path)) {
+                $url = url('rawat-jalan/berkas-digital/file/'.ltrim($path, '/'));
+            }
+            $row->file_url = $url;
+
+            return $row;
+        });
+
+        return response()->json(['data' => $rows]);
+    }
+
+    public function getBerkasDigitalFile(Request $request, $path)
+    {
+        $path = ltrim((string) $path, '/');
+        if ($path === '' || str_contains($path, '..')) {
+            abort(404);
+        }
+        if (! str_starts_with($path, 'berkas-digital/')) {
+            abort(403, 'Anda tidak memiliki akses ke berkas ini.');
+        }
+        if (! Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+        $accept = (string) $request->header('Accept');
+        $wantsHtml = str_contains($accept, 'text/html') || $request->query('viewer') === '1';
+        $relative = str_starts_with($path, 'berkas-digital/') ? substr($path, strlen('berkas-digital/')) : $path;
+        $segments = array_values(array_filter(explode('/', $relative), fn ($segment) => $segment !== ''));
+        if (! $wantsHtml || count($segments) < 6) {
+            return Response::file($fullPath);
+        }
+
+        $noRawat = implode('/', array_slice($segments, 0, 4));
+        $kode = $segments[4] ?? null;
+        $currentUrl = url('rawat-jalan/berkas-digital/file/'.ltrim($path, '/'));
+
+        $items = collect();
+        if (Schema::hasTable('berkas_digital_perawatan') && $noRawat && $kode) {
+            $rows = DB::table('berkas_digital_perawatan')
+                ->where('no_rawat', $noRawat)
+                ->where('kode', $kode)
+                ->get();
+
+            $items = collect($rows)->map(function ($row) {
+                $lokasi = (string) ($row->lokasi_file ?? '');
+                $url = $lokasi;
+                if ($lokasi !== '' && ! preg_match('/^https?:\/\//i', $lokasi)) {
+                    $url = url('rawat-jalan/berkas-digital/file/'.ltrim($lokasi, '/'));
+                }
+                return [
+                    'url' => $url,
+                    'filename' => basename($lokasi ?: $url),
+                ];
+            });
+        }
+
+        $parseDate = function (string $filename): array {
+            if (preg_match('/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/', $filename, $match)) {
+                $date = \DateTime::createFromFormat('YmdHis', $match[1].$match[2].$match[3].$match[4].$match[5].$match[6]);
+                if ($date) {
+                    return [
+                        'ts' => $date->getTimestamp(),
+                        'label' => $date->format('d/m/Y H:i'),
+                    ];
+                }
+            }
+            return ['ts' => 0, 'label' => 'Tidak tersedia'];
+        };
+
+        $sorted = $items->map(function ($item) use ($parseDate) {
+            $meta = $parseDate((string) $item['filename']);
+            return [
+                'url' => $item['url'],
+                'filename' => $item['filename'],
+                'ts' => $meta['ts'],
+                'label' => $meta['label'],
+            ];
+        })->sort(function ($a, $b) {
+            if ($a['ts'] === $b['ts']) {
+                return strcmp($a['filename'], $b['filename']);
+            }
+            if ($a['ts'] === 0) return 1;
+            if ($b['ts'] === 0) return -1;
+            return $a['ts'] <=> $b['ts'];
+        })->values();
+
+        $list = $sorted->values()->all();
+        $currentIndex = 0;
+        foreach ($list as $idx => $entry) {
+            if ($entry['url'] === $currentUrl) {
+                $currentIndex = $idx;
+                break;
+            }
+        }
+        if (empty($list)) {
+            $meta = $parseDate(basename($path));
+            $list = [[
+                'url' => $currentUrl,
+                'filename' => basename($path),
+                'ts' => $meta['ts'],
+                'label' => $meta['label'],
+            ]];
+            $currentIndex = 0;
+        }
+
+        $payload = json_encode($list, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $html = '<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Berkas Digital</title><style>html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;background:#0b0b0b;color:#fff}#app{height:100%;display:flex;flex-direction:column}#viewer{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}#viewer img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .25s ease}#meta{padding:12px 16px;background:#111;display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#d1d5db}#actions{display:flex;gap:8px}button{background:#1f2937;border:1px solid #374151;color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.hint{opacity:.75}</style></head><body><div id="app"><div id="viewer"><img id="image" src="" alt=""><button id="prev" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);">◀</button><button id="next" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);">▶</button></div><div id="meta"><div><div id="filename"></div><div class="hint" id="date"></div></div><div id="actions"><span class="hint" id="index"></span></div></div></div><script>const items='.$payload.';let index='.$currentIndex.';const image=document.getElementById("image");const filename=document.getElementById("filename");const date=document.getElementById("date");const indexEl=document.getElementById("index");const prev=document.getElementById("prev");const next=document.getElementById("next");const update=()=>{const item=items[index];image.src=item.url;filename.textContent=item.filename||"";date.textContent="Tanggal: "+(item.label||"Tidak tersedia");indexEl.textContent=(index+1)+"/"+items.length;prev.disabled=index<=0;next.disabled=index>=items.length-1;};const go=(delta)=>{const nextIndex=index+delta;if(nextIndex<0||nextIndex>=items.length)return;index=nextIndex;update();};prev.addEventListener("click",()=>go(-1));next.addEventListener("click",()=>go(1));window.addEventListener("keydown",(e)=>{if(e.key==="ArrowLeft")go(-1);if(e.key==="ArrowRight")go(1);});let startX=null;document.getElementById("viewer").addEventListener("touchstart",(e)=>{startX=e.touches[0].clientX;});document.getElementById("viewer").addEventListener("touchend",(e)=>{if(startX===null)return;const dx=e.changedTouches[0].clientX-startX;startX=null;if(Math.abs(dx)<40)return;if(dx<0)go(1);else go(-1);});update();</script></body></html>';
+
+        return response($html)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    public function storeBerkasDigital(Request $request)
+    {
+        if (! Schema::hasTable('berkas_digital_perawatan')) {
+            return response()->json(['message' => 'Tabel berkas digital belum tersedia'], 422);
+        }
+
+        $rules = [
+            'no_rawat' => 'required|string|max:17',
+            'kode' => 'required|string|max:10',
+            'file' => 'required|file|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ];
+
+        if (Schema::hasTable('master_berkas_digital')) {
+            $rules['kode'] = 'required|string|max:10|exists:master_berkas_digital,kode';
+        }
+
+        $validated = $request->validate($rules);
+        $file = $request->file('file');
+        $originalName = (string) $file->getClientOriginalName();
+        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+        $baseName = preg_replace('/[^A-Za-z0-9._-]/', '_', $baseName);
+        $baseName = $baseName !== '' ? $baseName : 'berkas';
+        $extension = strtolower((string) $file->getClientOriginalExtension());
+        $suffix = date('YmdHis').'-'.substr(md5(uniqid('', true)), 0, 6);
+        $filename = $baseName.'-'.$suffix;
+        if ($extension !== '') {
+            $filename .= '.'.$extension;
+        }
+
+        $dir = 'berkas-digital/'.$validated['no_rawat'].'/'.$validated['kode'];
+        $storedPath = $file->storeAs($dir, $filename, 'public');
+
+        DB::table('berkas_digital_perawatan')->insert([
+            'no_rawat' => $validated['no_rawat'],
+            'kode' => $validated['kode'],
+            'lokasi_file' => $storedPath,
+        ]);
+
+        return response()->json([
+            'data' => [
+                'no_rawat' => $validated['no_rawat'],
+                'kode' => $validated['kode'],
+                'lokasi_file' => $storedPath,
+                'file_url' => asset('storage/'.ltrim($storedPath, '/')),
+            ],
+        ]);
+    }
+
+    public function deleteBerkasDigital(Request $request)
+    {
+        if (! Schema::hasTable('berkas_digital_perawatan')) {
+            return response()->json(['message' => 'Tabel berkas digital belum tersedia'], 422);
+        }
+
+        $validated = $request->validate([
+            'no_rawat' => 'required|string|max:17',
+            'kode' => 'required|string|max:10',
+            'lokasi_file' => 'required|string|max:600',
+        ]);
+
+        $deleted = DB::table('berkas_digital_perawatan')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->where('kode', $validated['kode'])
+            ->where('lokasi_file', $validated['lokasi_file'])
+            ->delete();
+
+        $path = (string) $validated['lokasi_file'];
+        if (str_contains($path, '/storage/')) {
+            $path = substr($path, strpos($path, '/storage/') + 9);
+        }
+        $path = ltrim($path, '/');
+        if ($path !== '') {
+            Storage::disk('public')->delete($path);
+        }
+
+        if ($deleted === 0) {
+            return response()->json(['message' => 'Berkas tidak ditemukan'], 404);
+        }
+
+        return response()->json(['message' => 'Berkas dihapus']);
     }
 
     /**

@@ -208,6 +208,14 @@ export default function LanjutanRalanSidebar({
                     description: 'Radiologi & Imaging',
                     active: menuConfig.activeTab === 'radiologi',
                     colorScheme: 'indigo'
+                },
+                {
+                    id: 'berkas-digital',
+                    name: 'Berkas Digital',
+                    icon: 'document',
+                    description: 'Dokumen & Berkas Pasien',
+                    active: menuConfig.activeTab === 'berkasDigital',
+                    colorScheme: 'purple'
                 }
             ]
         }
@@ -328,7 +336,7 @@ export default function LanjutanRalanSidebar({
 	const handleMenuClick = (menu) => {
 		if (menu.children && menu.children.length > 0) {
 			toggleExpanded(menu.id);
-		} else if (menuConfig.onTabChange && ['cppt', 'tarif-tindakan', 'resep', 'diagnosa', 'odontogram', 'lab', 'radiologi'].includes(menu.id)) {
+		} else if (menuConfig.onTabChange && ['cppt', 'tarif-tindakan', 'resep', 'diagnosa', 'odontogram', 'lab', 'radiologi', 'berkas-digital'].includes(menu.id)) {
 			// Handle tab change for examination menus
 			const tabMap = {
 				'cppt': 'cppt',
@@ -337,7 +345,8 @@ export default function LanjutanRalanSidebar({
 				'diagnosa': 'diagnosa',
 				'odontogram': 'odontogram',
 				'lab': 'lab',
-				'radiologi': 'radiologi'
+				'radiologi': 'radiologi',
+				'berkas-digital': 'berkasDigital'
 			};
 			menuConfig.onTabChange(tabMap[menu.id]);
 		} else {

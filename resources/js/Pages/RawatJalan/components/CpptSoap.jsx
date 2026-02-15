@@ -12,7 +12,7 @@ import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, Us
 import toast from '@/tools/toast';
 import { buildCopyFormData } from './cpptSoapCopy.js';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, onOpenBerkasDigital = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -2197,10 +2197,26 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', on
                                 />
                             </div>
                             <div className="bg-emerald-50/80 border border-emerald-100 rounded-xl p-3">
-                                <label className="text-xs uppercase tracking-wide font-bold text-emerald-700 flex items-center gap-2 mb-2">
-                                    <Stethoscope className="w-3.5 h-3.5" />
-                                    Objektif
-                                </label>
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <label className="text-xs uppercase tracking-wide font-bold text-emerald-700 flex items-center gap-2">
+                                        <Stethoscope className="w-3.5 h-3.5" />
+                                        Objektif
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            if (typeof onOpenBerkasDigital === 'function') {
+                                                e.preventDefault();
+                                                onOpenBerkasDigital();
+                                            }
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+                                        title="Buka Berkas Digital"
+                                    >
+                                        <FileText className="w-3 h-3" />
+                                        Berkas Digital
+                                    </button>
+                                </div>
                                 <textarea
                                     name="pemeriksaan"
                                     value={formData.pemeriksaan}
