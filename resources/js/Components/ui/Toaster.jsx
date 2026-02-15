@@ -2,7 +2,8 @@ import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Toast from "./Toast";
 
-export default function Toaster({ toasts = [], onRemove }) {
+export default function Toaster({ toasts = [], onRemove, onDismiss }) {
+  const handleRemove = onRemove || onDismiss;
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2 pointer-events-none">
       <AnimatePresence initial={false}>
@@ -14,7 +15,7 @@ export default function Toaster({ toasts = [], onRemove }) {
               title={t.title}
               message={t.message}
               duration={t.duration}
-              onClose={() => onRemove?.(t.id)}
+              onClose={() => handleRemove?.(t.id)}
             />
           </motion.div>
         ))}

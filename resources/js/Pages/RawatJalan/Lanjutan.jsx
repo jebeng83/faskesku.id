@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
@@ -52,6 +52,20 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [loadingSkriningVisual, setLoadingSkriningVisual] = useState(false);
     const [poliCalling, setPoliCalling] = useState(false);
     const [poliRepeatCalling, setPoliRepeatCalling] = useState(false);
+    const [berkasCategories, setBerkasCategories] = useState([]);
+    const [berkasItems, setBerkasItems] = useState([]);
+    const [berkasLoading, setBerkasLoading] = useState(false);
+    const [berkasError, setBerkasError] = useState("");
+    const [berkasUploading, setBerkasUploading] = useState(false);
+    const [berkasProcessing, setBerkasProcessing] = useState(false);
+    const [selectedBerkasKode, setSelectedBerkasKode] = useState("");
+    const [selectedBerkasFile, setSelectedBerkasFile] = useState(null);
+    const [berkasInputKey, setBerkasInputKey] = useState(0);
+    const [berkasFilterOpen, setBerkasFilterOpen] = useState(false);
+    const [berkasFilterSearch, setBerkasFilterSearch] = useState("");
+    const [berkasFilterSelected, setBerkasFilterSelected] = useState([]);
+    const [berkasSortOrder, setBerkasSortOrder] = useState("desc");
+    const [berkasPage, setBerkasPage] = useState(1);
 
     const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
 
@@ -94,6 +108,365 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const handleTabChange = (tab) => {
         setActiveTab(tab);
     };
+
+    const getBerkasFilename = (path) => {
+        if (!path) return "Berkas";
+        const clean = String(path).split("?")[0];
+        const parts = clean.split("/");
+        return parts[parts.length - 1] || "Berkas";
+    };
+
+    const getBerkasUploadDate = (item) => {
+        const source = getBerkasFilename(item?.lokasi_file || item?.file_url || "");
+        const match = source.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+        if (!match) return null;
+        const [, year, month, day, hour, minute, second] = match;
+        const parsed = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second)
+        );
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed;
+    };
+
+    const formatBerkasUploadDate = (date) => {
+        if (!date || Number.isNaN(date.getTime())) return "Tidak tersedia";
+        const pad = (value) => String(value).padStart(2, "0");
+        return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
+    const MAX_BERKAS_BYTES = 5 * 1024 * 1024;
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+    const compressImageFile = useCallback(async (file) => {
+        if (!ALLOWED_IMAGE_TYPES.includes(file?.type || "")) {
+            throw new Error("Format berkas harus JPG, PNG, atau WEBP.");
+        }
+        if (file.size <= MAX_BERKAS_BYTES) {
+            return file;
+        }
+
+        const imageBitmap = typeof window !== "undefined" && typeof window.createImageBitmap === "function"
+            ? await window.createImageBitmap(file)
+            : await new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error("Gagal memuat gambar."));
+                };
+                img.src = url;
+            });
+
+        const sourceWidth = imageBitmap.width || imageBitmap.naturalWidth || 0;
+        const sourceHeight = imageBitmap.height || imageBitmap.naturalHeight || 0;
+        if (!sourceWidth || !sourceHeight) {
+            if (typeof imageBitmap.close === "function") {
+                imageBitmap.close();
+            }
+            throw new Error("Ukuran gambar tidak valid.");
+        }
+
+        let targetWidth = sourceWidth;
+        let targetHeight = sourceHeight;
+        const maxDimension = 2000;
+        const scaleBy = Math.min(1, maxDimension / Math.max(sourceWidth, sourceHeight));
+        if (scaleBy < 1) {
+            targetWidth = Math.round(sourceWidth * scaleBy);
+            targetHeight = Math.round(sourceHeight * scaleBy);
+        }
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            if (typeof imageBitmap.close === "function") {
+                imageBitmap.close();
+            }
+            throw new Error("Canvas tidak tersedia.");
+        }
+
+        const outputType = file.type === "image/png" ? "image/jpeg" : file.type;
+        let quality = 0.9;
+        let blob = null;
+        let attempts = 0;
+
+        while (attempts < 8) {
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            ctx.clearRect(0, 0, targetWidth, targetHeight);
+            ctx.drawImage(imageBitmap, 0, 0, targetWidth, targetHeight);
+
+            blob = await new Promise((resolve) =>
+                canvas.toBlob(resolve, outputType, quality)
+            );
+
+            if (blob && blob.size <= MAX_BERKAS_BYTES) {
+                break;
+            }
+
+            if (quality > 0.6) {
+                quality = Math.max(0.6, quality - 0.1);
+            } else {
+                targetWidth = Math.max(600, Math.floor(targetWidth * 0.85));
+                targetHeight = Math.max(600, Math.floor(targetHeight * 0.85));
+            }
+
+            attempts += 1;
+        }
+
+        if (typeof imageBitmap.close === "function") {
+            imageBitmap.close();
+        }
+
+        if (!blob) {
+            throw new Error("Gagal mengompres gambar.");
+        }
+        if (blob.size > MAX_BERKAS_BYTES) {
+            throw new Error("Ukuran berkas masih lebih dari 5MB.");
+        }
+
+        let nextName = file.name || "berkas";
+        if (outputType === "image/jpeg" && !nextName.toLowerCase().endsWith(".jpg") && !nextName.toLowerCase().endsWith(".jpeg")) {
+            nextName = nextName.replace(/\.[^/.]+$/, "");
+            nextName = `${nextName || "berkas"}.jpg`;
+        } else if (outputType === "image/webp" && !nextName.toLowerCase().endsWith(".webp")) {
+            nextName = nextName.replace(/\.[^/.]+$/, "");
+            nextName = `${nextName || "berkas"}.webp`;
+        } else if (outputType === "image/png" && !nextName.toLowerCase().endsWith(".png")) {
+            nextName = nextName.replace(/\.[^/.]+$/, "");
+            nextName = `${nextName || "berkas"}.png`;
+        }
+
+        if (typeof window !== "undefined" && typeof window.File === "function") {
+            return new window.File([blob], nextName, { type: outputType, lastModified: Date.now() });
+        }
+
+        return {
+            blob,
+            name: nextName,
+            size: blob.size,
+            type: outputType,
+        };
+    }, []);
+
+    const getBerkasUploadErrorMessage = (err) => {
+        const response = err?.response;
+        const status = response?.status;
+        const data = response?.data;
+        const fieldMessage = data?.errors?.file?.[0] || data?.errors?.kode?.[0] || data?.errors?.no_rawat?.[0];
+        if (fieldMessage) return fieldMessage;
+        if (status === 403) return "Anda tidak memiliki izin untuk mengunggah berkas.";
+        if (status === 413) return "Ukuran berkas terlalu besar untuk server.";
+        if (status === 419) return "Sesi telah berakhir. Muat ulang halaman dan coba lagi.";
+        if (status === 422) return data?.message || "Data berkas tidak valid.";
+        if (err?.message === "Network Error") return "Koneksi bermasalah. Periksa jaringan dan coba lagi.";
+        return data?.message || err?.message || "Gagal mengunggah berkas";
+    };
+
+    const handleOpenBerkas = useCallback((url) => {
+        setBerkasError("");
+        if (!url) {
+            setBerkasError("Tautan berkas tidak tersedia");
+            return;
+        }
+        if (typeof window === "undefined") {
+            return;
+        }
+        let safeUrl = url;
+        try {
+            safeUrl = new URL(url, window.location.origin).toString();
+        } catch (_) {
+            setBerkasError("Tautan berkas tidak valid");
+            return;
+        }
+        try {
+            const opened = window.open(safeUrl, "_blank", "noopener,noreferrer");
+            if (!opened) {
+                setBerkasError("Popup diblokir browser. Izinkan pop-up untuk membuka berkas.");
+            }
+        } catch (_) {
+            setBerkasError("Gagal membuka berkas");
+        }
+    }, []);
+
+    const loadBerkasDigital = useCallback(async (noRawat) => {
+        if (!noRawat) return;
+        setBerkasLoading(true);
+        setBerkasError("");
+        try {
+            const [kategoriRes, berkasRes] = await Promise.all([
+                axios.get(route("rawat-jalan.berkas-digital.kategori")),
+                axios.get(route("rawat-jalan.berkas-digital.list", { no_rawat: noRawat })),
+            ]);
+            setBerkasCategories(kategoriRes?.data?.data || []);
+            setBerkasItems(berkasRes?.data?.data || []);
+        } catch (_err) {
+            setBerkasError("Gagal memuat berkas digital");
+            setBerkasCategories([]);
+            setBerkasItems([]);
+        } finally {
+            setBerkasLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeTab !== "berkasDigital") return;
+        if (!currentNoRawat) return;
+        loadBerkasDigital(currentNoRawat);
+    }, [activeTab, currentNoRawat, loadBerkasDigital]);
+
+    const handleBerkasFileChange = (file) => {
+        if (!file) {
+            setSelectedBerkasFile(null);
+            return;
+        }
+        setBerkasProcessing(true);
+        setBerkasError("");
+        compressImageFile(file)
+            .then((compressed) => {
+                setSelectedBerkasFile(compressed);
+            })
+            .catch((err) => {
+                setSelectedBerkasFile(null);
+                setBerkasInputKey(Date.now());
+                setBerkasError(err?.message || "Gagal memproses berkas.");
+            })
+            .finally(() => {
+                setBerkasProcessing(false);
+            });
+    };
+
+    const handleBerkasUpload = async () => {
+        const file = selectedBerkasFile;
+        const kode = selectedBerkasKode;
+        if (!currentNoRawat) {
+            setBerkasError("No. rawat belum tersedia");
+            return;
+        }
+        if (!kode) {
+            setBerkasError("Pilih kategori terlebih dahulu");
+            return;
+        }
+        if (!file) {
+            setBerkasError("Pilih berkas terlebih dahulu");
+            return;
+        }
+        const blobCtor = typeof window !== "undefined" ? window.Blob : null;
+        const fileCtor = typeof window !== "undefined" ? window.File : null;
+        const hasBlobConstructor = typeof blobCtor === "function";
+        const hasFileConstructor = typeof fileCtor === "function";
+        const isBlob = hasBlobConstructor && file instanceof blobCtor;
+        const isFile = hasFileConstructor && file instanceof fileCtor;
+        const fileBlob = isBlob ? file : file?.blob;
+        const fileName = isFile ? file.name : file?.name;
+        const fileSize = typeof file?.size === "number" ? file.size : fileBlob?.size;
+        if (!fileBlob) {
+            setBerkasError("Berkas tidak valid.");
+            return;
+        }
+        if (fileSize > MAX_BERKAS_BYTES) {
+            setBerkasError("Ukuran berkas harus maksimal 5MB.");
+            return;
+        }
+        setBerkasUploading(true);
+        setBerkasError("");
+        try {
+            const formData = new FormData();
+            formData.append("no_rawat", currentNoRawat);
+            formData.append("kode", kode);
+            formData.append("file", fileBlob, fileName || "berkas");
+            await axios.post(route("rawat-jalan.berkas-digital.store"), formData, {
+                headers: { "Content-Type": "multipart/form-data", Accept: "application/json" },
+            });
+            setSelectedBerkasFile(null);
+            setBerkasInputKey(Date.now());
+            await loadBerkasDigital(currentNoRawat);
+        } catch (_err) {
+            setBerkasError(getBerkasUploadErrorMessage(_err));
+        } finally {
+            setBerkasUploading(false);
+        }
+    };
+
+    const handleBerkasDelete = async (item) => {
+        if (!item) return;
+        if (!window.confirm("Hapus berkas ini?")) return;
+        setBerkasUploading(true);
+        setBerkasError("");
+        try {
+            await axios.delete(route("rawat-jalan.berkas-digital.delete"), {
+                data: {
+                    no_rawat: item?.no_rawat || currentNoRawat,
+                    kode: item?.kode,
+                    lokasi_file: item?.lokasi_file,
+                },
+            });
+            await loadBerkasDigital(currentNoRawat);
+        } catch (_err) {
+            setBerkasError("Gagal menghapus berkas");
+        } finally {
+            setBerkasUploading(false);
+        }
+    };
+
+    const berkasCategoryCounts = useMemo(() => {
+        const counts = {};
+        berkasItems.forEach((item) => {
+            const kode = String(item?.kode || "");
+            if (!kode) return;
+            counts[kode] = (counts[kode] || 0) + 1;
+        });
+        return counts;
+    }, [berkasItems]);
+
+    const filteredBerkasCategories = useMemo(() => {
+        const term = berkasFilterSearch.trim().toLowerCase();
+        return berkasCategories.filter((kategori) => {
+            const kode = String(kategori?.kode || "");
+            const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+            if (!term) return true;
+            return `${kode} ${nama}`.toLowerCase().includes(term);
+        });
+    }, [berkasCategories, berkasFilterSearch]);
+
+    const filteredBerkasItems = useMemo(() => {
+        const selectedSet = new Set(berkasFilterSelected);
+        const withMeta = berkasItems.map((item, index) => {
+            const date = getBerkasUploadDate(item);
+            const time = date ? date.getTime() : 0;
+            return { item, index, time };
+        });
+        const filtered = withMeta.filter(({ item }) => {
+            if (selectedSet.size === 0) return true;
+            return selectedSet.has(String(item?.kode || ""));
+        });
+        filtered.sort((a, b) => {
+            if (a.time === b.time) return a.index - b.index;
+            return berkasSortOrder === "asc" ? a.time - b.time : b.time - a.time;
+        });
+        return filtered.map(({ item }) => item);
+    }, [berkasItems, berkasFilterSelected, berkasSortOrder]);
+
+    const berkasPageSize = 6;
+    const berkasTotalPages = Math.max(1, Math.ceil(filteredBerkasItems.length / berkasPageSize));
+    const berkasPagedItems = useMemo(() => {
+        const start = (berkasPage - 1) * berkasPageSize;
+        return filteredBerkasItems.slice(start, start + berkasPageSize);
+    }, [filteredBerkasItems, berkasPage, berkasPageSize]);
+
+    useEffect(() => {
+        if (berkasPage > berkasTotalPages) {
+            setBerkasPage(berkasTotalPages);
+        }
+    }, [berkasPage, berkasTotalPages]);
 
 
     const getSkriningBadgeClasses = (v) => {
@@ -314,6 +687,27 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             ),
             color: "indigo",
         },
+        {
+            key: "berkasDigital",
+            title: "Berkas Digital",
+            subtitle: "Berkas Pasien & Kategori",
+            icon: (
+                <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                </svg>
+            ),
+            color: "purple",
+        },
     ];
 
 
@@ -345,7 +739,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             noRawat: selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat,
         };
 
-        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi", "odontogram"].includes(activeTab));
+        const isCppt = activeTab === "cppt" || (!["tarifTindakan", "resep", "diagnosa", "lab", "radiologi", "odontogram", "berkasDigital"].includes(activeTab));
         const isResep = activeTab === "resep";
 
         return (
@@ -397,6 +791,282 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     initialDokterNama={selectedDokterNamaForResep}
                 />}
                 {activeTab === "radiologi" && <PermintaanRadiologi {...commonProps} />}
+                {activeTab === "berkasDigital" && (
+                    <div className="space-y-4">
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                        <svg className="w-5 h-5 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Berkas Digital</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Kelola berkas pasien berdasarkan kategori</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => loadBerkasDigital(currentNoRawat)}
+                                    className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    Muat Ulang
+                                </button>
+                            </div>
+                            {berkasError && (
+                                <div className="mt-3 text-sm text-red-600 dark:text-red-400">
+                                    {berkasError}
+                                </div>
+                            )}
+                            {berkasLoading ? (
+                                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                    Memuat berkas digital...
+                                </div>
+                            ) : !currentNoRawat ? (
+                                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                    No. rawat belum tersedia.
+                                </div>
+                            ) : berkasCategories.length === 0 ? (
+                                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                                    Kategori berkas digital belum tersedia.
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_auto] gap-3 items-center">
+                                        <div>
+                                            <label className="text-xs text-gray-600 dark:text-gray-400">Kategori</label>
+                                            <select
+                                                value={selectedBerkasKode}
+                                                onChange={(e) => setSelectedBerkasKode(e.target.value)}
+                                                className="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-3 py-2"
+                                            >
+                                                <option value="">Pilih kategori</option>
+                                                {berkasCategories.map((kategori) => {
+                                                    const kode = String(kategori?.kode || "");
+                                                    const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+                                                    return (
+                                                        <option key={kode || nama} value={kode}>
+                                                            {kode ? `${kode} - ${nama}` : nama}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-600 dark:text-gray-400">Berkas</label>
+                                            <input
+                                                key={berkasInputKey}
+                                                type="file"
+                                                onChange={(e) => handleBerkasFileChange(e.target.files?.[0] || null)}
+                                                accept="image/jpeg,image/png,image/webp"
+                                                className="mt-1 block w-full text-xs text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 dark:file:bg-purple-900/30 dark:file:text-purple-200"
+                                            />
+                                            {berkasProcessing && (
+                                                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                                    Mengompres berkas...
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="mt-5">
+                                            <button
+                                                type="button"
+                                                onClick={handleBerkasUpload}
+                                                disabled={berkasUploading || berkasProcessing}
+                                                className={`text-xs px-4 py-2 rounded-lg border ${berkasUploading || berkasProcessing ? "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600" : "border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/30"}`}
+                                            >
+                                                {berkasUploading ? "Mengunggah..." : berkasProcessing ? "Mengompres..." : "Unggah"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h10M7 11h10M7 15h6m-6 4h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Riwayat Berkas Digital</h3>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Daftar berkas yang sudah diunggah</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <select
+                                        value={berkasSortOrder}
+                                        onChange={(e) => setBerkasSortOrder(e.target.value)}
+                                        className="text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-900"
+                                    >
+                                        <option value="desc">Terbaru</option>
+                                        <option value="asc">Terlama</option>
+                                    </select>
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setBerkasFilterOpen((prev) => !prev)}
+                                            className={`text-xs px-3 py-1.5 rounded-lg border ${berkasFilterSelected.length > 0 ? "border-blue-200 text-blue-700 dark:border-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300"}`}
+                                        >
+                                            Filter Kategori {berkasFilterSelected.length > 0 ? `(${berkasFilterSelected.length})` : ""}
+                                        </button>
+                                        {berkasFilterOpen && (
+                                            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg p-3 z-20">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">Kategori</div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBerkasFilterSelected([])}
+                                                        className="text-[11px] text-blue-600 dark:text-blue-300 hover:underline"
+                                                    >
+                                                        Clear All
+                                                    </button>
+                                                </div>
+                                                <input
+                                                    value={berkasFilterSearch}
+                                                    onChange={(e) => setBerkasFilterSearch(e.target.value)}
+                                                    placeholder="Cari kategori..."
+                                                    className="mt-2 w-full text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2 py-1.5"
+                                                />
+                                                <div className="mt-2 max-h-48 overflow-y-auto space-y-1">
+                                                    {filteredBerkasCategories.length === 0 ? (
+                                                        <div className="text-[11px] text-gray-500 dark:text-gray-400">Kategori tidak ditemukan.</div>
+                                                    ) : (
+                                                        filteredBerkasCategories.map((kategori) => {
+                                                            const kode = String(kategori?.kode || "");
+                                                            const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+                                                            const checked = berkasFilterSelected.includes(kode);
+                                                            return (
+                                                                <label key={`${kode}-${nama}`} className={`flex items-center justify-between gap-2 text-xs px-2 py-1.5 rounded-lg cursor-pointer ${checked ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
+                                                                    <div className="flex items-center gap-2 min-w-0">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={checked}
+                                                                            onChange={() => {
+                                                                                setBerkasFilterSelected((prev) => (
+                                                                                    prev.includes(kode)
+                                                                                        ? prev.filter((value) => value !== kode)
+                                                                                        : [...prev, kode]
+                                                                                ));
+                                                                            }}
+                                                                        />
+                                                                        <span className="truncate">{kode ? `${kode} - ${nama}` : nama}</span>
+                                                                    </div>
+                                                                    <span className="text-[11px] text-gray-500 dark:text-gray-400">{berkasCategoryCounts[kode] || 0}</span>
+                                                                </label>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            {berkasFilterSelected.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {berkasFilterSelected.map((kode) => {
+                                        const kategori = berkasCategories.find((item) => String(item?.kode || "") === String(kode));
+                                        const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+                                        return (
+                                            <span key={kode} className="text-[11px] px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-700">
+                                                {kode ? `${kode} - ${nama}` : nama}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            <div className="mt-4">
+                                {berkasLoading ? (
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                        Memuat riwayat berkas...
+                                    </div>
+                                ) : filteredBerkasItems.length === 0 ? (
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                        Belum ada riwayat berkas digital.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {berkasPagedItems.map((item) => {
+                                            const kode = String(item?.kode || "");
+                                            const kategori = berkasCategories.find((k) => String(k?.kode || "") === kode);
+                                            const namaKategori = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+                                            const uploadDate = getBerkasUploadDate(item);
+                                            const formattedUploadDate = formatBerkasUploadDate(uploadDate);
+                                            const filename = getBerkasFilename(item?.lokasi_file || item?.file_url);
+                                            const tooltip = `Kategori: ${namaKategori}\nKode: ${kode || "-"}\nTanggal: ${formattedUploadDate}\nFile: ${filename}`;
+                                            return (
+                                                <div key={`${item?.kode}-${item?.lokasi_file}`} className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-xs font-semibold dark:bg-blue-900/30 dark:text-blue-300">
+                                                            {kode || "-"}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                                                {namaKategori}
+                                                            </div>
+                                                            {item?.file_url || item?.lokasi_file ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleOpenBerkas(item?.file_url || item?.lokasi_file)}
+                                                                    className="text-xs text-blue-600 dark:text-blue-300 hover:underline truncate block transition-colors"
+                                                                    title={tooltip}
+                                                                >
+                                                                    {filename}
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 dark:text-gray-500 truncate block">
+                                                                    Berkas tidak tersedia
+                                                                </span>
+                                                            )}
+                                                            <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                                Diunggah: {formattedUploadDate}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleBerkasDelete(item)}
+                                                        className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                        {berkasTotalPages > 1 && (
+                                            <div className="flex items-center justify-between gap-3 pt-2">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Halaman {berkasPage} dari {berkasTotalPages}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBerkasPage((prev) => Math.max(1, prev - 1))}
+                                                        disabled={berkasPage === 1}
+                                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
+                                                    >
+                                                        Sebelumnya
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setBerkasPage((prev) => Math.min(berkasTotalPages, prev + 1))}
+                                                        disabled={berkasPage === berkasTotalPages}
+                                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
+                                                    >
+                                                        Berikutnya
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </>
         );
     };
