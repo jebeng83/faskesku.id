@@ -750,6 +750,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         onOpenResep={() => setActiveTab("resep")}
                         onOpenDiagnosa={() => setActiveTab("diagnosa")}
                         onOpenLab={() => setActiveTab("lab")}
+                                onOpenBerkasDigital={() => setActiveTab("berkasDigital")}
                         appendToPlanning={resepAppendItems}
                         onPlanningAppended={() => setResepAppendItems(null)}
                         appendToAssessment={diagnosaAppendItems}
