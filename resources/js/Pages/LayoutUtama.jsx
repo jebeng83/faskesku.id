@@ -12,12 +12,18 @@ import {
   LogOut,
   Menu,
   X,
+  Home,
 } from "lucide-react";
 import DropdownMenu, { DropdownItem, DropdownDivider } from "@/Components/DropdownMenu";
 import LanjutanRegistrasiLayout from "@/Layouts/LanjutanRegistrasiLayout";
 import { route } from "ziggy-js";
 
-export default function LayoutUtama({ title = "Layout Utama", left, children }) {
+export default function LayoutUtama({
+  title = "Layout Utama",
+  left,
+  children,
+  chrome = true,
+}) {
   const [activeView, _setActiveView] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { auth } = usePage().props || {};
@@ -44,6 +50,7 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
   const email = auth?.user?.email || "";
 
   const navLinks = [
+    { href: route("dashboard"), label: "Home", icon: Home },
     { href: route("registration.index"), label: "Pendaftaran", icon: UserPlus },
     { href: route("rawat-jalan.index"), label: "Rawat Jalan", icon: Stethoscope },
     { href: route("igd.index"), label: "UGD", icon: Ambulance },
@@ -52,6 +59,15 @@ export default function LayoutUtama({ title = "Layout Utama", left, children }) 
     { href: route("rawat-inap.index"), label: "Rawat Inap", icon: BedDouble },
     { href: "/akutansi/kasir-ralan", label: "Kasir", icon: CreditCard },
   ];
+
+  if (!chrome) {
+    return (
+      <>
+        <Head title={title} />
+        {children}
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">

@@ -182,33 +182,22 @@ function formatTanggal(dateString) {
     if (!dateString) return "-";
 
     try {
-        // Handle berbagai format input
-        let date;
+        const raw = String(dateString);
 
-        // Jika format ISO dengan timezone (2025-11-24T17:00:00.000000Z)
-        if (dateString.includes("T")) {
-            date = new Date(dateString);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+            const [y, m, d] = raw.split("-");
+            return `${d}/${m}/${y}`;
         }
-        // Jika format YYYY-MM-DD
-        else if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            date = new Date(dateString + "T00:00:00");
-        }
-        // Format lainnya, coba parse langsung
-        else {
-            date = new Date(dateString);
-        }
+
+        const date = new Date(raw);
 
         // Validasi apakah date valid
         if (isNaN(date.getTime())) {
-            return dateString; // Return as-is jika tidak bisa di-parse
+            return raw; // Return as-is jika tidak bisa di-parse
         }
 
-        // Format menjadi DD/MM/YYYY
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const year = date.getFullYear();
-
-        return `${day}/${month}/${year}`;
+        const tz = getAppTimeZone();
+        return date.toLocaleDateString("en-GB", { timeZone: tz });
     } catch {
         // Jika error, return as-is
         return dateString;
@@ -450,7 +439,17 @@ function Modal({ title, children, onClose }) {
     );
 }
 
-export default function BillingPage({ statusOptions = [], initialNoRawat }) {
+export function BillingPage({
+    statusOptions = [],
+    initialNoRawat,
+    heading = "Billing Pasien",
+    categoryMap,
+    forceTodayOnly = true,
+    showKasirRalanLink = true,
+    useLayout = true,
+    notaApiBase = "/api/akutansi/nota-jalan",
+    notaLabel = "nota_jalan",
+}) {
     const [noRawat, setNoRawat] = React.useState(initialNoRawat || "");
     const [invoice, setInvoice] = React.useState(null);
     const [items, setItems] = React.useState([]);
@@ -473,7 +472,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
     const [loadingRequests, setLoadingRequests] = React.useState(false);
 
     // Pemetaan kategori UI -> status billing (dipakai bersama oleh PembayaranTab dan handleSnapshot)
-    const CATEGORY_MAP = [
+    const CATEGORY_MAP = categoryMap || [
         { label: "Laboratorium", keys: ["Laborat", "TtlLaborat"] },
         { label: "Radiologi", keys: ["Radiologi", "TtlRadiologi"] },
         {
@@ -560,16 +559,19 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             setInvoice(invRes.data);
             console.warn("loadData: Invoice data diterima:", invRes.data);
 
-            // Items untuk CRUD (butuh noindex)
-            // Tambahkan filter tanggal hari ini untuk memastikan hanya data hari ini yang ditampilkan
-            const today = todayDateString();
-            const apiUrl = buildUrl("/api/akutansi/billing", {
+            const params = {
                 no_rawat: noRawat,
                 q,
                 status: statusFilter,
-                start_date: today, // Filter mulai dari tanggal hari ini
-                end_date: today, // Filter sampai tanggal hari ini
-            });
+            };
+
+            if (forceTodayOnly) {
+                const today = todayDateString();
+                params.start_date = today;
+                params.end_date = today;
+            }
+
+            const apiUrl = buildUrl("/api/akutansi/billing", params);
             console.warn("loadData: Fetching billing dari:", apiUrl);
             const apiRes = await axios.get(apiUrl);
             console.warn("loadData: Billing response:", {
@@ -775,7 +777,6 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         }
     };
 
-    // Validasi ringan sebelum simpan item billing + cek keberadaan nota_jalan
     const validateBeforeSave = async (payload) => {
         if (!payload?.no_rawat) {
             notifyWarning("No. Rawat wajib diisi sebelum simpan.");
@@ -786,7 +787,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             return false;
         }
         try {
-            const existsUrl = buildUrl("/api/akutansi/nota-jalan/exists", {
+            const existsUrl = buildUrl(`${notaApiBase}/exists`, {
                 no_rawat: payload.no_rawat,
             });
             const existsRes = await axios.get(existsUrl);
@@ -794,13 +795,13 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             if (count > 0) {
                 // Ikuti perilaku Java: jika nota sudah ada, blokir simpan baru
                 notifyWarning(
-                    "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Tidak bisa menyimpan ulang."
+                    `Tagihan sudah pernah disimpan (${notaLabel} sudah ada). Tidak bisa menyimpan ulang.`
                 );
                 return false;
             }
         } catch (_e) {
             // Jika gagal cek, tetap lanjut tapi beri peringatan
-            console.warn("Gagal cek nota_jalan exists:", _e?.message);
+            console.warn(`Gagal cek ${notaLabel} exists:`, _e?.message);
         }
         return true;
     };
@@ -879,19 +880,19 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // Akun pendapatan tidak perlu dipilih di UI. Sistem akan memilih otomatis dari master rekening (rekening & subrekening)
         // berdasarkan status layanan (Ranap/Ralan → prefix 41/42) atau fallback prefix 43 jika tidak tersedia.
         try {
-            const existsUrl = buildUrl("/api/akutansi/nota-jalan/exists", {
+            const existsUrl = buildUrl(`${notaApiBase}/exists`, {
                 no_rawat: noRawat,
             });
             const existsRes = await axios.get(existsUrl);
             const count = Number(existsRes?.data?.count || 0);
             if (count > 0) {
                 notifyWarning(
-                    "Tagihan sudah pernah disimpan (nota_jalan sudah ada). Snapshot tidak diizinkan."
+                    `Tagihan sudah pernah disimpan (${notaLabel} sudah ada). Snapshot tidak diizinkan.`
                 );
                 return false;
             }
         } catch (_e) {
-            console.warn("Gagal cek nota_jalan exists:", _e?.message);
+            console.warn(`Gagal cek ${notaLabel} exists:`, _e?.message);
         }
         return true;
     };
@@ -939,7 +940,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         // 2) Buat nota_jalan jika belum ada, nomor otomatis per tanggal
         let noNota = invoice?.nota?.no_nota || null;
         try {
-            const createNotaRes = await axios.post("/api/akutansi/nota-jalan", {
+            const createNotaRes = await axios.post(notaApiBase, {
                 no_rawat: payload.no_rawat,
                 tanggal: payload.tgl_byr,
                 jam:
@@ -951,13 +952,13 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             const errorMsg =
                 _e?.response?.data?.message ||
                 _e?.message ||
-                "Gagal membuat nota_jalan";
+                `Gagal membuat ${notaLabel}`;
             console.error(
-                "Gagal membuat nota_jalan:",
+                `Gagal membuat ${notaLabel}:`,
                 errorMsg,
                 _e?.response?.data
             );
-            notifyError(`Gagal membuat nota_jalan: ${errorMsg}`);
+            notifyError(`Gagal membuat ${notaLabel}: ${errorMsg}`);
             // Jangan lanjut jika gagal membuat nota_jalan
             return;
         }
@@ -1111,7 +1112,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
 
         try {
             const snapRes = await axios.post(
-                "/api/akutansi/nota-jalan/snapshot",
+                `${notaApiBase}/snapshot`,
                 {
                     no_rawat: noRawat,
                     toggles,
@@ -1171,7 +1172,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         } catch (_e) {
             notifyError(
                 _e?.response?.data?.message ||
-                    "Snapshot billing gagal. Pastikan data sumber tersedia dan belum ada nota_jalan."
+                    `Snapshot billing gagal. Pastikan data sumber tersedia dan belum ada ${notaLabel}.`
             );
             return;
         }
@@ -1192,23 +1193,23 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
             }
 
             const createNotaRes = await axios.post(
-                "/api/akutansi/nota-jalan",
+                notaApiBase,
                 notaPayload
             );
             noNota = createNotaRes?.data?.no_nota || null;
-            if (noNota) notify(`Nota jalan dibuat: ${noNota}`);
+            if (noNota) notify(`Nota dibuat: ${noNota}`);
         } catch (_e) {
             const errorMsg =
                 _e?.response?.data?.message ||
                 _e?.message ||
-                "Gagal membuat nota_jalan setelah snapshot";
+                `Gagal membuat ${notaLabel} setelah snapshot`;
             console.error(
-                "Gagal membuat nota_jalan setelah snapshot:",
+                `Gagal membuat ${notaLabel} setelah snapshot:`,
                 errorMsg,
                 _e?.response?.data
             );
             notifyError(
-                `Gagal membuat nota_jalan: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`
+                `Gagal membuat ${notaLabel}: ${errorMsg}. Anda dapat membuatnya manual dari menu terkait.`
             );
             // Jangan lanjut jika gagal membuat nota_jalan
             return;
@@ -1467,8 +1468,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
         }
     }, [activeTab, noRawat, items.length]); // Trigger saat tab/noRawat/items berubah
 
-    return (
-        <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
+    const content = (
         <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -1498,7 +1498,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.3 }}
                             >
-                                Billing Pasien
+                                {heading}
                             </motion.h1>
                         </div>
                     </div>
@@ -1515,18 +1515,20 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                             />
                             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </div>
-                        <motion.div
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Link
-                                href={route("akutansi.kasir-ralan.page")}
-                                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold text-sm"
+                        {showKasirRalanLink ? (
+                            <motion.div
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                             >
-                                <CreditCard className="w-4 h-4" />
-                                Data Kasir
-                            </Link>
-                        </motion.div>
+                                <Link
+                                    href={route("akutansi.kasir-ralan.page")}
+                                    className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 transition-all duration-300 text-white font-semibold text-sm"
+                                >
+                                    <CreditCard className="w-4 h-4" />
+                                    Data Kasir
+                                </Link>
+                            </motion.div>
+                        ) : null}
                         <motion.button
                             onClick={loadData}
                             disabled={loading}
@@ -1607,7 +1609,8 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     Nota {invoice.nota?.jenis}:{" "}
                                     {invoice.nota?.no_nota} •{" "}
-                                    {invoice.nota?.tanggal} {invoice.nota?.jam}
+                                    {formatTanggal(invoice.nota?.tanggal)}{" "}
+                                    {invoice.nota?.jam}
                                 </p>
                             )}
                         </motion.div>
@@ -1771,6 +1774,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                         categoryMap={CATEGORY_MAP}
                         noRawat={noRawat}
                         invoice={invoice}
+                        notaLabel={notaLabel}
                         onSave={({
                             selectedCategories,
                             ppnPercent,
@@ -2130,9 +2134,21 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
                 )}
             </AnimatePresence>
         </motion.div>
+    );
+
+    if (!useLayout) return content;
+
+    return (
+        <LayoutUtama
+            title="Keuangan"
+            left={<SidebarKeuanganMenu title="Keuangan" />}
+        >
+            {content}
         </LayoutUtama>
     );
 }
+
+export default BillingPage;
 
  
 
@@ -2140,7 +2156,7 @@ export default function BillingPage({ statusOptions = [], initialNoRawat }) {
  * Tab: Pembayaran
  * Menampilkan rangkuman pembayaran dengan pilihan komponen biaya yang disertakan.
  */
-function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
+function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLabel }) {
     const [selected, setSelected] = React.useState(() =>
         // Default: semua komponen aktif (mirip notaralan=="Yes")
         (Array.isArray(categoryMap) ? categoryMap : []).map((c) => c.label)
@@ -2455,10 +2471,14 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice }) {
                     disabled={!noRawat || !invoice?.nota?.no_nota}
                     onClick={() => {
                         if (noRawat) {
+                            const base =
+                                String(notaLabel || "")
+                                    .toLowerCase()
+                                    .includes("inap")
+                                    ? "/akutansi/nota-inap"
+                                    : "/akutansi/nota-jalan";
                             router.visit(
-                                `/akutansi/nota-jalan?no_rawat=${encodeURIComponent(
-                                    noRawat
-                                )}`
+                                `${base}?no_rawat=${encodeURIComponent(noRawat)}`
                             );
                         }
                     }}

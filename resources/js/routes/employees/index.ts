@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
-* @see routes/web.php:2089
+* @see routes/web.php:2097
 * @route '/employees/petugas'
 */
 export const petugas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ petugas.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2089
+* @see routes/web.php:2097
 * @route '/employees/petugas'
 */
 petugas.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ petugas.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2089
+* @see routes/web.php:2097
 * @route '/employees/petugas'
 */
 petugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ petugas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2089
+* @see routes/web.php:2097
 * @route '/employees/petugas'
 */
 petugas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -36,6 +36,25 @@ class BillingController extends Controller
     }
 
     /**
+     * Render halaman Inertia untuk Billing Rawat Inap.
+     */
+    public function ranapPage(Request $request)
+    {
+        $statusOptions = [
+            'Laborat', 'Radiologi', 'Operasi', 'Obat', 'Ranap Dokter', 'Ranap Dokter Paramedis', 'Ranap Paramedis',
+            'Ralan Dokter', 'Ralan Dokter Paramedis', 'Ralan Paramedis', 'Tambahan', 'Potongan', 'Administrasi', 'Kamar', '-',
+            'Registrasi', 'Harian', 'Service', 'TtlObat', 'TtlRanap Dokter', 'TtlRanap Paramedis', 'TtlRalan Dokter',
+            'TtlRalan Paramedis', 'TtlKamar', 'Dokter', 'Perawat', 'TtlTambahan', 'Retur Obat', 'TtlRetur Obat', 'Resep Pulang',
+            'TtlResep Pulang', 'TtlPotongan', 'TtlLaborat', 'TtlOperasi', 'TtlRadiologi', 'Tagihan',
+        ];
+
+        return inertia('Akutansi/BillingRawatInap', [
+            'statusOptions' => $statusOptions,
+            'initialNoRawat' => $request->query('no_rawat'),
+        ]);
+    }
+
+    /**
      * Render halaman Inertia untuk Kasir Ralan (UI serupa Billing, sesuai DlgKasirRalan).
      */
     public function kasirRalanPage(Request $request)

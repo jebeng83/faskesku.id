@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:1837
-* @route '/akutansi/closing-kasir'
+* @see \App\Http\Controllers\Akutansi\NotaInapController::page
+* @see app/Http/Controllers/Akutansi/NotaInapController.php:15
+* @route '/akutansi/nota-inap'
 */
 export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -10,20 +11,22 @@ export const page = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 page.definition = {
     methods: ["get","head"],
-    url: '/akutansi/closing-kasir',
+    url: '/akutansi/nota-inap',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1837
-* @route '/akutansi/closing-kasir'
+* @see \App\Http\Controllers\Akutansi\NotaInapController::page
+* @see app/Http/Controllers/Akutansi/NotaInapController.php:15
+* @route '/akutansi/nota-inap'
 */
 page.url = (options?: RouteQueryOptions) => {
     return page.definition.url + queryParams(options)
 }
 
 /**
-* @see routes/web.php:1837
-* @route '/akutansi/closing-kasir'
+* @see \App\Http\Controllers\Akutansi\NotaInapController::page
+* @see app/Http/Controllers/Akutansi/NotaInapController.php:15
+* @route '/akutansi/nota-inap'
 */
 page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: page.url(options),
@@ -31,16 +34,17 @@ page.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:1837
-* @route '/akutansi/closing-kasir'
+* @see \App\Http\Controllers\Akutansi\NotaInapController::page
+* @see app/Http/Controllers/Akutansi/NotaInapController.php:15
+* @route '/akutansi/nota-inap'
 */
 page.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: page.url(options),
     method: 'head',
 })
 
-const closingKasir = {
+const notaInap = {
     page: Object.assign(page, page),
 }
 
-export default closingKasir
+export default notaInap

@@ -7,7 +7,6 @@ import {
   NotebookTabs,
   Stethoscope,
   Pill,
-  CalendarDays,
   Building2,
   HeartPulse,
   User,
@@ -43,7 +42,6 @@ function useBridingNavigation() {
       pcareMapObat: safeRoute("pcare.mapping.obat", "/pcare/mapping/obat"),
       pcareDataKunjungan: safeRoute("pcare.data-kunjungan", "/pcare/data-kunjungan"),
       pcareFormPendaftaran: safeRoute("pcare.form-pendaftaran", "/pcare/form-pendaftaran"),
-      jadwalDokter: safeRoute("jadwal.index", "/jadwal"),
       ssOrg: safeRoute("satusehat.prerequisites.organization", "/satusehat/prerequisites/organization"),
       ssLoc: safeRoute("satusehat.prerequisites.location", "/satusehat/prerequisites/location"),
       ssLocFarmasi: safeRoute("satusehat.prerequisites.location_farmasi", "/satusehat/prerequisites/location-farmasi"),
@@ -98,7 +96,6 @@ function useBridingNavigation() {
       { href: paths.pcareMapObat, label: "Mapping Obat PCare", icon: Pill, permission: "pcare.mapping-obat" },
       { href: paths.pcareDataKunjungan, label: "Data Kunjungan", icon: NotebookTabs, permission: "pcare.index" },
       { href: paths.pcareFormPendaftaran, label: "Form Pendaftaran", icon: NotebookTabs, permission: "pcare.index" },
-      { href: paths.jadwalDokter, label: "Jadwal Dokter", icon: CalendarDays, permission: "jadwal.index" },
     ].filter((l) => !l.permission || can(l.permission)),
     [paths, permissions]
   );

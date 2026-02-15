@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 import notaJalan from './nota-jalan'
+import notaInap from './nota-inap'
 import pengeluaranHarian from './pengeluaran-harian'
 import kategoriPengeluaranHarian8f62d6 from './kategori-pengeluaran-harian'
 import jurnal from './jurnal'
@@ -66,6 +67,7 @@ kategoriPengeluaranHarian.head = (options?: RouteQueryOptions): RouteDefinition<
 
 const akutansi = {
     notaJalan: Object.assign(notaJalan, notaJalan),
+    notaInap: Object.assign(notaInap, notaInap),
     pengeluaranHarian: Object.assign(pengeluaranHarian, pengeluaranHarian),
     kategoriPengeluaranHarian: Object.assign(kategoriPengeluaranHarian, kategoriPengeluaranHarian8f62d6),
     jurnal: Object.assign(jurnal, jurnal),

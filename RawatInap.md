@@ -147,6 +147,131 @@
 - Penerbitan `nota_inap`.
 - Referensi status implementasi saat ini ada di [VERIFIKASI_ALUR_BILLING_END_TO_END.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/VERIFIKASI_ALUR_BILLING_END_TO_END.md#L202-L258) dan [database.md](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/docs/database.md#L455-L490).
 
+### Referensi Java: DlgBilingRanap
+- Source utama: [DlgBilingRanap.java](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L67-L7761).
+- Fungsi inti modul: kasir/billing ranap end-to-end (preview tagihan → cetak nota/kuitansi → snapshot `billing` + `nota_inap` → posting jurnal + piutang).
+- Karakteristik penting: 1 layar menggabungkan agregasi layanan (kamar, tindakan, obat, operasi, dll) + mekanisme pembayaran multi-metode + piutang, dengan guardrail “data billing terverifikasi tidak boleh dihapus”.
+
+### Mode Operasi (Preview vs Sudah Tersimpan)
+- Penentu mode: `count(billing.no_rawat)` untuk `no_rawat` yang dipilih, lihat [isRawat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L4968-L5103).
+- Mode preview (`i<=0`):
+  - Menghitung ulang item billing dari tabel operasional, lalu mengisi grid billing.
+  - Deposit diambil dari `deposit` (bukan `nota_inap`), lihat [isRawat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5028-L5063).
+  - Memuat draft “akun bayar” dan “akun piutang” (pilihan metode pembayaran/piutang).
+- Mode sudah tersimpan (`i>0`):
+  - Memuat snapshot dari tabel `billing` (urut `noindex`) dan timestamp dari `nota_inap`, lihat [isRawat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5063-L5098).
+  - Deposit diambil dari `nota_inap.Uang_Muka`.
+  - Memuat `detail_nota_inap` dan `detail_piutang_pasien` sebagai detail pembayaran/piutang yang sudah tersimpan.
+
+### Sumber Data & Komponen Biaya (yang membentuk isi `billing`)
+#### 1) Header kunjungan, deposit, registrasi
+- Identitas pasien: `reg_periksa` → `pasien` (nama, jk, tgl lahir), lihat [isRawat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L4988-L5026).
+- Registrasi dan metadata rawat: query `reg_periksa` + `kamar_inap` untuk tanggal masuk/keluar dan lama, lalu menambahkan baris “No.Nota”, “Bangsal/Kamar”, “Registrasi”, lihat [prosesCariReg()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5136-L5318).
+- Flag tampilan “administrasi/registrasi” di billing: `set_nota.tampilkan_administrasi_di_billingranap`, dibaca saat constructor, lihat [DlgBilingRanap()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L554-L665).
+
+#### 2) Kamar inap & biaya harian
+- Data kamar (timeline) dari `kamar_inap` + `kamar` + `bangsal`, termasuk fallback `tgl_keluar/jam_keluar` jika masih `0000-00-00`/`00:00:00`, lihat deklarasi SQL [sqlpskamarin](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L111-L118) dan implementasi [prosesCariKamar()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5529-L5686).
+- Biaya kamar sekali: `biaya_sekali` per `kd_kamar`.
+- Biaya kamar harian: `biaya_harian` per `kd_kamar`, dikali “lama”.
+- Tambahan/potongan per item (tamkur): memakai `temporary_tambahan_potongan` sebagai override granular per nama item + status kategori (mis. “Kamar”, “Harian”), lihat penggunaan `sqlpstamkur` di [prosesCariKamar()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5538-L5658).
+- Ranap gabung ibu-bayi: jika ada `norawatbayi` dan `persenbayi>0`, biaya kamar bayi dihitung persentase dari tarif ibu, lihat [prosesCariKamar()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5558-L5571).
+
+#### 3) Tindakan (Ralan + Ranap) berbasis kategori perawatan
+- Loop kategori: `kategori_perawatan` menjadi “section” di rincian biaya, lihat [prosesCariTindakan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6019-L6467).
+- Sumber tabel tindakan:
+  - Ralan: `rawat_jl_dr`, `rawat_jl_drpr`, `rawat_jl_pr`.
+  - Ranap: `rawat_inap_dr`, `rawat_inap_drpr`, `rawat_inap_pr`.
+- Filter scope tindakan:
+  - Checkbox “Ralan/Ranap” mempengaruhi query `status like ?` (untuk operasi/obat) dan memutuskan blok agregasi tindakan yang ditampilkan.
+- Mode rincian dokter (tarif vs total):
+  - `set_nota.rinciandokterranap=Yes` mengubah cara hitung: menampilkan tarif per dokter + akumulasi BHP/material/jasa sarpras sebagai baris terpisah (indikasi pembagian komponen biaya), lihat [prosesCariTindakan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6089-L6136).
+
+#### 4) Pemeriksaan Laborat & Radiologi
+- Laborat:
+  - Sumber tabel: `periksa_lab` + `jns_perawatan_lab`, dengan tambahan komponen item dari `detail_periksa_lab`, lihat [prosesCariTindakan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6329-L6393).
+  - Cara hitung: `periksa_lab.biaya` dikali jumlah tindakan + ditambah total `detail_periksa_lab.biaya_item` per jenis perawatan.
+  - Filter status: mengikuti checkbox “Ralan/Ranap” (`periksa_lab.status like ?`).
+- Radiologi:
+  - Sumber tabel: `periksa_radiologi` + `jns_perawatan_radiologi`, lihat [prosesCariTindakan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6395-L6458).
+  - Mendukung tambahan/potongan per item via `temporary_tambahan_potongan` dengan status “Radiologi”.
+  - Filter status: mengikuti checkbox “Ralan/Ranap” (`periksa_radiologi.status like ?`).
+
+#### 5) Operasi
+- Sumber tabel: `operasi` + `paket_operasi`, lihat [sqlpsoperasi](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L184-L200) dan implementasi [prosesCariOperasi()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6470-L6630).
+- Mode rincian operasi:
+  - `set_nota.rincianoperasi=Yes` memecah operasi menjadi komponen biaya (operator/anestesi/akomodasi/dll) dan menjumlahkan `operasi.biaya` sebagai total.
+
+#### 6) Obat & BHP + Retur + PPN
+- Sumber utama:
+  - Tagihan obat langsung: `tagihan_obat_langsung` (baris “Obat & BHP Langsung”), lihat [prosesCariObat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5325-L5350).
+  - Obat operasi: `beri_obat_operasi` + `obatbhp_ok`, lihat [sqlpsobatoperasi](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L100-L105) dan [prosesCariObat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5366-L5403).
+  - Pemberian obat: `detail_pemberian_obat` + `databarang` + `jenis` (menggabungkan total + embalase/tuslah), lihat [prosesCariObat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5411-L5459).
+  - Retur obat: `returjual` + `detreturjual` + `databarang` (nilai negatif), lihat [sqlpsreturobat](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L105-L110) dan [prosesCariObat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5467-L5511).
+- PPN obat:
+  - Jika `set_nota.tampilkan_ppnobat_ranap=Yes`, sistem menambah baris “PPN Obat” (11%) berdasarkan (total obat + retur), lihat [prosesCariObat()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5513-L5519).
+  - Akun PPN Keluaran diambil dari `set_akun.PPN_Keluaran` (fallback: akun obat), lihat [DlgBilingRanap()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L655-L660).
+
+#### 7) Resep pulang
+- Sumber tabel: `resep_pulang` + `databarang`, lihat [prosesResepPulang()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5688-L5744).
+- Mendukung tambahan/potongan per item via `temporary_tambahan_potongan` dengan status “Resep Pulang”.
+
+#### 8) Tambahan & potongan biaya
+- Sumber tabel:
+  - Tambahan: `tambahan_biaya`, lihat [prosesCariTambahan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6632-L6668).
+  - Potongan: `pengurangan_biaya`, lihat [prosesCariPotongan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L6670-L6690).
+- Catatan penting: saat snapshot `billing` disimpan, sistem juga membuat sinkronisasi “tambahan/potongan per item” berbasis nilai kolom “Tambahan” pada baris billing (positif → `tambahan_biaya`, negatif → `pengurangan_biaya`), lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7330-L7389).
+
+#### 9) Service charge (biaya service ranap)
+- Sumber konfigurasi: `set_service_ranap` atau `set_service_ranap_piutang` tergantung centang piutang, lihat [prosesCariService()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5746-L5829).
+- Cara hitung: persen `set_service_*.besar/100` dikali subtotal kategori yang di-enable (`laborat`, `radiologi`, `obat`, `kamar`, dst), lalu di-rounding, kemudian ditambahkan sebagai baris “Service”.
+
+### Tabel DB kunci (yang dipakai langsung oleh Java)
+- Snapshot & invoice: `nota_inap`, `billing`.
+- Detail pembayaran: `detail_nota_inap`, `akun_bayar`.
+- Piutang: `piutang_pasien`, `detail_piutang_pasien`, `akun_piutang`.
+- Sumber agregasi layanan: `kamar_inap`, `rawat_inap_*`, `rawat_jl_*`, `periksa_lab`, `detail_periksa_lab`, `periksa_radiologi`, `operasi`, `resep_pulang`, `tambahan_biaya`, `pengurangan_biaya`, `tagihan_obat_langsung`, `detail_pemberian_obat`, `returjual`, `detreturjual`, `beri_obat_operasi`.
+- Konfigurasi & mapping akun: `set_nota`, `set_service_ranap`, `set_service_ranap_piutang`, `set_akun`, `set_akun_ranap`, `set_akun_ranap2`.
+- Utility proses cetak & penyesuaian: `temporary_bayar_ranap`, `temporary_tambahan_potongan`, `tampjurnal`.
+
+### Snapshot & Posting Akuntansi
+#### 1) Penerbitan nota
+- Nota ranap dibuat di `nota_inap` (no_rawat, no_nota, tanggal, jam, uang muka), lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7273-L7324).
+- Penomoran nota: `Valid.autoNomer3(..., YYYY/MM/DD/RI####)`, pola suffix `/RI` + 4 digit.
+
+#### 2) Snapshot detail billing
+- Sistem melakukan snapshot seluruh grid ke tabel `billing` baris-per-baris, lihat insert [sqlpsbiling](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L202-L210) dan loop insert di [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7330-L7390).
+- Konsep kategori di kolom `billing.status` dipakai untuk rekap: “Obat”, “Operasi”, “Kamar”, “Registrasi”, “Service”, dll, dihitung oleh [isHitung()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L5831-L5904).
+
+#### 3) Pembayaran multi-metode + piutang
+- Detail pembayaran disimpan ke `detail_nota_inap` (akun bayar + nominal + PPN) dan menjadi basis jurnal, lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7392-L7561).
+- Detail piutang disimpan ke `detail_piutang_pasien`, dan jika ada piutang maka dibuat juga `piutang_pasien`, lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7562-L7717).
+- Integrasi tagihan eksternal:
+  - `tagihan_sadewa` dicatat saat pelunasan/piutang (status “Sudah/Belum”), lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7705-L7729).
+  - Host-to-host bank (Jateng/Papua/Jabar/Mandiri) dan BRIVA dibuat berdasarkan akun bayar terpilih, lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7412-L7555).
+
+#### 4) Posting jurnal (tampjurnal → jurnal/detailjurnal)
+- Pola: hapus `tampjurnal`, isi pasangan akun (Debet/Kredit) untuk pembayaran + piutang + kategori pendapatan + PPN + deposit + retur, lalu panggil `Jurnal.simpanJurnal(...)`, lihat [isSimpan()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L7392-L7733).
+- Mapping rekening ranap diambil dari `set_akun_ranap` dan `set_akun_ranap2`, dibaca saat constructor, lihat [DlgBilingRanap()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L596-L665).
+
+### Cetak Nota/Kwitansi (Java → Web)
+- Java membuat dataset cetak ke `temporary_bayar_ranap` untuk item yang dicentang pada grid, lalu memanggil report PHP via URL (LaporanBilling2/3/4/8/11), lihat [BtnNotaActionPerformed()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L3868-L4054).
+- Implikasi implementasi web:
+  - Web perlu endpoint “render invoice” (HTML/PDF) yang setara dengan variasi Nota 1/Nota 2/Kwitansi/Kwitansi Piutang.
+  - Web perlu meniru pilihan “item yang dicentang” (subset item) bila ingin parity fitur.
+
+### Guardrail “Terverifikasi”
+- Banyak aksi edit/hapus diblok bila billing sudah terverifikasi, memakai `Sequel.cariRegistrasi(no_rawat)>0` (konsep: sudah diposting/berkaitan dengan transaksi yang tidak boleh diubah), contoh pemakaian ada di beberapa menu seperti potongan, ubah lama inap, input obat, lihat potongan kode di [BtnSimpanActionPerformed()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L3578-L3640) dan [MnPotonganActionPerformed()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgBilingRanap.java#L3553-L3564).
+
+### Rekomendasi Implementasi di Web (Parity dengan Java)
+- Konsep API yang disarankan (mengikuti pola yang sudah dipakai di modul billing web):
+  - Endpoint preview billing ranap yang mengagregasi tabel operasional (tanpa menulis `billing`).
+  - Endpoint snapshot billing ranap yang melakukan transaksi atomik: buat `nota_inap` → insert `billing` → simpan detail bayar/piutang → posting jurnal → update `reg_periksa.status_bayar`.
+  - Endpoint cetak invoice yang membaca dari snapshot `billing` + `nota_inap` (lebih stabil) dan tidak dari tabel operasional.
+- Parity fitur yang perlu diputuskan sejak awal:
+  - Apakah mendukung multi-metode bayar seperti Java (lebih dari 1 akun bayar).
+  - Apakah mendukung service charge berbasis konfigurasi kategori seperti `set_service_ranap(_piutang)`.
+  - Apakah mendukung PPN obat (11%) dan mapping akun PPN Keluaran.
+
 ## 5) Permission & Audit
 - Java mengandalkan `akses.*` untuk enable/disable menu, lihat [isCek()](file:///Users/mistermaster/Documents/trae_projects/Faskesku.id/faskesku.id/public/DlgKamarInap.java#L19385-L19610).
 - Di web perlu pemetaan yang setara:
@@ -160,4 +285,3 @@
 - Aktif: `stts_pulang='-'`.
 - Pindah kamar: `stts_pulang='Pindah Kamar'` (historis, bukan discharge final).
 - Discharge final: selain `'-'` dan selain `'Pindah Kamar'`.
-

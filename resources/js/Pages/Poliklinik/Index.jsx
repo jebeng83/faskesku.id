@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Head, usePage, router } from "@inertiajs/react";
-import LayoutUtama from "@/Pages/LayoutUtama";
-import LanjutanRegistrasiSidebar from "@/Components/LanjutanRegistrasiSidebar";
+import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building2, Plus, Search as SearchIcon, Edit2, Globe, Trash } from "lucide-react";
 import { Toaster } from "@/Components/ui";
@@ -151,7 +150,7 @@ export default function PoliklinikIndex() {
 	};
 
   return (
-    <LayoutUtama title="Manajemen Poliklinik" left={<LanjutanRegistrasiSidebar title="Registrasi Pasien" menuConfig={{ activeTab: "poliklinik" }} />}>
+    <SidebarPengaturan title="Manajemen Poliklinik">
       <Head title="Manajemen Poliklinik" />
 
       <motion.div
@@ -393,7 +392,7 @@ export default function PoliklinikIndex() {
         <CreateModal isOpen={isCreateOpen} onClose={closeCreate} addToast={addToast} />
         <EditModal isOpen={isEditOpen} onClose={closeEdit} item={editing} addToast={addToast} />
       </motion.div>
-    </LayoutUtama>
+    </SidebarPengaturan>
   );
 }
 

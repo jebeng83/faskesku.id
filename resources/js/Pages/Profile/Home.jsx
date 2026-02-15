@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Cog6ToothIcon,
     ShieldCheckIcon,
-    LinkIcon,
     BuildingOffice2Icon,
     ClipboardDocumentListIcon,
+    UserIcon,
+    IdentificationIcon,
     UsersIcon,
     ChartBarIcon,
 } from "@heroicons/react/24/outline";
@@ -78,6 +79,43 @@ const tabs = [
         ],
     },
     {
+        key: "kepegawaian",
+        label: "Kepegawian",
+        items: [
+            {
+                title: "Pegawai",
+                description: "Manajemen data pegawai",
+                href: route("employees.index"),
+                icon: UsersIcon,
+                accent: "from-emerald-500 to-teal-500",
+            },
+            {
+                title: "Dokter",
+                description: "Manajemen data dokter",
+                href: route("doctors.index"),
+                icon: UserIcon,
+                accent: "from-sky-500 to-blue-500",
+            },
+            {
+                title: "Petugas",
+                description: "Manajemen data petugas",
+                href: route("employees.petugas"),
+                icon: IdentificationIcon,
+                accent: "from-amber-500 to-orange-500",
+            },
+        ],
+    },
+    {
+        key: "farmasi",
+        label: "Farmasi",
+        items: [],
+    },
+    {
+        key: "akutansi",
+        label: "Akutansi",
+        items: [],
+    },
+    {
         key: "hakAkses",
         label: "Pengaturan Hak Akses",
         items: [
@@ -128,81 +166,6 @@ const tabs = [
                 href: route("jadwal.index"),
                 icon: ChartBarIcon,
                 accent: "from-indigo-500 to-blue-500",
-            },
-        ],
-    },
-    {
-        key: "pcare",
-        label: "Bridging PCare",
-        items: [
-            {
-                title: "Setting PCare",
-                description: "Konfigurasi integrasi PCare",
-                href: route("pcare.setting.index"),
-                icon: LinkIcon,
-                accent: "from-sky-500 to-blue-500",
-            },
-            {
-                title: "Setting Mobile JKN",
-                description: "Konfigurasi integrasi Mobile JKN",
-                href: route("pcare.setting.mobilejkn.index"),
-                icon: LinkIcon,
-                accent: "from-emerald-500 to-teal-500",
-            },
-            {
-                title: "Mapping Dokter",
-                description: "Relasi dokter RS ↔ PCare",
-                href: route("pcare.mapping.dokter"),
-                icon: UsersIcon,
-                accent: "from-amber-500 to-orange-500",
-            },
-            {
-                title: "Mapping Poli",
-                description: "Relasi poli RS ↔ PCare",
-                href: route("pcare.mapping.poli"),
-                icon: BuildingOffice2Icon,
-                accent: "from-cyan-500 to-blue-500",
-            },
-            {
-                title: "Mapping Obat",
-                description: "Relasi obat RS ↔ PCare",
-                href: route("pcare.mapping.obat"),
-                icon: ClipboardDocumentListIcon,
-                accent: "from-violet-500 to-fuchsia-500",
-            },
-        ],
-    },
-    {
-        key: "satusehat",
-        label: "Bridging Satu Sehat",
-        items: [
-            {
-                title: "Mapping Organisasi",
-                description: "Pemetaan organisasi",
-                href: route("satusehat.prerequisites.organization"),
-                icon: BuildingOffice2Icon,
-                accent: "from-indigo-500 to-blue-500",
-            },
-            {
-                title: "Mapping Location",
-                description: "Pemetaan lokasi poli",
-                href: route("satusehat.prerequisites.location"),
-                icon: ClipboardDocumentListIcon,
-                accent: "from-sky-500 to-cyan-500",
-            },
-            {
-                title: "Location Farmasi",
-                description: "Pemetaan lokasi farmasi",
-                href: route("satusehat.prerequisites.location_farmasi"),
-                icon: ClipboardDocumentListIcon,
-                accent: "from-purple-500 to-pink-500",
-            },
-            {
-                title: "Location Ranap",
-                description: "Pemetaan lokasi rawat inap",
-                href: route("satusehat.prerequisites.location_ranap"),
-                icon: ClipboardDocumentListIcon,
-                accent: "from-teal-500 to-emerald-500",
             },
         ],
     },

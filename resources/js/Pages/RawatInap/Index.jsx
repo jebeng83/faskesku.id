@@ -23,7 +23,7 @@ export default function Index(props = {}) {
 
     const [modal, setModal] = useState({ type: null, row: null });
     const [formCheckIn, setFormCheckIn] = useState({ no_rawat: '', kd_kamar: '', diagnosa_awal: '' });
-    const [formCheckOut, setFormCheckOut] = useState({ stts_pulang: 'Pulang', diagnosa_akhir: '' });
+    const [formCheckOut, setFormCheckOut] = useState({ stts_pulang: 'Atas Persetujuan Dokter', diagnosa_akhir: '' });
     const [formPindah, setFormPindah] = useState({ kd_kamar_tujuan: '' });
     const [formGabung, setFormGabung] = useState({ no_rawat_bayi: '' });
     const [selectedRow, setSelectedRow] = useState(null);
@@ -36,10 +36,38 @@ export default function Index(props = {}) {
     const normalizedSttsPulangOptions = useMemo(() => {
         const base = Array.isArray(sttsPulangOptions) ? sttsPulangOptions : [];
         const fixed = base.filter((v) => v !== null && v !== undefined);
-        const defaults = ['Pulang', 'Rujuk', 'Meninggal'];
-        const merged = Array.from(new Set([...fixed, ...defaults]));
-        return merged.length > 0 ? merged : defaults;
+        const defaults = [
+            'Sehat',
+            'Rujuk',
+            'APS',
+            '+',
+            'Meninggal',
+            'Sembuh',
+            'Membaik',
+            'Pulang Paksa',
+            '-',
+            'Pindah Kamar',
+            'Status Belum Lengkap',
+            'Atas Persetujuan Dokter',
+            'Atas Permintaan Sendiri',
+            'Isoman',
+            'Lain-lain',
+        ];
+        const seen = new Set(defaults.map((v) => String(v)));
+        const extras = fixed
+            .map((v) => String(v))
+            .filter((v) => v.trim() !== '' && !seen.has(v));
+        const merged = [...defaults, ...extras];
+        return merged;
     }, [sttsPulangOptions]);
+
+    const selectedIsPulang = useMemo(() => {
+        const tgl = selectedRow?.tgl_keluar;
+        const byDate = !!tgl && tgl !== '0000-00-00';
+        const stts = selectedRow?.stts_pulang;
+        const byStatus = !!stts && stts !== '-';
+        return byDate || byStatus;
+    }, [selectedRow?.tgl_keluar, selectedRow?.stts_pulang]);
 
     useEffect(() => {
         let mounted = true;
@@ -226,15 +254,8 @@ export default function Index(props = {}) {
         setActionSuccess('');
     };
 
-    const openCheckIn = () => {
-        setFormCheckIn({ no_rawat: '', kd_kamar: '', diagnosa_awal: '' });
-        setModal({ type: 'checkin', row: null });
-        setActionError('');
-        setActionSuccess('');
-    };
-
     const openCheckOut = (row) => {
-        setFormCheckOut({ stts_pulang: 'Pulang', diagnosa_akhir: '' });
+        setFormCheckOut({ stts_pulang: 'Atas Persetujuan Dokter', diagnosa_akhir: '' });
         setModal({ type: 'checkout', row });
         setActionError('');
         setActionSuccess('');
@@ -473,13 +494,6 @@ export default function Index(props = {}) {
                             Rawat Inap
                         </motion.h1>
                         <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={openCheckIn}
-                                className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 hover:bg-white dark:hover:bg-gray-800 text-gray-900 dark:text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm"
-                            >
-                                Check-in Ranap
-                            </button>
                             <div className="hidden lg:block">
                                 <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-xl px-4 py-2 shadow-xl shadow-blue-500/5">
                                     <div className="text-center">
@@ -836,8 +850,8 @@ export default function Index(props = {}) {
                                             closeMenu();
                                             openCheckOut(selectedRow);
                                         }}
-                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
                                     >
                                         Check-out
                                     </button>
@@ -847,8 +861,8 @@ export default function Index(props = {}) {
                                             closeMenu();
                                             openPindah(selectedRow);
                                         }}
-                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
                                     >
                                         Pindah
                                     </button>
@@ -858,27 +872,27 @@ export default function Index(props = {}) {
                                             closeMenu();
                                             openGabung(selectedRow);
                                         }}
-                                        disabled={busy || selectedRow.gabung_role === 'Bayi'}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || selectedRow.gabung_role === 'Bayi' ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang || selectedRow?.gabung_role === 'Bayi'}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang || selectedRow?.gabung_role === 'Bayi' ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
                                     >
                                         Gabung
                                     </button>
                                     <motion.button
                                         type="button"
                                         onClick={() => handleUpdateHariRawat()}
-                                        disabled={busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-')}
+                                        disabled={busy || selectedIsPulang}
                                         whileHover={
-                                            !reduceMotion && !(busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-'))
+                                            !reduceMotion && !(busy || selectedIsPulang)
                                                 ? { scale: 1.02, y: -1 }
                                                 : undefined
                                         }
                                         whileTap={
-                                            !reduceMotion && !(busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-'))
+                                            !reduceMotion && !(busy || selectedIsPulang)
                                                 ? { scale: 0.98 }
                                                 : undefined
                                         }
                                         transition={softTransition}
-                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || (selectedRow.stts_pulang && selectedRow.stts_pulang !== '-') ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
                                     >
                                         <span className="flex items-center justify-center gap-2">
                                             <RefreshCw className={`w-4 h-4 ${updatingHariRawat ? 'animate-spin' : ''}`} />
@@ -889,10 +903,29 @@ export default function Index(props = {}) {
                                         type="button"
                                         onClick={() => {
                                             closeMenu();
+                                            router.visit(route('akutansi.billing-rawat-inap.page', { no_rawat: selectedRow?.no_rawat || '' }));
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${
+                                            busy || !selectedRow?.no_rawat
+                                                ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                                : 'bg-white dark:bg-gray-800 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800 hover:bg-cyan-50/60 dark:hover:bg-cyan-900/20'
+                                        }`}
+                                    >
+                                        Billing
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
                                             openHapus(selectedRow);
                                         }}
-                                        disabled={busy}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${
+                                            busy || !selectedRow?.no_rawat || selectedIsPulang
+                                                ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                                : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'
+                                        }`}
                                     >
                                         Hapus
                                     </button>
@@ -913,8 +946,8 @@ export default function Index(props = {}) {
                                                 preserveState: true,
                                             });
                                         }}
-                                        disabled={busy || !selectedRow?.no_rawat}
-                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
                                     >
                                         CPPT / SOAP
                                     </button>
@@ -936,8 +969,8 @@ export default function Index(props = {}) {
                                                 router.visit(`/rawat-inap/canvas?${params}`);
                                             }
                                         }}
-                                        disabled={busy || !selectedRow?.no_rawat}
-                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
                                     >
                                         Canvas Ranap
                                     </button>
@@ -964,8 +997,8 @@ export default function Index(props = {}) {
                                                 router.visit(`/rawat-inap/canvas?${params}`);
                                             }
                                         }}
-                                        disabled={busy || !selectedRow?.no_rawat}
-                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
                                     >
                                         Input Tindakan
                                     </button>
@@ -981,8 +1014,8 @@ export default function Index(props = {}) {
                                                 preserveState: true,
                                             });
                                         }}
-                                        disabled={busy || !selectedRow?.no_rawat}
-                                        className={`h-10 min-w-[170px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[170px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50/60 dark:hover:bg-purple-900/20'}`}
                                     >
                                         Tarif Tindakan
                                     </button>
@@ -995,7 +1028,7 @@ export default function Index(props = {}) {
                                         type="button"
                                         onClick={() => {
                                             closeMenu();
-                                            router.visit(route('akutansi.billing.page', { no_rawat: selectedRow.no_rawat }));
+                                            router.visit(route('akutansi.billing-rawat-inap.page', { no_rawat: selectedRow.no_rawat }));
                                         }}
                                         disabled={busy || !selectedRow.no_rawat}
                                         className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow.no_rawat ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
@@ -1112,23 +1145,24 @@ export default function Index(props = {}) {
                 <div className="space-y-3">
                     <div>
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Status Pulang</div>
-                        <select
+                        <SearchableSelect
+                            options={normalizedSttsPulangOptions}
                             value={formCheckOut.stts_pulang}
-                            onChange={(e) => setFormCheckOut((s) => ({ ...s, stts_pulang: e.target.value }))}
-                            className="w-full h-10 px-3 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white"
-                        >
-                            {normalizedSttsPulangOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => setFormCheckOut((s) => ({ ...s, stts_pulang: val }))}
+                            placeholder="Pilih status pulang"
+                            searchPlaceholder="Cari status..."
+                            className="w-full"
+                        />
                     </div>
                     <div>
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Diagnosa Akhir</div>
-                        <input
+                        <SearchableSelect
+                            source="penyakit"
                             value={formCheckOut.diagnosa_akhir}
-                            onChange={(e) => setFormCheckOut((s) => ({ ...s, diagnosa_akhir: e.target.value }))}
-                            placeholder="Diagnosa akhir"
-                            className="w-full h-10 px-3 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white"
+                            onChange={(val) => setFormCheckOut((s) => ({ ...s, diagnosa_akhir: val }))}
+                            placeholder="Pilih diagnosa akhir"
+                            searchPlaceholder="Cari penyakit..."
+                            className="w-full"
                         />
                     </div>
                     {actionError ? <div className="text-sm text-red-700 dark:text-red-400">{actionError}</div> : null}

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Akutansi\JurnalController;
 use App\Http\Controllers\Akutansi\KategoriPengeluaranHarianController as AkutansiKategoriPengeluaranHarianController;
+use App\Http\Controllers\Akutansi\NotaInapController;
 use App\Http\Controllers\Akutansi\NotaJalanController;
 use App\Http\Controllers\Akutansi\PaymentPointController;
 use App\Http\Controllers\Akutansi\PengeluaranHarianController as AkutansiPengeluaranHarianController;
@@ -1074,6 +1075,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/akutansi/nota-jalan/exists', [NotaJalanController::class, 'exists'])->name('api.akutansi.nota-jalan.exists');
     Route::post('/akutansi/nota-jalan', [NotaJalanController::class, 'store'])->name('api.akutansi.nota-jalan.store');
     Route::post('/akutansi/nota-jalan/snapshot', [NotaJalanController::class, 'snapshot'])->name('api.akutansi.nota-jalan.snapshot');
+    Route::get('/akutansi/nota-inap/exists', [NotaInapController::class, 'exists'])->name('api.akutansi.nota-inap.exists');
+    Route::post('/akutansi/nota-inap', [NotaInapController::class, 'store'])->name('api.akutansi.nota-inap.store');
+    Route::post('/akutansi/nota-inap/snapshot', [NotaInapController::class, 'snapshot'])->name('api.akutansi.nota-inap.snapshot');
+    Route::get('/akutansi/nota-inap/{no_rawat}', [NotaInapController::class, 'show'])->name('api.akutansi.nota-inap.show')->where('no_rawat', '.*');
     // Route PDF harus sebelum route {no_rawat} yang lebih umum
     Route::get('/akutansi/nota-jalan/{no_rawat}/pdf', [NotaJalanController::class, 'pdf'])->name('api.akutansi.nota-jalan.pdf')->where('no_rawat', '.*');
     Route::get('/akutansi/nota-jalan/{no_rawat}', [NotaJalanController::class, 'show'])->name('api.akutansi.nota-jalan.show')->where('no_rawat', '.*');

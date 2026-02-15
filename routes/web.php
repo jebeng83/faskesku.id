@@ -1811,9 +1811,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/akutansi/billing', [BillingController::class, 'page'])
         ->name('akutansi.billing.page');
 
+    // Akutansi: Billing Rawat Inap page (Inertia)
+    Route::get('/akutansi/billing-rawat-inap', [BillingController::class, 'ranapPage'])
+        ->name('akutansi.billing-rawat-inap.page');
+
     // Akutansi: Nota Jalan page (Inertia)
     Route::get('/akutansi/nota-jalan', [\App\Http\Controllers\Akutansi\NotaJalanController::class, 'page'])
         ->name('akutansi.nota-jalan.page');
+
+    // Akutansi: Nota Inap page (Inertia)
+    Route::get('/akutansi/nota-inap', [\App\Http\Controllers\Akutansi\NotaInapController::class, 'page'])
+        ->name('akutansi.nota-inap.page');
 
     // Surat: generate PDF via DOMPDF
     Route::post('/surat/pdf', [SuratController::class, 'pdf'])
