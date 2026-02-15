@@ -9,6 +9,7 @@ export default function CopyResep({
     noRkmMedis: _noRkmMedis = '', 
     noRawat = '', 
     kdPoli = '',
+    status = '',
     onResepSaved = () => {} 
 }) {
     const [items, setItems] = useState([]);
@@ -210,10 +211,12 @@ export default function CopyResep({
         setIsSubmitting(true);
         
         try {
+            const effectiveStatus = (status || resepData?.status || 'ralan').toString();
             const response = await axios.post('/api/resep', {
                 no_rawat: noRawat,
                 kd_poli: kdPoli,
                 kd_dokter: selectedDokter,
+                status: effectiveStatus,
                 items: validItems.map(item => ({
                     kode_brng: item.kodeObat,
                     jml: item.jumlah,

@@ -1,7 +1,293 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
+* @see \App\Http\Controllers\RawatInapController::getJenisTindakan
+* @see app/Http/Controllers/RawatInapController.php:718
+* @route '/api/rawat-inap/jenis-tindakan'
+*/
+export const getJenisTindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getJenisTindakan.url(options),
+    method: 'get',
+})
+
+getJenisTindakan.definition = {
+    methods: ["get","head"],
+    url: '/api/rawat-inap/jenis-tindakan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getJenisTindakan
+* @see app/Http/Controllers/RawatInapController.php:718
+* @route '/api/rawat-inap/jenis-tindakan'
+*/
+getJenisTindakan.url = (options?: RouteQueryOptions) => {
+    return getJenisTindakan.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getJenisTindakan
+* @see app/Http/Controllers/RawatInapController.php:718
+* @route '/api/rawat-inap/jenis-tindakan'
+*/
+getJenisTindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getJenisTindakan.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getJenisTindakan
+* @see app/Http/Controllers/RawatInapController.php:718
+* @route '/api/rawat-inap/jenis-tindakan'
+*/
+getJenisTindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getJenisTindakan.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1054
+* @route '/api/rawat-inap/diagnosa'
+*/
+export const getDiagnosaPasien = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosaPasien.url(options),
+    method: 'get',
+})
+
+getDiagnosaPasien.definition = {
+    methods: ["get","head"],
+    url: '/api/rawat-inap/diagnosa',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1054
+* @route '/api/rawat-inap/diagnosa'
+*/
+getDiagnosaPasien.url = (options?: RouteQueryOptions) => {
+    return getDiagnosaPasien.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1054
+* @route '/api/rawat-inap/diagnosa'
+*/
+getDiagnosaPasien.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: getDiagnosaPasien.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::getDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1054
+* @route '/api/rawat-inap/diagnosa'
+*/
+getDiagnosaPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: getDiagnosaPasien.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1080
+* @route '/api/rawat-inap/diagnosa'
+*/
+export const storeDiagnosaPasien = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeDiagnosaPasien.url(options),
+    method: 'post',
+})
+
+storeDiagnosaPasien.definition = {
+    methods: ["post"],
+    url: '/api/rawat-inap/diagnosa',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1080
+* @route '/api/rawat-inap/diagnosa'
+*/
+storeDiagnosaPasien.url = (options?: RouteQueryOptions) => {
+    return storeDiagnosaPasien.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeDiagnosaPasien
+* @see app/Http/Controllers/RawatInapController.php:1080
+* @route '/api/rawat-inap/diagnosa'
+*/
+storeDiagnosaPasien.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeDiagnosaPasien.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::cekBillingStatus
+* @see app/Http/Controllers/RawatInapController.php:770
+* @route '/api/rawat-inap/cek-billing/{noRawat}'
+*/
+export const cekBillingStatus = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cekBillingStatus.url(args, options),
+    method: 'get',
+})
+
+cekBillingStatus.definition = {
+    methods: ["get","head"],
+    url: '/api/rawat-inap/cek-billing/{noRawat}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::cekBillingStatus
+* @see app/Http/Controllers/RawatInapController.php:770
+* @route '/api/rawat-inap/cek-billing/{noRawat}'
+*/
+cekBillingStatus.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { noRawat: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            noRawat: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        noRawat: args.noRawat,
+    }
+
+    return cekBillingStatus.definition.url
+            .replace('{noRawat}', parsedArgs.noRawat.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::cekBillingStatus
+* @see app/Http/Controllers/RawatInapController.php:770
+* @route '/api/rawat-inap/cek-billing/{noRawat}'
+*/
+cekBillingStatus.get = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cekBillingStatus.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::cekBillingStatus
+* @see app/Http/Controllers/RawatInapController.php:770
+* @route '/api/rawat-inap/cek-billing/{noRawat}'
+*/
+cekBillingStatus.head = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cekBillingStatus.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokter
+* @see app/Http/Controllers/RawatInapController.php:783
+* @route '/api/rawat-inap/tindakan-dokter'
+*/
+export const storeTindakanDokter = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanDokter.url(options),
+    method: 'post',
+})
+
+storeTindakanDokter.definition = {
+    methods: ["post"],
+    url: '/api/rawat-inap/tindakan-dokter',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokter
+* @see app/Http/Controllers/RawatInapController.php:783
+* @route '/api/rawat-inap/tindakan-dokter'
+*/
+storeTindakanDokter.url = (options?: RouteQueryOptions) => {
+    return storeTindakanDokter.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokter
+* @see app/Http/Controllers/RawatInapController.php:783
+* @route '/api/rawat-inap/tindakan-dokter'
+*/
+storeTindakanDokter.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanDokter.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanPerawat
+* @see app/Http/Controllers/RawatInapController.php:873
+* @route '/api/rawat-inap/tindakan-perawat'
+*/
+export const storeTindakanPerawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanPerawat.url(options),
+    method: 'post',
+})
+
+storeTindakanPerawat.definition = {
+    methods: ["post"],
+    url: '/api/rawat-inap/tindakan-perawat',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanPerawat
+* @see app/Http/Controllers/RawatInapController.php:873
+* @route '/api/rawat-inap/tindakan-perawat'
+*/
+storeTindakanPerawat.url = (options?: RouteQueryOptions) => {
+    return storeTindakanPerawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanPerawat
+* @see app/Http/Controllers/RawatInapController.php:873
+* @route '/api/rawat-inap/tindakan-perawat'
+*/
+storeTindakanPerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanPerawat.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokterPerawat
+* @see app/Http/Controllers/RawatInapController.php:963
+* @route '/api/rawat-inap/tindakan-dokter-perawat'
+*/
+export const storeTindakanDokterPerawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanDokterPerawat.url(options),
+    method: 'post',
+})
+
+storeTindakanDokterPerawat.definition = {
+    methods: ["post"],
+    url: '/api/rawat-inap/tindakan-dokter-perawat',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokterPerawat
+* @see app/Http/Controllers/RawatInapController.php:963
+* @route '/api/rawat-inap/tindakan-dokter-perawat'
+*/
+storeTindakanDokterPerawat.url = (options?: RouteQueryOptions) => {
+    return storeTindakanDokterPerawat.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storeTindakanDokterPerawat
+* @see app/Http/Controllers/RawatInapController.php:963
+* @route '/api/rawat-inap/tindakan-dokter-perawat'
+*/
+storeTindakanDokterPerawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeTindakanDokterPerawat.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\RawatInapController::lanjutan
-* @see app/Http/Controllers/RawatInapController.php:153
+* @see app/Http/Controllers/RawatInapController.php:198
 * @route '/rawat-inap/lanjutan'
 */
 export const lanjutan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +302,7 @@ lanjutan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::lanjutan
-* @see app/Http/Controllers/RawatInapController.php:153
+* @see app/Http/Controllers/RawatInapController.php:198
 * @route '/rawat-inap/lanjutan'
 */
 lanjutan.url = (options?: RouteQueryOptions) => {
@@ -25,7 +311,7 @@ lanjutan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::lanjutan
-* @see app/Http/Controllers/RawatInapController.php:153
+* @see app/Http/Controllers/RawatInapController.php:198
 * @route '/rawat-inap/lanjutan'
 */
 lanjutan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +321,7 @@ lanjutan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::lanjutan
-* @see app/Http/Controllers/RawatInapController.php:153
+* @see app/Http/Controllers/RawatInapController.php:198
 * @route '/rawat-inap/lanjutan'
 */
 lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +331,7 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::canvas
-* @see app/Http/Controllers/RawatInapController.php:218
+* @see app/Http/Controllers/RawatInapController.php:296
 * @route '/rawat-inap/canvas'
 */
 export const canvas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,7 +346,7 @@ canvas.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::canvas
-* @see app/Http/Controllers/RawatInapController.php:218
+* @see app/Http/Controllers/RawatInapController.php:296
 * @route '/rawat-inap/canvas'
 */
 canvas.url = (options?: RouteQueryOptions) => {
@@ -69,7 +355,7 @@ canvas.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::canvas
-* @see app/Http/Controllers/RawatInapController.php:218
+* @see app/Http/Controllers/RawatInapController.php:296
 * @route '/rawat-inap/canvas'
 */
 canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -79,7 +365,7 @@ canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::canvas
-* @see app/Http/Controllers/RawatInapController.php:218
+* @see app/Http/Controllers/RawatInapController.php:296
 * @route '/rawat-inap/canvas'
 */
 canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -88,8 +374,154 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+export const pemeriksaanRanap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'get',
+})
+
+pemeriksaanRanap.definition = {
+    methods: ["get","head"],
+    url: '/rawat-inap/pemeriksaan-ranap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.url = (options?: RouteQueryOptions) => {
+    return pemeriksaanRanap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:448
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+export const storePemeriksaanRanap = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storePemeriksaanRanap.url(options),
+    method: 'post',
+})
+
+storePemeriksaanRanap.definition = {
+    methods: ["post"],
+    url: '/rawat-inap/pemeriksaan-ranap',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:448
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+storePemeriksaanRanap.url = (options?: RouteQueryOptions) => {
+    return storePemeriksaanRanap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::storePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:448
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+storePemeriksaanRanap.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storePemeriksaanRanap.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::deletePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:561
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+export const deletePemeriksaanRanap = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deletePemeriksaanRanap.url(options),
+    method: 'delete',
+})
+
+deletePemeriksaanRanap.definition = {
+    methods: ["delete"],
+    url: '/rawat-inap/pemeriksaan-ranap',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::deletePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:561
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+deletePemeriksaanRanap.url = (options?: RouteQueryOptions) => {
+    return deletePemeriksaanRanap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::deletePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:561
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+deletePemeriksaanRanap.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: deletePemeriksaanRanap.url(options),
+    method: 'delete',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::updatePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:585
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+export const updatePemeriksaanRanap = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updatePemeriksaanRanap.url(options),
+    method: 'put',
+})
+
+updatePemeriksaanRanap.definition = {
+    methods: ["put"],
+    url: '/rawat-inap/pemeriksaan-ranap',
+} satisfies RouteDefinition<["put"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::updatePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:585
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+updatePemeriksaanRanap.url = (options?: RouteQueryOptions) => {
+    return updatePemeriksaanRanap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::updatePemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:585
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+updatePemeriksaanRanap.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+    url: updatePemeriksaanRanap.url(options),
+    method: 'put',
+})
+
+/**
 * @see \App\Http\Controllers\RawatInapController::index
-* @see app/Http/Controllers/RawatInapController.php:15
+* @see app/Http/Controllers/RawatInapController.php:16
 * @route '/rawat-inap'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +536,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::index
-* @see app/Http/Controllers/RawatInapController.php:15
+* @see app/Http/Controllers/RawatInapController.php:16
 * @route '/rawat-inap'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -113,7 +545,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::index
-* @see app/Http/Controllers/RawatInapController.php:15
+* @see app/Http/Controllers/RawatInapController.php:16
 * @route '/rawat-inap'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +555,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::index
-* @see app/Http/Controllers/RawatInapController.php:15
+* @see app/Http/Controllers/RawatInapController.php:16
 * @route '/rawat-inap'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -133,7 +565,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::create
-* @see app/Http/Controllers/RawatInapController.php:116
+* @see app/Http/Controllers/RawatInapController.php:161
 * @route '/rawat-inap/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,7 +580,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::create
-* @see app/Http/Controllers/RawatInapController.php:116
+* @see app/Http/Controllers/RawatInapController.php:161
 * @route '/rawat-inap/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -157,7 +589,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::create
-* @see app/Http/Controllers/RawatInapController.php:116
+* @see app/Http/Controllers/RawatInapController.php:161
 * @route '/rawat-inap/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -167,7 +599,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::create
-* @see app/Http/Controllers/RawatInapController.php:116
+* @see app/Http/Controllers/RawatInapController.php:161
 * @route '/rawat-inap/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -177,7 +609,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:126
+* @see app/Http/Controllers/RawatInapController.php:171
 * @route '/rawat-inap'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -192,7 +624,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:126
+* @see app/Http/Controllers/RawatInapController.php:171
 * @route '/rawat-inap'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -201,7 +633,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:126
+* @see app/Http/Controllers/RawatInapController.php:171
 * @route '/rawat-inap'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -211,7 +643,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::show
-* @see app/Http/Controllers/RawatInapController.php:136
+* @see app/Http/Controllers/RawatInapController.php:181
 * @route '/rawat-inap/{rawat_inap}'
 */
 export const show = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -226,7 +658,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::show
-* @see app/Http/Controllers/RawatInapController.php:136
+* @see app/Http/Controllers/RawatInapController.php:181
 * @route '/rawat-inap/{rawat_inap}'
 */
 show.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -253,7 +685,7 @@ show.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::show
-* @see app/Http/Controllers/RawatInapController.php:136
+* @see app/Http/Controllers/RawatInapController.php:181
 * @route '/rawat-inap/{rawat_inap}'
 */
 show.get = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -263,7 +695,7 @@ show.get = (args: { rawat_inap: string | number } | [rawat_inap: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::show
-* @see app/Http/Controllers/RawatInapController.php:136
+* @see app/Http/Controllers/RawatInapController.php:181
 * @route '/rawat-inap/{rawat_inap}'
 */
 show.head = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -273,7 +705,7 @@ show.head = (args: { rawat_inap: string | number } | [rawat_inap: string | numbe
 
 /**
 * @see \App\Http\Controllers\RawatInapController::edit
-* @see app/Http/Controllers/RawatInapController.php:146
+* @see app/Http/Controllers/RawatInapController.php:191
 * @route '/rawat-inap/{rawat_inap}/edit'
 */
 export const edit = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -288,7 +720,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::edit
-* @see app/Http/Controllers/RawatInapController.php:146
+* @see app/Http/Controllers/RawatInapController.php:191
 * @route '/rawat-inap/{rawat_inap}/edit'
 */
 edit.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -315,7 +747,7 @@ edit.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::edit
-* @see app/Http/Controllers/RawatInapController.php:146
+* @see app/Http/Controllers/RawatInapController.php:191
 * @route '/rawat-inap/{rawat_inap}/edit'
 */
 edit.get = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -325,7 +757,7 @@ edit.get = (args: { rawat_inap: string | number } | [rawat_inap: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::edit
-* @see app/Http/Controllers/RawatInapController.php:146
+* @see app/Http/Controllers/RawatInapController.php:191
 * @route '/rawat-inap/{rawat_inap}/edit'
 */
 edit.head = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -335,7 +767,7 @@ edit.head = (args: { rawat_inap: string | number } | [rawat_inap: string | numbe
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:311
+* @see app/Http/Controllers/RawatInapController.php:698
 * @route '/rawat-inap/{rawat_inap}'
 */
 export const update = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -350,7 +782,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:311
+* @see app/Http/Controllers/RawatInapController.php:698
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -377,7 +809,7 @@ update.url = (args: { rawat_inap: string | number } | [rawat_inap: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:311
+* @see app/Http/Controllers/RawatInapController.php:698
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.put = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -387,7 +819,7 @@ update.put = (args: { rawat_inap: string | number } | [rawat_inap: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:311
+* @see app/Http/Controllers/RawatInapController.php:698
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.patch = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -397,7 +829,7 @@ update.patch = (args: { rawat_inap: string | number } | [rawat_inap: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:321
+* @see app/Http/Controllers/RawatInapController.php:708
 * @route '/rawat-inap/{rawat_inap}'
 */
 export const destroy = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -412,7 +844,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:321
+* @see app/Http/Controllers/RawatInapController.php:708
 * @route '/rawat-inap/{rawat_inap}'
 */
 destroy.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -439,7 +871,7 @@ destroy.url = (args: { rawat_inap: string | number } | [rawat_inap: string | num
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:321
+* @see app/Http/Controllers/RawatInapController.php:708
 * @route '/rawat-inap/{rawat_inap}'
 */
 destroy.delete = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -447,6 +879,6 @@ destroy.delete = (args: { rawat_inap: string | number } | [rawat_inap: string | 
     method: 'delete',
 })
 
-const RawatInapController = { lanjutan, canvas, index, create, store, show, edit, update, destroy }
+const RawatInapController = { getJenisTindakan, getDiagnosaPasien, storeDiagnosaPasien, cekBillingStatus, storeTindakanDokter, storeTindakanPerawat, storeTindakanDokterPerawat, lanjutan, canvas, pemeriksaanRanap, storePemeriksaanRanap, deletePemeriksaanRanap, updatePemeriksaanRanap, index, create, store, show, edit, update, destroy }
 
 export default RawatInapController

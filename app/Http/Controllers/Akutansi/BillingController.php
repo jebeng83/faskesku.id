@@ -36,6 +36,25 @@ class BillingController extends Controller
     }
 
     /**
+     * Render halaman Inertia untuk Billing Rawat Inap.
+     */
+    public function ranapPage(Request $request)
+    {
+        $statusOptions = [
+            'Laborat', 'Radiologi', 'Operasi', 'Obat', 'Ranap Dokter', 'Ranap Dokter Paramedis', 'Ranap Paramedis',
+            'Ralan Dokter', 'Ralan Dokter Paramedis', 'Ralan Paramedis', 'Tambahan', 'Potongan', 'Administrasi', 'Kamar', '-',
+            'Registrasi', 'Harian', 'Service', 'TtlObat', 'TtlRanap Dokter', 'TtlRanap Paramedis', 'TtlRalan Dokter',
+            'TtlRalan Paramedis', 'TtlKamar', 'Dokter', 'Perawat', 'TtlTambahan', 'Retur Obat', 'TtlRetur Obat', 'Resep Pulang',
+            'TtlResep Pulang', 'TtlPotongan', 'TtlLaborat', 'TtlOperasi', 'TtlRadiologi', 'Tagihan',
+        ];
+
+        return inertia('Akutansi/BillingRawatInap', [
+            'statusOptions' => $statusOptions,
+            'initialNoRawat' => $request->query('no_rawat'),
+        ]);
+    }
+
+    /**
      * Render halaman Inertia untuk Kasir Ralan (UI serupa Billing, sesuai DlgKasirRalan).
      */
     public function kasirRalanPage(Request $request)
@@ -116,6 +135,7 @@ class BillingController extends Controller
 
             // Gunakan $regPeriksa yang sudah diambil sebelumnya untuk konsistensi
             $reg = $regPeriksa;
+            $isRanap = strtoupper((string) ($reg->status_lanjut ?? '')) === 'RANAP';
             if ($reg && (float) ($reg->biaya_reg ?? 0) > 0) {
                 $previewItems->push([
                     'noindex' => null,
@@ -133,80 +153,248 @@ class BillingController extends Controller
                 ]);
             }
 
-            // Ralan Dokter
-            $ralanDr = RawatJlDr::where('no_rawat', $noRawat)
-                ->with('jenisPerawatan')
-                ->orderBy('tgl_perawatan')
-                ->orderBy('jam_rawat')
-                ->get()
-                ->map(function ($r) {
-                    $biaya = (float) ($r->biaya_rawat ?? 0);
+            $tindakanItems = collect();
+            $kamarItems = collect();
 
+            if ($isRanap) {
+                $ranapDr = collect(DB::table('rawat_inap_dr as rid')
+                    ->leftJoin('jns_perawatan_inap as jpi', 'rid.kd_jenis_prw', '=', 'jpi.kd_jenis_prw')
+                    ->where('rid.no_rawat', $noRawat)
+                    ->select(
+                        'rid.no_rawat',
+                        'rid.tgl_perawatan',
+                        'rid.jam_rawat',
+                        'rid.kd_jenis_prw',
+                        'rid.biaya_rawat',
+                        'jpi.nm_perawatan'
+                    )
+                    ->orderBy('rid.tgl_perawatan')
+                    ->orderBy('rid.jam_rawat')
+                    ->get())->map(function ($r) use ($noRawat) {
+                    $biaya = (float) ($r->biaya_rawat ?? 0);
                     return [
                         'noindex' => null,
-                        'no_rawat' => $r->no_rawat,
+                        'no_rawat' => $noRawat,
                         'tgl_byr' => $r->tgl_perawatan,
                         'no' => $r->kd_jenis_prw,
-                        'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
                         'pemisah' => '-',
                         'biaya' => $biaya,
                         'jumlah' => 1,
                         'tambahan' => 0,
                         'totalbiaya' => $biaya,
-                        'status' => 'Ralan Dokter',
+                        'status' => 'Ranap Dokter',
                         'source' => 'preview',
                     ];
                 });
 
-            // Ralan Paramedis
-            $ralanPr = RawatJlPr::where('no_rawat', $noRawat)
-                ->with('jenisPerawatan')
-                ->orderBy('tgl_perawatan')
-                ->orderBy('jam_rawat')
-                ->get()
-                ->map(function ($r) {
+                $ranapPr = collect(DB::table('rawat_inap_pr as rip')
+                    ->leftJoin('jns_perawatan_inap as jpi', 'rip.kd_jenis_prw', '=', 'jpi.kd_jenis_prw')
+                    ->where('rip.no_rawat', $noRawat)
+                    ->select(
+                        'rip.no_rawat',
+                        'rip.tgl_perawatan',
+                        'rip.jam_rawat',
+                        'rip.kd_jenis_prw',
+                        'rip.biaya_rawat',
+                        'jpi.nm_perawatan'
+                    )
+                    ->orderBy('rip.tgl_perawatan')
+                    ->orderBy('rip.jam_rawat')
+                    ->get())->map(function ($r) use ($noRawat) {
                     $biaya = (float) ($r->biaya_rawat ?? 0);
-
                     return [
                         'noindex' => null,
-                        'no_rawat' => $r->no_rawat,
+                        'no_rawat' => $noRawat,
                         'tgl_byr' => $r->tgl_perawatan,
                         'no' => $r->kd_jenis_prw,
-                        'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
                         'pemisah' => '-',
                         'biaya' => $biaya,
                         'jumlah' => 1,
                         'tambahan' => 0,
                         'totalbiaya' => $biaya,
-                        'status' => 'Ralan Paramedis',
+                        'status' => 'Ranap Paramedis',
                         'source' => 'preview',
                     ];
                 });
 
-            // Ralan Dokter Paramedis
-            $ralanDrpr = RawatJlDrpr::where('no_rawat', $noRawat)
-                ->with('jenisPerawatan')
-                ->orderBy('tgl_perawatan')
-                ->orderBy('jam_rawat')
-                ->get()
-                ->map(function ($r) {
+                $ranapDrpr = collect(DB::table('rawat_inap_drpr as ridp')
+                    ->leftJoin('jns_perawatan_inap as jpi', 'ridp.kd_jenis_prw', '=', 'jpi.kd_jenis_prw')
+                    ->where('ridp.no_rawat', $noRawat)
+                    ->select(
+                        'ridp.no_rawat',
+                        'ridp.tgl_perawatan',
+                        'ridp.jam_rawat',
+                        'ridp.kd_jenis_prw',
+                        'ridp.biaya_rawat',
+                        'jpi.nm_perawatan'
+                    )
+                    ->orderBy('ridp.tgl_perawatan')
+                    ->orderBy('ridp.jam_rawat')
+                    ->get())->map(function ($r) use ($noRawat) {
                     $biaya = (float) ($r->biaya_rawat ?? 0);
-
                     return [
                         'noindex' => null,
-                        'no_rawat' => $r->no_rawat,
+                        'no_rawat' => $noRawat,
                         'tgl_byr' => $r->tgl_perawatan,
                         'no' => $r->kd_jenis_prw,
-                        'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                        'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw,
                         'pemisah' => '-',
                         'biaya' => $biaya,
                         'jumlah' => 1,
                         'tambahan' => 0,
                         'totalbiaya' => $biaya,
-                        'status' => 'Ralan Dokter Paramedis',
+                        'status' => 'Ranap Dokter Paramedis',
                         'source' => 'preview',
                     ];
                 });
+
+                $tindakanItems = $tindakanItems
+                    ->concat($ranapDr)
+                    ->concat($ranapDrpr)
+                    ->concat($ranapPr);
+
+                $kamarRows = DB::table('kamar_inap as ki')
+                    ->leftJoin('kamar as k', function ($join) {
+                        $join->on(DB::raw('trim(k.kd_kamar)'), '=', DB::raw('trim(ki.kd_kamar)'));
+                    })
+                    ->leftJoin('bangsal as b', 'b.kd_bangsal', '=', 'k.kd_bangsal')
+                    ->where('ki.no_rawat', $noRawat)
+                    ->select(
+                        'ki.kd_kamar',
+                        'ki.tgl_masuk',
+                        'ki.jam_masuk',
+                        'ki.tgl_keluar',
+                        'ki.jam_keluar',
+                        'ki.lama',
+                        'ki.trf_kamar',
+                        'ki.ttl_biaya',
+                        'b.nm_bangsal'
+                    )
+                    ->orderBy('ki.tgl_masuk')
+                    ->orderBy('ki.jam_masuk')
+                    ->get();
+
+                $kamarItems = collect($kamarRows)->map(function ($r) use ($noRawat, $reg) {
+                    $biaya = (float) ($r->trf_kamar ?? 0);
+                    $lama = (int) ($r->lama ?? 0);
+                    $jumlah = $lama > 0 ? $lama : 1;
+                    $totalBiaya = (float) ($r->ttl_biaya ?? 0);
+                    if ($totalBiaya <= 0) {
+                        $totalBiaya = round($biaya * $jumlah, 2);
+                    }
+
+                    $nmPerawatan = 'Kamar '.trim((string) ($r->kd_kamar ?? ''));
+                    if (! empty($r->nm_bangsal)) {
+                        $nmPerawatan .= ' - '.$r->nm_bangsal;
+                    }
+
+                    $noIdentifier = trim((string) ($r->kd_kamar ?? ''));
+                    $tglMasuk = is_string($r->tgl_masuk ?? null) ? $r->tgl_masuk : (string) ($r->tgl_masuk ?? '');
+                    $jamMasuk = is_string($r->jam_masuk ?? null) ? $r->jam_masuk : (string) ($r->jam_masuk ?? '');
+                    if ($tglMasuk || $jamMasuk) {
+                        $noIdentifier = trim($noIdentifier.'|'.$tglMasuk.'|'.$jamMasuk, '|');
+                    }
+                    if ($noIdentifier === '') {
+                        $noIdentifier = 'KMR';
+                    }
+
+                    $tglByr = $tglMasuk ?: (string) ($reg->tgl_registrasi ?? '');
+
+                    return [
+                        'noindex' => null,
+                        'no_rawat' => $noRawat,
+                        'tgl_byr' => $tglByr,
+                        'no' => $noIdentifier,
+                        'nm_perawatan' => $nmPerawatan,
+                        'pemisah' => '-',
+                        'biaya' => $biaya,
+                        'jumlah' => $jumlah,
+                        'tambahan' => 0,
+                        'totalbiaya' => $totalBiaya,
+                        'status' => 'Kamar',
+                        'source' => 'preview',
+                    ];
+                });
+            } else {
+                $ralanDr = RawatJlDr::where('no_rawat', $noRawat)
+                    ->with('jenisPerawatan')
+                    ->orderBy('tgl_perawatan')
+                    ->orderBy('jam_rawat')
+                    ->get()
+                    ->map(function ($r) {
+                        $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                        return [
+                            'noindex' => null,
+                            'no_rawat' => $r->no_rawat,
+                            'tgl_byr' => $r->tgl_perawatan,
+                            'no' => $r->kd_jenis_prw,
+                            'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                            'pemisah' => '-',
+                            'biaya' => $biaya,
+                            'jumlah' => 1,
+                            'tambahan' => 0,
+                            'totalbiaya' => $biaya,
+                            'status' => 'Ralan Dokter',
+                            'source' => 'preview',
+                        ];
+                    });
+
+                $ralanPr = RawatJlPr::where('no_rawat', $noRawat)
+                    ->with('jenisPerawatan')
+                    ->orderBy('tgl_perawatan')
+                    ->orderBy('jam_rawat')
+                    ->get()
+                    ->map(function ($r) {
+                        $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                        return [
+                            'noindex' => null,
+                            'no_rawat' => $r->no_rawat,
+                            'tgl_byr' => $r->tgl_perawatan,
+                            'no' => $r->kd_jenis_prw,
+                            'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                            'pemisah' => '-',
+                            'biaya' => $biaya,
+                            'jumlah' => 1,
+                            'tambahan' => 0,
+                            'totalbiaya' => $biaya,
+                            'status' => 'Ralan Paramedis',
+                            'source' => 'preview',
+                        ];
+                    });
+
+                $ralanDrpr = RawatJlDrpr::where('no_rawat', $noRawat)
+                    ->with('jenisPerawatan')
+                    ->orderBy('tgl_perawatan')
+                    ->orderBy('jam_rawat')
+                    ->get()
+                    ->map(function ($r) {
+                        $biaya = (float) ($r->biaya_rawat ?? 0);
+
+                        return [
+                            'noindex' => null,
+                            'no_rawat' => $r->no_rawat,
+                            'tgl_byr' => $r->tgl_perawatan,
+                            'no' => $r->kd_jenis_prw,
+                            'nm_perawatan' => optional($r->jenisPerawatan)->nm_perawatan ?? $r->kd_jenis_prw,
+                            'pemisah' => '-',
+                            'biaya' => $biaya,
+                            'jumlah' => 1,
+                            'tambahan' => 0,
+                            'totalbiaya' => $biaya,
+                            'status' => 'Ralan Dokter Paramedis',
+                            'source' => 'preview',
+                        ];
+                    });
+
+                $tindakanItems = $tindakanItems
+                    ->concat($ralanDr)
+                    ->concat($ralanDrpr)
+                    ->concat($ralanPr);
+            }
 
             // Laborat - Agregasi dari periksa_lab
             // Validasi ketat: kelompokkan berdasarkan kombinasi no_rawat, kd_jenis_prw, tgl_periksa, jam
@@ -214,6 +402,7 @@ class BillingController extends Controller
             $laboratDetails = DB::table('periksa_lab')
                 ->join('jns_perawatan_lab', 'periksa_lab.kd_jenis_prw', '=', 'jns_perawatan_lab.kd_jenis_prw')
                 ->where('periksa_lab.no_rawat', $noRawat)
+                ->where('periksa_lab.status', $isRanap ? 'Ranap' : 'Ralan')
                 ->select(
                     'periksa_lab.no_rawat',
                     'periksa_lab.kd_jenis_prw',
@@ -290,17 +479,55 @@ class BillingController extends Controller
                 })
                 ->values();
 
+            $permintaanStatus = $isRanap ? 'ranap' : 'ralan';
+            $radiologiDetails = DB::table('permintaan_pemeriksaan_radiologi as ppr')
+                ->join('permintaan_radiologi as pr', 'ppr.noorder', '=', 'pr.noorder')
+                ->join('jns_perawatan_radiologi as jpr', 'ppr.kd_jenis_prw', '=', 'jpr.kd_jenis_prw')
+                ->where('pr.no_rawat', $noRawat)
+                ->where('pr.status', $permintaanStatus)
+                ->select(
+                    'pr.noorder',
+                    'pr.tgl_permintaan',
+                    'pr.jam_permintaan',
+                    'ppr.kd_jenis_prw',
+                    'jpr.nm_perawatan',
+                    'jpr.total_byr'
+                )
+                ->orderBy('pr.tgl_permintaan')
+                ->orderBy('pr.jam_permintaan')
+                ->orderBy('pr.noorder')
+                ->get();
+
+            $radiologiItems = collect($radiologiDetails)->map(function ($r) use ($noRawat) {
+                $biaya = (float) ($r->total_byr ?? 0);
+                return [
+                    'noindex' => null,
+                    'no_rawat' => $noRawat,
+                    'tgl_byr' => $r->tgl_permintaan ?? '',
+                    'no' => ($r->noorder ?? '').'|'.($r->kd_jenis_prw ?? ''),
+                    'nm_perawatan' => $r->nm_perawatan ?? $r->kd_jenis_prw ?? '',
+                    'pemisah' => '-',
+                    'biaya' => $biaya,
+                    'jumlah' => 1,
+                    'tambahan' => 0,
+                    'totalbiaya' => $biaya,
+                    'status' => 'Radiologi',
+                    'source' => 'preview',
+                ];
+            });
+
             // Obat/Resep - Ambil setiap baris dari detail_pemberian_obat sebagai item terpisah
             // PENTING: Hanya mengambil dari detail_pemberian_obat yang berarti obat sudah DISERAHKAN
             // Item obat hanya akan tampil setelah proses penyerahan obat selesai (setelah masuk ke detail_pemberian_obat)
             // Jangan mengambil dari resep_obat/resep_dokter karena bisa termasuk resep yang belum diserahkan
             // Perbaikan: Hapus GROUP BY dan tampilkan setiap baris sebagai item terpisah untuk memastikan semua item muncul
             // Validasi tanggal: hanya ambil obat dengan tgl_perawatan >= tgl_registrasi
+            $obatStatus = $isRanap ? 'Ranap' : 'Ralan';
             $obatDetails = DB::table('detail_pemberian_obat')
                 ->join('databarang', 'detail_pemberian_obat.kode_brng', '=', 'databarang.kode_brng')
                 ->leftJoin('jenis', 'databarang.kdjns', '=', 'jenis.kdjns')
                 ->where('detail_pemberian_obat.no_rawat', $noRawat)
-                ->where('detail_pemberian_obat.status', 'Ralan') // Hanya untuk rawat jalan
+                ->where('detail_pemberian_obat.status', $obatStatus)
                 ->whereDate('detail_pemberian_obat.tgl_perawatan', '>=', $regPeriksa->tgl_registrasi) // Validasi tanggal
                 ->select(
                     'detail_pemberian_obat.kode_brng',
@@ -405,10 +632,10 @@ class BillingController extends Controller
 
             // Gabungkan semua items dan pastikan hanya yang memiliki no_rawat yang sesuai
             $allPreviewItems = $previewItems
-                ->concat($ralanDr)
-                ->concat($ralanDrpr)
-                ->concat($ralanPr)
+                ->concat($tindakanItems)
                 ->concat($laboratItems)
+                ->concat($radiologiItems)
+                ->concat($kamarItems)
                 ->concat($obatItems);
 
             // Filter ketat berdasarkan no_rawat dan validasi tanggal untuk memastikan tidak ada data dari tanggal lain

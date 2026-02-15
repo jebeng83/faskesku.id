@@ -22,7 +22,10 @@ import JadwalController from './JadwalController'
 import PoliklinikController from './PoliklinikController'
 import BangsalController from './BangsalController'
 import KamarController from './KamarController'
+import SetHargaKamarController from './SetHargaKamarController'
+import SetKamarInapController from './SetKamarInapController'
 import Akutansi from './Akutansi'
+import RawatInapController from './RawatInapController'
 import AuthController from './AuthController'
 import SuratController from './SuratController'
 import PatientController from './PatientController'
@@ -37,7 +40,6 @@ import RegPeriksaController from './RegPeriksaController'
 import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
-import RawatInapController from './RawatInapController'
 import IGD from './IGD'
 import IGDController from './IGDController'
 import KamarOperasiController from './KamarOperasiController'
@@ -74,7 +76,10 @@ const Controllers = {
     PoliklinikController: Object.assign(PoliklinikController, PoliklinikController),
     BangsalController: Object.assign(BangsalController, BangsalController),
     KamarController: Object.assign(KamarController, KamarController),
+    SetHargaKamarController: Object.assign(SetHargaKamarController, SetHargaKamarController),
+    SetKamarInapController: Object.assign(SetKamarInapController, SetKamarInapController),
     Akutansi: Object.assign(Akutansi, Akutansi),
+    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     AuthController: Object.assign(AuthController, AuthController),
     SuratController: Object.assign(SuratController, SuratController),
     PatientController: Object.assign(PatientController, PatientController),
@@ -89,7 +94,6 @@ const Controllers = {
     PembayaranController: Object.assign(PembayaranController, PembayaranController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
-    RawatInapController: Object.assign(RawatInapController, RawatInapController),
     IGD: Object.assign(IGD, IGD),
     IGDController: Object.assign(IGDController, IGDController),
     KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),

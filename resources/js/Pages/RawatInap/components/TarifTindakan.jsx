@@ -1,432 +1,932 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-    PlusIcon, 
-    MagnifyingGlassIcon, 
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import axios from 'axios';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+    PlusIcon,
+    MagnifyingGlassIcon,
+    XMarkIcon,
+    ChevronDownIcon,
     TrashIcon,
-    ClipboardDocumentListIcon,
-    CurrencyDollarIcon,
-    ClockIcon,
-    CheckCircleIcon,
-    XCircleIcon,
-    CalculatorIcon
+    UserIcon,
+    UsersIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
-const TarifTindakan = () => {
-    const [procedures, setProcedures] = useState([]);
-    const [selectedProcedures, setSelectedProcedures] = useState([]);
-    const [searchProcedure, setSearchProcedure] = useState('');
-    const [procedureCategory, setProcedureCategory] = useState('all');
-    const [activeTab, setActiveTab] = useState('add');
-
-    // Mock procedure data for inpatient care
-    const medicalProcedures = [
-        { id: 1, code: 'INP-001', name: 'Pemasangan Infus', category: 'Keperawatan', price: 50000, duration: 15, description: 'Pemasangan akses intravena' },
-        { id: 2, code: 'INP-002', name: 'Pemasangan Kateter Urin', category: 'Keperawatan', price: 75000, duration: 20, description: 'Pemasangan kateter urin steril' },
-        { id: 3, code: 'INP-003', name: 'Pemberian Obat Intravena', category: 'Keperawatan', price: 25000, duration: 10, description: 'Administrasi obat melalui IV' },
-        { id: 4, code: 'INP-004', name: 'Monitoring Vital Sign', category: 'Keperawatan', price: 15000, duration: 5, description: 'Pemantauan tanda vital rutin' },
-        { id: 5, code: 'INP-005', name: 'Perawatan Luka Post Operasi', category: 'Keperawatan', price: 100000, duration: 30, description: 'Perawatan dan ganti balutan luka operasi' },
-        
-        { id: 6, code: 'DOC-001', name: 'Visite Dokter Spesialis', category: 'Dokter', price: 200000, duration: 30, description: 'Konsultasi dan pemeriksaan dokter spesialis' },
-        { id: 7, code: 'DOC-002', name: 'Konsultasi Intensif', category: 'Dokter', price: 150000, duration: 45, description: 'Konsultasi mendalam untuk kasus kompleks' },
-        { id: 8, code: 'DOC-003', name: 'Tindakan Emergensi', category: 'Dokter', price: 500000, duration: 60, description: 'Tindakan medis darurat' },
-        { id: 9, code: 'DOC-004', name: 'Interpretasi EKG', category: 'Dokter', price: 75000, duration: 15, description: 'Pembacaan dan interpretasi elektrokardiogram' },
-        { id: 10, code: 'DOC-005', name: 'Biopsi Jaringan', category: 'Dokter', price: 800000, duration: 90, description: 'Pengambilan sampel jaringan untuk pemeriksaan' },
-        
-        { id: 11, code: 'LAB-001', name: 'Pengambilan Darah Vena', category: 'Laboratorium', price: 25000, duration: 10, description: 'Prosedur flebotomi untuk sampel darah' },
-        { id: 12, code: 'LAB-002', name: 'Pengambilan Darah Arteri', category: 'Laboratorium', price: 50000, duration: 15, description: 'Aspirasi darah arteri untuk analisa gas darah' },
-        { id: 13, code: 'LAB-003', name: 'Kultur Darah', category: 'Laboratorium', price: 150000, duration: 20, description: 'Pengambilan sampel untuk kultur bakteri' },
-        
-        { id: 14, code: 'RAD-001', name: 'Foto Thorax Portable', category: 'Radiologi', price: 200000, duration: 30, description: 'Rontgen dada di ruang rawat inap' },
-        { id: 15, code: 'RAD-002', name: 'USG Bedside', category: 'Radiologi', price: 300000, duration: 45, description: 'Ultrasonografi di samping tempat tidur' },
-        { id: 16, code: 'RAD-003', name: 'ECG 12 Lead', category: 'Radiologi', price: 100000, duration: 20, description: 'Elektrokardiografi 12 sadapan' },
-        
-        { id: 17, code: 'THER-001', name: 'Fisioterapi Dada', category: 'Terapi', price: 150000, duration: 45, description: 'Terapi fisik untuk pernapasan' },
-        { id: 18, code: 'THER-002', name: 'Mobilisasi Dini', category: 'Terapi', price: 100000, duration: 30, description: 'Program mobilisasi pasca operasi' },
-        { id: 19, code: 'THER-003', name: 'Terapi Okupasi', category: 'Terapi', price: 200000, duration: 60, description: 'Rehabilitasi fungsi sehari-hari' },
-        { id: 20, code: 'THER-004', name: 'Speech Therapy', category: 'Terapi', price: 250000, duration: 45, description: 'Terapi bicara dan komunikasi' }
-    ];
-
-    const mockBillings = [
-        {
-            id: 1,
-            billNumber: 'BILL-INP-2024-001',
-            procedures: [
-                { name: 'Visite Dokter Spesialis', quantity: 3, price: 200000 },
-                { name: 'Pemasangan Infus', quantity: 1, price: 50000 },
-                { name: 'Monitoring Vital Sign', quantity: 24, price: 15000 }
-            ],
-            totalAmount: 1010000,
-            billingDate: '2024-01-15 16:30',
-            status: 'paid',
-            notes: 'Tagihan untuk perawatan intensif 3 hari'
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.08,
+            delayChildren: 0.05,
         },
-        {
-            id: 2,
-            billNumber: 'BILL-INP-2024-002',
-            procedures: [
-                { name: 'Konsultasi Intensif', quantity: 2, price: 150000 },
-                { name: 'Fisioterapi Dada', quantity: 5, price: 150000 }
-            ],
-            totalAmount: 1050000,
-            billingDate: '2024-01-16 10:15',
-            status: 'pending',
-            notes: 'Tagihan rehabilitasi post pneumonia'
+    },
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 18, scale: 0.99 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    },
+};
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.99 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    },
+    hover: {
+        y: -2,
+        scale: 1.01,
+        transition: { duration: 0.22, ease: 'easeOut' },
+    },
+    tap: {
+        scale: 0.99,
+        transition: { duration: 0.12, ease: 'easeOut' },
+    },
+};
+
+const TarifTindakan = ({ token: _token, noRawat, noRkmMedis: _noRkmMedis, pasien, jenisPenanganan: initialJenisPenanganan = 'dokter' }) => {
+    const shouldReduceMotion = useReducedMotion();
+    const [jenisPenanganan, setJenisPenanganan] = useState(initialJenisPenanganan);
+    const [tindakanList, setTindakanList] = useState([]);
+    const [selectedTindakan, setSelectedTindakan] = useState([]);
+    const [biayaCollapsed, setBiayaCollapsed] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedDokter, _setSelectedDokter] = useState(null);
+    const [selectedPerawat, _setSelectedPerawat] = useState(null);
+    const [billingVerified, setBillingVerified] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    const currentNoRawat = useMemo(() => {
+        const nr = pasien?.no_rawat ?? pasien?.noRawat ?? noRawat;
+        return String(nr || '').trim();
+    }, [pasien, noRawat]);
+
+    const [dokterModalOpen, setDokterModalOpen] = useState(false);
+    const [perawatModalOpen, setPerawatModalOpen] = useState(false);
+
+    const [dokterQuery, setDokterQuery] = useState('');
+    const [dokterList, setDokterList] = useState([]);
+    const [dokterLoading, setDokterLoading] = useState(false);
+    const dokterTimerRef = useRef(null);
+
+    const [petugasQuery, setPetugasQuery] = useState('');
+    const [petugasStatus, setPetugasStatus] = useState('1');
+    const [petugasList, setPetugasList] = useState([]);
+    const [petugasLoading, setPetugasLoading] = useState(false);
+    const petugasTimerRef = useRef(null);
+
+    useEffect(() => {
+        setJenisPenanganan(initialJenisPenanganan);
+    }, [initialJenisPenanganan]);
+
+    useEffect(() => {
+        setBiayaCollapsed(true);
+    }, [jenisPenanganan]);
+
+    // Check billing status
+    useEffect(() => {
+        if (currentNoRawat) {
+            checkBillingStatus();
         }
-    ];
+    }, [currentNoRawat]);
 
-    const categories = ['all', 'Keperawatan', 'Dokter', 'Laboratorium', 'Radiologi', 'Terapi'];
+    const checkBillingStatus = async () => {
+        try {
+            const response = await axios.get(`/api/rawat-inap/cek-billing/${encodeURIComponent(currentNoRawat)}`);
+            setBillingVerified(response.data.verified);
+        } catch (error) {
+            console.error('Error checking billing:', error);
+        }
+    };
 
-    const filteredProcedures = medicalProcedures.filter(procedure => {
-        const matchesSearch = procedure.name.toLowerCase().includes(searchProcedure.toLowerCase()) ||
-                            procedure.code.toLowerCase().includes(searchProcedure.toLowerCase()) ||
-                            procedure.description.toLowerCase().includes(searchProcedure.toLowerCase());
-        const matchesCategory = procedureCategory === 'all' || procedure.category === procedureCategory;
-        return matchesSearch && matchesCategory;
+    // Fetch tindakan from API
+    useEffect(() => {
+        fetchTindakan();
+    }, [jenisPenanganan]);
+
+    const fetchTindakan = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('/api/rawat-inap/jenis-tindakan', {
+                params: { jenis: jenisPenanganan }
+            });
+            setTindakanList(response.data);
+        } catch (error) {
+            console.error('Error fetching tindakan:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!dokterModalOpen) return;
+
+        if (dokterTimerRef.current) {
+            clearTimeout(dokterTimerRef.current);
+        }
+
+        dokterTimerRef.current = setTimeout(async () => {
+            setDokterLoading(true);
+            try {
+                const res = await axios.get('/api/dokter', {
+                    params: dokterQuery.trim() ? { search: dokterQuery.trim() } : {},
+                });
+                const data = res?.data?.data;
+                const list = Array.isArray(data)
+                    ? data
+                    : Array.isArray(data?.data)
+                        ? data.data
+                        : Array.isArray(res?.data)
+                            ? res.data
+                            : [];
+                setDokterList(list);
+            } catch (_e) {
+                setDokterList([]);
+            } finally {
+                setDokterLoading(false);
+            }
+        }, 250);
+
+        return () => {
+            if (dokterTimerRef.current) {
+                clearTimeout(dokterTimerRef.current);
+                dokterTimerRef.current = null;
+            }
+        };
+    }, [dokterModalOpen, dokterQuery]);
+
+    useEffect(() => {
+        if (!perawatModalOpen) return;
+
+        if (petugasTimerRef.current) {
+            clearTimeout(petugasTimerRef.current);
+        }
+
+        petugasTimerRef.current = setTimeout(async () => {
+            setPetugasLoading(true);
+            try {
+                const res = await axios.get('/api/employees/petugas', {
+                    params: {
+                        q: petugasQuery.trim() || undefined,
+                        status: petugasStatus !== '' ? petugasStatus : undefined,
+                        per_page: 20,
+                    },
+                });
+                const list = Array.isArray(res?.data?.data) ? res.data.data : [];
+                setPetugasList(list);
+            } catch (_e) {
+                setPetugasList([]);
+            } finally {
+                setPetugasLoading(false);
+            }
+        }, 250);
+
+        return () => {
+            if (petugasTimerRef.current) {
+                clearTimeout(petugasTimerRef.current);
+                petugasTimerRef.current = null;
+            }
+        };
+    }, [perawatModalOpen, petugasQuery, petugasStatus]);
+
+    const filteredTindakan = tindakanList.filter(tindakan => {
+        const searchLower = searchQuery.trim().toLowerCase();
+        return (
+            tindakan.nm_perawatan?.toLowerCase().includes(searchLower) ||
+            tindakan.kd_jenis_prw?.toLowerCase().includes(searchLower)
+        );
     });
 
-    const addProcedureToList = (procedure) => {
-        const existingProcedure = selectedProcedures.find(p => p.id === procedure.id);
-        if (existingProcedure) {
-            setSelectedProcedures(selectedProcedures.map(p => 
-                p.id === procedure.id ? { ...p, quantity: p.quantity + 1 } : p
+    const matchedTindakan = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return null;
+
+        const byKode = tindakanList.find((t) => String(t.kd_jenis_prw || '').trim().toLowerCase() === q);
+        if (byKode) return byKode;
+
+        const byNama = tindakanList.find((t) => String(t.nm_perawatan || '').trim().toLowerCase() === q);
+        if (byNama) return byNama;
+
+        return null;
+    }, [searchQuery, tindakanList]);
+
+    const addTindakanToCart = (tindakan) => {
+        if (billingVerified) {
+            alert('Data billing sudah terverifikasi. Silahkan hubungi bagian kasir/keuangan!');
+            return;
+        }
+
+        const existing = selectedTindakan.find(t => t.kd_jenis_prw === tindakan.kd_jenis_prw);
+        if (existing) {
+            setSelectedTindakan(selectedTindakan.map(t =>
+                t.kd_jenis_prw === tindakan.kd_jenis_prw
+                    ? { ...t, quantity: t.quantity + 1 }
+                    : t
             ));
         } else {
-            setSelectedProcedures([...selectedProcedures, { ...procedure, quantity: 1 }]);
+            setSelectedTindakan([...selectedTindakan, { ...tindakan, quantity: 1 }]);
         }
     };
 
-    const updateProcedureQuantity = (procedureId, quantity) => {
+    const updateQuantity = (kdJenisPrw, quantity) => {
         if (quantity <= 0) {
-            setSelectedProcedures(selectedProcedures.filter(p => p.id !== procedureId));
+            setSelectedTindakan(selectedTindakan.filter(t => t.kd_jenis_prw !== kdJenisPrw));
         } else {
-            setSelectedProcedures(selectedProcedures.map(p => 
-                p.id === procedureId ? { ...p, quantity } : p
+            setSelectedTindakan(selectedTindakan.map(t =>
+                t.kd_jenis_prw === kdJenisPrw ? { ...t, quantity } : t
             ));
         }
     };
 
-    const removeProcedureFromList = (procedureId) => {
-        setSelectedProcedures(selectedProcedures.filter(p => p.id !== procedureId));
+    const removeFromCart = (kdJenisPrw) => {
+        setSelectedTindakan(selectedTindakan.filter(t => t.kd_jenis_prw !== kdJenisPrw));
     };
 
-    const submitBilling = () => {
-        if (selectedProcedures.length === 0) return;
-        
-        const newBilling = {
-            id: Date.now(),
-            billNumber: `BILL-INP-${new Date().getFullYear()}-${String(procedures.length + 3).padStart(3, '0')}`,
-            procedures: selectedProcedures.map(procedure => ({
-                name: procedure.name,
-                quantity: procedure.quantity,
-                price: procedure.price
-            })),
-            totalAmount: totalAmount,
-            billingDate: new Date().toLocaleString('id-ID'),
-            status: 'pending',
-            notes: ''
+    const calculateBiaya = () => {
+        let total = 0;
+        let totalJasaDokter = 0;
+        let totalJasaPerawat = 0;
+        let totalKSO = 0;
+        let totalJasaSarana = 0;
+        let totalBHP = 0;
+        let totalMenejemen = 0;
+
+        selectedTindakan.forEach(tindakan => {
+            const qty = tindakan.quantity;
+
+            if (jenisPenanganan === 'dokter') {
+                total += (tindakan.total_byrdr || 0) * qty;
+                totalJasaDokter += (tindakan.tarif_tindakandr || 0) * qty;
+            } else if (jenisPenanganan === 'perawat') {
+                total += (tindakan.total_byrpr || 0) * qty;
+                totalJasaPerawat += (tindakan.tarif_tindakanpr || 0) * qty;
+            } else if (jenisPenanganan === 'dokter-perawat') {
+                total += (tindakan.total_byrdrpr || 0) * qty;
+                totalJasaDokter += (tindakan.tarif_tindakandr || 0) * qty;
+                totalJasaPerawat += (tindakan.tarif_tindakanpr || 0) * qty;
+            }
+
+            totalKSO += (tindakan.kso || 0) * qty;
+            totalJasaSarana += (tindakan.bagian_rs || 0) * qty;
+            totalBHP += (tindakan.bhp || 0) * qty;
+            totalMenejemen += (tindakan.menejemen || 0) * qty;
+        });
+
+        return {
+            total,
+            totalJasaDokter,
+            totalJasaPerawat,
+            totalKSO,
+            totalJasaSarana,
+            totalBHP,
+            totalMenejemen
         };
-        
-        setProcedures([newBilling, ...procedures]);
-        setSelectedProcedures([]);
-        setActiveTab('history');
     };
 
-    const getStatusColor = (status) => {
-        switch(status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'paid': return 'bg-green-100 text-green-800 border-green-200';
-            case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-            case 'partial': return 'bg-blue-100 text-blue-800 border-blue-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    const handleSubmit = async () => {
+        if (!currentNoRawat) {
+            alert('No Rawat tidak ditemukan');
+            return;
+        }
+        if (selectedTindakan.length === 0) {
+            alert('Pilih minimal 1 tindakan');
+            return;
+        }
+
+        if (billingVerified) {
+            alert('Data billing sudah terverifikasi!');
+            return;
+        }
+
+        // Validasi dokter/perawat
+        if (jenisPenanganan === 'dokter' && !selectedDokter) {
+            setErrors({ dokter: 'Pilih dokter terlebih dahulu' });
+            return;
+        }
+        if (jenisPenanganan === 'perawat' && !selectedPerawat) {
+            setErrors({ perawat: 'Pilih perawat terlebih dahulu' });
+            return;
+        }
+        if (jenisPenanganan === 'dokter-perawat' && (!selectedDokter || !selectedPerawat)) {
+            setErrors({
+                dokter: !selectedDokter ? 'Pilih dokter' : null,
+                perawat: !selectedPerawat ? 'Pilih perawat' : null
+            });
+            return;
+        }
+
+        setLoading(true);
+        setErrors({});
+
+        try {
+            const endpoint = jenisPenanganan === 'dokter'
+                ? '/api/rawat-inap/tindakan-dokter'
+                : jenisPenanganan === 'perawat'
+                    ? '/api/rawat-inap/tindakan-perawat'
+                    : '/api/rawat-inap/tindakan-dokter-perawat';
+
+            await axios.post(endpoint, {
+                no_rawat: currentNoRawat,
+                tindakan: selectedTindakan,
+                kd_dokter: selectedDokter?.kd_dokter,
+                nip: selectedPerawat?.nip,
+                tgl_perawatan: new Date().toISOString().split('T')[0],
+                jam_rawat: new Date().toTimeString().split(' ')[0]
+            });
+
+            setSelectedTindakan([]);
+            alert('Tindakan berhasil disimpan');
+
+            // Refresh data if needed
+            if (typeof window.onTindakanUpdated === 'function') {
+                window.onTindakanUpdated();
+            }
+        } catch (error) {
+            console.error('Error saving tindakan:', error);
+            alert(error.response?.data?.message || 'Gagal menyimpan tindakan');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const getStatusIcon = (status) => {
-        switch(status) {
-            case 'pending': return <ClockIcon className="w-4 h-4" />;
-            case 'paid': return <CheckCircleIcon className="w-4 h-4" />;
-            case 'cancelled': return <XCircleIcon className="w-4 h-4" />;
-            case 'partial': return <CalculatorIcon className="w-4 h-4" />;
-            default: return <ClipboardDocumentListIcon className="w-4 h-4" />;
-        }
-    };
-
-    const getCategoryColor = (category) => {
-        switch(category) {
-            case 'Keperawatan': return 'bg-blue-100 text-blue-800';
-            case 'Dokter': return 'bg-red-100 text-red-800';
-            case 'Laboratorium': return 'bg-purple-100 text-purple-800';
-            case 'Radiologi': return 'bg-green-100 text-green-800';
-            case 'Terapi': return 'bg-orange-100 text-orange-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const totalAmount = selectedProcedures.reduce((sum, procedure) => sum + (procedure.price * procedure.quantity), 0);
+    const biaya = calculateBiaya();
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                        <CurrencyDollarIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Tarif Tindakan Rawat Inap</h3>
-                        <p className="text-sm text-gray-600">Kelola tarif tindakan medis rawat inap</p>
+        <motion.div
+            variants={containerVariants}
+            initial={shouldReduceMotion ? false : 'hidden'}
+            animate={shouldReduceMotion ? false : 'visible'}
+            className="space-y-6"
+        >
+            {/* Billing Verified Warning */}
+            <AnimatePresence>
+                {billingVerified && (
+                    <motion.div
+                        key="billing-verified"
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: -6 }}
+                        animate={shouldReduceMotion ? false : { opacity: 1, y: 0 }}
+                        exit={shouldReduceMotion ? false : { opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="bg-yellow-50 border-l-4 border-yellow-400 p-4"
+                    >
+                        <div className="flex">
+                            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" />
+                            <div className="ml-3">
+                                <p className="text-sm text-yellow-700">
+                                    Data billing sudah terverifikasi. Silahkan hubungi bagian kasir/keuangan!
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Dokter/Perawat Selection */}
+            <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+                    <h4 className="font-medium text-gray-900">Pilih Tenaga Medis</h4>
+                    <div className="inline-flex w-full md:w-auto rounded-lg border border-gray-200 bg-gray-50 p-1">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setJenisPenanganan('dokter');
+                                setErrors({});
+                                setSelectedTindakan([]);
+                                setSearchQuery('');
+                            }}
+                            className={`flex-1 md:flex-none px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${jenisPenanganan === 'dokter' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-600 hover:text-gray-800'}`}
+                        >
+                            Dokter
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setJenisPenanganan('perawat');
+                                setErrors({});
+                                setSelectedTindakan([]);
+                                setSearchQuery('');
+                            }}
+                            className={`flex-1 md:flex-none px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${jenisPenanganan === 'perawat' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-600 hover:text-gray-800'}`}
+                        >
+                            Perawat
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setJenisPenanganan('dokter-perawat');
+                                setErrors({});
+                                setSelectedTindakan([]);
+                                setSearchQuery('');
+                            }}
+                            className={`flex-1 md:flex-none px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${jenisPenanganan === 'dokter-perawat' ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-600 hover:text-gray-800'}`}
+                        >
+                            Dokter+Perawat
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                <button
-                    onClick={() => setActiveTab('add')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'add'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                <div
+                    className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${jenisPenanganan === 'dokter-perawat' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}
                 >
-                    Input Tindakan
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-                        activeTab === 'history'
-                            ? 'bg-white text-indigo-700 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                >
-                    Riwayat Tagihan ({mockBillings.length + procedures.length})
-                </button>
-            </div>
-
-            {activeTab === 'add' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-6"
-                >
-                    {/* Category Filter */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Kategori Tindakan</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {categories.map((category) => (
-                                <button
-                                    key={category}
-                                    onClick={() => setProcedureCategory(category)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        procedureCategory === category
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {category === 'all' ? 'Semua' : category}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Procedure Search */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h4 className="font-medium text-gray-900 mb-4">Cari Tindakan Medis</h4>
-                        <div className="relative mb-4">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    {(jenisPenanganan === 'dokter' || jenisPenanganan === 'dokter-perawat') && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <UserIcon className="w-4 h-4 inline mr-1" />
+                                Dokter
+                            </label>
                             <input
                                 type="text"
-                                value={searchProcedure}
-                                onChange={(e) => setSearchProcedure(e.target.value)}
-                                placeholder="Cari nama tindakan, kode, atau deskripsi..."
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                value={selectedDokter?.nm_dokter || ''}
+                                onClick={() => {
+                                    setDokterModalOpen(true);
+                                    setErrors((p) => ({ ...p, dokter: null }));
+                                }}
+                                readOnly
+                                placeholder="Klik untuk pilih dokter..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                             />
+                            {errors.dokter && <p className="text-red-500 text-xs mt-1">{errors.dokter}</p>}
+                        </div>
+                    )}
+                    {(jenisPenanganan === 'perawat' || jenisPenanganan === 'dokter-perawat') && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <UsersIcon className="w-4 h-4 inline mr-1" />
+                                Perawat
+                            </label>
+                            <input
+                                type="text"
+                                value={selectedPerawat?.nama || ''}
+                                onClick={() => {
+                                    setPerawatModalOpen(true);
+                                    setErrors((p) => ({ ...p, perawat: null }));
+                                }}
+                                readOnly
+                                placeholder="Klik untuk pilih perawat..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                            />
+                            {errors.perawat && <p className="text-red-500 text-xs mt-1">{errors.perawat}</p>}
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Cari Tindakan</label>
+                        <div className="relative">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
+                            <input
+                                type="search"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        setSearchQuery('');
+                                        return;
+                                    }
+
+                                    if (e.key === 'Enter' && matchedTindakan) {
+                                        e.preventDefault();
+                                        addTindakanToCart(matchedTindakan);
+                                        setSearchQuery('');
+                                    }
+                                }}
+                                placeholder="Cari nama tindakan atau kode..."
+                                list="tindakan-options"
+                                className="w-full rounded-md bg-white/90 backdrop-blur-sm ring-1 ring-gray-300/70 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none transition-colors placeholder:text-gray-400 text-sm h-10 pl-10 pr-24"
+                            />
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                {searchQuery.trim() !== '' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery('')}
+                                        className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                    >
+                                        <XMarkIcon className="w-4 h-4" />
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    disabled={!matchedTindakan}
+                                    onClick={() => {
+                                        if (!matchedTindakan) return;
+                                        addTindakanToCart(matchedTindakan);
+                                        setSearchQuery('');
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-gray-200 disabled:text-gray-500 disabled:hover:bg-gray-200 transition-colors"
+                                >
+                                    <PlusIcon className="w-4 h-4" />
+                                    Tambah
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="max-h-96 overflow-y-auto space-y-3">
-                            {filteredProcedures.map((procedure) => (
-                                <div
-                                    key={procedure.id}
-                                    onClick={() => addProcedureToList(procedure)}
-                                    className="p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition-all"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <span className="font-medium text-indigo-700">{procedure.code}</span>
-                                                <span className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(procedure.category)}`}>
-                                                    {procedure.category}
-                                                </span>
-                                                <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                                    {procedure.duration} menit
-                                                </span>
-                                            </div>
-                                            <div className="font-medium text-gray-900 mb-1">{procedure.name}</div>
-                                            <div className="text-sm text-gray-600 mb-2">{procedure.description}</div>
-                                            <div className="text-lg font-semibold text-indigo-600">
-                                                Rp {procedure.price.toLocaleString('id-ID')}
-                                            </div>
-                                        </div>
-                                        <button className="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors">
-                                            <PlusIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
+                        <datalist id="tindakan-options">
+                            {filteredTindakan.slice(0, 120).map((t) => (
+                                <option key={String(t.kd_jenis_prw)} value={String(t.kd_jenis_prw || '').trim()}>{String(t.nm_perawatan || '').trim()}</option>
                             ))}
+                        </datalist>
+
+                        <div className="mt-2 text-xs text-gray-500">
+                            {loading
+                                ? 'Memuat daftar tindakan…'
+                                : matchedTindakan
+                                    ? `${String(matchedTindakan.nm_perawatan || '').trim()} (${String(matchedTindakan.kd_jenis_prw || '').trim()})`
+                                    : searchQuery.trim()
+                                        ? 'Pilih dari saran yang muncul, lalu klik Tambah / tekan Enter.'
+                                        : 'Ketik kode atau nama tindakan untuk melihat saran.'}
                         </div>
                     </div>
+                </div>
+            </motion.div>
 
-                    {/* Selected Procedures */}
-                    {selectedProcedures.length > 0 && (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h4 className="font-medium text-gray-900 mb-4">
-                                Tindakan Dipilih ({selectedProcedures.length})
-                            </h4>
-                            <div className="space-y-3 mb-6">
-                                {selectedProcedures.map((procedure) => (
-                                    <div key={procedure.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <AnimatePresence>
+                {dokterModalOpen && (
+                    <motion.div
+                        key="dokter-modal"
+                        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center"
+                        initial={shouldReduceMotion ? false : { opacity: 0 }}
+                        animate={shouldReduceMotion ? false : { opacity: 1 }}
+                        exit={shouldReduceMotion ? false : { opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        onMouseDown={(e) => {
+                            if (e.currentTarget === e.target) {
+                                setDokterModalOpen(false);
+                                setDokterQuery('');
+                            }
+                        }}
+                    >
+                        <motion.div
+                            className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 14, scale: 0.98 }}
+                            animate={shouldReduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+                            exit={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+                        >
+                            <div className="flex items-center justify-between px-5 py-4 border-b bg-gray-50">
+                                <div className="font-semibold text-gray-900">Pilih Dokter</div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setDokterModalOpen(false);
+                                        setDokterQuery('');
+                                    }}
+                                    className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-white transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+
+                            <div className="p-5 space-y-4">
+                                <div className="relative">
+                                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        value={dokterQuery}
+                                        onChange={(e) => setDokterQuery(e.target.value)}
+                                        placeholder="Cari dokter (nama/kode)…"
+                                        className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                    />
+                                </div>
+
+                                <div className="max-h-[420px] overflow-y-auto border border-gray-200 rounded-xl">
+                                    <AnimatePresence mode="wait">
+                                        {dokterLoading ? (
+                                            <motion.div
+                                                key="dokter-loading"
+                                                initial={shouldReduceMotion ? false : { opacity: 0 }}
+                                                animate={shouldReduceMotion ? false : { opacity: 1 }}
+                                                exit={shouldReduceMotion ? false : { opacity: 0 }}
+                                                className="p-6 text-center text-gray-500"
+                                            >
+                                                Memuat...
+                                            </motion.div>
+                                        ) : dokterList.length === 0 ? (
+                                            <motion.div
+                                                key="dokter-empty"
+                                                initial={shouldReduceMotion ? false : { opacity: 0 }}
+                                                animate={shouldReduceMotion ? false : { opacity: 1 }}
+                                                exit={shouldReduceMotion ? false : { opacity: 0 }}
+                                                className="p-6 text-center text-gray-500"
+                                            >
+                                                Dokter tidak ditemukan
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="dokter-list"
+                                                variants={containerVariants}
+                                                initial={shouldReduceMotion ? false : 'hidden'}
+                                                animate={shouldReduceMotion ? false : 'visible'}
+                                            >
+                                                {dokterList.map((d) => (
+                                                    <motion.button
+                                                        key={String(d.kd_dokter)}
+                                                        type="button"
+                                                        variants={cardVariants}
+                                                        whileHover={shouldReduceMotion ? undefined : 'hover'}
+                                                        whileTap={shouldReduceMotion ? undefined : 'tap'}
+                                                        onClick={() => {
+                                                            _setSelectedDokter(d);
+                                                            setDokterModalOpen(false);
+                                                            setDokterQuery('');
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                                                    >
+                                                        <div className="font-medium text-gray-900">{d.nm_dokter}</div>
+                                                        <div className="text-xs text-gray-500">{d.kd_dokter}</div>
+                                                    </motion.button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {perawatModalOpen && (
+                    <motion.div
+                        key="perawat-modal"
+                        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 flex items-center justify-center"
+                        initial={shouldReduceMotion ? false : { opacity: 0 }}
+                        animate={shouldReduceMotion ? false : { opacity: 1 }}
+                        exit={shouldReduceMotion ? false : { opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        onMouseDown={(e) => {
+                            if (e.currentTarget === e.target) {
+                                setPerawatModalOpen(false);
+                                setPetugasQuery('');
+                            }
+                        }}
+                    >
+                        <motion.div
+                            className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 14, scale: 0.98 }}
+                            animate={shouldReduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+                            exit={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+                        >
+                            <div className="flex items-center justify-between px-5 py-4 border-b bg-gray-50">
+                                <div className="font-semibold text-gray-900">Pilih Petugas</div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setPerawatModalOpen(false);
+                                        setPetugasQuery('');
+                                    }}
+                                    className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-white transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+
+                            <div className="p-5 space-y-4">
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <div className="relative flex-1">
+                                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                        <input
+                                            type="text"
+                                            value={petugasQuery}
+                                            onChange={(e) => setPetugasQuery(e.target.value)}
+                                            placeholder="Cari petugas (NIP/nama/email)…"
+                                            className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                    <select
+                                        value={petugasStatus}
+                                        onChange={(e) => setPetugasStatus(e.target.value)}
+                                        className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                    >
+                                        <option value="">Semua Status</option>
+                                        <option value="1">Aktif</option>
+                                        <option value="0">Nonaktif</option>
+                                    </select>
+                                </div>
+
+                                <div className="max-h-[420px] overflow-y-auto border border-gray-200 rounded-xl">
+                                    <AnimatePresence mode="wait">
+                                        {petugasLoading ? (
+                                            <motion.div
+                                                key="petugas-loading"
+                                                initial={shouldReduceMotion ? false : { opacity: 0 }}
+                                                animate={shouldReduceMotion ? false : { opacity: 1 }}
+                                                exit={shouldReduceMotion ? false : { opacity: 0 }}
+                                                className="p-6 text-center text-gray-500"
+                                            >
+                                                Memuat...
+                                            </motion.div>
+                                        ) : petugasList.length === 0 ? (
+                                            <motion.div
+                                                key="petugas-empty"
+                                                initial={shouldReduceMotion ? false : { opacity: 0 }}
+                                                animate={shouldReduceMotion ? false : { opacity: 1 }}
+                                                exit={shouldReduceMotion ? false : { opacity: 0 }}
+                                                className="p-6 text-center text-gray-500"
+                                            >
+                                                Petugas tidak ditemukan
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="petugas-list"
+                                                variants={containerVariants}
+                                                initial={shouldReduceMotion ? false : 'hidden'}
+                                                animate={shouldReduceMotion ? false : 'visible'}
+                                            >
+                                                {petugasList.map((p) => (
+                                                    <motion.button
+                                                        key={String(p.nip)}
+                                                        type="button"
+                                                        variants={cardVariants}
+                                                        whileHover={shouldReduceMotion ? undefined : 'hover'}
+                                                        whileTap={shouldReduceMotion ? undefined : 'tap'}
+                                                        onClick={() => {
+                                                            _setSelectedPerawat(p);
+                                                            setPerawatModalOpen(false);
+                                                            setPetugasQuery('');
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                                                    >
+                                                        <div className="font-medium text-gray-900">{p.nama}</div>
+                                                        <div className="text-xs text-gray-500">{p.nip}</div>
+                                                    </motion.button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Selected Tindakan */}
+            <AnimatePresence>
+                {selectedTindakan.length > 0 && (
+                    <motion.div
+                        key="selected-tindakan"
+                        variants={itemVariants}
+                        initial={shouldReduceMotion ? false : 'hidden'}
+                        animate={shouldReduceMotion ? false : 'visible'}
+                        exit={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                        layout
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                    >
+                        <h4 className="font-medium text-gray-900 mb-4">
+                            Tindakan Dipilih ({selectedTindakan.length})
+                        </h4>
+                        <motion.div layout className="space-y-3 mb-6">
+                            <AnimatePresence initial={false}>
+                                {selectedTindakan.map((tindakan) => (
+                                    <motion.div
+                                        key={tindakan.kd_jenis_prw}
+                                        layout
+                                        initial={shouldReduceMotion ? false : { opacity: 0, y: 10, scale: 0.99 }}
+                                        animate={shouldReduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+                                        exit={shouldReduceMotion ? false : { opacity: 0, y: 8, scale: 0.99 }}
+                                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                                    >
                                         <div className="flex-1">
-                                            <div className="flex items-center space-x-2 mb-1">
-                                                <span className="font-medium text-gray-900">{procedure.name}</span>
-                                                <span className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(procedure.category)}`}>
-                                                    {procedure.category}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                {procedure.code} • Rp {procedure.price.toLocaleString('id-ID')} per tindakan
-                                            </div>
+                                            <div className="font-medium text-gray-900">{tindakan.nm_perawatan}</div>
+                                            <div className="text-sm text-gray-600">{tindakan.kd_jenis_prw}</div>
                                         </div>
                                         <div className="flex items-center space-x-3">
                                             <div className="flex items-center space-x-2">
-                                                <button
-                                                    onClick={() => updateProcedureQuantity(procedure.id, procedure.quantity - 1)}
-                                                    className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors"
+                                                <motion.button
+                                                    type="button"
+                                                    whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                                                    onClick={() => updateQuantity(tindakan.kd_jenis_prw, tindakan.quantity - 1)}
+                                                    className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                                                 >
                                                     -
-                                                </button>
-                                                <span className="w-12 text-center font-medium">{procedure.quantity}</span>
-                                                <button
-                                                    onClick={() => updateProcedureQuantity(procedure.id, procedure.quantity + 1)}
+                                                </motion.button>
+                                                <span className="w-12 text-center font-medium">{tindakan.quantity}</span>
+                                                <motion.button
+                                                    type="button"
+                                                    whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                                                    onClick={() => updateQuantity(tindakan.kd_jenis_prw, tindakan.quantity + 1)}
                                                     className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                                                 >
                                                     +
-                                                </button>
+                                                </motion.button>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right w-32">
                                                 <div className="font-semibold text-gray-900">
-                                                    Rp {(procedure.price * procedure.quantity).toLocaleString('id-ID')}
+                                                    Rp {((jenisPenanganan === 'dokter' ? tindakan.total_byrdr : jenisPenanganan === 'perawat' ? tindakan.total_byrpr : tindakan.total_byrdrpr) * tindakan.quantity).toLocaleString()}
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => removeProcedureFromList(procedure.id)}
-                                                className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                            <motion.button
+                                                type="button"
+                                                whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                                                onClick={() => removeFromCart(tindakan.kd_jenis_prw)}
+                                                className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
                                             >
                                                 <TrashIcon className="w-4 h-4" />
-                                            </button>
+                                            </motion.button>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 ))}
-                            </div>
-                            
-                            <div className="border-t pt-4">
-                                <div className="flex items-center justify-between text-xl font-semibold">
-                                    <span>Total Tagihan:</span>
-                                    <span className="text-indigo-600">Rp {totalAmount.toLocaleString('id-ID')}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                            </AnimatePresence>
+                        </motion.div>
 
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
+                    <div className="border-t pt-4 mb-4">
                         <button
-                            onClick={submitBilling}
-                            disabled={selectedProcedures.length === 0}
-                            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                            type="button"
+                            onClick={() => setBiayaCollapsed((v) => !v)}
+                            className="w-full flex items-center justify-between gap-3"
                         >
-                            <PlusIcon className="w-5 h-5" />
-                            <span>Buat Tagihan</span>
-                        </button>
-                    </div>
-                </motion.div>
-            )}
-
-            {activeTab === 'history' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4"
-                >
-                    {[...procedures, ...mockBillings].length === 0 ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                            <CurrencyDollarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Belum Ada Tagihan</h3>
-                            <p className="text-gray-600">Input tindakan medis untuk membuat tagihan</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {[...procedures, ...mockBillings].map((billing) => (
-                                <motion.div
-                                    key={billing.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                            <h5 className="font-medium text-gray-900">Rincian Biaya</h5>
+                            <span className="inline-flex items-center gap-2 text-sm text-gray-600">
+                                <span>{biayaCollapsed ? 'Lihat' : 'Tutup'}</span>
+                                <motion.span
+                                    animate={shouldReduceMotion ? undefined : { rotate: biayaCollapsed ? 0 : 180 }}
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                                    className="inline-flex"
                                 >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <span className="font-semibold text-gray-900">{billing.billNumber}</span>
-                                                <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(billing.status)}`}>
-                                                    {getStatusIcon(billing.status)}
-                                                    <span className="capitalize">{billing.status}</span>
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                Tanggal: {billing.billingDate}
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-xl font-semibold text-indigo-600">
-                                                Rp {billing.totalAmount.toLocaleString('id-ID')}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="space-y-3">
-                                        <div>
-                                            <h5 className="font-medium text-gray-900 mb-3">Detail Tindakan:</h5>
-                                            <div className="space-y-2">
-                                                {billing.procedures.map((procedure, index) => (
-                                                    <div key={index} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                                                        <div className="flex-1">
-                                                            <div className="font-medium text-gray-900">{procedure.name}</div>
-                                                            <div className="text-sm text-gray-600">
-                                                                Jumlah: {procedure.quantity} × Rp {procedure.price.toLocaleString('id-ID')}
-                                                            </div>
-                                                        </div>
-                                                        <div className="font-semibold text-gray-900">
-                                                            Rp {(procedure.quantity * procedure.price).toLocaleString('id-ID')}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        
-                                        {billing.notes && (
-                                            <div>
-                                                <h5 className="font-medium text-gray-900 mb-2">Catatan:</h5>
-                                                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{billing.notes}</p>
+                                    <ChevronDownIcon className="w-4 h-4" />
+                                </motion.span>
+                            </span>
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                            {!biayaCollapsed && (
+                                <motion.div
+                                    key="biaya-details"
+                                    initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+                                    animate={shouldReduceMotion ? false : { height: 'auto', opacity: 1 }}
+                                    exit={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="pt-3 space-y-2">
+                                        {biaya.totalJasaDokter > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">Jasa Medik Dokter:</span>
+                                                <span className="font-medium">Rp {biaya.totalJasaDokter.toLocaleString()}</span>
                                             </div>
                                         )}
+                                        {biaya.totalJasaPerawat > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600">Jasa Medik Perawat:</span>
+                                                <span className="font-medium">Rp {biaya.totalJasaPerawat.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">KSO:</span>
+                                            <span className="font-medium">Rp {biaya.totalKSO.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Jasa Sarana:</span>
+                                            <span className="font-medium">Rp {biaya.totalJasaSarana.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">BHP:</span>
+                                            <span className="font-medium">Rp {biaya.totalBHP.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Menejemen:</span>
+                                            <span className="font-medium">Rp {biaya.totalMenejemen.toLocaleString()}</span>
+                                        </div>
                                     </div>
                                 </motion.div>
-                            ))}
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="border-t pt-4">
+                        <div className="flex items-center justify-between text-xl font-semibold">
+                            <span>Total Biaya:</span>
+                            <span className="text-indigo-600">Rp {biaya.total.toLocaleString()}</span>
                         </div>
-                    )}
-                </motion.div>
-            )}
-        </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-end">
+                        <motion.button
+                            type="button"
+                            whileHover={shouldReduceMotion ? undefined : { scale: 1.01 }}
+                            whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}
+                            onClick={handleSubmit}
+                            disabled={loading || billingVerified}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-1.5 text-sm"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            <span>{loading ? 'Menyimpan...' : 'Simpan Tindakan'}</span>
+                        </motion.button>
+                    </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 };
 

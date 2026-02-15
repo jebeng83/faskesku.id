@@ -742,8 +742,25 @@ class RegPeriksaController extends Controller
 
             // Normalize kd_poli ke uppercase untuk pencarian
             $kdPoli = strtoupper($kdPoliInput);
-            $isIgd = $kdPoli === 'IGDK';
+            $isIgdAlias = in_array($kdPoli, ['IGDK', 'IGD'], true);
             $poliklinik = Poliklinik::where('kd_poli', $kdPoli)->first();
+            if (! $poliklinik && $isIgdAlias) {
+                $poliklinik = Poliklinik::query()
+                    ->where(function ($q) {
+                        $q->where('kd_poli', 'like', 'IGD%')
+                            ->orWhere('nm_poli', 'like', '%IGD%')
+                            ->orWhere('nm_poli', 'like', '%I G D%');
+                    })
+                    ->orderByRaw("CASE 
+                        WHEN kd_poli = 'IGDK' THEN 0
+                        WHEN kd_poli = 'IGD' THEN 1
+                        ELSE 2
+                    END")
+                    ->first();
+                if ($poliklinik) {
+                    $kdPoli = strtoupper((string) $poliklinik->kd_poli);
+                }
+            }
             if (! $poliklinik) {
                 return response()->json([
                     'success' => false,
@@ -751,6 +768,7 @@ class RegPeriksaController extends Controller
                     'errors' => ['kd_poli' => ['Poliklinik dengan kode '.$kdPoli.' tidak ditemukan']],
                 ], 422);
             }
+            $isIgd = $isIgdAlias || str_contains(strtolower((string) $poliklinik->nm_poli), 'igd');
 
             // Validasi tanggal - fleksibel dengan berbagai format
             $tanggalInput = $request->input('tanggal');

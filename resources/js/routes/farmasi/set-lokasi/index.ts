@@ -3,7 +3,7 @@ import ralanMapping from './ralan-mapping'
 import ranapMapping from './ranap-mapping'
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::store
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:48
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:59
 * @route '/farmasi/set-lokasi'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -18,7 +18,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::store
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:48
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:59
 * @route '/farmasi/set-lokasi'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -27,7 +27,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::store
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:48
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:59
 * @route '/farmasi/set-lokasi'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -37,7 +37,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::update
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:66
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:77
 * @route '/farmasi/set-lokasi'
 */
 export const update = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -52,7 +52,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::update
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:66
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:77
 * @route '/farmasi/set-lokasi'
 */
 update.url = (options?: RouteQueryOptions) => {
@@ -61,7 +61,7 @@ update.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::update
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:66
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:77
 * @route '/farmasi/set-lokasi'
 */
 update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -71,7 +71,7 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::destroy
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:84
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:95
 * @route '/farmasi/set-lokasi'
 */
 export const destroy = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -86,7 +86,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::destroy
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:84
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:95
 * @route '/farmasi/set-lokasi'
 */
 destroy.url = (options?: RouteQueryOptions) => {
@@ -95,7 +95,7 @@ destroy.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Farmasi\SetLokasiController::destroy
-* @see app/Http/Controllers/Farmasi/SetLokasiController.php:84
+* @see app/Http/Controllers/Farmasi/SetLokasiController.php:95
 * @route '/farmasi/set-lokasi'
 */
 destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

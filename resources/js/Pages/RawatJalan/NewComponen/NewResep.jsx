@@ -6,7 +6,7 @@ import { todayDateString, nowDateTimeString, getAppTimeZone } from "@/tools/date
 import { createPageVariants, contentSpring } from "@/tools/motion"
 import CopyResep from "@/Pages/RawatJalan/components/CopyResep"
 
-export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "", onResepSaved = null }) {
+export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kdPoli = "", status = "ralan", onResepSaved = null }) {
   const [items, setItems] = useState([{ id: 1, kodeObat: "", namaObat: "", aturanPakai: "", jumlah: 0, satuan: "", stokTersedia: 0, harga: 0 }])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmittingRacikan, setIsSubmittingRacikan] = useState(false)
@@ -335,7 +335,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
         setRiwayatResep((prev) => prev.map((r) => (r.no_resep === resep.no_resep ? { ...r, tgl_penyerahan: tglPenyerahan, jam_penyerahan: jamPenyerahan } : r)))
         setSavedResep((prev) => {
           if (prev?.no_resep === resep.no_resep) {
-            return { ...prev, tgl_penyerahan: tglPenyerahan, jam_penyerahan: jamPenyerahan, status: "Sudah diserahkan" }
+            return { ...prev, tgl_penyerahan: tglPenyerahan, jam_penyerahan: jamPenyerahan }
           }
           return prev
         })
@@ -364,6 +364,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
           no_rawat: noRawat,
           kd_poli: kdPoli,
           kd_dokter: selectedDokter,
+          status: status,
           items: nonItems,
         }
         response = await axios.post("/api/resep", resepData)
@@ -398,6 +399,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
           no_rawat: noRawat,
           kd_poli: kdPoli,
           kd_dokter: selectedDokter,
+          status: status,
           groups: racikanGroups.map((g) => ({
             no_racik: g.no_racik,
             nama_racik: g.nama_racik,
@@ -420,6 +422,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
           no_rawat: noRawat,
           kd_poli: kdPoli,
           kd_dokter: selectedDokter,
+          status: status,
           items: nonItems,
         }
         response = await axios.post("/api/resep", resepData)
@@ -697,6 +700,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
           no_rawat: noRawat,
           kd_poli: kdPoli,
           kd_dokter: selectedDokter,
+          status: status,
           items: nonItems,
         }
         const nonRes = await axios.post('/api/resep', resepData)
@@ -728,6 +732,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
           no_rawat: noRawat,
           kd_poli: kdPoli,
           kd_dokter: selectedDokter,
+          status: status,
           groups: racikanGroups.map((g) => ({
             no_racik: g.no_racik,
             nama_racik: g.nama_racik,
@@ -1516,7 +1521,7 @@ export default function NewResep({ token = "", noRkmMedis = "", noRawat = "", kd
         )}
       </AnimatePresence>
 
-      <CopyResep isOpen={showCopyModal} onClose={handleCloseCopyModal} resepData={selectedResepForCopy} token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} kdPoli={kdPoli} onResepSaved={handleResepSaved} />
+      <CopyResep isOpen={showCopyModal} onClose={handleCloseCopyModal} resepData={selectedResepForCopy} token={token} noRkmMedis={noRkmMedis} noRawat={noRawat} kdPoli={kdPoli} status={status} onResepSaved={handleResepSaved} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/api.php:241
+* @see routes/api.php:244
 * @route '/api/dev/debug/alergi-pasien'
 */
 export const alergiPasien = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ alergiPasien.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:241
+* @see routes/api.php:244
 * @route '/api/dev/debug/alergi-pasien'
 */
 alergiPasien.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ alergiPasien.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:241
+* @see routes/api.php:244
 * @route '/api/dev/debug/alergi-pasien'
 */
 alergiPasien.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ alergiPasien.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/api.php:241
+* @see routes/api.php:244
 * @route '/api/dev/debug/alergi-pasien'
 */
 alergiPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ alergiPasien.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/api.php:258
+* @see routes/api.php:261
 * @route '/api/dev/debug/pemeriksaan-ralan'
 */
 export const pemeriksaanRalan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ pemeriksaanRalan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/api.php:258
+* @see routes/api.php:261
 * @route '/api/dev/debug/pemeriksaan-ralan'
 */
 pemeriksaanRalan.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ pemeriksaanRalan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/api.php:258
+* @see routes/api.php:261
 * @route '/api/dev/debug/pemeriksaan-ralan'
 */
 pemeriksaanRalan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ pemeriksaanRalan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 })
 
 /**
-* @see routes/api.php:258
+* @see routes/api.php:261
 * @route '/api/dev/debug/pemeriksaan-ralan'
 */
 pemeriksaanRalan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

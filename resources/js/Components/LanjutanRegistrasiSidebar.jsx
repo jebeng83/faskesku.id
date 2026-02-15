@@ -119,26 +119,6 @@ export default function LanjutanRegistrasiSidebar({
           colorScheme: "blue",
         },
         {
-          id: "dokter",
-          name: "Dokter",
-          icon: "document-text",
-          description: "Daftar dan pencarian dokter",
-          // Navigate to doctors index page when not using local tab change
-          route: "doctors.index",
-          active: menuConfig.activeTab === "dokter",
-          colorScheme: "blue",
-        },
-        {
-          id: "poliklinik",
-          name: "Poliklinik",
-          icon: "building",
-          description: "Daftar poliklinik dan jadwal",
-          // Navigate to poliklinik index page when not using local tab change
-          route: "poliklinik.index",
-          active: menuConfig.activeTab === "poliklinik",
-          colorScheme: "blue",
-        },
-        {
           id: "keg_kelompok_pcare",
           name: "Keg Kelompok PCare",
           icon: "clipboard-document-list",
@@ -243,7 +223,7 @@ export default function LanjutanRegistrasiSidebar({
     if (menu.children && menu.children.length > 0) {
       toggleExpanded(menu.id);
     } else if (
-      menuConfig.onTabChange && ["pasien", "dokter", "poliklinik"].includes(menu.id)
+      menuConfig.onTabChange && ["pasien"].includes(menu.id)
     ) {
       menuConfig.onTabChange(menu.id);
     } else {

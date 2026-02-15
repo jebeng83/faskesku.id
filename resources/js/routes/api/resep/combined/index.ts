@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:309
+* @see app/Http/Controllers/RawatJalan/ResepController.php:384
 * @route '/api/resep/combined'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:309
+* @see app/Http/Controllers/RawatJalan/ResepController.php:384
 * @route '/api/resep/combined'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\ResepController::store
-* @see app/Http/Controllers/RawatJalan/ResepController.php:309
+* @see app/Http/Controllers/RawatJalan/ResepController.php:384
 * @route '/api/resep/combined'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

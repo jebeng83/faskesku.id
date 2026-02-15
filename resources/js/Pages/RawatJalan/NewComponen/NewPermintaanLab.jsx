@@ -5,10 +5,23 @@ import { todayDateString, nowDateTimeString } from "@/tools/datetime"
 import { createPageVariants, contentSpring } from "@/tools/motion"
 import { format, parseISO, isValid } from "date-fns"
 
-export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawat = "" }) {
+export default function NewPermintaanLab({
+  token = "",
+  noRkmMedis = "",
+  _token = "",
+  _noRkmMedis = "",
+  noRawat = "",
+  status = "ralan",
+}) {
   const [dir, setDir] = useState(1)
   const reduced = useReducedMotion()
   const pageVariants = createPageVariants(reduced)
+
+  const normalizedStatus = String(status || "").toLowerCase() === "ranap" ? "ranap" : "ralan"
+  void token
+  void noRkmMedis
+  void _token
+  void _noRkmMedis
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,7 +48,7 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
   const [formData, setFormData] = useState({
     tgl_permintaan: todayDateString(),
     jam_permintaan: nowDateTimeString().split(" ")[1].substring(0, 5),
-    status: "ralan",
+    status: normalizedStatus,
     informasi_tambahan: "-",
     diagnosa_klinis: "-",
   })
@@ -243,7 +256,13 @@ export default function NewPermintaanLab({ _token = "", _noRkmMedis = "", noRawa
       if (resp?.data?.success) {
         const noorder = resp?.data?.data?.noorder || null
         setSelectedTests([])
-        setFormData({ tgl_permintaan: todayDateString(), jam_permintaan: nowDateTimeString().split(" ")[1].substring(0, 5), status: "ralan", informasi_tambahan: "-", diagnosa_klinis: "-" })
+        setFormData({
+          tgl_permintaan: todayDateString(),
+          jam_permintaan: nowDateTimeString().split(" ")[1].substring(0, 5),
+          status: normalizedStatus,
+          informasi_tambahan: "-",
+          diagnosa_klinis: "-",
+        })
         setDokterPerujuk({ kd_dokter: "", nm_dokter: "" })
         setDokterSearch("")
         setSelectedTemplates({})

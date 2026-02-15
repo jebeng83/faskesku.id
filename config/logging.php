@@ -123,6 +123,11 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        'deprecations' => [
+            'driver' => 'monolog',
+            'handler' => NullHandler::class,
+        ],
+
         // Channel khusus untuk logging BPJS (harian)
         'bpjs' => [
             'driver' => 'daily',

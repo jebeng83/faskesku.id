@@ -1,4 +1,5 @@
 import NotaJalanController from './NotaJalanController'
+import NotaInapController from './NotaInapController'
 import PengeluaranHarianController from './PengeluaranHarianController'
 import KategoriPengeluaranHarianController from './KategoriPengeluaranHarianController'
 import JurnalController from './JurnalController'
@@ -24,6 +25,7 @@ import SetAkunController from './SetAkunController'
 
 const Akutansi = {
     NotaJalanController: Object.assign(NotaJalanController, NotaJalanController),
+    NotaInapController: Object.assign(NotaInapController, NotaInapController),
     PengeluaranHarianController: Object.assign(PengeluaranHarianController, PengeluaranHarianController),
     KategoriPengeluaranHarianController: Object.assign(KategoriPengeluaranHarianController, KategoriPengeluaranHarianController),
     JurnalController: Object.assign(JurnalController, JurnalController),

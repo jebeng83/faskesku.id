@@ -21,6 +21,81 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ResepController extends Controller
 {
+    private function resolveBangsalListForStok(ResepObat $resep, ?string $kdPoli = null): array
+    {
+        $cfg = null;
+        try {
+            $cfg = \App\Models\SetLokasi::query()->first();
+        } catch (\Throwable $th) {
+            $cfg = null;
+        }
+
+        $asalStok = trim((string) ($cfg->asal_stok ?? ''));
+        $kdBangsalCfg = trim((string) ($cfg->kd_bangsal ?? ''));
+
+        if ($asalStok === 'Gunakan Stok Utama Obat' && $kdBangsalCfg !== '') {
+            return [$kdBangsalCfg];
+        }
+
+        $status = strtolower((string) ($resep->status ?? ''));
+        if ($status === 'ralan') {
+            if (! empty($kdPoli)) {
+                return SetDepoRalan::getBangsalByPoli($kdPoli);
+            }
+            if ($kdBangsalCfg !== '') {
+                return [$kdBangsalCfg];
+            }
+            return \App\Models\SetLokasi::getAllBangsal();
+        }
+
+        $kdBangsalPerawatan = '';
+        try {
+            $kdBangsalPerawatan = (string) (DB::table('kamar_inap')
+                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                ->where('kamar_inap.no_rawat', $resep->no_rawat)
+                ->where('kamar_inap.stts_pulang', '-')
+                ->value('kamar.kd_bangsal') ?? '');
+        } catch (\Throwable $th) {
+            $kdBangsalPerawatan = '';
+        }
+
+        if ($kdBangsalPerawatan === '') {
+            try {
+                $kdBangsalPerawatan = (string) (DB::table('ranap_gabung')
+                    ->join('kamar_inap', 'ranap_gabung.no_rawat', '=', 'kamar_inap.no_rawat')
+                    ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                    ->where('ranap_gabung.no_rawat2', $resep->no_rawat)
+                    ->where('kamar_inap.stts_pulang', '-')
+                    ->value('kamar.kd_bangsal') ?? '');
+            } catch (\Throwable $th) {
+                $kdBangsalPerawatan = '';
+            }
+        }
+
+        if ($kdBangsalPerawatan !== '') {
+            try {
+                $depos = DB::table('set_depo_ranap')
+                    ->where('kd_bangsal', $kdBangsalPerawatan)
+                    ->pluck('kd_depo')
+                    ->map(fn ($v) => trim((string) $v))
+                    ->filter(fn ($v) => $v !== '')
+                    ->unique()
+                    ->values()
+                    ->all();
+                if (! empty($depos)) {
+                    return $depos;
+                }
+            } catch (\Throwable $th) {
+            }
+        }
+
+        if ($kdBangsalCfg !== '') {
+            return [$kdBangsalCfg];
+        }
+
+        return \App\Models\SetLokasi::getAllBangsal();
+    }
+
     /**
      * Menyimpan resep baru
      */
@@ -692,12 +767,22 @@ class ResepController extends Controller
                 ], 404);
             }
 
-            // Ambil kd_poli dari reg_periksa berdasarkan no_rawat resep
-            $reg = DB::table('reg_periksa')->where('no_rawat', $resep->no_rawat)->select('kd_poli')->first();
-            if (! $reg || empty($reg->kd_poli)) {
+            $kdPoli = null;
+            if (strtolower((string) $resep->status) === 'ralan') {
+                $kdPoli = DB::table('reg_periksa')->where('no_rawat', $resep->no_rawat)->value('kd_poli');
+                if (empty($kdPoli)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Poli untuk no_rawat tidak ditemukan',
+                    ], 400);
+                }
+            }
+
+            $bangsalList = $this->resolveBangsalListForStok($resep, $kdPoli);
+            if (empty($bangsalList)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Poli untuk no_rawat tidak ditemukan',
+                    'message' => 'Tidak ada depo stok yang dapat digunakan untuk penyerahan',
                 ], 400);
             }
 
@@ -781,8 +866,7 @@ class ResepController extends Controller
                 $jumlah = isset($overrideJumlah[$det->kode_brng])
                     ? max((float) $overrideJumlah[$det->kode_brng], 0.1)
                     : (float) $det->jml;
-                // Validasi total stok tersedia di depo terkait poli
-                $bangsalList = SetDepoRalan::getBangsalByPoli($reg->kd_poli);
+                // Validasi total stok tersedia di depo terkait
                 $totalStok = 0;
                 foreach ($bangsalList as $kdBangsal) {
                     $totalStok += Gudangbarang::getTotalStokByBarangBangsal($det->kode_brng, $kdBangsal);
@@ -799,7 +883,7 @@ class ResepController extends Controller
                 }
 
                 // Kurangi stok dengan FIFO dan dapatkan batch yang diambil
-                $updatedBatches = $this->updateStokObat($det->kode_brng, $jumlah, $reg->kd_poli);
+                $updatedBatches = $this->updateStokObat($det->kode_brng, $jumlah, $bangsalList);
 
                 // Ambil informasi barang untuk menghitung biaya
                 $barangInfo = Databarang::where('kode_brng', $det->kode_brng)->first();
@@ -938,7 +1022,6 @@ class ResepController extends Controller
                 $jumlahR = isset($overrideJumlahRacikan[$rdet->kode_brng])
                     ? max((float) $overrideJumlahRacikan[$rdet->kode_brng], 0.1)
                     : (float) $rdet->jml;
-                $bangsalList = SetDepoRalan::getBangsalByPoli($reg->kd_poli);
                 $totalStokR = 0;
                 foreach ($bangsalList as $kdBangsal) {
                     $totalStokR += Gudangbarang::getTotalStokByBarangBangsal($rdet->kode_brng, $kdBangsal);
@@ -953,7 +1036,7 @@ class ResepController extends Controller
                     ], 400);
                 }
 
-                $updatedBatchesR = $this->updateStokObat($rdet->kode_brng, $jumlahR, $reg->kd_poli);
+                $updatedBatchesR = $this->updateStokObat($rdet->kode_brng, $jumlahR, $bangsalList);
                 $barangInfoR = Databarang::where('kode_brng', $rdet->kode_brng)->first();
                 $biayaObatR = (float) ($barangInfoR->ralan ?? 0);
                 $hargaBeliR = (float) ($barangInfoR->h_beli ?? 0);
@@ -1632,8 +1715,10 @@ class ResepController extends Controller
                 }
             } else { // ranap
                 // Mengacu pada DlgDaftarPermintaanResep.tampil() untuk ranap
-                $query->join('ranap_gabung', 'ranap_gabung.no_rawat2', '=', 'resep_obat.no_rawat')
-                    ->join('kamar_inap', 'ranap_gabung.no_rawat', '=', 'kamar_inap.no_rawat')
+                $query->leftJoin('ranap_gabung', 'ranap_gabung.no_rawat2', '=', 'resep_obat.no_rawat')
+                    ->join('kamar_inap', function ($join) {
+                        $join->on('kamar_inap.no_rawat', '=', DB::raw('COALESCE(ranap_gabung.no_rawat, resep_obat.no_rawat)'));
+                    })
                     ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
                     ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
                     ->where('kamar_inap.stts_pulang', '-');
@@ -1846,21 +1931,15 @@ class ResepController extends Controller
     /**
      * Update stok obat setelah resep dibuat dengan metode FIFO
      */
-    private function updateStokObat($kodeBrng, $jumlah, $kdPoli = null)
+    private function updateStokObat($kodeBrng, $jumlah, array $bangsalList = [])
     {
-        // Dapatkan bangsal yang terkait dengan poli jika ada
-        $bangsalList = null;
-        if ($kdPoli) {
-            $bangsalList = SetDepoRalan::getBangsalByPoli($kdPoli);
-        }
-
         // Ambil stok dari gudang dengan urutan FIFO (First In, First Out)
         // Urutkan berdasarkan tanggal expire dan no_batch
         $gudangQuery = Gudangbarang::where('kode_brng', $kodeBrng)
             ->where('stok', '>', 0);
 
         // Filter berdasarkan bangsal jika ada
-        if ($bangsalList && ! empty($bangsalList)) {
+        if (! empty($bangsalList)) {
             $gudangQuery->whereIn('kd_bangsal', $bangsalList);
         }
 
@@ -1941,6 +2020,8 @@ class ResepController extends Controller
             $request->validate([
                 'kode_brng' => 'required|string',
                 'kd_poli' => 'nullable|string',
+                'no_rawat' => 'nullable|string',
+                'status' => 'nullable|string|in:ralan,ranap',
             ]);
 
             $databarang = Databarang::where('kode_brng', $request->kode_brng)->first();
@@ -1952,32 +2033,93 @@ class ResepController extends Controller
                 ], 404);
             }
 
-            // Jika ada kd_poli, hitung stok berdasarkan bangsal yang terkait
-            if ($request->kd_poli) {
-                $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
+            $cfg = null;
+            try {
+                $cfg = \App\Models\SetLokasi::query()->first();
+            } catch (\Throwable $th) {
+                $cfg = null;
+            }
+            $asalStok = trim((string) ($cfg->asal_stok ?? ''));
+            $kdBangsalCfg = trim((string) ($cfg->kd_bangsal ?? ''));
 
-                $totalStok = 0;
-                $stokPerBangsal = [];
+            $bangsalList = [];
+            if ($asalStok === 'Gunakan Stok Utama Obat' && $kdBangsalCfg !== '') {
+                $bangsalList = [$kdBangsalCfg];
+            } else {
+                $status = strtolower((string) $request->query('status', ''));
+                $noRawat = trim((string) $request->query('no_rawat', ''));
+                if ($status === 'ranap' && $noRawat !== '') {
+                    $kdBangsalPerawatan = '';
+                    try {
+                        $kdBangsalPerawatan = (string) (DB::table('kamar_inap')
+                            ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                            ->where('kamar_inap.no_rawat', $noRawat)
+                            ->where('kamar_inap.stts_pulang', '-')
+                            ->value('kamar.kd_bangsal') ?? '');
+                    } catch (\Throwable $th) {
+                        $kdBangsalPerawatan = '';
+                    }
+                    if ($kdBangsalPerawatan === '') {
+                        try {
+                            $kdBangsalPerawatan = (string) (DB::table('ranap_gabung')
+                                ->join('kamar_inap', 'ranap_gabung.no_rawat', '=', 'kamar_inap.no_rawat')
+                                ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                                ->where('ranap_gabung.no_rawat2', $noRawat)
+                                ->where('kamar_inap.stts_pulang', '-')
+                                ->value('kamar.kd_bangsal') ?? '');
+                        } catch (\Throwable $th) {
+                            $kdBangsalPerawatan = '';
+                        }
+                    }
 
-                foreach ($bangsalList as $kdBangsal) {
-                    $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($request->kode_brng, $kdBangsal);
-                    $totalStok += $stokBangsal;
-                    $stokPerBangsal[$kdBangsal] = $stokBangsal;
+                    if ($kdBangsalPerawatan !== '') {
+                        try {
+                            $bangsalList = DB::table('set_depo_ranap')
+                                ->where('kd_bangsal', $kdBangsalPerawatan)
+                                ->pluck('kd_depo')
+                                ->map(fn ($v) => trim((string) $v))
+                                ->filter(fn ($v) => $v !== '')
+                                ->unique()
+                                ->values()
+                                ->all();
+                        } catch (\Throwable $th) {
+                            $bangsalList = [];
+                        }
+                    }
+                    if (empty($bangsalList) && $kdBangsalCfg !== '') {
+                        $bangsalList = [$kdBangsalCfg];
+                    }
+                } elseif (! empty($request->kd_poli)) {
+                    $bangsalList = SetDepoRalan::getBangsalByPoli($request->kd_poli);
+                } elseif ($kdBangsalCfg !== '') {
+                    $bangsalList = [$kdBangsalCfg];
+                } else {
+                    try {
+                        $bangsalList = \App\Models\SetLokasi::getAllBangsal();
+                    } catch (\Throwable $th) {
+                        $bangsalList = [];
+                    }
                 }
+            }
 
-                // Dapatkan detail batch untuk bangsal yang terkait
+            if (empty($bangsalList)) {
+                $totalStok = $databarang->getTotalStok();
+                $stokPerBangsal = $databarang->getStokDetailPerBangsal();
                 $batchDetail = Gudangbarang::where('kode_brng', $request->kode_brng)
-                    ->whereIn('kd_bangsal', $bangsalList)
                     ->where('stok', '>', 0)
                     ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
                     ->orderBy('no_batch')
                     ->get();
             } else {
-                // Jika tidak ada kd_poli, gunakan semua bangsal
-                $totalStok = $databarang->getTotalStok();
-                $stokPerBangsal = $databarang->getStokDetailPerBangsal();
-
+                $totalStok = 0;
+                $stokPerBangsal = [];
+                foreach ($bangsalList as $kdBangsal) {
+                    $stokBangsal = Gudangbarang::getTotalStokByBarangBangsal($request->kode_brng, $kdBangsal);
+                    $totalStok += $stokBangsal;
+                    $stokPerBangsal[$kdBangsal] = $stokBangsal;
+                }
                 $batchDetail = Gudangbarang::where('kode_brng', $request->kode_brng)
+                    ->whereIn('kd_bangsal', $bangsalList)
                     ->where('stok', '>', 0)
                     ->select('kd_bangsal', 'stok', 'no_batch', 'no_faktur')
                     ->orderBy('no_batch')

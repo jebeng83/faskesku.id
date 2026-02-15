@@ -15,6 +15,7 @@ import {
     Pencil,
     Trash2,
     Search,
+    ChevronDown,
 } from "lucide-react";
 import { toast } from "@/tools/toast";
 
@@ -68,6 +69,7 @@ export default function SettingIndex({ settings = [], flash }) {
     // Struktur tabel
     const [tableStructure, setTableStructure] = useState(null);
     const [showStructure, setShowStructure] = useState(false);
+    const [collapsed, setCollapsed] = useState({ create: true, list: true });
     const appForm = useForm({
         nama_instansi: "",
         alamat_instansi: "",
@@ -434,276 +436,318 @@ export default function SettingIndex({ settings = [], flash }) {
                 {/* Form tambah */}
                 <div className="mb-5">
                     <MotionCard className="p-4 border-slate-200">
-                        <form onSubmit={onCreate} className="space-y-3">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCollapsed((prev) => ({
+                                    ...prev,
+                                    create: !prev.create,
+                                }))
+                            }
+                            aria-expanded={!collapsed.create}
+                            className="w-full flex items-center justify-between text-left"
+                        >
                             <div className="text-slate-800 font-medium">
                                 Tambah Setting
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <div>
-                                    <label className="block text-xs text-slate-600">
-                                        Group
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.group}
-                                        onChange={(e) =>
-                                            setData("group", e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border-slate-300 text-xs"
-                                        placeholder="app/ui/integrasi"
-                                    />
+                            <ChevronDown
+                                className={`w-4 h-4 text-slate-500 transition-transform ${
+                                    collapsed.create ? "" : "rotate-180"
+                                }`}
+                            />
+                        </button>
+                        {!collapsed.create && (
+                            <form
+                                onSubmit={onCreate}
+                                className="space-y-3 mt-3"
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label className="block text-xs text-slate-600">
+                                            Group
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.group}
+                                            onChange={(e) =>
+                                                setData("group", e.target.value)
+                                            }
+                                            className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                            placeholder="app/ui/integrasi"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs text-slate-600">
+                                            Key
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.key}
+                                            onChange={(e) =>
+                                                setData("key", e.target.value)
+                                            }
+                                            className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                            placeholder="app.name, ui.theme"
+                                            required
+                                        />
+                                        {errors.key && (
+                                            <p className="mt-1 text-[11px] text-red-600">
+                                                {errors.key}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-600">
+                                            Tipe
+                                        </label>
+                                        <select
+                                            value={data.type}
+                                            onChange={(e) =>
+                                                setData("type", e.target.value)
+                                            }
+                                            className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                        >
+                                            <option value="string">string</option>
+                                            <option value="number">number</option>
+                                            <option value="boolean">boolean</option>
+                                            <option value="json">json</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs text-slate-600">
-                                        Key
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.key}
-                                        onChange={(e) =>
-                                            setData("key", e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border-slate-300 text-xs"
-                                        placeholder="app.name, ui.theme"
-                                        required
-                                    />
-                                    {errors.key && (
-                                        <p className="mt-1 text-[11px] text-red-600">
-                                            {errors.key}
-                                        </p>
-                                    )}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-xs text-slate-600">
+                                            Value
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.value}
+                                            onChange={(e) =>
+                                                setData("value", e.target.value)
+                                            }
+                                            className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                            placeholder="Isi nilai setting"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-slate-600">
+                                            Deskripsi
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.description}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "description",
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                            placeholder="Keterangan singkat"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-slate-600">
-                                        Tipe
-                                    </label>
-                                    <select
-                                        value={data.type}
-                                        onChange={(e) =>
-                                            setData("type", e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border-slate-300 text-xs"
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs text-white hover:bg-indigo-700 disabled:opacity-50"
                                     >
-                                        <option value="string">string</option>
-                                        <option value="number">number</option>
-                                        <option value="boolean">boolean</option>
-                                        <option value="json">json</option>
-                                    </select>
+                                        Simpan Setting
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => reset()}
+                                        className="rounded-md bg-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-300"
+                                    >
+                                        Reset
+                                    </button>
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div className="md:col-span-2">
-                                    <label className="block text-xs text-slate-600">
-                                        Value
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.value}
-                                        onChange={(e) =>
-                                            setData("value", e.target.value)
-                                        }
-                                        className="mt-1 w-full rounded-md border-slate-300 text-xs"
-                                        placeholder="Isi nilai setting"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-slate-600">
-                                        Deskripsi
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.description}
-                                        onChange={(e) =>
-                                            setData(
-                                                "description",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="mt-1 w-full rounded-md border-slate-300 text-xs"
-                                        placeholder="Keterangan singkat"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs text-white hover:bg-indigo-700 disabled:opacity-50"
-                                >
-                                    Simpan Setting
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => reset()}
-                                    className="rounded-md bg-slate-200 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-300"
-                                >
-                                    Reset
-                                </button>
-                            </div>
-                        </form>
+                            </form>
+                        )}
                     </MotionCard>
                 </div>
 
                 {/* Filter & Tabel */}
                 <MotionCard className="p-4 border-slate-200">
-                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setCollapsed((prev) => ({
+                                ...prev,
+                                list: !prev.list,
+                            }))
+                        }
+                        aria-expanded={!collapsed.list}
+                        className="w-full flex items-center justify-between text-left"
+                    >
                         <div className="text-slate-800 font-medium">
                             Daftar Setting
                         </div>
-                        <div className="ml-auto flex items-center gap-2">
-                            <button
-                                onClick={loadTableStructure}
-                                className="rounded-md bg-slate-100 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-200"
-                            >
-                                Lihat Struktur Tabel
-                            </button>
-                            <input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Cari key/desc/value..."
-                                className="rounded-md border-slate-300 text-xs"
-                            />
-                            <select
-                                value={groupFilter}
-                                onChange={(e) => setGroupFilter(e.target.value)}
-                                className="rounded-md border-slate-300 text-xs"
-                            >
-                                <option value="">Semua Group</option>
-                                {groups.map((g) => (
-                                    <option key={g} value={g}>
-                                        {g}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                    {/* Modal Struktur Tabel */}
-                    {showStructure && tableStructure && (
-                        <div className="fixed inset-0 z-50 overflow-y-auto">
-                            <div className="flex min-h-full items-center justify-center p-4">
-                                <div
-                                    className="fixed inset-0 bg-gray-500/75 transition-opacity"
-                                    onClick={() => setShowStructure(false)}
-                                ></div>
-                                <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-2xl">
-                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-lg font-medium text-gray-900">
-                                                Struktur Tabel: {tableStructure.table}
-                                            </h3>
-                                            <button
-                                                onClick={() => setShowStructure(false)}
-                                                className="text-gray-400 hover:text-gray-600"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full text-sm">
-                                                <thead>
-                                                    <tr className="bg-slate-50">
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Field
-                                                        </th>
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Type
-                                                        </th>
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Null
-                                                        </th>
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Key
-                                                        </th>
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Default
-                                                        </th>
-                                                        <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
-                                                            Extra
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {tableStructure.columns?.map((col, idx) => (
-                                                        <tr
-                                                            key={idx}
-                                                            className="border-t border-slate-200"
-                                                        >
-                                                            <td className="px-3 py-2 text-xs text-slate-800">
-                                                                <code className="bg-slate-50 px-1 py-0.5 rounded">
-                                                                    {col.Field}
-                                                                </code>
-                                                            </td>
-                                                            <td className="px-3 py-2 text-xs text-slate-600">
-                                                                {col.Type}
-                                                            </td>
-                                                            <td className="px-3 py-2 text-xs text-slate-600">
-                                                                {col.Null}
-                                                            </td>
-                                                            <td className="px-3 py-2 text-xs text-slate-600">
-                                                                {col.Key || "-"}
-                                                            </td>
-                                                            <td className="px-3 py-2 text-xs text-slate-600">
-                                                                {col.Default !== null
-                                                                    ? col.Default
-                                                                    : "NULL"}
-                                                            </td>
-                                                            <td className="px-3 py-2 text-xs text-slate-600">
-                                                                {col.Extra || "-"}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                                        <button
-                                            type="button"
+                        <ChevronDown
+                            className={`w-4 h-4 text-slate-500 transition-transform ${
+                                collapsed.list ? "" : "rotate-180"
+                            }`}
+                        />
+                    </button>
+
+                    {!collapsed.list && (
+                        <>
+                            <div className="flex flex-wrap items-center gap-2 mt-3 mb-3 justify-end">
+                                <button
+                                    onClick={loadTableStructure}
+                                    className="rounded-md bg-slate-100 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-200"
+                                >
+                                    Lihat Struktur Tabel
+                                </button>
+                                <input
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder="Cari key/desc/value..."
+                                    className="rounded-md border-slate-300 text-xs"
+                                />
+                                <select
+                                    value={groupFilter}
+                                    onChange={(e) => setGroupFilter(e.target.value)}
+                                    className="rounded-md border-slate-300 text-xs"
+                                >
+                                    <option value="">Semua Group</option>
+                                    {groups.map((g) => (
+                                        <option key={g} value={g}>
+                                            {g}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {/* Modal Struktur Tabel */}
+                            {showStructure && tableStructure && (
+                                <div className="fixed inset-0 z-50 overflow-y-auto">
+                                    <div className="flex min-h-full items-center justify-center p-4">
+                                        <div
+                                            className="fixed inset-0 bg-gray-500/75 transition-opacity"
                                             onClick={() => setShowStructure(false)}
-                                            className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto"
-                                        >
-                                            Tutup
-                                        </button>
+                                        ></div>
+                                        <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:w-full sm:max-w-2xl">
+                                            <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h3 className="text-lg font-medium text-gray-900">
+                                                        Struktur Tabel: {tableStructure.table}
+                                                    </h3>
+                                                    <button
+                                                        onClick={() => setShowStructure(false)}
+                                                        className="text-gray-400 hover:text-gray-600"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                    <table className="min-w-full text-sm">
+                                                        <thead>
+                                                            <tr className="bg-slate-50">
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Field
+                                                                </th>
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Type
+                                                                </th>
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Null
+                                                                </th>
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Key
+                                                                </th>
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Default
+                                                                </th>
+                                                                <th className="px-3 py-2 text-left text-xs font-medium text-slate-700">
+                                                                    Extra
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {tableStructure.columns?.map((col, idx) => (
+                                                                <tr
+                                                                    key={idx}
+                                                                    className="border-t border-slate-200"
+                                                                >
+                                                                    <td className="px-3 py-2 text-xs text-slate-800">
+                                                                        <code className="bg-slate-50 px-1 py-0.5 rounded">
+                                                                            {col.Field}
+                                                                        </code>
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-xs text-slate-600">
+                                                                        {col.Type}
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-xs text-slate-600">
+                                                                        {col.Null}
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-xs text-slate-600">
+                                                                        {col.Key || "-"}
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-xs text-slate-600">
+                                                                        {col.Default !== null
+                                                                            ? col.Default
+                                                                            : "NULL"}
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-xs text-slate-600">
+                                                                        {col.Extra || "-"}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowStructure(false)}
+                                                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto"
+                                                >
+                                                    Tutup
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                            <thead>
-                                <tr className="text-left text-[11px] text-slate-500">
-                                    <th className="px-3 py-2">ID</th>
-                                    <th className="px-3 py-2">Group</th>
-                                    <th className="px-3 py-2">Key</th>
-                                    <th className="px-3 py-2">Type</th>
-                                    <th className="px-3 py-2">Value</th>
-                                    <th className="px-3 py-2">Deskripsi</th>
-                                    <th className="px-3 py-2 text-right">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <AnimatePresence initial={false}>
-                                    {filtered.length ? (
-                                        filtered.map((item) => (
-                                            <Row key={item.id} item={item} />
-                                        ))
-                                    ) : (
-                                        <tr key="empty">
-                                            <td
-                                                className="px-3 py-4 text-[12px] text-slate-500"
-                                                colSpan={7}
-                                            >
-                                                Tidak ada data
-                                            </td>
+                            )}
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                    <thead>
+                                        <tr className="text-left text-[11px] text-slate-500">
+                                            <th className="px-3 py-2">ID</th>
+                                            <th className="px-3 py-2">Group</th>
+                                            <th className="px-3 py-2">Key</th>
+                                            <th className="px-3 py-2">Type</th>
+                                            <th className="px-3 py-2">Value</th>
+                                            <th className="px-3 py-2">Deskripsi</th>
+                                            <th className="px-3 py-2 text-right">
+                                                Aksi
+                                            </th>
                                         </tr>
-                                    )}
-                                </AnimatePresence>
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
+                                    <tbody>
+                                        <AnimatePresence initial={false}>
+                                            {filtered.length ? (
+                                                filtered.map((item) => (
+                                                    <Row key={item.id} item={item} />
+                                                ))
+                                            ) : (
+                                                <tr key="empty">
+                                                    <td
+                                                        className="px-3 py-4 text-[12px] text-slate-500"
+                                                        colSpan={7}
+                                                    >
+                                                        Tidak ada data
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </AnimatePresence>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
                 </MotionCard>
             </div>
 

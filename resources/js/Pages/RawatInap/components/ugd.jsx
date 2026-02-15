@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, Pencil, Trash2, Activity, MoreVertical, RefreshCw, HeartPulse } from "lucide-react";
@@ -56,7 +56,7 @@ export default function UGD() {
   const [poliIGD, setPoliIGD] = useState(null);
   const currency = useMemo(() => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }), []);
   const [noRegInfo, setNoRegInfo] = useState({ last: "", next: "" });
-  const [_noRegError, setNoRegError] = useState(null);
+  const [noRegError, setNoRegError] = useState(null);
   const [dokterLoadedFromDb, setDokterLoadedFromDb] = useState(false);
   const [bpjsNik, setBpjsNik] = useState("");
   const [bpjsLoading, setBpjsLoading] = useState(false);
@@ -89,6 +89,12 @@ export default function UGD() {
     status_poli: "Baru",
   });
   const [errors, setErrors] = useState({});
+
+  const igdKdPoli = useMemo(() => {
+    const a = String(poliIGD?.kd_poli || "").trim();
+    const b = String(form.kd_poli || "").trim();
+    return String(a || b || "IGDK").toUpperCase();
+  }, [poliIGD?.kd_poli, form.kd_poli]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -267,10 +273,15 @@ export default function UGD() {
         setPenjabOptions([]);
       }
       try {
-        const respPoli = await axios.get("/api/poliklinik", { params: { q: "IGDK", limit: 25 }, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+        const respPoli = await axios.get("/api/poliklinik", { params: { q: "IGD", limit: 50 }, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
         const list = Array.isArray(respPoli?.data?.list) ? respPoli.data.list : Array.isArray(respPoli?.data?.data) ? respPoli.data.data : [];
-        const igd = (list || []).find((p) => String(p?.kd_poli || "") === "IGDK") || (list || []).find((p) => String(p?.nm_poli || "").toLowerCase().includes("igd"));
-        setPoliIGD(igd || { kd_poli: "IGDK", nm_poli: "IGD" });
+        const igd =
+          (list || []).find((p) => String(p?.kd_poli || "").toUpperCase() === "IGDK") ||
+          (list || []).find((p) => String(p?.kd_poli || "").toUpperCase() === "IGD") ||
+          (list || []).find((p) => String(p?.nm_poli || "").toLowerCase().includes("igd"));
+        const resolved = igd || { kd_poli: "IGDK", nm_poli: "IGD" };
+        setPoliIGD(resolved);
+        setForm((f) => ({ ...f, kd_poli: String(resolved?.kd_poli || f.kd_poli || "IGDK") }));
       } catch {
         setPoliIGD({ kd_poli: "IGDK", nm_poli: "IGD" });
       }
@@ -281,33 +292,42 @@ export default function UGD() {
   useEffect(() => {
     if (!createOpen) return;
     const kdDokter = String(form.kd_dokter || "").trim();
-    const kdPoli = String((poliIGD && poliIGD.kd_poli) || form.kd_poli || "IGDK").trim();
+    const kdPoli = String((poliIGD && poliIGD.kd_poli) || form.kd_poli || "IGDK").trim().toUpperCase();
+    const isIgd = kdPoli === "IGDK" || kdPoli === "IGD";
     const tanggal = String(form.tgl_registrasi || todayDateString());
     setNoRegError(null);
     if (!kdPoli) return;
-    if (kdPoli !== "IGDK" && (!kdDokter || !dokterLoadedFromDb)) return;
+    if (!isIgd && (!kdDokter || !dokterLoadedFromDb)) return;
     const fetchNoReg = async () => {
+      const getIgdCandidates = () => {
+        const candidates = [
+          kdPoli,
+          String(poliIGD?.kd_poli || "").trim().toUpperCase(),
+          kdPoli === "IGDK" ? "IGD" : "IGDK",
+          "IGD",
+          "IGDK",
+        ]
+          .map((s) => String(s || "").trim().toUpperCase())
+          .filter(Boolean);
+        return Array.from(new Set(candidates));
+      };
+
+      const fetchNextNumbers = async (kdPoliValue) => {
+        const poli = String(kdPoliValue || "").trim().toUpperCase();
+        const params = poli === "IGDK" || poli === "IGD"
+          ? { kd_poli: poli, tanggal }
+          : { kd_dokter: kdDokter, kd_poli: poli, tanggal };
+        if (!params.kd_poli || !params.tanggal) return null;
+        const url = regPeriksaApi.nextNumbers.url({ query: params });
+        const res = await axios.get(url, { headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+        if (!res?.data?.success) return null;
+        return { data: res.data.data || {}, kd_poli: poli };
+      };
+
       try {
-        // Pastikan parameter tidak kosong
-        const params = kdPoli === "IGDK"
-          ? { kd_poli: kdPoli, tanggal: tanggal }
-          : { kd_dokter: kdDokter, kd_poli: kdPoli, tanggal: tanggal };
-        
-        // Validasi parameter sebelum request
-        if (!params.kd_poli || !params.tanggal) {
-          console.warn("Parameter tidak lengkap:", params);
-          return;
-        }
-        
-        const url = regPeriksaApi.nextNumbers.url(params);
-        const res = await axios.get(url, { params, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
-        
-        if (!res.data || !res.data.success) {
-          console.warn("Response tidak sukses:", res.data);
-          throw new Error(res.data?.message || "Gagal mengambil nomor registrasi");
-        }
-        
-        const data = res?.data?.data || {};
+        const first = await fetchNextNumbers(kdPoli);
+        if (!first) throw new Error("Gagal mengambil nomor registrasi");
+        const data = first.data || {};
         setNoRegInfo({ last: String(data.last_no_reg || ""), next: String(data.next_no_reg || "") });
         setNoRegError(null);
         const nx = String(data.next_no_reg || "").trim();
@@ -320,25 +340,31 @@ export default function UGD() {
           const errors = err.response?.data?.errors || {};
           const errorMessages = Object.values(errors).flat();
           console.error("Validation errors:", errorMessages);
-          const needKdPoli = Object.keys(errors).includes('kd_poli');
-          if (needKdPoli) {
-            const retryParams = { kd_poli: 'IGDK', tanggal };
-            try {
-              const retryUrl = regPeriksaApi.nextNumbers.url(retryParams);
-              const retryRes = await axios.get(retryUrl, { params: retryParams, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
-              if (retryRes?.data?.success) {
-                const d = retryRes?.data?.data || {};
-                setNoRegInfo({ last: String(d.last_no_reg || ''), next: String(d.next_no_reg || '') });
-                const nx2 = String(d.next_no_reg || '').trim();
-                if (nx2) {
-                  setForm((f) => (f.no_reg ? f : { ...f, no_reg: nx2 }));
+          const kdPoliErrors = Array.isArray(errors?.kd_poli) ? errors.kd_poli : [];
+          const msg = String(err.response?.data?.message || "");
+          const wantRetry = [...kdPoliErrors, msg].join(" ").toLowerCase().includes("poli");
+          if (wantRetry) {
+            const candidates = getIgdCandidates();
+            for (const poli of candidates) {
+              if (poli === kdPoli) continue;
+              try {
+                const retry = await fetchNextNumbers(poli);
+                if (retry?.data) {
+                  const d = retry.data || {};
+                  setNoRegInfo({ last: String(d.last_no_reg || ""), next: String(d.next_no_reg || "") });
+                  const nx2 = String(d.next_no_reg || "").trim();
+                  if (nx2) {
+                    setForm((f) => ({ ...f, kd_poli: poli, no_reg: f.no_reg ? f.no_reg : nx2 }));
+                  } else {
+                    setForm((f) => ({ ...f, kd_poli: poli }));
+                  }
+                  setNoRegError(null);
+                  return;
                 }
-                setNoRegError(null);
-                return;
-              }
-            } catch {}
+              } catch {}
+            }
           }
-          setNoRegError(errorMessages.join(", ") || "Validasi gagal");
+          setNoRegError((errorMessages || []).join(", ") || msg || "Validasi gagal");
         }
         try {
           const params = tanggal ? { tanggal } : {};
@@ -351,7 +377,8 @@ export default function UGD() {
             : Array.isArray(res2?.data)
             ? res2.data
             : [];
-          const onlyIgd = (arr || []).filter((r) => String(r?.kd_poli || '').trim() === 'IGDK');
+          const igdCodes = new Set([kdPoli, "IGD", "IGDK"].map((s) => String(s || "").trim().toUpperCase()).filter(Boolean));
+          const onlyIgd = (arr || []).filter((r) => igdCodes.has(String(r?.kd_poli || "").trim().toUpperCase()));
           const regs = onlyIgd.map((r) => String(r?.no_reg || '').trim()).filter(Boolean);
           let lastStr = '';
           let lastNum = -1;
@@ -369,7 +396,6 @@ export default function UGD() {
           setNoRegError(null);
         } catch (_e2) {
           setNoRegInfo({ last: '', next: '' });
-          setNoRegError(null);
         }
       }
     };
@@ -401,14 +427,14 @@ export default function UGD() {
       nm_pasien: patient.nm_pasien || "",
       p_jawab: patient.namakeluarga || "",
       almt_pj: fullAddress || patient.alamatpj || "",
-      kd_poli: "IGDK",
+      kd_poli: igdKdPoli,
     }));
     setSelectedPatient(patient);
     setSearchTerm("");
     setAlamatTerm("");
     setSearchResults([]);
     if (patient?.no_rkm_medis) {
-      checkPoliStatus("IGDK", patient.no_rkm_medis);
+      checkPoliStatus(igdKdPoli, patient.no_rkm_medis);
     }
     try {
       const nik = sanitizeNik(patient?.no_ktp || "");
@@ -422,16 +448,31 @@ export default function UGD() {
   };
 
   const checkPoliStatus = async (kdPoli, noRkmMedis) => {
-    try {
-      const url = `/registration/${encodeURIComponent(noRkmMedis)}/check-poli-status`;
-      const res = await axios.get(url, { params: { kd_poli: kdPoli } });
-      const data = res?.data?.data || {};
-      setForm((f) => ({
-        ...f,
-        status_poli: data.status_poli || f.status_poli || "Baru",
-        biaya_reg: typeof data.biaya_reg !== "undefined" ? String(data.biaya_reg) : f.biaya_reg,
-      }));
-    } catch {}
+    const url = `/registration/${encodeURIComponent(noRkmMedis)}/check-poli-status`;
+    const candidates = [
+      kdPoli,
+      poliIGD?.kd_poli,
+      String(kdPoli || "").toUpperCase() === "IGDK" ? "IGD" : "IGDK",
+      "IGD",
+      "IGDK",
+    ]
+      .map((s) => String(s || "").trim().toUpperCase())
+      .filter(Boolean);
+    const unique = Array.from(new Set(candidates));
+    for (const poli of unique) {
+      try {
+        const res = await axios.get(url, { params: { kd_poli: poli }, headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }, withCredentials: true });
+        if (!res?.data?.success) continue;
+        const data = res?.data?.data || {};
+        setForm((f) => ({
+          ...f,
+          kd_poli: poli,
+          status_poli: data.status_poli || f.status_poli || "Baru",
+          biaya_reg: typeof data.biaya_reg !== "undefined" ? String(data.biaya_reg) : f.biaya_reg,
+        }));
+        return;
+      } catch {}
+    }
   };
   const itemVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
@@ -604,7 +645,7 @@ export default function UGD() {
       nm_dokter: "",
       no_rkm_medis: "",
       nm_pasien: "",
-      kd_poli: "IGDK",
+      kd_poli: String(poliIGD?.kd_poli || "IGDK"),
       p_jawab: "",
       almt_pj: "",
       hubunganpj: "Keluarga",
@@ -655,7 +696,7 @@ export default function UGD() {
     const payload = { ...form };
     delete payload.no_rawat;
     delete payload.no_reg;
-    payload.kd_poli = "IGDK";
+    payload.kd_poli = String((poliIGD && poliIGD.kd_poli) || form.kd_poli || "IGDK").trim().toUpperCase();
     try {
       try {
         await axios.get('/sanctum/csrf-cookie', { withCredentials: true, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
@@ -683,7 +724,7 @@ export default function UGD() {
             const retryPayload = { ...form };
             delete retryPayload.no_rawat;
             delete retryPayload.no_reg;
-            retryPayload.kd_poli = 'IGDK';
+            retryPayload.kd_poli = String((poliIGD && poliIGD.kd_poli) || form.kd_poli || "IGDK").trim().toUpperCase();
             await axios.post(regPeriksaApi.store.url(), retryPayload, { withCredentials: true, headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
             setCreateOpen(false);
             resetForm();
@@ -709,7 +750,7 @@ export default function UGD() {
       nm_dokter: row?.dokter?.nm_dokter || row?.nm_dokter || "",
       no_rkm_medis: row?.no_rkm_medis || "",
       nm_pasien: row?.patient?.nm_pasien || row?.nm_pasien || "",
-      kd_poli: row?.kd_poli || "IGDK",
+      kd_poli: row?.kd_poli || igdKdPoli,
       p_jawab: row?.p_jawab || "",
       almt_pj: row?.almt_pj || "",
       hubunganpj: row?.hubunganpj || "",
@@ -813,7 +854,7 @@ export default function UGD() {
       status_poli: row?.status_poli || "Baru",
     });
     if (row?.patient) setSelectedPatient(row.patient);
-    const kdPoli = row?.kd_poli || "IGDK";
+    const kdPoli = row?.kd_poli || igdKdPoli;
     if (row?.no_rkm_medis) checkPoliStatus(kdPoli, row.no_rkm_medis);
     setEditOpen(true);
   };
@@ -1054,7 +1095,7 @@ export default function UGD() {
               <div className="sm:basis-[10%] w-full">
                 <Label required>Poliklinik</Label>
                 <div className="px-2 py-1 h-8 flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-xs text-gray-900 dark:text-white">
-                  {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || "IGDK"})</span>
+                  {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || igdKdPoli})</span>
                 </div>
               </div>
               <div className="sm:basis-[25%] w-full">
@@ -1088,6 +1129,9 @@ export default function UGD() {
               </div>
               <Label className="mb-0 text-xs">No. Registrasi</Label>
               <span className="text-[10px] text-gray-500 dark:text-gray-400">Terakhir: {noRegInfo.last || '-'}</span>
+              {noRegError ? (
+                <span className="text-[10px] text-red-600 dark:text-red-400">{String(noRegError)}</span>
+              ) : null}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                   <Input value={form.no_reg} onChange={onChange("no_reg")} placeholder="No. Registrasi" className="h-8 text-xs px-2 py-1 w-40 md:w-48" readOnly />
                   <div className="hidden md:flex items-center gap-2 ml-2">
@@ -1180,7 +1224,7 @@ export default function UGD() {
               <div>
                 <Label required>Poliklinik</Label>
                 <div className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-sm text-gray-900 dark:text-white">
-                  {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || "IGDK"})</span>
+                  {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || igdKdPoli})</span>
                 </div>
               </div>
             </div>
