@@ -5,9 +5,21 @@ import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import { toast } from "@/tools/toast";
 import usePermission from "@/hooks/usePermission";
+import { motion } from "framer-motion";
 
 export default function Edit({ employee, refs = {} }) {
     const { can } = usePermission();
+	const toDateInputValue = (value) => {
+		if (!value || typeof value !== "string") return "";
+		const v = value.trim();
+		if (!v || v.startsWith("-")) return "";
+		const match = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+		if (!match) return "";
+		const year = Number(match[1]);
+		if (!Number.isFinite(year) || year < 1900) return "";
+		return `${match[1]}-${match[2]}-${match[3]}`;
+	};
+
     const { data, setData, processing, errors } = useForm({
         // Data utama
         nik: employee?.nik || "",
@@ -15,7 +27,7 @@ export default function Edit({ employee, refs = {} }) {
         nama: employee?.nama || "",
         jk: employee?.jk || "Pria",
         tmp_lahir: employee?.tmp_lahir || "",
-        tgl_lahir: employee?.tgl_lahir || "",
+        tgl_lahir: toDateInputValue(employee?.tgl_lahir),
         alamat: employee?.alamat || "",
         photo: null,
 
@@ -32,7 +44,7 @@ export default function Edit({ employee, refs = {} }) {
         pendidikan: employee?.pendidikan || "",
         indexins: employee?.indexins || "",
         kota: employee?.kota || "",
-        mulai_kerja: employee?.mulai_kerja || "",
+        mulai_kerja: toDateInputValue(employee?.mulai_kerja),
         stts_aktif: employee?.stts_aktif || "AKTIF",
 
         // Informasi finansial (opsional)
@@ -114,6 +126,16 @@ export default function Edit({ employee, refs = {} }) {
         return { jnjJabatan, kelompokJabatan, resikoKerja, departemen, indexins, bidang, sttsWp, sttsKerja, pendidikan, bank, emergencyIndex };
     }, [refs]);
 
+	const reduceMotion = useMemo(
+		() =>
+			typeof window !== "undefined" &&
+			window.matchMedia &&
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		[]
+	);
+
+	const showLegacyHeader = useMemo(() => false, []);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const routeParam = employee?.id ?? employee?.nik ?? employee;
@@ -141,8 +163,59 @@ export default function Edit({ employee, refs = {} }) {
         <SidebarPengaturan title="Kepegawaian">
             <Head title="Edit Pegawai" />
 
-            <div className="py-6">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+			<div className="fixed inset-0 z-[9000] flex items-start justify-center p-4 sm:p-6">
+				<button
+					type="button"
+					aria-label="Tutup"
+					onClick={() => router.get(route("employees.index"))}
+					className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+				/>
+				<motion.div
+					initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.985 }}
+					animate={reduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+					className="relative w-full max-w-6xl overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/10"
+				>
+					<div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+					<div className="absolute top-2 left-4 right-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 ring-1 ring-black/5 dark:ring-white/10 z-20" />
+
+					<div className="relative px-6 py-5 border-b border-white/20 dark:border-gray-700/40">
+						<div className="flex items-start justify-between gap-4">
+							<div className="min-w-0">
+								<h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+									Edit Pegawai
+								</h2>
+								<p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+									Perbarui data pegawai rumah sakit
+								</p>
+							</div>
+							<button
+								type="button"
+								aria-label="Tutup"
+								onClick={() => router.get(route("employees.index"))}
+								className="h-10 w-10 rounded-xl border border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									className="w-5 h-5 text-gray-700 dark:text-gray-200"
+								>
+									<path
+										fillRule="evenodd"
+										d="M6.72 6.72a.75.75 0 011.06 0L12 10.94l4.22-4.22a.75.75 0 111.06 1.06L13.06 12l4.22 4.22a.75.75 0 11-1.06 1.06L12 13.06l-4.22 4.22a.75.75 0 11-1.06-1.06L10.94 12 6.72 7.78a.75.75 0 010-1.06z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</button>
+						</div>
+					</div>
+
+					<div className="relative max-h-[calc(100vh-140px)] overflow-y-auto">
+						<div className="py-6">
+							<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+								{showLegacyHeader && (
+									<>
                     {/* Header */}
                     <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl mb-6">
                         <div className="p-6">
@@ -176,6 +249,8 @@ export default function Edit({ employee, refs = {} }) {
                             </div>
                         </div>
                     </div>
+									</>
+								)}
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -839,6 +914,9 @@ export default function Edit({ employee, refs = {} }) {
                     </form>
                 </div>
             </div>
+					</div>
+				</motion.div>
+			</div>
         </SidebarPengaturan>
     );
 }

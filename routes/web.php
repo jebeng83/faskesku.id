@@ -2097,6 +2097,7 @@ Route::middleware('auth')->group(function () {
     Route::get('employees/petugas', function () {
         return \Inertia\Inertia::render('Employees/Petugas');
     })->name('employees.petugas');
+    Route::get('employees/{employee}/photo', [EmployeeController::class, 'photo'])->name('employees.photo');
     Route::resource('employees', EmployeeController::class);
 
     // Departemen routes (untuk popup)

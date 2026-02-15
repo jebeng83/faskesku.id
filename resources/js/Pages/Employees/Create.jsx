@@ -4,6 +4,7 @@ import { route } from "ziggy-js";
 import SidebarPengaturan from "@/Layouts/SidebarPengaturan";
 import SearchableSelect from "@/Components/SearchableSelect";
 import usePermission from "@/hooks/usePermission";
+import { motion } from "framer-motion";
 
 export default function Create({ refs = {} }) {
     const { can } = usePermission();
@@ -147,6 +148,14 @@ export default function Create({ refs = {} }) {
         const indexins = departemenOptions; // gunakan daftar departemen yang sama
         return { jnjJabatan: jenjangJabatanOptions, kelompokJabatan: kelompokJabatanOptions, resikoKerja: resikoKerjaOptions, departemen: departemenOptions, indexins, bidang: bidangOptions, sttsWp: sttsWpOptions, sttsKerja: sttsKerjaOptions, pendidikan: pendidikanOptions, bank: bankOptions, emergencyIndex: emergencyIndexOptions };
     }, [refs, jenjangJabatanOptions, departemenOptions, bidangOptions, pendidikanOptions, resikoKerjaOptions, kelompokJabatanOptions, emergencyIndexOptions, bankOptions, sttsWpOptions, sttsKerjaOptions]);
+
+	const reduceMotion = useMemo(
+		() =>
+			typeof window !== "undefined" &&
+			window.matchMedia &&
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		[]
+	);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -799,49 +808,63 @@ export default function Create({ refs = {} }) {
 		<SidebarPengaturan title="Kepegawaian">
 			<Head title="Tambah Pegawai Baru" />
 
-			<div className="py-6">
-				<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl mb-6">
-                        <div className="p-6">
-							<div className="flex justify-between items-center">
-								<div>
-									<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-										Tambah Pegawai Baru
-									</h2>
-									<p className="text-gray-600 dark:text-gray-400 mt-1">
-										Masukkan data pegawai baru ke dalam sistem
-									</p>
-								</div>
-                                <Link
-                                    href={route("employees.index")}
-                                    className="px-4 h-10 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 transition-colors"
-                                >
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 24 24"
-										fill="currentColor"
-										className="w-5 h-5"
-									>
-										<path
-											fillRule="evenodd"
-											d="M7.72 12.53a.75.75 0 010-1.06L10.94 8.25H3a.75.75 0 010-1.5h7.94L7.72 3.53a.75.75 0 011.06-1.06l4.5 4.5a.75.75 0 010 1.06l-4.5 4.5a.75.75 0 01-1.06 0z"
-											clipRule="evenodd"
-										/>
-									</svg>
-									Kembali
-								</Link>
-                        </div>
-                    </div>
-                </div>
+			<div className="fixed inset-0 z-[9000] flex items-start justify-center p-4 sm:p-6">
+				<button
+					type="button"
+					aria-label="Tutup"
+					onClick={() => router.get(route("employees.index"))}
+					className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+				/>
+				<motion.div
+					initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.985 }}
+					animate={reduceMotion ? false : { opacity: 1, y: 0, scale: 1 }}
+					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+					className="relative w-full max-w-6xl overflow-hidden rounded-2xl bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/10"
+				>
+					<div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 via-indigo-600/5 to-purple-600/5 dark:from-blue-500/10 dark:via-indigo-500/10 dark:to-purple-500/10" />
+					<div className="absolute top-2 left-4 right-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 ring-1 ring-black/5 dark:ring-white/10 z-20" />
 
-                {/* Informasi Kepegawaian (Opsional) */}
-                <div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl">
-                    <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Informasi Kepegawaian (Opsional)
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div className="relative px-6 py-5 border-b border-white/20 dark:border-gray-700/40">
+						<div className="flex items-start justify-between gap-4">
+							<div className="min-w-0">
+								<h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+									Tambah Pegawai Baru
+								</h2>
+								<p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+									Masukkan data pegawai baru ke dalam sistem
+								</p>
+							</div>
+							<button
+								type="button"
+								aria-label="Tutup"
+								onClick={() => router.get(route("employees.index"))}
+								className="h-10 w-10 rounded-xl border border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-gray-900/40 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									className="w-5 h-5 text-gray-700 dark:text-gray-200"
+								>
+									<path
+										fillRule="evenodd"
+										d="M6.72 6.72a.75.75 0 011.06 0L12 10.94l4.22-4.22a.75.75 0 111.06 1.06L13.06 12l4.22 4.22a.75.75 0 11-1.06 1.06L12 13.06l-4.22 4.22a.75.75 0 11-1.06-1.06L10.94 12 6.72 7.78a.75.75 0 010-1.06z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</button>
+						</div>
+					</div>
+
+					<div className="relative max-h-[calc(100vh-140px)] overflow-y-auto">
+						<div className="py-6">
+							<div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+								<div className="bg-white/95 dark:bg-gray-900/60 backdrop-blur-sm overflow-visible shadow-sm border border-gray-200 dark:border-gray-700 rounded-xl mb-6">
+									<div className="p-6">
+										<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+											Informasi Kepegawaian (Opsional)
+										</h3>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Jabatan
@@ -2927,6 +2950,9 @@ export default function Create({ refs = {} }) {
 						</div>
 					)}
 				</div>
+			</div>
+					</div>
+				</motion.div>
 			</div>
 		</SidebarPengaturan>
 	);
