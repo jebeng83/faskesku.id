@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import pemeriksaanRanap416adb from './pemeriksaan-ranap'
 /**
 * @see \App\Http\Controllers\RawatInapController::lanjutan
 * @see app/Http/Controllers/RawatInapController.php:198
@@ -88,7 +89,51 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2534
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+export const pemeriksaanRanap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'get',
+})
+
+pemeriksaanRanap.definition = {
+    methods: ["get","head"],
+    url: '/rawat-inap/pemeriksaan-ranap',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.url = (options?: RouteQueryOptions) => {
+    return pemeriksaanRanap.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::pemeriksaanRanap
+* @see app/Http/Controllers/RawatInapController.php:416
+* @route '/rawat-inap/pemeriksaan-ranap'
+*/
+pemeriksaanRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: pemeriksaanRanap.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:2549
 * @route '/rawat-inap/bangsal'
 */
 export const bangsal = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -102,7 +147,7 @@ bangsal.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2534
+* @see routes/web.php:2549
 * @route '/rawat-inap/bangsal'
 */
 bangsal.url = (options?: RouteQueryOptions) => {
@@ -110,7 +155,7 @@ bangsal.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2534
+* @see routes/web.php:2549
 * @route '/rawat-inap/bangsal'
 */
 bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -119,7 +164,7 @@ bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2534
+* @see routes/web.php:2549
 * @route '/rawat-inap/bangsal'
 */
 bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -128,7 +173,7 @@ bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2537
+* @see routes/web.php:2552
 * @route '/rawat-inap/kamar'
 */
 export const kamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -142,7 +187,7 @@ kamar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2537
+* @see routes/web.php:2552
 * @route '/rawat-inap/kamar'
 */
 kamar.url = (options?: RouteQueryOptions) => {
@@ -150,7 +195,7 @@ kamar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2537
+* @see routes/web.php:2552
 * @route '/rawat-inap/kamar'
 */
 kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -159,7 +204,7 @@ kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2537
+* @see routes/web.php:2552
 * @route '/rawat-inap/kamar'
 */
 kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -168,7 +213,7 @@ kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2536
+* @see routes/web.php:2555
 * @route '/rawat-inap/set-harga-kamar'
 */
 export const setHargaKamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -182,7 +227,7 @@ setHargaKamar.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2536
+* @see routes/web.php:2555
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.url = (options?: RouteQueryOptions) => {
@@ -190,7 +235,7 @@ setHargaKamar.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2536
+* @see routes/web.php:2555
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -199,7 +244,7 @@ setHargaKamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2536
+* @see routes/web.php:2555
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -208,7 +253,7 @@ setHargaKamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:2539
+* @see routes/web.php:2558
 * @route '/rawat-inap/setting-kamar-inap'
 */
 export const settingKamarInap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -222,7 +267,7 @@ settingKamarInap.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2539
+* @see routes/web.php:2558
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.url = (options?: RouteQueryOptions) => {
@@ -230,7 +275,7 @@ settingKamarInap.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2539
+* @see routes/web.php:2558
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -239,7 +284,7 @@ settingKamarInap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:2539
+* @see routes/web.php:2558
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -610,6 +655,7 @@ destroy.delete = (args: { rawat_inap: string | number } | [rawat_inap: string | 
 const rawatInap = {
     lanjutan: Object.assign(lanjutan, lanjutan),
     canvas: Object.assign(canvas, canvas),
+    pemeriksaanRanap: Object.assign(pemeriksaanRanap, pemeriksaanRanap416adb),
     bangsal: Object.assign(bangsal, bangsal),
     kamar: Object.assign(kamar, kamar),
     setHargaKamar: Object.assign(setHargaKamar, setHargaKamar),

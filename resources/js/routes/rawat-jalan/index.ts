@@ -52,7 +52,7 @@ lanjutan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2206
+* @see routes/web.php:2217
 * @route '/rawat-jalan/canvas'
 */
 export const canvas = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -66,7 +66,7 @@ canvas.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2206
+* @see routes/web.php:2217
 * @route '/rawat-jalan/canvas'
 */
 canvas.url = (options?: RouteQueryOptions) => {
@@ -74,7 +74,7 @@ canvas.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2206
+* @see routes/web.php:2217
 * @route '/rawat-jalan/canvas'
 */
 canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -83,7 +83,7 @@ canvas.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2206
+* @see routes/web.php:2217
 * @route '/rawat-jalan/canvas'
 */
 canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -92,7 +92,7 @@ canvas.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2215
+* @see routes/web.php:2226
 * @route '/rawat-jalan/canvas-surat'
 */
 export const canvasSurat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -106,7 +106,7 @@ canvasSurat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2215
+* @see routes/web.php:2226
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.url = (options?: RouteQueryOptions) => {
@@ -114,7 +114,7 @@ canvasSurat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2215
+* @see routes/web.php:2226
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -123,7 +123,7 @@ canvasSurat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2215
+* @see routes/web.php:2226
 * @route '/rawat-jalan/canvas-surat'
 */
 canvasSurat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
