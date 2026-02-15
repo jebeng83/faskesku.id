@@ -21,6 +21,13 @@ export default defineConfig(() => ({
 	build: {
 		// Increase warning threshold; let Vite decide optimal chunking to avoid cyclic order issues
 		chunkSizeWarningLimit: 1024,
+		rollupOptions: {
+			output: {
+				entryFileNames: 'assets/entry-[hash].js',
+				chunkFileNames: 'assets/chunk-[hash].js',
+				assetFileNames: 'assets/asset-[hash][extname]',
+			},
+		},
 	},
     server: {
         host: '127.0.0.1',
