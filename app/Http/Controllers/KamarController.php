@@ -334,7 +334,32 @@ class KamarController extends Controller
             'statusdata' => 'nullable|in:0,1',
         ]);
 
-        $kamar = Kamar::create($validated);
+        try {
+            $kamar = Kamar::create($validated);
+        } catch (QueryException $e) {
+            $sqlState = (string) ($e->errorInfo[0] ?? '');
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+            $msg = strtolower($e->getMessage());
+
+            if ($sqlState === '23000' && ($driverCode === 1062 || str_contains($msg, 'duplicate'))) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Kode kamar sudah terdaftar',
+                ], 422);
+            }
+
+            if (($sqlState === '22001' && $driverCode === 1406) || str_contains($msg, 'data too long')) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Data terlalu panjang. Periksa kembali input.',
+                ], 422);
+            }
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Gagal menambahkan kamar. Periksa kembali data input.',
+            ], 422);
+        }
 
         return response()->json([
             'ok' => true,
@@ -355,7 +380,25 @@ class KamarController extends Controller
             'statusdata' => 'nullable|in:0,1',
         ]);
 
-        $kamar->update($validated);
+        try {
+            $kamar->update($validated);
+        } catch (QueryException $e) {
+            $sqlState = (string) ($e->errorInfo[0] ?? '');
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+            $msg = strtolower($e->getMessage());
+
+            if (($sqlState === '22001' && $driverCode === 1406) || str_contains($msg, 'data too long')) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Data terlalu panjang. Periksa kembali input.',
+                ], 422);
+            }
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Gagal memperbarui kamar. Periksa kembali data input.',
+            ], 422);
+        }
 
         return response()->json([
             'ok' => true,

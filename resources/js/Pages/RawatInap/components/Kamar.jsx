@@ -35,6 +35,12 @@ export default function Kamar() {
   const headers = useMemo(() => ({ Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }), []);
   const currency = useMemo(() => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }), []);
 
+  const ensureCsrf = async () => {
+    try {
+      await axios.get("/sanctum/csrf-cookie", { headers, withCredentials: true });
+    } catch (_e) {}
+  };
+
   const fetchBangsals = async () => {
     try {
       const params = { start: 0, limit: 200, status: "1" };
@@ -82,6 +88,7 @@ export default function Kamar() {
       return;
     }
     try {
+      await ensureCsrf();
       const payload = {
         kd_kamar: createForm.kd_kamar,
         kd_bangsal: createForm.kd_bangsal,
@@ -147,6 +154,7 @@ export default function Kamar() {
     };
 
     try {
+      await ensureCsrf();
       await axios.put(`/api/kamar/${id}`, payload, { headers, withCredentials: true });
       setEditOpen(false);
       toast.success("Kamar berhasil diperbarui");
@@ -166,6 +174,7 @@ export default function Kamar() {
 
   const handleDelete = async (kd) => {
     try {
+      await ensureCsrf();
       const id = encodeURIComponent(kd);
       await axios.delete(`/api/kamar/${id}`, { headers, withCredentials: true });
       toast.success("Kamar berhasil dihapus");
