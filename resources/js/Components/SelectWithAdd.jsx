@@ -64,7 +64,9 @@ export default function SelectWithAdd({
 								clipRule="evenodd"
 							/>
 						</svg>
-						<span className="hidden sm:inline">{addButtonText}</span>
+						{addButtonText !== "+" && (
+							<span className="hidden sm:inline">{addButtonText}</span>
+						)}
 					</button>
 				)}
 			</div>

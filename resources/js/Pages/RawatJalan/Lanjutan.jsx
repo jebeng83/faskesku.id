@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { Head, router } from "@inertiajs/react";
 import { route } from "ziggy-js";
@@ -66,6 +66,31 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
     const [berkasFilterSelected, setBerkasFilterSelected] = useState([]);
     const [berkasSortOrder, setBerkasSortOrder] = useState("desc");
     const [berkasPage, setBerkasPage] = useState(1);
+    const [cameraModalOpen, setCameraModalOpen] = useState(false);
+    const [cameraError, setCameraError] = useState("");
+    const [cameraLoading, setCameraLoading] = useState(false);
+    const cameraVideoRef = useRef(null);
+    const cameraStreamRef = useRef(null);
+    const cameraFileInputRef = useRef(null);
+    const [altCameraModalOpen, setAltCameraModalOpen] = useState(false);
+    const [altCameraError, setAltCameraError] = useState("");
+    const [altCameraStatus, setAltCameraStatus] = useState("");
+    const [altCameraLoading, setAltCameraLoading] = useState(false);
+    const [altFacingMode, setAltFacingMode] = useState("environment");
+    const [altResolution, setAltResolution] = useState("1280x720");
+    const [altTorchSupported, setAltTorchSupported] = useState(false);
+    const [altTorchEnabled, setAltTorchEnabled] = useState(false);
+    const [altPreviewUrl, setAltPreviewUrl] = useState("");
+    const [altPreviewError, setAltPreviewError] = useState("");
+    const [altCapturedFile, setAltCapturedFile] = useState(null);
+    const [altQualityMessage, setAltQualityMessage] = useState("");
+    const [altQualityOk, setAltQualityOk] = useState(true);
+    const altVideoRef = useRef(null);
+    const altStreamRef = useRef(null);
+    const altTrackRef = useRef(null);
+    const altImageCaptureRef = useRef(null);
+    const altStartTokenRef = useRef(0);
+    const altPreviewUrlRef = useRef("");
 
     const currentNoRawat = selectedNoRawat || params?.no_rawat || rawatJalan?.no_rawat || "";
 
@@ -87,6 +112,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             kunjungan: shouldOpenKunjungan,
         }));
     }, []);
+
+    useEffect(() => {
+        altPreviewUrlRef.current = altPreviewUrl || "";
+    }, [altPreviewUrl]);
 
     // Sync doctor from rawatJalan on mount/update if not set
     // This ensures that if the page is refreshed and rawatJalan is populated,
@@ -257,6 +286,433 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         };
     }, []);
 
+    const stopCameraStream = useCallback(() => {
+        const stream = cameraStreamRef.current;
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+        cameraStreamRef.current = null;
+        if (cameraVideoRef.current) {
+            cameraVideoRef.current.srcObject = null;
+        }
+    }, []);
+
+    const stopAltCameraStream = useCallback(() => {
+        const stream = altStreamRef.current;
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+        altStreamRef.current = null;
+        altTrackRef.current = null;
+        altImageCaptureRef.current = null;
+        if (altVideoRef.current) {
+            altVideoRef.current.srcObject = null;
+        }
+    }, []);
+
+    const resetAltCapture = useCallback(() => {
+        const currentUrl = altPreviewUrlRef.current;
+        if (currentUrl) {
+            URL.revokeObjectURL(currentUrl);
+        }
+        altPreviewUrlRef.current = "";
+        setAltPreviewUrl("");
+        setAltPreviewError("");
+        setAltCapturedFile(null);
+        setAltQualityMessage("");
+        setAltQualityOk(true);
+    }, []);
+
+    const waitForVideoElement = useCallback(() => {
+        return new Promise((resolve, reject) => {
+            const startedAt = Date.now();
+            const checkReady = () => {
+                if (cameraVideoRef.current) {
+                    resolve(cameraVideoRef.current);
+                    return;
+                }
+                if (Date.now() - startedAt > 3000) {
+                    reject(new Error("Kamera tidak tersedia."));
+                    return;
+                }
+                requestAnimationFrame(checkReady);
+            };
+            checkReady();
+        });
+    }, []);
+
+    const waitForAltVideoElement = useCallback(() => {
+        return new Promise((resolve, reject) => {
+            const startedAt = Date.now();
+            const checkReady = () => {
+                if (altVideoRef.current) {
+                    resolve(altVideoRef.current);
+                    return;
+                }
+                if (Date.now() - startedAt > 3000) {
+                    reject(new Error("Kamera tidak tersedia."));
+                    return;
+                }
+                requestAnimationFrame(checkReady);
+            };
+            checkReady();
+        });
+    }, []);
+
+    const waitForVideoReady = useCallback((video) => {
+        return new Promise((resolve, reject) => {
+            const startedAt = Date.now();
+            let rafId = null;
+            const cleanup = () => {
+                if (rafId) cancelAnimationFrame(rafId);
+                if (video) {
+                    video.removeEventListener("loadeddata", checkReady);
+                    video.removeEventListener("loadedmetadata", checkReady);
+                }
+            };
+            const checkReady = () => {
+                if (!video) {
+                    cleanup();
+                    reject(new Error("Kamera tidak tersedia di perangkat ini."));
+                    return;
+                }
+                if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+                    cleanup();
+                    resolve();
+                    return;
+                }
+                if (Date.now() - startedAt > 8000) {
+                    cleanup();
+                    reject(new Error("Kamera tidak mengirimkan video."));
+                    return;
+                }
+                rafId = requestAnimationFrame(checkReady);
+            };
+            if (video) {
+                video.addEventListener("loadeddata", checkReady);
+                video.addEventListener("loadedmetadata", checkReady);
+            }
+            checkReady();
+        });
+    }, []);
+
+    const waitForAltVideoReady = useCallback((video) => {
+        return new Promise((resolve, reject) => {
+            const startedAt = Date.now();
+            let rafId = null;
+            const cleanup = () => {
+                if (rafId) cancelAnimationFrame(rafId);
+                if (video) {
+                    video.removeEventListener("loadeddata", checkReady);
+                    video.removeEventListener("loadedmetadata", checkReady);
+                }
+            };
+            const checkReady = () => {
+                if (!video) {
+                    cleanup();
+                    reject(new Error("Kamera tidak tersedia di perangkat ini."));
+                    return;
+                }
+                if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+                    cleanup();
+                    resolve();
+                    return;
+                }
+                if (Date.now() - startedAt > 8000) {
+                    cleanup();
+                    reject(new Error("Kamera tidak mengirimkan video."));
+                    return;
+                }
+                rafId = requestAnimationFrame(checkReady);
+            };
+            if (video) {
+                video.addEventListener("loadeddata", checkReady);
+                video.addEventListener("loadedmetadata", checkReady);
+            }
+            checkReady();
+        });
+    }, []);
+
+    const startCamera = useCallback(async () => {
+        setCameraLoading(true);
+        setCameraError("");
+        stopCameraStream();
+        try {
+            const hasMedia = typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia;
+            if (!hasMedia) {
+                throw new Error("Kamera tidak tersedia di perangkat ini.");
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" } },
+                audio: false,
+            });
+            cameraStreamRef.current = stream;
+            const videoEl = await waitForVideoElement();
+            videoEl.srcObject = stream;
+            videoEl.muted = true;
+            videoEl.playsInline = true;
+            videoEl.autoplay = true;
+            await videoEl.play();
+            await waitForVideoReady(videoEl);
+        } catch (err) {
+            stopCameraStream();
+            setCameraError(err?.message || "Tidak dapat mengakses kamera.");
+        } finally {
+            setCameraLoading(false);
+        }
+    }, [stopCameraStream, waitForVideoElement, waitForVideoReady]);
+
+    const startAltCamera = useCallback(async () => {
+        const startToken = altStartTokenRef.current + 1;
+        altStartTokenRef.current = startToken;
+        setAltCameraLoading(true);
+        setAltCameraError("");
+        setAltCameraStatus("Menyiapkan kamera...");
+        stopAltCameraStream();
+        resetAltCapture();
+        try {
+            const hasMedia = typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia;
+            if (!hasMedia) {
+                throw new Error("Kamera tidak tersedia di perangkat ini.");
+            }
+            if (typeof window !== "undefined" && window.isSecureContext === false) {
+                throw new Error("Kamera hanya dapat digunakan melalui koneksi aman (HTTPS).");
+            }
+            const [width, height] = String(altResolution).split("x").map((val) => Number(val) || 0);
+            const constraints = {
+                video: {
+                    facingMode: { ideal: altFacingMode },
+                    width: width ? { ideal: width } : undefined,
+                    height: height ? { ideal: height } : undefined,
+                },
+                audio: false,
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (altStartTokenRef.current !== startToken) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
+            altStreamRef.current = stream;
+            const track = stream.getVideoTracks?.()[0] || null;
+            altTrackRef.current = track;
+            if (track && typeof window !== "undefined" && typeof window.ImageCapture === "function") {
+                try {
+                    altImageCaptureRef.current = new window.ImageCapture(track);
+                } catch (_) {
+                    altImageCaptureRef.current = null;
+                }
+            } else {
+                altImageCaptureRef.current = null;
+            }
+            let torchSupported = false;
+            if (track?.getCapabilities) {
+                const caps = track.getCapabilities();
+                torchSupported = Boolean(caps?.torch);
+            }
+            setAltTorchSupported(torchSupported);
+            if (!torchSupported) {
+                setAltTorchEnabled(false);
+            }
+            const videoEl = await waitForAltVideoElement();
+            if (altStartTokenRef.current !== startToken) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
+            videoEl.srcObject = stream;
+            videoEl.muted = true;
+            videoEl.playsInline = true;
+            videoEl.autoplay = true;
+            const playPromise = videoEl.play();
+            if (playPromise && typeof playPromise.then === "function") {
+                await playPromise.catch((err) => {
+                    if (altStartTokenRef.current !== startToken) {
+                        return;
+                    }
+                    throw err;
+                });
+            }
+            await waitForAltVideoReady(videoEl);
+            if (altStartTokenRef.current !== startToken) {
+                return;
+            }
+            setAltCameraStatus("Kamera siap digunakan.");
+        } catch (err) {
+            if (altStartTokenRef.current !== startToken) {
+                return;
+            }
+            stopAltCameraStream();
+            setAltCameraStatus("");
+            setAltCameraError(err?.message || "Tidak dapat mengakses kamera.");
+        } finally {
+            if (altStartTokenRef.current === startToken) {
+                setAltCameraLoading(false);
+            }
+        }
+    }, [
+        altFacingMode,
+        altResolution,
+        resetAltCapture,
+        stopAltCameraStream,
+        waitForAltVideoElement,
+        waitForAltVideoReady,
+    ]);
+
+    const applyAltTorch = useCallback(async (nextEnabled) => {
+        const track = altTrackRef.current;
+        if (!track || typeof track.applyConstraints !== "function") {
+            setAltCameraError("Flash tidak didukung pada perangkat ini.");
+            setAltTorchSupported(false);
+            setAltTorchEnabled(false);
+            return;
+        }
+        const caps = typeof track.getCapabilities === "function" ? track.getCapabilities() : null;
+        if (!caps?.torch) {
+            setAltCameraError("Flash tidak tersedia pada kamera ini.");
+            setAltTorchSupported(false);
+            setAltTorchEnabled(false);
+            return;
+        }
+        try {
+            await track.applyConstraints({ advanced: [{ torch: nextEnabled }] });
+            setAltTorchEnabled(nextEnabled);
+            setAltCameraError("");
+        } catch (_) {
+            setAltCameraError("Gagal mengaktifkan flash.");
+        }
+    }, []);
+
+    const evaluateAltQuality = useCallback(async (blob) => {
+        const minWidth = 640;
+        const minHeight = 480;
+        const loadImage = async () => {
+            if (typeof window !== "undefined" && typeof window.createImageBitmap === "function") {
+                return window.createImageBitmap(blob);
+            }
+            return await new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(blob);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error("Gagal memuat gambar."));
+                };
+                img.src = url;
+            });
+        };
+        const image = await loadImage();
+        const width = image.width || image.naturalWidth || 0;
+        const height = image.height || image.naturalHeight || 0;
+        if (!width || !height) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: false, message: "Ukuran gambar tidak valid." };
+        }
+        if (width < minWidth || height < minHeight) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: false, message: `Resolusi terlalu rendah (${width}x${height}).` };
+        }
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: true, message: "Kualitas foto siap digunakan." };
+        }
+        const sampleWidth = 160;
+        const ratio = height / width;
+        const sampleHeight = Math.max(120, Math.round(sampleWidth * ratio));
+        canvas.width = sampleWidth;
+        canvas.height = sampleHeight;
+        ctx.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+        const data = ctx.getImageData(0, 0, sampleWidth, sampleHeight).data;
+        const count = data.length / 4;
+        let sum = 0;
+        let sumSq = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            sum += lum;
+            sumSq += lum * lum;
+        }
+        const mean = sum / count;
+        const variance = sumSq / count - mean * mean;
+        if (mean < 45) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: false, message: "Foto terlalu gelap, gunakan pencahayaan lebih terang." };
+        }
+        if (mean > 220) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: false, message: "Foto terlalu terang, kurangi cahaya." };
+        }
+        if (variance < 120) {
+            if (typeof image.close === "function") {
+                image.close();
+            }
+            return { ok: false, message: "Foto terlihat kurang tajam, coba ambil ulang." };
+        }
+        if (typeof image.close === "function") {
+            image.close();
+        }
+        return { ok: true, message: `Kualitas foto baik (${width}x${height}).` };
+    }, []);
+
+    useEffect(() => {
+        if (!cameraModalOpen) {
+            stopCameraStream();
+            setCameraError("");
+            return;
+        }
+        startCamera();
+    }, [cameraModalOpen, startCamera, stopCameraStream]);
+
+    useEffect(() => {
+        return () => {
+            stopCameraStream();
+        };
+    }, [stopCameraStream]);
+
+    useEffect(() => {
+        if (!altCameraModalOpen) {
+            altStartTokenRef.current += 1;
+            stopAltCameraStream();
+            resetAltCapture();
+            setAltCameraError("");
+            setAltCameraStatus("");
+            setAltTorchEnabled(false);
+            setAltTorchSupported(false);
+            return;
+        }
+        startAltCamera();
+    }, [
+        altCameraModalOpen,
+        altFacingMode,
+        altResolution,
+        resetAltCapture,
+        startAltCamera,
+        stopAltCameraStream,
+    ]);
+
+    useEffect(() => {
+        return () => {
+            altStartTokenRef.current += 1;
+            stopAltCameraStream();
+            resetAltCapture();
+        };
+    }, [resetAltCapture, stopAltCameraStream]);
+
     const getBerkasUploadErrorMessage = (err) => {
         const response = err?.response;
         const status = response?.status;
@@ -323,58 +779,204 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
         loadBerkasDigital(currentNoRawat);
     }, [activeTab, currentNoRawat, loadBerkasDigital]);
 
-    const handleBerkasFileChange = (file) => {
+    const handleBerkasFileChangeAsync = useCallback((file) => {
         if (!file) {
             setSelectedBerkasFile(null);
-            return;
+            return Promise.resolve(null);
         }
         setBerkasProcessing(true);
         setBerkasError("");
-        compressImageFile(file)
+        return compressImageFile(file)
             .then((compressed) => {
                 setSelectedBerkasFile(compressed);
+                return compressed;
             })
             .catch((err) => {
                 setSelectedBerkasFile(null);
                 setBerkasInputKey(Date.now());
                 setBerkasError(err?.message || "Gagal memproses berkas.");
+                return null;
             })
             .finally(() => {
                 setBerkasProcessing(false);
             });
+    }, [compressImageFile]);
+
+    const handleBerkasFileChange = (file) => {
+        handleBerkasFileChangeAsync(file);
     };
 
-    const handleBerkasUpload = async () => {
-        const file = selectedBerkasFile;
+    const handleCameraFilePick = (file) => {
+        if (!file) return;
+        handleBerkasFileChange(file);
+        setCameraModalOpen(false);
+        setBerkasInputKey(Date.now());
+    };
+
+    const handleCapturePhoto = async () => {
+        setCameraError("");
+        const video = cameraVideoRef.current;
+        if (!video) {
+            setCameraError("Kamera tidak tersedia di perangkat ini.");
+            return;
+        }
+        if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+            try {
+                await waitForVideoReady(video);
+            } catch (err) {
+                setCameraError(err?.message || "Kamera tidak mengirimkan video.");
+                return;
+            }
+        }
+        const canvas = document.createElement("canvas");
+        const width = video.videoWidth || 1280;
+        const height = video.videoHeight || 720;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            setCameraError("Canvas tidak tersedia.");
+            return;
+        }
+        ctx.drawImage(video, 0, 0, width, height);
+        const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, "image/jpeg", 0.92);
+        });
+        if (!blob) {
+            setCameraError("Gagal mengambil foto.");
+            return;
+        }
+        const fileCtor = typeof window !== "undefined" ? window.File : null;
+        if (typeof fileCtor !== "function") {
+            setCameraError("Perangkat tidak mendukung penyimpanan foto.");
+            return;
+        }
+        const photoFile = new fileCtor([blob], `kamera_${Date.now()}.jpg`, { type: "image/jpeg" });
+        handleBerkasFileChange(photoFile);
+        setCameraModalOpen(false);
+        setBerkasInputKey(Date.now());
+    };
+
+    const createAltJpegFromVideo = useCallback(async (video) => {
+        const canvas = document.createElement("canvas");
+        const width = video.videoWidth || 1280;
+        const height = video.videoHeight || 720;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            throw new Error("Canvas tidak tersedia.");
+        }
+        ctx.drawImage(video, 0, 0, width, height);
+        const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, "image/jpeg", 0.92);
+        });
+        if (!blob || !blob.size) {
+            throw new Error("Gagal mengambil foto.");
+        }
+        return blob;
+    }, []);
+
+    const buildAltPreviewUrl = useCallback(async (blob) => {
+        const url = URL.createObjectURL(blob);
+        const loaded = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => reject(new Error("Preview foto gagal dimuat."));
+            img.src = url;
+        }).catch((err) => {
+            URL.revokeObjectURL(url);
+            throw err;
+        });
+        if (!loaded) {
+            URL.revokeObjectURL(url);
+            throw new Error("Preview foto gagal dimuat.");
+        }
+        return url;
+    }, []);
+
+    const handleAltCapturePhoto = useCallback(async () => {
+        setAltCameraError("");
+        setAltCameraStatus("Mengambil foto...");
+        setAltCameraLoading(true);
+        setAltQualityMessage("");
+        setAltQualityOk(true);
+        setAltPreviewError("");
+        if (altPreviewUrlRef.current) {
+            URL.revokeObjectURL(altPreviewUrlRef.current);
+        }
+        altPreviewUrlRef.current = "";
+        setAltPreviewUrl("");
+        setAltCapturedFile(null);
+        try {
+            const video = altVideoRef.current;
+            if (!video) {
+                throw new Error("Kamera tidak tersedia di perangkat ini.");
+            }
+            if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+                await waitForAltVideoReady(video);
+            }
+            let blob = null;
+            if (altImageCaptureRef.current?.takePhoto) {
+                try {
+                    blob = await altImageCaptureRef.current.takePhoto();
+                } catch (_) {
+                    blob = null;
+                }
+            }
+            if (!blob || !blob.size || !ALLOWED_IMAGE_TYPES.includes(blob.type || "")) {
+                blob = await createAltJpegFromVideo(video);
+            }
+            const fileCtor = typeof window !== "undefined" ? window.File : null;
+            if (typeof fileCtor !== "function") {
+                throw new Error("Perangkat tidak mendukung penyimpanan foto.");
+            }
+            const photoFile = new fileCtor([blob], `kamera_alt_${Date.now()}.jpg`, { type: blob.type || "image/jpeg" });
+            const quality = await evaluateAltQuality(blob);
+            setAltQualityMessage(quality.message || "");
+            setAltQualityOk(Boolean(quality.ok));
+            const previewUrl = await buildAltPreviewUrl(blob);
+            altPreviewUrlRef.current = previewUrl;
+            setAltPreviewUrl(previewUrl);
+            setAltCapturedFile(photoFile);
+            setAltCameraStatus(quality.ok ? "Foto siap digunakan." : "Kualitas foto kurang baik.");
+        } catch (err) {
+            const message = err?.message || "Gagal mengambil foto.";
+            setAltCameraError(message);
+            setAltPreviewError(message);
+            setAltCameraStatus("");
+        } finally {
+            setAltCameraLoading(false);
+        }
+    }, [buildAltPreviewUrl, createAltJpegFromVideo, evaluateAltQuality, waitForAltVideoReady]);
+
+    async function handleBerkasUpload(overrideFile = null) {
+        const isEvent = overrideFile && typeof overrideFile === "object" && "preventDefault" in overrideFile;
+        const file = isEvent ? selectedBerkasFile : (overrideFile || selectedBerkasFile);
         const kode = selectedBerkasKode;
         if (!currentNoRawat) {
             setBerkasError("No. rawat belum tersedia");
-            return;
+            return false;
         }
         if (!kode) {
             setBerkasError("Pilih kategori terlebih dahulu");
-            return;
+            return false;
         }
         if (!file) {
             setBerkasError("Pilih berkas terlebih dahulu");
-            return;
+            return false;
         }
-        const blobCtor = typeof window !== "undefined" ? window.Blob : null;
-        const fileCtor = typeof window !== "undefined" ? window.File : null;
-        const hasBlobConstructor = typeof blobCtor === "function";
-        const hasFileConstructor = typeof fileCtor === "function";
-        const isBlob = hasBlobConstructor && file instanceof blobCtor;
-        const isFile = hasFileConstructor && file instanceof fileCtor;
-        const fileBlob = isBlob ? file : file?.blob;
-        const fileName = isFile ? file.name : file?.name;
+        const fileBlob = file?.blob || file;
+        const fileName = file?.name || "berkas";
         const fileSize = typeof file?.size === "number" ? file.size : fileBlob?.size;
-        if (!fileBlob) {
+        const isBlobLike = fileBlob && typeof fileBlob.size === "number";
+        if (!isBlobLike) {
             setBerkasError("Berkas tidak valid.");
-            return;
+            return false;
         }
         if (fileSize > MAX_BERKAS_BYTES) {
             setBerkasError("Ukuran berkas harus maksimal 5MB.");
-            return;
+            return false;
         }
         setBerkasUploading(true);
         setBerkasError("");
@@ -389,12 +991,39 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
             setSelectedBerkasFile(null);
             setBerkasInputKey(Date.now());
             await loadBerkasDigital(currentNoRawat);
+            return true;
         } catch (_err) {
             setBerkasError(getBerkasUploadErrorMessage(_err));
+            return false;
         } finally {
             setBerkasUploading(false);
         }
-    };
+    }
+
+    const handleAltUsePhoto = useCallback(async () => {
+        if (!altCapturedFile) return;
+        setAltCameraStatus("Mengompres foto...");
+        const compressed = await handleBerkasFileChangeAsync(altCapturedFile);
+        if (!compressed) {
+            setAltCameraStatus("");
+            return;
+        }
+        setAltCameraStatus("Mengunggah foto...");
+        const uploaded = await handleBerkasUpload(compressed);
+        if (!uploaded) {
+            setAltCameraStatus("");
+            return;
+        }
+        setAltCameraModalOpen(false);
+        setBerkasInputKey(Date.now());
+    }, [altCapturedFile, handleBerkasFileChangeAsync, handleBerkasUpload]);
+
+    const handleAltRetake = useCallback(() => {
+        resetAltCapture();
+        setAltCameraError("");
+        setAltCameraStatus("Siap mengambil foto.");
+    }, [resetAltCapture]);
+
 
     const handleBerkasDelete = async (item) => {
         if (!item) return;
@@ -833,56 +1462,278 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                     Kategori berkas digital belum tersedia.
                                 </div>
                             ) : (
-                                <>
-                                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_auto] gap-3 items-center">
-                                        <div>
-                                            <label className="text-xs text-gray-600 dark:text-gray-400">Kategori</label>
-                                            <select
-                                                value={selectedBerkasKode}
-                                                onChange={(e) => setSelectedBerkasKode(e.target.value)}
-                                                className="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-3 py-2"
-                                            >
-                                                <option value="">Pilih kategori</option>
-                                                {berkasCategories.map((kategori) => {
-                                                    const kode = String(kategori?.kode || "");
-                                                    const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
-                                                    return (
-                                                        <option key={kode || nama} value={kode}>
-                                                            {kode ? `${kode} - ${nama}` : nama}
-                                                        </option>
-                                                    );
-                                                })}
-                                            </select>
+                                <div className="mt-4 grid grid-cols-1 xl:grid-cols-[1.1fr_1.1fr] gap-3 sm:gap-4">
+                                    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 sm:p-4 xl:border-purple-100 xl:dark:border-purple-900/40 xl:bg-purple-50/60 xl:dark:bg-purple-900/10">
+                                        <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700 dark:text-gray-200 xl:text-purple-700 xl:dark:text-purple-200">
+                                            <span className="hidden xl:inline-flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white">1</span>
+                                            Pilih Kategori
                                         </div>
-                                        <div>
-                                            <label className="text-xs text-gray-600 dark:text-gray-400">Berkas</label>
+                                        <label className="mt-3 block text-xs text-gray-600 dark:text-gray-400">Kategori</label>
+                                        <select
+                                            value={selectedBerkasKode}
+                                            onChange={(e) => setSelectedBerkasKode(e.target.value)}
+                                            className="mt-1 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-3 py-2 focus:border-purple-400 xl:border-purple-200/70 xl:dark:border-purple-900/60"
+                                        >
+                                            <option value="">Pilih kategori</option>
+                                            {berkasCategories.map((kategori) => {
+                                                const kode = String(kategori?.kode || "");
+                                                const nama = kategori?.nama_berkas || kategori?.nama || kategori?.kategori || "Kategori";
+                                                return (
+                                                    <option key={kode || nama} value={kode}>
+                                                        {kode ? `${kode} - ${nama}` : nama}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+                                    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 sm:p-4 xl:border-emerald-100 xl:dark:border-emerald-900/40 xl:bg-emerald-50/60 xl:dark:bg-emerald-900/10">
+                                        <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-700 dark:text-gray-200 xl:text-emerald-700 xl:dark:text-emerald-200">
+                                            <span className="hidden xl:inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white">2</span>
+                                            Ambil Berkas
+                                        </div>
+                                        <label className="mt-3 block text-xs text-gray-600 dark:text-gray-400">Berkas</label>
+                                        <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center">
                                             <input
                                                 key={berkasInputKey}
                                                 type="file"
                                                 onChange={(e) => handleBerkasFileChange(e.target.files?.[0] || null)}
                                                 accept="image/jpeg,image/png,image/webp"
-                                                className="mt-1 block w-full text-xs text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 dark:file:bg-purple-900/30 dark:file:text-purple-200"
+                                                className="block w-full text-xs text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 dark:file:bg-gray-800 dark:file:text-gray-200 xl:file:bg-emerald-100 xl:file:text-emerald-700 xl:hover:file:bg-emerald-200 xl:dark:file:bg-emerald-900/30 xl:dark:file:text-emerald-200"
                                             />
-                                            {berkasProcessing && (
-                                                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                                    Mengompres berkas...
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="mt-5">
                                             <button
                                                 type="button"
-                                                onClick={handleBerkasUpload}
+                                                onClick={() => handleBerkasUpload()}
                                                 disabled={berkasUploading || berkasProcessing}
-                                                className={`text-xs px-4 py-2 rounded-lg border ${berkasUploading || berkasProcessing ? "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600" : "border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/30"}`}
+                                                className={`text-xs px-4 py-2.5 rounded-lg border sm:w-auto ${berkasUploading || berkasProcessing ? "border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-600 bg-gray-50 dark:bg-gray-900" : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 bg-white dark:bg-gray-900 xl:border-blue-200 xl:dark:border-blue-700 xl:text-blue-700 xl:dark:text-blue-200 xl:hover:bg-blue-50 xl:dark:hover:bg-blue-900/30"}`}
                                             >
                                                 {berkasUploading ? "Mengunggah..." : berkasProcessing ? "Mengompres..." : "Unggah"}
                                             </button>
                                         </div>
+                                        <input
+                                            ref={cameraFileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            className="hidden"
+                                            onChange={(e) => handleCameraFilePick(e.target.files?.[0] || null)}
+                                        />
+                                        {berkasProcessing && (
+                                            <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                                Mengompres berkas...
+                                            </div>
+                                        )}
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setAltCameraModalOpen(true)}
+                                                className="text-[11px] px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 xl:border-emerald-200 xl:dark:border-emerald-700 xl:text-emerald-700 xl:dark:text-emerald-200 xl:hover:bg-emerald-50 xl:dark:hover:bg-emerald-900/30"
+                                            >
+                                                Buka Kamera
+                                            </button>
+                                        </div>
+                                        <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                            Pastikan kategori sudah dipilih sebelum unggah.
+                                        </div>
                                     </div>
-                                </>
+                                </div>
                             )}
                         </div>
+                        <Modal
+                            show={cameraModalOpen}
+                            onClose={() => setCameraModalOpen(false)}
+                            title="Ambil Foto"
+                            size="md"
+                        >
+                            <div className="p-4 space-y-3">
+                                <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-black/90 overflow-hidden">
+                                    <video
+                                        ref={cameraVideoRef}
+                                        className="w-full h-64 object-cover"
+                                        playsInline
+                                        muted
+                                        autoPlay
+                                    />
+                                </div>
+                                {cameraError && (
+                                    <div className="text-xs text-red-600 dark:text-red-400">
+                                        {cameraError}
+                                    </div>
+                                )}
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={startCamera}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-200 dark:hover:bg-orange-900/20"
+                                    >
+                                        Coba Lagi
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => cameraFileInputRef.current?.click()}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                                    >
+                                        Pilih File
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleCapturePhoto}
+                                        disabled={cameraLoading}
+                                        className={`text-xs px-3 py-1.5 rounded-lg border ${cameraLoading ? "border-blue-200 text-blue-300 dark:border-blue-900 dark:text-blue-400" : "border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-200 dark:hover:bg-blue-900/20"}`}
+                                    >
+                                        {cameraLoading ? "Menyiapkan..." : "Ambil Foto"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCameraModalOpen(false)}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+                        <Modal
+                            show={altCameraModalOpen}
+                            onClose={() => setAltCameraModalOpen(false)}
+                            title="Buka Kamera"
+                            size="lg"
+                        >
+                            <div className="p-4 space-y-4">
+                                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-3">
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-black/90 overflow-hidden">
+                                        <video
+                                            ref={altVideoRef}
+                                            className="w-full h-64 object-cover"
+                                            playsInline
+                                            muted
+                                            autoPlay
+                                        />
+                                    </div>
+                                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 flex flex-col justify-center items-center text-center">
+                                        {altPreviewUrl ? (
+                                            <img
+                                                src={altPreviewUrl}
+                                                alt="Preview foto"
+                                                className="w-full h-64 object-contain rounded-md"
+                                                onError={(event) => {
+                                                    try {
+                                                        URL.revokeObjectURL(event.currentTarget.src);
+                                                    } catch (_) {}
+                                                    setAltPreviewError("Preview foto gagal ditampilkan.");
+                                                    setAltPreviewUrl("");
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                Preview foto akan muncul di sini.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                {altPreviewError && (
+                                    <div className="text-xs text-red-600 dark:text-red-400">
+                                        {altPreviewError}
+                                    </div>
+                                )}
+                                {altCameraStatus && (
+                                    <div className="text-xs text-blue-600 dark:text-blue-300">
+                                        {altCameraStatus}
+                                    </div>
+                                )}
+                                {altCameraError && (
+                                    <div className="text-xs text-red-600 dark:text-red-400">
+                                        {altCameraError}
+                                    </div>
+                                )}
+                                {altQualityMessage && (
+                                    <div className={`text-xs ${altQualityOk ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"}`}>
+                                        {altQualityMessage}
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <div>
+                                        <label className="text-[11px] text-gray-600 dark:text-gray-400">Orientasi</label>
+                                        <select
+                                            value={altFacingMode}
+                                            onChange={(e) => setAltFacingMode(e.target.value)}
+                                            className="mt-1 w-full text-xs rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2 py-1.5"
+                                        >
+                                            <option value="environment">Kamera Belakang</option>
+                                            <option value="user">Kamera Depan</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[11px] text-gray-600 dark:text-gray-400">Resolusi</label>
+                                        <select
+                                            value={altResolution}
+                                            onChange={(e) => setAltResolution(e.target.value)}
+                                            className="mt-1 w-full text-xs rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2 py-1.5"
+                                        >
+                                            <option value="640x480">640x480</option>
+                                            <option value="1280x720">1280x720</option>
+                                            <option value="1920x1080">1920x1080</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="text-[11px] text-gray-600 dark:text-gray-400">Flash</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => applyAltTorch(!altTorchEnabled)}
+                                            disabled={!altTorchSupported || altCameraLoading}
+                                            className={`mt-1 text-xs px-3 py-1.5 rounded-md border ${altTorchSupported ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-200 dark:hover:bg-emerald-900/30" : "border-gray-200 text-gray-400 dark:border-gray-700 dark:text-gray-500"} `}
+                                        >
+                                            {altTorchSupported ? (altTorchEnabled ? "Flash Aktif" : "Flash Mati") : "Flash Tidak Tersedia"}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={startAltCamera}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-200 dark:hover:bg-orange-900/20"
+                                    >
+                                        Refresh Kamera
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAltCapturePhoto}
+                                        disabled={altCameraLoading}
+                                        className={`text-xs px-3 py-1.5 rounded-lg border ${altCameraLoading ? "border-blue-200 text-blue-300 dark:border-blue-900 dark:text-blue-400" : "border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-200 dark:hover:bg-blue-900/20"}`}
+                                    >
+                                        {altCameraLoading ? "Memproses..." : "Ambil Foto"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAltRetake}
+                                        disabled={!altPreviewUrl}
+                                        className={`text-xs px-3 py-1.5 rounded-lg border ${altPreviewUrl ? "border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900/20" : "border-gray-200 text-gray-400 dark:border-gray-700 dark:text-gray-500"}`}
+                                    >
+                                        Ambil Ulang
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAltUsePhoto}
+                                        disabled={!altCapturedFile || !altQualityOk}
+                                        className={`text-xs px-3 py-1.5 rounded-lg border ${altCapturedFile && altQualityOk ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-200 dark:hover:bg-emerald-900/30" : "border-gray-200 text-gray-400 dark:border-gray-700 dark:text-gray-500"}`}
+                                    >
+                                        Gunakan Foto
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => cameraFileInputRef.current?.click()}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    >
+                                        Pilih File
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAltCameraModalOpen(false)}
+                                        className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
                         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-center gap-3">

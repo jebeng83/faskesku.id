@@ -98,10 +98,14 @@ class PatientController extends Controller
      */
     public function store(Request $request)
     {
+        $noKtp = trim((string) $request->input('no_ktp', ''));
+        if ($noKtp === '') {
+            $request->merge(['no_ktp' => null]);
+        }
         $validator = Validator::make($request->all(), [
             'no_rkm_medis' => 'nullable|string|max:15',
             'nm_pasien' => 'required|string|max:40',
-            'no_ktp' => 'required|string|max:20|unique:pasien,no_ktp',
+            'no_ktp' => 'nullable|string|max:20|unique:pasien,no_ktp',
             'jk' => 'required|in:L,P',
             'tmp_lahir' => 'required|string|max:15',
             'tgl_lahir' => 'required|date',
@@ -129,7 +133,6 @@ class PatientController extends Controller
         ], [
             'nm_pasien.required' => 'Nama Pasien harus diisi',
             'nm_pasien.max' => 'Nama Pasien maksimal 40 karakter',
-            'no_ktp.required' => 'Nomor KTP harus diisi',
             'no_ktp.max' => 'Nomor KTP maksimal 20 karakter',
             'no_ktp.unique' => 'Nomor KTP sudah ada',
             'jk.required' => 'Jenis Kelamin harus diisi',
@@ -326,6 +329,10 @@ class PatientController extends Controller
      */
     public function update(Request $request, Patient $patient)
     {
+        $noKtp = trim((string) $request->input('no_ktp', ''));
+        if ($noKtp === '') {
+            $request->merge(['no_ktp' => null]);
+        }
         // Log request data untuk debugging
         Log::info('Patient update request', [
             'patient_no_rkm_medis' => $patient->no_rkm_medis,

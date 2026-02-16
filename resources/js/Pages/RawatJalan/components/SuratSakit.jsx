@@ -314,7 +314,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
 
     useEffect(() => {
         let active = true;
-        QRCode.toDataURL(qrText, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+        QRCode.toDataURL(qrText, { width: 384, margin: 1, errorCorrectionLevel: 'M' })
             .then((url) => {
                 if (active) setQrDataUrl(url);
             })
@@ -334,7 +334,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
             setValQrDataUrl('');
             return;
         }
-        QRCode.toDataURL(url, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+        QRCode.toDataURL(url, { width: 384, margin: 1, errorCorrectionLevel: 'M' })
             .then((data) => { if (active) setValQrDataUrl(data); })
             .catch(() => { if (active) setValQrDataUrl(''); });
         return () => { active = false; };
@@ -869,7 +869,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                 <div className="w-full md:w-auto md:flex-1 text-xs print:text-[10px] print:flex-1 print:min-w-0">
                                                     <div className="text-center">
                                                         <div className="print-text-black">Validasi Dokumen</div>
-                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
                                                             {valQrDataUrl ? (
                                                                 <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
                                                             ) : (
@@ -899,7 +899,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalawal)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
                                                             {qrDataUrl ? (
                                                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (

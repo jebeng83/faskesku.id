@@ -9,6 +9,7 @@ import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import axios from 'axios';
 import {
   MagnifyingGlassIcon,
+  ArrowPathIcon,
   DocumentTextIcon,
   DocumentCheckIcon,
   CalendarDaysIcon,
@@ -154,9 +155,10 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     };
 
     const savedFilters = getRawatJalanFilters();
+    const today = todayDateString();
     const initialParams = buildSearchParams({
-        start_date: savedFilters.start_date || filters.start_date,
-        end_date: savedFilters.end_date || filters.end_date,
+        start_date: filters.start_date || today,
+        end_date: filters.end_date || today,
         status: savedFilters.status || filters.status,
         status_bayar: savedFilters.status_bayar || filters.status_bayar,
         nama_pasien: savedFilters.nama_pasien || filters.nama_pasien,
@@ -180,7 +182,12 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
     useEffect(() => {
         const stored = getRawatJalanFilters();
         const hasStored = Object.values(stored).some((value) => value);
-        const nextParams = buildSearchParams(hasStored ? stored : filters);
+        const base = hasStored ? stored : filters;
+        const nextParams = buildSearchParams({
+            ...base,
+            start_date: filters.start_date || today,
+            end_date: filters.end_date || today,
+        });
         setSearchParams(nextParams);
         setRawatJalanFilters(nextParams);
     }, [
@@ -192,6 +199,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         filters?.kd_dokter,
         filters?.kd_poli,
         filters?.per_page,
+        today,
     ]);
 
     useEffect(() => {
@@ -309,6 +317,15 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         if (!link?.url) return;
         setIsReloading(true);
         router.visit(link.url, {
+            preserveState: true,
+            replace: true,
+            onFinish: () => setIsReloading(false),
+        });
+    };
+
+    const handleReload = () => {
+        setIsReloading(true);
+        router.get(route('rawat-jalan.index'), searchParams, {
             preserveState: true,
             replace: true,
             onFinish: () => setIsReloading(false),
@@ -571,6 +588,14 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                         className="pl-6 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white w-32"
                                     />
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={handleReload}
+                                    className="p-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                    aria-label="Reload data pasien"
+                                >
+                                    <ArrowPathIcon className="w-4 h-4" />
+                                </button>
 
                                 <div className="flex items-center gap-2 shrink-0">
                                     <input

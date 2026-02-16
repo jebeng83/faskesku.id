@@ -157,12 +157,10 @@ export default function WilayahSearchableSelect({
 			try {
 				let url = "";
 				if (level === "village") {
-					// Use the new all-villages endpoint with filter and limit
-					url = `/api/wilayah/all-villages?filter=${encodeURIComponent(
+					url = `/api/wilayah/search?q=${encodeURIComponent(
 						term
-					)}&limit=50`;
+					)}&level=village`;
 				} else {
-					// Use the existing search endpoint for other levels
 					url = `/api/wilayah/search?q=${encodeURIComponent(
 						term
 					)}&level=${level}`;
@@ -285,8 +283,12 @@ export default function WilayahSearchableSelect({
 
 	const handleSearchChange = (e) => {
 		const term = e.target.value;
+		const normalizedTerm = term
+			.replace(/[,\-\/]+/g, " ")
+			.replace(/\s+/g, " ")
+			.trim();
 		setSearchTerm(term);
-		handleSearch(term);
+		handleSearch(normalizedTerm);
 	};
 
 	const selectedOption =

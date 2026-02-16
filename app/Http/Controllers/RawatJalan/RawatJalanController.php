@@ -2164,7 +2164,7 @@ class RawatJalanController extends Controller
             'no_surat' => 'required|string|max:20',
             'no_rawat' => 'required|string|max:17',
             'tanggalawal' => 'required|date',
-            'tanggalakhir' => 'required|date|after:tanggalawal',
+            'tanggalakhir' => 'required|date|after_or_equal:tanggalawal',
             'lamasakit' => 'required|string|max:20',
             'nama2' => 'nullable|string|max:50',
             'tgl_lahir' => 'nullable|date',
