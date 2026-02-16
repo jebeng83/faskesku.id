@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class KamarInapController extends Controller
 {
@@ -79,7 +80,7 @@ class KamarInapController extends Controller
             DB::table('kamar_inap')->insert([
                 'no_rawat' => $noRawat,
                 'kd_kamar' => $kdKamar,
-                'trf_kamar' => (double) $tarif,
+                'trf_kamar' => (float) $tarif,
                 'diagnosa_awal' => $diagnosaAwal,
                 'diagnosa_akhir' => '-',
                 'tgl_masuk' => $nowDate,
@@ -130,15 +131,53 @@ class KamarInapController extends Controller
     public function checkout(Request $request): JsonResponse
     {
         try {
+            $allowedSttsPulang = [
+                'Sehat',
+                'Rujuk',
+                'APS',
+                '+',
+                'Meninggal',
+                'Sembuh',
+                'Membaik',
+                'Pulang Paksa',
+                'Status Belum Lengkap',
+                'Atas Persetujuan Dokter',
+                'Atas Permintaan Sendiri',
+                'Isoman',
+                'Lain-lain',
+            ];
+
             $validated = $request->validate([
-                'no_rawat' => 'required|string|exists:reg_periksa,no_rawat',
-                'stts_pulang' => 'required|string|max:20',
+                'no_rawat' => 'nullable|string|exists:reg_periksa,no_rawat|required_without:no_rkm_medis',
+                'no_rkm_medis' => 'nullable|string|exists:pasien,no_rkm_medis|required_without:no_rawat',
+                'stts_pulang' => ['required', 'string', Rule::in($allowedSttsPulang)],
                 'diagnosa_akhir' => 'required|string|max:100',
                 'tgl_keluar' => 'nullable|date',
                 'jam_keluar' => ['nullable', 'regex:/^\d{2}:\d{2}(:\d{2})?$/'],
             ]);
 
-            $noRawat = $validated['no_rawat'];
+            $noRawat = (string) ($validated['no_rawat'] ?? '');
+            if ($noRawat === '') {
+                $noRm = (string) ($validated['no_rkm_medis'] ?? '');
+                $noRawat = (string) DB::table('kamar_inap as ki')
+                    ->join('reg_periksa as rp', 'rp.no_rawat', '=', 'ki.no_rawat')
+                    ->where('rp.no_rkm_medis', $noRm)
+                    ->where('rp.status_lanjut', 'Ranap')
+                    ->where('ki.stts_pulang', '-')
+                    ->where(function ($w) {
+                        $w->whereNull('ki.tgl_keluar')->orWhere('ki.tgl_keluar', '0000-00-00');
+                    })
+                    ->orderByDesc('ki.tgl_masuk')
+                    ->orderByDesc('ki.jam_masuk')
+                    ->value('ki.no_rawat');
+
+                if ($noRawat === '') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tidak ada rawat inap aktif untuk no_rm ini',
+                    ], 422);
+                }
+            }
             $sttsPulang = $validated['stts_pulang'];
             $diagnosaAkhir = $validated['diagnosa_akhir'];
 
@@ -170,7 +209,7 @@ class KamarInapController extends Controller
             }
             $ttlBiaya = $lama * $tarif;
 
-            DB::table('kamar_inap')
+            $updated = DB::table('kamar_inap')
                 ->where('no_rawat', $noRawat)
                 ->where('kd_kamar', $active->kd_kamar)
                 ->where('tgl_masuk', $active->tgl_masuk)
@@ -184,6 +223,14 @@ class KamarInapController extends Controller
                     'trf_kamar' => $tarif,
                     'ttl_biaya' => $ttlBiaya,
                 ]);
+
+            if ($updated < 1) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui data kamar inap',
+                ], 422);
+            }
 
             DB::table('kamar')->where('kd_kamar', $active->kd_kamar)->update([
                 'status' => 'KOSONG',
@@ -300,7 +347,7 @@ class KamarInapController extends Controller
             DB::table('kamar_inap')->insert([
                 'no_rawat' => $noRawat,
                 'kd_kamar' => $kdKamarTujuan,
-                'trf_kamar' => (double) $tarifBaru,
+                'trf_kamar' => (float) $tarifBaru,
                 'diagnosa_awal' => (string) ($active->diagnosa_awal ?? '-'),
                 'diagnosa_akhir' => '-',
                 'tgl_masuk' => $tglPindah,

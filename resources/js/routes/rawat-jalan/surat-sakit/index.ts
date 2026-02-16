@@ -213,6 +213,7 @@ byNomor.head = (args: { no_surat: string | number } | [no_surat: string | number
 
 /**
 * @see routes/web.php:2406
+* @see routes/web.php:2388
 * @route '/rawat-jalan/surat-sakit'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -227,6 +228,7 @@ index.definition = {
 
 /**
 * @see routes/web.php:2406
+* @see routes/web.php:2388
 * @route '/rawat-jalan/surat-sakit'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -235,6 +237,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:2406
+* @see routes/web.php:2388
 * @route '/rawat-jalan/surat-sakit'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -244,6 +247,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:2406
+* @see routes/web.php:2388
 * @route '/rawat-jalan/surat-sakit'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -4,6 +4,7 @@ import club from './club'
 import peserta from './peserta'
 /**
 * @see routes/web.php:3057
+* @see routes/web.php:3039
 * @route '/pcare/kelompok/club-prolanis'
 */
 export const clubProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,6 +19,7 @@ clubProlanis.definition = {
 
 /**
 * @see routes/web.php:3057
+* @see routes/web.php:3039
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.url = (options?: RouteQueryOptions) => {
@@ -26,6 +28,7 @@ clubProlanis.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3057
+* @see routes/web.php:3039
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,6 +38,7 @@ clubProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3057
+* @see routes/web.php:3039
 * @route '/pcare/kelompok/club-prolanis'
 */
 clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,6 +48,7 @@ clubProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:3062
+* @see routes/web.php:3044
 * @route '/pcare/kelompok/kegiatan'
 */
 export const kegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -58,6 +63,7 @@ kegiatan.definition = {
 
 /**
 * @see routes/web.php:3062
+* @see routes/web.php:3044
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.url = (options?: RouteQueryOptions) => {
@@ -66,6 +72,7 @@ kegiatan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3062
+* @see routes/web.php:3044
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -75,6 +82,7 @@ kegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3062
+* @see routes/web.php:3044
 * @route '/pcare/kelompok/kegiatan'
 */
 kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -84,6 +92,7 @@ kegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:3067
+* @see routes/web.php:3049
 * @route '/pcare/kelompok/entri'
 */
 export const entri = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,6 +107,7 @@ entri.definition = {
 
 /**
 * @see routes/web.php:3067
+* @see routes/web.php:3049
 * @route '/pcare/kelompok/entri'
 */
 entri.url = (options?: RouteQueryOptions) => {
@@ -106,6 +116,7 @@ entri.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3067
+* @see routes/web.php:3049
 * @route '/pcare/kelompok/entri'
 */
 entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,6 +126,7 @@ entri.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3067
+* @see routes/web.php:3049
 * @route '/pcare/kelompok/entri'
 */
 entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -124,6 +136,7 @@ entri.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:3072
+* @see routes/web.php:3054
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 export const pesertaKegiatan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -138,6 +151,7 @@ pesertaKegiatan.definition = {
 
 /**
 * @see routes/web.php:3072
+* @see routes/web.php:3054
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.url = (options?: RouteQueryOptions) => {
@@ -146,6 +160,7 @@ pesertaKegiatan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3072
+* @see routes/web.php:3054
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -155,6 +170,7 @@ pesertaKegiatan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 
 /**
 * @see routes/web.php:3072
+* @see routes/web.php:3054
 * @route '/pcare/kelompok/peserta-kegiatan'
 */
 pesertaKegiatan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

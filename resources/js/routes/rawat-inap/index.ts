@@ -134,6 +134,7 @@ pemeriksaanRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see routes/web.php:2549
+* @see routes/web.php:2531
 * @route '/rawat-inap/bangsal'
 */
 export const bangsal = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,6 +149,7 @@ bangsal.definition = {
 
 /**
 * @see routes/web.php:2549
+* @see routes/web.php:2531
 * @route '/rawat-inap/bangsal'
 */
 bangsal.url = (options?: RouteQueryOptions) => {
@@ -156,6 +158,7 @@ bangsal.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:2549
+* @see routes/web.php:2531
 * @route '/rawat-inap/bangsal'
 */
 bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -165,6 +168,7 @@ bangsal.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:2549
+* @see routes/web.php:2531
 * @route '/rawat-inap/bangsal'
 */
 bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -174,6 +178,7 @@ bangsal.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:2552
+* @see routes/web.php:2534
 * @route '/rawat-inap/kamar'
 */
 export const kamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -188,6 +193,7 @@ kamar.definition = {
 
 /**
 * @see routes/web.php:2552
+* @see routes/web.php:2534
 * @route '/rawat-inap/kamar'
 */
 kamar.url = (options?: RouteQueryOptions) => {
@@ -196,6 +202,7 @@ kamar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:2552
+* @see routes/web.php:2534
 * @route '/rawat-inap/kamar'
 */
 kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -205,6 +212,7 @@ kamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:2552
+* @see routes/web.php:2534
 * @route '/rawat-inap/kamar'
 */
 kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -214,6 +222,7 @@ kamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:2555
+* @see routes/web.php:2537
 * @route '/rawat-inap/set-harga-kamar'
 */
 export const setHargaKamar = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -228,6 +237,7 @@ setHargaKamar.definition = {
 
 /**
 * @see routes/web.php:2555
+* @see routes/web.php:2537
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.url = (options?: RouteQueryOptions) => {
@@ -236,6 +246,7 @@ setHargaKamar.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:2555
+* @see routes/web.php:2537
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -245,6 +256,7 @@ setHargaKamar.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:2555
+* @see routes/web.php:2537
 * @route '/rawat-inap/set-harga-kamar'
 */
 setHargaKamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -254,6 +266,7 @@ setHargaKamar.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see routes/web.php:2558
+* @see routes/web.php:2540
 * @route '/rawat-inap/setting-kamar-inap'
 */
 export const settingKamarInap = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -268,6 +281,7 @@ settingKamarInap.definition = {
 
 /**
 * @see routes/web.php:2558
+* @see routes/web.php:2540
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.url = (options?: RouteQueryOptions) => {
@@ -276,6 +290,7 @@ settingKamarInap.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:2558
+* @see routes/web.php:2540
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -285,6 +300,7 @@ settingKamarInap.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 
 /**
 * @see routes/web.php:2558
+* @see routes/web.php:2540
 * @route '/rawat-inap/setting-kamar-inap'
 */
 settingKamarInap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

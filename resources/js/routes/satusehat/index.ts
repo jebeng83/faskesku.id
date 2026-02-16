@@ -5,6 +5,7 @@ import mappingAlergi from './mapping-alergi'
 import mappingObat from './mapping-obat'
 /**
 * @see routes/web.php:3283
+* @see routes/web.php:3265
 * @route '/satusehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,6 +20,7 @@ index.definition = {
 
 /**
 * @see routes/web.php:3283
+* @see routes/web.php:3265
 * @route '/satusehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -27,6 +29,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3283
+* @see routes/web.php:3265
 * @route '/satusehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,6 +39,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3283
+* @see routes/web.php:3265
 * @route '/satusehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,6 +49,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:3315
+* @see routes/web.php:3297
 * @route '/satusehat/kirim'
 */
 export const kirim = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -59,6 +64,7 @@ kirim.definition = {
 
 /**
 * @see routes/web.php:3315
+* @see routes/web.php:3297
 * @route '/satusehat/kirim'
 */
 kirim.url = (options?: RouteQueryOptions) => {
@@ -67,6 +73,7 @@ kirim.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3315
+* @see routes/web.php:3297
 * @route '/satusehat/kirim'
 */
 kirim.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -76,6 +83,7 @@ kirim.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3315
+* @see routes/web.php:3297
 * @route '/satusehat/kirim'
 */
 kirim.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -85,6 +93,7 @@ kirim.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see routes/web.php:3320
+* @see routes/web.php:3302
 * @route '/satusehat/mapping-practitioner'
 */
 export const mappingPractitioner = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -99,6 +108,7 @@ mappingPractitioner.definition = {
 
 /**
 * @see routes/web.php:3320
+* @see routes/web.php:3302
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.url = (options?: RouteQueryOptions) => {
@@ -107,6 +117,7 @@ mappingPractitioner.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3320
+* @see routes/web.php:3302
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,6 +127,7 @@ mappingPractitioner.get = (options?: RouteQueryOptions): RouteDefinition<'get'> 
 
 /**
 * @see routes/web.php:3320
+* @see routes/web.php:3302
 * @route '/satusehat/mapping-practitioner'
 */
 mappingPractitioner.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\API\KamarInapController::store
-* @see app/Http/Controllers/API/KamarInapController.php:45
+* @see app/Http/Controllers/API/KamarInapController.php:46
 * @route '/api/kamar-inap'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::store
-* @see app/Http/Controllers/API/KamarInapController.php:45
+* @see app/Http/Controllers/API/KamarInapController.php:46
 * @route '/api/kamar-inap'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::store
-* @see app/Http/Controllers/API/KamarInapController.php:45
+* @see app/Http/Controllers/API/KamarInapController.php:46
 * @route '/api/kamar-inap'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::checkout
-* @see app/Http/Controllers/API/KamarInapController.php:130
+* @see app/Http/Controllers/API/KamarInapController.php:131
 * @route '/api/kamar-inap/checkout'
 */
 export const checkout = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -50,7 +50,7 @@ checkout.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::checkout
-* @see app/Http/Controllers/API/KamarInapController.php:130
+* @see app/Http/Controllers/API/KamarInapController.php:131
 * @route '/api/kamar-inap/checkout'
 */
 checkout.url = (options?: RouteQueryOptions) => {
@@ -59,7 +59,7 @@ checkout.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::checkout
-* @see app/Http/Controllers/API/KamarInapController.php:130
+* @see app/Http/Controllers/API/KamarInapController.php:131
 * @route '/api/kamar-inap/checkout'
 */
 checkout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -69,7 +69,7 @@ checkout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::pindah
-* @see app/Http/Controllers/API/KamarInapController.php:225
+* @see app/Http/Controllers/API/KamarInapController.php:272
 * @route '/api/kamar-inap/pindah'
 */
 export const pindah = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -84,7 +84,7 @@ pindah.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::pindah
-* @see app/Http/Controllers/API/KamarInapController.php:225
+* @see app/Http/Controllers/API/KamarInapController.php:272
 * @route '/api/kamar-inap/pindah'
 */
 pindah.url = (options?: RouteQueryOptions) => {
@@ -93,7 +93,7 @@ pindah.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::pindah
-* @see app/Http/Controllers/API/KamarInapController.php:225
+* @see app/Http/Controllers/API/KamarInapController.php:272
 * @route '/api/kamar-inap/pindah'
 */
 pindah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -103,7 +103,7 @@ pindah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::gabung
-* @see app/Http/Controllers/API/KamarInapController.php:347
+* @see app/Http/Controllers/API/KamarInapController.php:394
 * @route '/api/kamar-inap/gabung'
 */
 export const gabung = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -118,7 +118,7 @@ gabung.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::gabung
-* @see app/Http/Controllers/API/KamarInapController.php:347
+* @see app/Http/Controllers/API/KamarInapController.php:394
 * @route '/api/kamar-inap/gabung'
 */
 gabung.url = (options?: RouteQueryOptions) => {
@@ -127,7 +127,7 @@ gabung.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::gabung
-* @see app/Http/Controllers/API/KamarInapController.php:347
+* @see app/Http/Controllers/API/KamarInapController.php:394
 * @route '/api/kamar-inap/gabung'
 */
 gabung.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -137,7 +137,7 @@ gabung.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
-* @see app/Http/Controllers/API/KamarInapController.php:431
+* @see app/Http/Controllers/API/KamarInapController.php:478
 * @route '/api/kamar-inap/update-hari-rawat'
 */
 export const updateHariRawat = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -152,7 +152,7 @@ updateHariRawat.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
-* @see app/Http/Controllers/API/KamarInapController.php:431
+* @see app/Http/Controllers/API/KamarInapController.php:478
 * @route '/api/kamar-inap/update-hari-rawat'
 */
 updateHariRawat.url = (options?: RouteQueryOptions) => {
@@ -161,7 +161,7 @@ updateHariRawat.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::updateHariRawat
-* @see app/Http/Controllers/API/KamarInapController.php:431
+* @see app/Http/Controllers/API/KamarInapController.php:478
 * @route '/api/kamar-inap/update-hari-rawat'
 */
 updateHariRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -171,7 +171,7 @@ updateHariRawat.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
-* @see app/Http/Controllers/API/KamarInapController.php:525
+* @see app/Http/Controllers/API/KamarInapController.php:572
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 export const hapusDataSalah = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -186,7 +186,7 @@ hapusDataSalah.definition = {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
-* @see app/Http/Controllers/API/KamarInapController.php:525
+* @see app/Http/Controllers/API/KamarInapController.php:572
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 hapusDataSalah.url = (options?: RouteQueryOptions) => {
@@ -195,7 +195,7 @@ hapusDataSalah.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\API\KamarInapController::hapusDataSalah
-* @see app/Http/Controllers/API/KamarInapController.php:525
+* @see app/Http/Controllers/API/KamarInapController.php:572
 * @route '/api/kamar-inap/hapus-data-salah'
 */
 hapusDataSalah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

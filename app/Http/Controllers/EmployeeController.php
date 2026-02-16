@@ -11,6 +11,72 @@ use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
+    public function photo(Employee $employee)
+    {
+        $raw = (string) ($employee->photo ?? '');
+        $raw = trim(str_replace('\\', '/', $raw));
+        if ($raw === '' || str_contains($raw, '..') || str_ends_with($raw, '/')) {
+            return response('Not Found', 404);
+        }
+
+        $candidates = [];
+        $add = function (?string $p) use (&$candidates) {
+            $p = $p ? trim($p) : '';
+            $p = ltrim($p, '/');
+            if ($p === '') return;
+            if (! in_array($p, $candidates, true)) $candidates[] = $p;
+        };
+
+        if (str_starts_with($raw, '/storage/')) {
+            $add(substr($raw, strlen('/storage/')));
+        }
+        if (str_starts_with($raw, 'storage/')) {
+            $add(substr($raw, strlen('storage/')));
+        }
+        if (str_starts_with($raw, 'public/')) {
+            $add(substr($raw, strlen('public/')));
+        }
+
+        $add($raw);
+
+        $normalized = preg_replace('~^(public/|storage/)~', '', $raw);
+        $add($normalized);
+
+        if (str_starts_with($normalized, 'pages/pegawai/photo/')) {
+            $tail = substr($normalized, strlen('pages/pegawai/photo/'));
+            $add('pages/pegawai/photo/'.$tail);
+            $add('pegawai/'.$tail);
+            $add('pegawai/photo/'.$tail);
+        }
+
+        if (! str_contains($normalized, '/')) {
+            $add('pegawai/'.$normalized);
+            $add('pegawai/photo/'.$normalized);
+        }
+
+        $disk = Storage::disk('public');
+        foreach ($candidates as $rel) {
+            if (! $disk->exists($rel)) continue;
+            $full = $disk->path($rel);
+            $mime = $disk->mimeType($rel) ?: 'application/octet-stream';
+            return response()->file($full, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        foreach ($candidates as $rel) {
+            $publicRel = preg_replace('~^(storage/)~', '', $rel);
+            $full = public_path($publicRel);
+            if (! is_file($full)) continue;
+            return response()->file($full, [
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        return response('Not Found', 404);
+    }
+
     /**
      * Display a listing of the resource.
      */

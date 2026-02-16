@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see routes/web.php:3144
+* @see routes/web.php:3126
 * @route '/pcare/api/prolanis/dm/test'
 */
 export const test = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,6 +16,7 @@ test.definition = {
 
 /**
 * @see routes/web.php:3144
+* @see routes/web.php:3126
 * @route '/pcare/api/prolanis/dm/test'
 */
 test.url = (options?: RouteQueryOptions) => {
@@ -23,6 +25,7 @@ test.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see routes/web.php:3144
+* @see routes/web.php:3126
 * @route '/pcare/api/prolanis/dm/test'
 */
 test.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -32,6 +35,7 @@ test.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see routes/web.php:3144
+* @see routes/web.php:3126
 * @route '/pcare/api/prolanis/dm/test'
 */
 test.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
