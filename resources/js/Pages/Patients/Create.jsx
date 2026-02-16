@@ -51,6 +51,7 @@ export default function Create() {
     const [showSukuBangsaModal, setShowSukuBangsaModal] = useState(false);
     const [showCacatFisikModal, setShowCacatFisikModal] = useState(false);
     const [usePatientAddress, setUsePatientAddress] = useState(false);
+    const [ageYears, setAgeYears] = useState("");
 
     // Address states - now handled by WilayahSearchableSelect components
 
@@ -144,12 +145,35 @@ export default function Create() {
                     ]);
                 if (perusahaanRes.ok) {
                     const r = await perusahaanRes.json();
+                    const perusahaanData = r.data || [];
                     setPerusahaanOptions(
-                        (r.data || []).map((d) => ({
+                        perusahaanData.map((d) => ({
                             value: d.value,
                             label: d.label,
                         }))
                     );
+                    if (perusahaanData.length) {
+                        const firstValid = perusahaanData.find((d) => {
+                            const v = String(d?.value ?? "");
+                            return v && v !== "-" && v !== "0";
+                        });
+                        const firstValue = String(
+                            firstValid?.value ?? perusahaanData[0]?.value ?? ""
+                        );
+                        setData((prev) => {
+                            const current = prev.perusahaan_pasien;
+                            const exists = perusahaanData.some(
+                                (d) => String(d?.value ?? "") === String(current)
+                            );
+                            if (!current || current === "-" || !exists) {
+                                return {
+                                    ...prev,
+                                    perusahaan_pasien: firstValue,
+                                };
+                            }
+                            return prev;
+                        });
+                    }
                 }
                 if (sukuRes.ok) {
                     const r = await sukuRes.json();
@@ -233,6 +257,71 @@ export default function Create() {
             ? errors[fieldName][0]
             : errors[fieldName];
     };
+
+    const formatDateInputLocal = (date) => {
+        if (!date) return "";
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const parseDateFromInput = (value) => {
+        if (!value) return null;
+        const [year, month, day] = value.split("-").map((part) => Number(part));
+        if (!year || !month || !day) return null;
+        const date = new Date(year, month - 1, day);
+        if (Number.isNaN(date.getTime())) return null;
+        return date;
+    };
+
+    const calculateAgeYears = (birthDate) => {
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            years -= 1;
+        }
+        return years < 0 ? 0 : years;
+    };
+
+    const buildBirthDateFromAge = (age) => {
+        const today = new Date();
+        const year = today.getFullYear() - age;
+        return new Date(year, today.getMonth(), today.getDate());
+    };
+
+    const handleBirthDateChange = (value) => {
+        setData("tgl_lahir", value);
+    };
+
+    const handleAgeChange = (value) => {
+        const normalized = String(value || "").replace(/[^\d]/g, "");
+        setAgeYears(normalized);
+        if (!normalized) {
+            setData("tgl_lahir", "");
+            return;
+        }
+        const ageNumber = parseInt(normalized, 10);
+        if (Number.isNaN(ageNumber)) return;
+        const birthDate = buildBirthDateFromAge(ageNumber);
+        setData("tgl_lahir", formatDateInputLocal(birthDate));
+    };
+
+    useEffect(() => {
+        if (!data.tgl_lahir) {
+            setAgeYears("");
+            return;
+        }
+        const parsed = parseDateFromInput(data.tgl_lahir);
+        if (!parsed) {
+            setAgeYears("");
+            return;
+        }
+        const computedAge = calculateAgeYears(parsed);
+        setAgeYears(String(computedAge));
+    }, [data.tgl_lahir]);
 
     
 
@@ -822,7 +911,7 @@ export default function Create() {
                                     </h3>
                                 </div>
                                 <div className="relative p-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                                 Nama Lengkap *
@@ -1016,8 +1105,7 @@ export default function Create() {
                                                 name="tgl_lahir"
                                                 value={data.tgl_lahir}
                                                 onChange={(e) =>
-                                                    setData(
-                                                        "tgl_lahir",
+                                                    handleBirthDateChange(
                                                         e.target.value
                                                     )
                                                 }
@@ -1030,6 +1118,25 @@ export default function Create() {
                                                     )}
                                                 </p>
                                             )}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Umur (Tahun)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="umur"
+                                                value={ageYears}
+                                                min="0"
+                                                onChange={(e) =>
+                                                    handleAgeChange(
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                placeholder="Masukkan umur"
+                                            />
                                         </div>
 
                                         <div>
@@ -1084,76 +1191,80 @@ export default function Create() {
                                 </div>
                                 <div className="relative p-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Alamat *
-                                            </label>
-                                            <textarea
-                                                name="alamat"
-                                                value={data.alamat}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "alamat",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                rows={3}
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Masukkan alamat lengkap"
-                                            />
-                                            {getErrorMessage("alamat") && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {getErrorMessage("alamat")}
-                                                </p>
-                                            )}
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Alamat *
+                                                </label>
+                                                <textarea
+                                                    name="alamat"
+                                                    value={data.alamat}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "alamat",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    rows={3}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan alamat lengkap"
+                                                />
+                                                {getErrorMessage("alamat") && (
+                                                    <p className="mt-1 text-sm text-red-600">
+                                                        {getErrorMessage("alamat")}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                No. Telepon
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="no_tlp"
-                                                value={data.no_tlp}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "no_tlp",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Masukkan nomor telepon"
-                                            />
-                                            {getErrorMessage("no_tlp") && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {getErrorMessage("no_tlp")}
-                                                </p>
-                                            )}
-                                        </div>
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    No. Telepon
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="no_tlp"
+                                                    value={data.no_tlp}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "no_tlp",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan nomor telepon"
+                                                />
+                                                {getErrorMessage("no_tlp") && (
+                                                    <p className="mt-1 text-sm text-red-600">
+                                                        {getErrorMessage("no_tlp")}
+                                                    </p>
+                                                )}
+                                            </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Email
-                                            </label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={data.email}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "email",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                placeholder="Masukkan email"
-                                            />
-                                            {getErrorMessage("email") && (
-                                                <p className="mt-1 text-sm text-red-600">
-                                                    {getErrorMessage("email")}
-                                                </p>
-                                            )}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Email
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={data.email}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            "email",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan email"
+                                                />
+                                                {getErrorMessage("email") && (
+                                                    <p className="mt-1 text-sm text-red-600">
+                                                        {getErrorMessage("email")}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1613,7 +1724,7 @@ export default function Create() {
                                             error={getErrorMessage("kd_pj")}
                                             required={true}
                                             onAdd={handleAddPenjab}
-                                            addButtonText="Tambah Penjab"
+                                            addButtonText="+"
                                         />
 
                                         <div className="md:col-span-2">

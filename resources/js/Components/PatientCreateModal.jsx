@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useForm } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -50,6 +50,8 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         autoClose: false,
     });
     const [usePatientAddress, setUsePatientAddress] = useState(false);
+    const [ageYears, setAgeYears] = useState("");
+    const ageChangeOrigin = useRef(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         no_rkm_medis: "",
@@ -74,7 +76,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
         alamatpj: "",
         kode_wilayah: "",
         email: "",
-        perusahaan_pasien: "-",
+        perusahaan_pasien: "",
         suku_bangsa: 1,
         bahasa_pasien: 1,
         cacat_fisik: 1,
@@ -86,6 +88,12 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setData("alamatpj", data.alamat || "");
         }
     }, [usePatientAddress, data.alamat]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setAgeYears("");
+        }
+    }, [isOpen]);
 
     // Load next no_rkm_medis on component mount
     useEffect(() => {
@@ -190,6 +198,25 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                         label: d.label,
                     }))
                 );
+                if (perusahaanData.length) {
+                    const firstValid = perusahaanData.find((d) => {
+                        const v = String(d?.value ?? "");
+                        return v && v !== "-" && v !== "0";
+                    });
+                    const firstValue = String(
+                        firstValid?.value ?? perusahaanData[0]?.value ?? ""
+                    );
+                    setData((prev) => {
+                        const current = prev.perusahaan_pasien;
+                        const exists = perusahaanData.some(
+                            (d) => String(d?.value ?? "") === String(current)
+                        );
+                        if (!current || current === "-" || !exists) {
+                            return { ...prev, perusahaan_pasien: firstValue };
+                        }
+                        return prev;
+                    });
+                }
                 setSukuOptions(
                     sukuData.map((d) => ({ value: d.value, label: d.label }))
                 );
@@ -279,6 +306,106 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             ? errors[fieldName][0]
             : errors[fieldName];
     };
+
+    const getRequestErrorMessage = (error) => {
+        const data = error?.response?.data;
+        const status = error?.response?.status;
+        const metaMessage =
+            data?.metaData?.message ||
+            data?.message ||
+            data?.error ||
+            error?.message;
+        const validation = data?.errors;
+        if (validation && typeof validation === "object") {
+            const items = Object.keys(validation).flatMap((key) => {
+                const val = validation[key];
+                const text = Array.isArray(val) ? val[0] : val;
+                if (!text) return [];
+                return [`${key}: ${text}`];
+            });
+            if (items.length) {
+                return `Validasi gagal:\n- ${items.join("\n- ")}`;
+            }
+        }
+        if (metaMessage && status) {
+            return `${metaMessage} (HTTP ${status})`;
+        }
+        return metaMessage || "Gagal memproses penyimpanan pasien.";
+    };
+
+    const formatDateInputLocal = (date) => {
+        if (!date) return "";
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const parseDateFromInput = (value) => {
+        if (!value) return null;
+        const [year, month, day] = value.split("-").map((part) => Number(part));
+        if (!year || !month || !day) return null;
+        const date = new Date(year, month - 1, day);
+        if (Number.isNaN(date.getTime())) return null;
+        return date;
+    };
+
+    const calculateAgeYears = (birthDate) => {
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            years -= 1;
+        }
+        return years < 0 ? 0 : years;
+    };
+
+    const buildBirthDateFromAge = (age) => {
+        const today = new Date();
+        const year = today.getFullYear() - age;
+        return new Date(year, today.getMonth(), today.getDate());
+    };
+
+    const handleBirthDateChange = (value) => {
+        ageChangeOrigin.current = "birth";
+        setData("tgl_lahir", value);
+    };
+
+    const handleAgeChange = (value) => {
+        const normalized = String(value || "").replace(/[^\d]/g, "");
+        ageChangeOrigin.current = "age";
+        setAgeYears(normalized);
+        if (!normalized) {
+            setData("tgl_lahir", "");
+            return;
+        }
+        const ageNumber = parseInt(normalized, 10);
+        if (Number.isNaN(ageNumber)) return;
+        const birthDate = buildBirthDateFromAge(ageNumber);
+        setData("tgl_lahir", formatDateInputLocal(birthDate));
+    };
+
+    useEffect(() => {
+        if (!data.tgl_lahir) {
+            if (ageChangeOrigin.current !== "age") {
+                setAgeYears("");
+            }
+            return;
+        }
+        const parsed = parseDateFromInput(data.tgl_lahir);
+        if (!parsed) {
+            if (ageChangeOrigin.current !== "age") {
+                setAgeYears("");
+            }
+            return;
+        }
+        const computedAge = calculateAgeYears(parsed);
+        if (ageChangeOrigin.current !== "age") {
+            setAgeYears(String(computedAge));
+        }
+        ageChangeOrigin.current = null;
+    }, [data.tgl_lahir]);
 
 
     const handleAddPenjab = () => {
@@ -692,11 +819,15 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                 }
                             } catch (_e) {}
                         }
-                        let errorMessage = "Terjadi kesalahan:\n";
-                        if (typeof errors === 'object' && errors !== null) {
+                        let errorMessage = "Validasi gagal:\n";
+                        if (typeof errors === "object" && errors !== null) {
                             Object.keys(errors).forEach((key) => {
-                                const message = Array.isArray(errors[key]) ? errors[key][0] : errors[key];
-                                errorMessage += `- ${message}\n`;
+                                const message = Array.isArray(errors[key])
+                                    ? errors[key][0]
+                                    : errors[key];
+                                if (message) {
+                                    errorMessage += `- ${key}: ${message}\n`;
+                                }
                             });
                         } else {
                             errorMessage += String(errors);
@@ -717,7 +848,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
             setAlertConfig({
                 type: "error",
                 title: "Kesalahan",
-                message: "Gagal memproses penyimpanan pasien.",
+                message: getRequestErrorMessage(_e1),
                 autoClose: false,
             });
             setShowAlert(true);
@@ -824,7 +955,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             <IdentificationIcon className="w-5 h-5 text-blue-500" />
                                             Informasi Dasar
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     No. Rekam Medis
@@ -1000,7 +1131,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                 error={getErrorMessage("kd_pj")}
                                                 required={true}
                                                 onAdd={handleAddPenjab}
-                                                addButtonText="Tambah Penjab"
+                                                addButtonText="+"
                                             />
 
                                             <div>
@@ -1069,8 +1200,7 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                     name="tgl_lahir"
                                                     value={data.tgl_lahir}
                                                     onChange={(e) =>
-                                                        setData(
-                                                            "tgl_lahir",
+                                                        handleBirthDateChange(
                                                             e.target.value
                                                         )
                                                     }
@@ -1085,6 +1215,25 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                                         )}
                                                     </p>
                                                 )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Umur (Tahun)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    name="umur"
+                                                    value={ageYears}
+                                                    min="0"
+                                                    onChange={(e) =>
+                                                        handleAgeChange(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan umur"
+                                                />
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1104,107 +1253,144 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             Informasi Kontak
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Alamat <span className="text-red-600 dark:text-red-400">*</span>
-                                                </label>
-                                                <textarea
-                                                    name="alamat"
-                                                    value={data.alamat}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "alamat",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    rows={3}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan alamat lengkap"
-                                                />
-                                                {getErrorMessage("alamat") && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "alamat"
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="md:col-span-2">
-                                                <WilayahSearchableSelect
-                                                    label="Pilih Kelurahan/Desa"
-                                                    name="kode_wilayah"
-                                                    value={data.kode_wilayah}
-                                                    onChange={handleWilayahChange}
-                                                    level="village"
-                                                    placeholder="Pilih atau cari kelurahan/desa"
-                                                    error={getErrorMessage(
-                                                        "kode_wilayah"
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                        Alamat <span className="text-red-600 dark:text-red-400">*</span>
+                                                    </label>
+                                                    <textarea
+                                                        name="alamat"
+                                                        value={data.alamat}
+                                                        onChange={(e) =>
+                                                            setData(
+                                                                "alamat",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        rows={2}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                        placeholder="Masukkan alamat lengkap"
+                                                    />
+                                                    {getErrorMessage("alamat") && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "alamat"
+                                                            )}
+                                                        </p>
                                                     )}
-                                                    required={true}
-                                                    searchPlaceholder="Ketik nama desa/kecamatan/kabupaten untuk mempersempit hasil"
-                                                    noOptionsText="Tidak ada kelurahan/desa ditemukan"
-                                                    loadingText="Memuat data kelurahan/desa..."
-                                                />
-                                                <AddressDisplay
-                                                    selectedWilayah={
-                                                        selectedWilayah
-                                                    }
-                                                    loading={loadingWilayah}
-                                                    className="mt-2"
-                                                />
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32 shrink-0">
+                                                            No. Telepon <span className="text-red-600 dark:text-red-400">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="no_tlp"
+                                                            value={data.no_tlp}
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    "no_tlp",
+                                                                    e.target.value.replace(/[^0-9]/g, "")
+                                                                )
+                                                            }
+                                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                            placeholder="Masukkan nomor telepon"
+                                                        />
+                                                    </div>
+                                                    {getErrorMessage("no_tlp") && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "no_tlp"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32 shrink-0">
+                                                            Nama Ibu <span className="text-red-600 dark:text-red-400">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            name="nm_ibu"
+                                                            value={data.nm_ibu}
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    "nm_ibu",
+                                                                    e.target.value
+                                                                )
+                                                            }
+                                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                            placeholder="Masukkan nama ibu"
+                                                        />
+                                                    </div>
+                                                    {getErrorMessage("nm_ibu") && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "nm_ibu"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32 shrink-0">
+                                                            Email
+                                                        </label>
+                                                        <input
+                                                            type="email"
+                                                            name="email"
+                                                            value={data.email}
+                                                            onChange={(e) =>
+                                                                setData(
+                                                                    "email",
+                                                                    e.target.value
+                                                                )
+                                                            }
+                                                            className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                            placeholder="Masukkan email"
+                                                        />
+                                                    </div>
+                                                    {getErrorMessage("email") && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            {getErrorMessage(
+                                                                "email"
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
                                             </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    No. Telepon <span className="text-red-600 dark:text-red-400">*</span>
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="no_tlp"
-                                                    value={data.no_tlp}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "no_tlp",
-                                                            e.target.value.replace(/[^0-9]/g, "")
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan nomor telepon"
-                                                />
-                                                {getErrorMessage("no_tlp") && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "no_tlp"
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <WilayahSearchableSelect
+                                                        label="Pilih Kelurahan/Desa"
+                                                        name="kode_wilayah"
+                                                        value={data.kode_wilayah}
+                                                        onChange={handleWilayahChange}
+                                                        level="village"
+                                                        placeholder="Pilih atau cari kelurahan/desa"
+                                                        error={getErrorMessage(
+                                                            "kode_wilayah"
                                                         )}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Email
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    value={data.email}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "email",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan email"
-                                                />
-                                                {getErrorMessage("email") && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "email"
-                                                        )}
-                                                    </p>
-                                                )}
+                                                        required={true}
+                                                        searchPlaceholder="Ketik nama desa/kecamatan/kabupaten untuk mempersempit hasil"
+                                                        noOptionsText="Tidak ada kelurahan/desa ditemukan"
+                                                        loadingText="Memuat data kelurahan/desa..."
+                                                    />
+                                                    <AddressDisplay
+                                                        selectedWilayah={
+                                                            selectedWilayah
+                                                        }
+                                                        loading={loadingWilayah}
+                                                        className="mt-2"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -1703,32 +1889,6 @@ export default function PatientCreateModal({ isOpen, onClose, onSuccess }) {
                                             Informasi Keluarga
                                         </h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                    Nama Ibu *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="nm_ibu"
-                                                    value={data.nm_ibu}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "nm_ibu",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                                    placeholder="Masukkan nama ibu"
-                                                />
-                                                {getErrorMessage("nm_ibu") && (
-                                                    <p className="mt-1 text-xs text-red-600">
-                                                        {getErrorMessage(
-                                                            "nm_ibu"
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
-
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                     Nama Keluarga
