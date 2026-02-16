@@ -61,6 +61,10 @@ export default function Index(props = {}) {
         return merged;
     }, [sttsPulangOptions]);
 
+    const checkoutSttsPulangOptions = useMemo(() => {
+        return normalizedSttsPulangOptions.filter((v) => v !== '-' && v !== 'Pindah Kamar');
+    }, [normalizedSttsPulangOptions]);
+
     const selectedIsPulang = useMemo(() => {
         const tgl = selectedRow?.tgl_keluar;
         const byDate = !!tgl && tgl !== '0000-00-00';
@@ -236,7 +240,15 @@ export default function Index(props = {}) {
 
     const parseApiError = (error) => {
         const msg = error?.response?.data?.message;
-        if (typeof msg === 'string' && msg.trim() !== '') return msg;
+        const errors = error?.response?.data?.errors;
+        if (errors && typeof errors === 'object') {
+            const firstKey = Object.keys(errors)[0];
+            const firstVal = firstKey ? errors[firstKey] : null;
+            if (Array.isArray(firstVal) && typeof firstVal[0] === 'string' && firstVal[0].trim() !== '') {
+                return firstVal[0];
+            }
+        }
+        if (typeof msg === 'string' && msg.trim() !== '' && msg.trim().toLowerCase() !== 'validasi gagal') return msg;
         return 'Terjadi kesalahan saat memproses permintaan.';
     };
 
@@ -255,7 +267,10 @@ export default function Index(props = {}) {
     };
 
     const openCheckOut = (row) => {
-        setFormCheckOut({ stts_pulang: 'Atas Persetujuan Dokter', diagnosa_akhir: '' });
+        setFormCheckOut({
+            stts_pulang: 'Atas Persetujuan Dokter',
+            diagnosa_akhir: row?.diagnosa_akhir || row?.diagnosa_awal || '',
+        });
         setModal({ type: 'checkout', row });
         setActionError('');
         setActionSuccess('');
@@ -1146,7 +1161,7 @@ export default function Index(props = {}) {
                     <div>
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Status Pulang</div>
                         <SearchableSelect
-                            options={normalizedSttsPulangOptions}
+                            options={checkoutSttsPulangOptions}
                             value={formCheckOut.stts_pulang}
                             onChange={(val) => setFormCheckOut((s) => ({ ...s, stts_pulang: val }))}
                             placeholder="Pilih status pulang"
@@ -1164,6 +1179,9 @@ export default function Index(props = {}) {
                             searchPlaceholder="Cari penyakit..."
                             className="w-full"
                         />
+                        {!formCheckOut.diagnosa_akhir ? (
+                            <div className="mt-1 text-xs text-red-700 dark:text-red-400">Diagnosa akhir wajib diisi.</div>
+                        ) : null}
                     </div>
                     {actionError ? <div className="text-sm text-red-700 dark:text-red-400">{actionError}</div> : null}
                     <div className="flex justify-end gap-2 pt-2">
@@ -1178,7 +1196,7 @@ export default function Index(props = {}) {
                         <button
                             type="button"
                             onClick={handleCheckOut}
-                            disabled={busy}
+                            disabled={busy || !formCheckOut.stts_pulang || !formCheckOut.diagnosa_akhir}
                             className={`h-10 px-4 rounded-md text-sm font-semibold text-white ${busy ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                         >
                             Proses

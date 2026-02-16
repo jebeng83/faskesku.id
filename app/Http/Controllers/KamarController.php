@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kamar;
 use App\Models\Bangsal;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
@@ -169,19 +170,38 @@ class KamarController extends Controller
     {
         $kamar = Kamar::where('kd_kamar', $id)->firstOrFail();
 
-        // Check if kamar has kamar_inap records
-        if ($kamar->kamarInap()->count() > 0) {
+        $activeInapExists = \Illuminate\Support\Facades\DB::table('kamar_inap')
+            ->where('kd_kamar', $kamar->kd_kamar)
+            ->where('stts_pulang', '-')
+            ->where(function ($w) {
+                $w->whereNull('tgl_keluar')->orWhere('tgl_keluar', '0000-00-00');
+            })
+            ->exists();
+        if ($kamar->status === 'ISI' || $activeInapExists) {
             return redirect()->back()
-                ->with('error', 'Tidak dapat menghapus kamar yang masih memiliki data rawat inap');
+                ->with('error', 'Tidak dapat menghapus kamar yang sedang dipakai rawat inap');
         }
 
-        // Check if kamar has set_harga_kamar records
-        if ($kamar->setHargaKamar()->count() > 0) {
-            return redirect()->back()
-                ->with('error', 'Tidak dapat menghapus kamar yang masih memiliki setting harga kamar');
-        }
+        \Illuminate\Support\Facades\DB::table('set_harga_kamar')->where('kd_kamar', $kamar->kd_kamar)->delete();
+        \Illuminate\Support\Facades\DB::table('satu_sehat_mapping_lokasi_ranap')->where('kd_kamar', $kamar->kd_kamar)->delete();
 
-        $kamar->delete();
+        try {
+            $kamar->delete();
+        } catch (QueryException $e) {
+            $sqlState = (string) ($e->errorInfo[0] ?? '');
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+            if ($sqlState === '23000' && $driverCode === 1451) {
+                $kamar->update([
+                    'status' => 'KOSONG',
+                    'statusdata' => '0',
+                ]);
+
+                return redirect()->route('kamar.index')
+                    ->with('success', 'Kamar tidak bisa dihapus karena ada data terkait. Kamar dinonaktifkan.');
+            }
+
+            throw $e;
+        }
 
         return redirect()->route('kamar.index')
             ->with('success', 'Data kamar berhasil dihapus.');
@@ -263,11 +283,15 @@ class KamarController extends Controller
         $kd_bangsal = trim((string) $request->query('kd_bangsal', ''));
         $status = trim((string) $request->query('status', ''));
         $kelas = trim((string) $request->query('kelas', ''));
+        $statusdata = trim((string) $request->query('statusdata', '1'));
 
         $tbl = \Illuminate\Support\Facades\DB::table('kamar as k')
             ->leftJoin('bangsal as b', 'b.kd_bangsal', '=', 'k.kd_bangsal')
             ->select('k.kd_kamar', 'k.kd_bangsal', 'b.nm_bangsal', 'k.trf_kamar', 'k.status', 'k.kelas', 'k.statusdata');
 
+        if ($statusdata !== '' && $statusdata !== 'all') {
+            $tbl->where('k.statusdata', $statusdata);
+        }
         if ($kd_bangsal !== '') {
             $tbl->where('k.kd_bangsal', $kd_bangsal);
         }
@@ -342,21 +366,47 @@ class KamarController extends Controller
     {
         $kamar = Kamar::where('kd_kamar', $id)->firstOrFail();
 
-        if ($kamar->kamarInap()->count() > 0) {
+        $activeInapExists = \Illuminate\Support\Facades\DB::table('kamar_inap')
+            ->where('kd_kamar', $kamar->kd_kamar)
+            ->where('stts_pulang', '-')
+            ->where(function ($w) {
+                $w->whereNull('tgl_keluar')->orWhere('tgl_keluar', '0000-00-00');
+            })
+            ->exists();
+        if ($kamar->status === 'ISI' || $activeInapExists) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Tidak dapat menghapus kamar yang masih memiliki data rawat inap',
+                'message' => 'Tidak dapat menghapus kamar yang sedang dipakai rawat inap',
             ], 422);
         }
 
-        if ($kamar->setHargaKamar()->count() > 0) {
-            return response()->json([
-                'ok' => false,
-                'message' => 'Tidak dapat menghapus kamar yang masih memiliki setting harga kamar',
-            ], 422);
-        }
+        \Illuminate\Support\Facades\DB::table('set_harga_kamar')->where('kd_kamar', $kamar->kd_kamar)->delete();
+        \Illuminate\Support\Facades\DB::table('satu_sehat_mapping_lokasi_ranap')->where('kd_kamar', $kamar->kd_kamar)->delete();
 
-        $kamar->delete();
+        try {
+            $kamar->delete();
+        } catch (QueryException $e) {
+            $sqlState = (string) ($e->errorInfo[0] ?? '');
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+            if ($sqlState === '23000' && $driverCode === 1451) {
+                $kamar->update([
+                    'status' => 'KOSONG',
+                    'statusdata' => '0',
+                ]);
+
+                return response()->json([
+                    'ok' => true,
+                    'message' => 'Kamar tidak bisa dihapus karena ada data terkait. Kamar dinonaktifkan.',
+                    'data' => [
+                        'kd_kamar' => $kamar->kd_kamar,
+                        'status' => 'KOSONG',
+                        'statusdata' => '0',
+                    ],
+                ]);
+            }
+
+            throw $e;
+        }
 
         return response()->json([
             'ok' => true,
