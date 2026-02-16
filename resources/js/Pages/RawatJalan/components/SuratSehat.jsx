@@ -242,7 +242,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
 
     useEffect(() => {
         let active = true;
-        QRCode.toDataURL(ttdQrText, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+        QRCode.toDataURL(ttdQrText, { width: 384, margin: 1, errorCorrectionLevel: 'M' })
             .then((url) => {
                 if (active) setTtdQrDataUrl(url);
             })
@@ -262,7 +262,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             setValQrDataUrl('');
             return;
         }
-        QRCode.toDataURL(url, { width: 256, margin: 1, errorCorrectionLevel: 'M' })
+        QRCode.toDataURL(url, { width: 384, margin: 1, errorCorrectionLevel: 'M' })
             .then((data) => { if (active) setValQrDataUrl(data); })
             .catch(() => { if (active) setValQrDataUrl(''); });
         return () => { active = false; };
@@ -734,7 +734,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 <div className="w-[86mm] text-xs print:text-[10px]">
                                                     <div className="text-center">
                                                         <div className="print-text-black">Validasi Dokumen</div>
-                                                        <div className="mt-1.5 w-24 h-24 print:w-20 print:h-20 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
                                                             {valQrDataUrl ? (
                                                                 <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
                                                             ) : (
@@ -747,7 +747,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalsurat)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-1.5 w-24 h-24 print:w-20 print:h-20 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
                                                             {ttdQrDataUrl ? (
                                                                 <img src={ttdQrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (
