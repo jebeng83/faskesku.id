@@ -190,7 +190,9 @@ class KamarController extends Controller
         } catch (QueryException $e) {
             $sqlState = (string) ($e->errorInfo[0] ?? '');
             $driverCode = (int) ($e->errorInfo[1] ?? 0);
-            if ($sqlState === '23000' && $driverCode === 1451) {
+            $isFkConstraint = $sqlState === '23000'
+                && ($driverCode === 1451 || str_contains(strtolower($e->getMessage()), 'foreign key constraint'));
+            if ($isFkConstraint) {
                 $kamar->update([
                     'status' => 'KOSONG',
                     'statusdata' => '0',
@@ -388,7 +390,9 @@ class KamarController extends Controller
         } catch (QueryException $e) {
             $sqlState = (string) ($e->errorInfo[0] ?? '');
             $driverCode = (int) ($e->errorInfo[1] ?? 0);
-            if ($sqlState === '23000' && $driverCode === 1451) {
+            $isFkConstraint = $sqlState === '23000'
+                && ($driverCode === 1451 || str_contains(strtolower($e->getMessage()), 'foreign key constraint'));
+            if ($isFkConstraint) {
                 $kamar->update([
                     'status' => 'KOSONG',
                     'statusdata' => '0',
