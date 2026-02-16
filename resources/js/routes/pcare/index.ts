@@ -19,8 +19,7 @@ import resend from './resend'
 import massSend from './mass-send'
 import setting from './setting'
 /**
-* @see routes/web.php:2873
-* @see routes/web.php:2855
+* @see routes/web.php:2874
 * @route '/pcare'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +33,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2873
-* @see routes/web.php:2855
+* @see routes/web.php:2874
 * @route '/pcare'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -43,8 +41,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2873
-* @see routes/web.php:2855
+* @see routes/web.php:2874
 * @route '/pcare'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,8 +50,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2873
-* @see routes/web.php:2855
+* @see routes/web.php:2874
 * @route '/pcare'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,8 +59,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2892
-* @see routes/web.php:2874
+* @see routes/web.php:2893
 * @route '/pcare/monitoring'
 */
 export const monitoring = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -78,8 +73,7 @@ monitoring.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2892
-* @see routes/web.php:2874
+* @see routes/web.php:2893
 * @route '/pcare/monitoring'
 */
 monitoring.url = (options?: RouteQueryOptions) => {
@@ -87,8 +81,7 @@ monitoring.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2892
-* @see routes/web.php:2874
+* @see routes/web.php:2893
 * @route '/pcare/monitoring'
 */
 monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,8 +90,7 @@ monitoring.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2892
-* @see routes/web.php:2874
+* @see routes/web.php:2893
 * @route '/pcare/monitoring'
 */
 monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -107,8 +99,7 @@ monitoring.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2900
-* @see routes/web.php:2882
+* @see routes/web.php:2901
 * @route '/pcare/data-pendaftaran'
 */
 export const dataPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -122,8 +113,7 @@ dataPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2900
-* @see routes/web.php:2882
+* @see routes/web.php:2901
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -131,8 +121,7 @@ dataPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2900
-* @see routes/web.php:2882
+* @see routes/web.php:2901
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -141,8 +130,7 @@ dataPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:2900
-* @see routes/web.php:2882
+* @see routes/web.php:2901
 * @route '/pcare/data-pendaftaran'
 */
 dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -151,8 +139,7 @@ dataPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:2904
-* @see routes/web.php:2886
+* @see routes/web.php:2905
 * @route '/pcare/data-kunjungan'
 */
 export const dataKunjungan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -166,8 +153,7 @@ dataKunjungan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2904
-* @see routes/web.php:2886
+* @see routes/web.php:2905
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.url = (options?: RouteQueryOptions) => {
@@ -175,8 +161,7 @@ dataKunjungan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2904
-* @see routes/web.php:2886
+* @see routes/web.php:2905
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -185,8 +170,7 @@ dataKunjungan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2904
-* @see routes/web.php:2886
+* @see routes/web.php:2905
 * @route '/pcare/data-kunjungan'
 */
 dataKunjungan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -257,8 +241,7 @@ cetakRujukan.head = (args: { no_rawat: string | number } | [no_rawat: string | n
 })
 
 /**
-* @see routes/web.php:3010
-* @see routes/web.php:2992
+* @see routes/web.php:3011
 * @route '/pcare/form-pendaftaran'
 */
 export const formPendaftaran = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,8 +255,7 @@ formPendaftaran.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3010
-* @see routes/web.php:2992
+* @see routes/web.php:3011
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.url = (options?: RouteQueryOptions) => {
@@ -281,8 +263,7 @@ formPendaftaran.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3010
-* @see routes/web.php:2992
+* @see routes/web.php:3011
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -291,8 +272,7 @@ formPendaftaran.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:3010
-* @see routes/web.php:2992
+* @see routes/web.php:3011
 * @route '/pcare/form-pendaftaran'
 */
 formPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -301,8 +281,7 @@ formPendaftaran.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:3028
-* @see routes/web.php:3010
+* @see routes/web.php:3029
 * @route '/pcare/prolanis-dm'
 */
 export const prolanisDm = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -316,8 +295,7 @@ prolanisDm.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3028
-* @see routes/web.php:3010
+* @see routes/web.php:3029
 * @route '/pcare/prolanis-dm'
 */
 prolanisDm.url = (options?: RouteQueryOptions) => {
@@ -325,8 +303,7 @@ prolanisDm.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3028
-* @see routes/web.php:3010
+* @see routes/web.php:3029
 * @route '/pcare/prolanis-dm'
 */
 prolanisDm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -335,8 +312,7 @@ prolanisDm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3028
-* @see routes/web.php:3010
+* @see routes/web.php:3029
 * @route '/pcare/prolanis-dm'
 */
 prolanisDm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -345,8 +321,7 @@ prolanisDm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3036
-* @see routes/web.php:3018
+* @see routes/web.php:3037
 * @route '/pcare/prolanis-ht'
 */
 export const prolanisHt = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -360,8 +335,7 @@ prolanisHt.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3036
-* @see routes/web.php:3018
+* @see routes/web.php:3037
 * @route '/pcare/prolanis-ht'
 */
 prolanisHt.url = (options?: RouteQueryOptions) => {
@@ -369,8 +343,7 @@ prolanisHt.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3036
-* @see routes/web.php:3018
+* @see routes/web.php:3037
 * @route '/pcare/prolanis-ht'
 */
 prolanisHt.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -379,8 +352,7 @@ prolanisHt.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3036
-* @see routes/web.php:3018
+* @see routes/web.php:3037
 * @route '/pcare/prolanis-ht'
 */
 prolanisHt.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -389,8 +361,7 @@ prolanisHt.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3052
-* @see routes/web.php:3034
+* @see routes/web.php:3053
 * @route '/pcare/srk-per-penyakit'
 */
 export const srkPerPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -404,8 +375,7 @@ srkPerPenyakit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3052
-* @see routes/web.php:3034
+* @see routes/web.php:3053
 * @route '/pcare/srk-per-penyakit'
 */
 srkPerPenyakit.url = (options?: RouteQueryOptions) => {
@@ -413,8 +383,7 @@ srkPerPenyakit.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3052
-* @see routes/web.php:3034
+* @see routes/web.php:3053
 * @route '/pcare/srk-per-penyakit'
 */
 srkPerPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -423,8 +392,7 @@ srkPerPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3052
-* @see routes/web.php:3034
+* @see routes/web.php:3053
 * @route '/pcare/srk-per-penyakit'
 */
 srkPerPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -88,8 +88,7 @@ checkDuplicate.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 })
 
 /**
-* @see routes/web.php:2282
-* @see routes/web.php:2264
+* @see routes/web.php:2283
 * @route '/rawat-jalan/surat-sehat'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -103,8 +102,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2282
-* @see routes/web.php:2264
+* @see routes/web.php:2283
 * @route '/rawat-jalan/surat-sehat'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -112,8 +110,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2282
-* @see routes/web.php:2264
+* @see routes/web.php:2283
 * @route '/rawat-jalan/surat-sehat'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -122,8 +119,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2282
-* @see routes/web.php:2264
+* @see routes/web.php:2283
 * @route '/rawat-jalan/surat-sehat'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

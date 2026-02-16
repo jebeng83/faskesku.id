@@ -10,7 +10,7 @@ import daruratStokFb6373 from './darurat-stok'
 import sirkulasiObatDb42f9 from './sirkulasi-obat'
 import permintaan from './permintaan'
 import sisaStok71ee58 from './sisa-stok'
-import farmasiModule from './farmasi'
+import farmasi from './farmasi'
 import cetak from './cetak'
 import dataObatF6becc from './data-obat'
 import setPenjualanBarang from './set-penjualan-barang'
@@ -26,8 +26,7 @@ import metodeRacik from './metode-racik'
 import konversiSatuan from './konversi-satuan'
 import jenisObat from './jenis-obat'
 /**
-* @see routes/web.php:2750
-* @see routes/web.php:2732
+* @see routes/web.php:2751
 * @route '/farmasi/obat-fast-moving'
 */
 export const fastMoving = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -41,8 +40,7 @@ fastMoving.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2750
-* @see routes/web.php:2732
+* @see routes/web.php:2751
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.url = (options?: RouteQueryOptions) => {
@@ -50,8 +48,7 @@ fastMoving.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2750
-* @see routes/web.php:2732
+* @see routes/web.php:2751
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -60,8 +57,7 @@ fastMoving.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2750
-* @see routes/web.php:2732
+* @see routes/web.php:2751
 * @route '/farmasi/obat-fast-moving'
 */
 fastMoving.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -70,8 +66,7 @@ fastMoving.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2645
-* @see routes/web.php:2627
+* @see routes/web.php:2646
 * @route '/farmasi'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -85,8 +80,7 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2645
-* @see routes/web.php:2627
+* @see routes/web.php:2646
 * @route '/farmasi'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -94,8 +88,7 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2645
-* @see routes/web.php:2627
+* @see routes/web.php:2646
 * @route '/farmasi'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,8 +97,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2645
-* @see routes/web.php:2627
+* @see routes/web.php:2646
 * @route '/farmasi'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -114,8 +106,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2650
-* @see routes/web.php:2632
+* @see routes/web.php:2651
 * @route '/farmasi/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -129,8 +120,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2650
-* @see routes/web.php:2632
+* @see routes/web.php:2651
 * @route '/farmasi/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -138,8 +128,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2650
-* @see routes/web.php:2632
+* @see routes/web.php:2651
 * @route '/farmasi/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -148,8 +137,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2650
-* @see routes/web.php:2632
+* @see routes/web.php:2651
 * @route '/farmasi/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -158,8 +146,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2654
-* @see routes/web.php:2636
+* @see routes/web.php:2655
 * @route '/farmasi/pembelian-obat'
 */
 export const pembelianObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -173,8 +160,7 @@ pembelianObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2654
-* @see routes/web.php:2636
+* @see routes/web.php:2655
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.url = (options?: RouteQueryOptions) => {
@@ -182,8 +168,7 @@ pembelianObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2654
-* @see routes/web.php:2636
+* @see routes/web.php:2655
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -192,8 +177,7 @@ pembelianObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2654
-* @see routes/web.php:2636
+* @see routes/web.php:2655
 * @route '/farmasi/pembelian-obat'
 */
 pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -202,8 +186,7 @@ pembelianObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:2658
-* @see routes/web.php:2640
+* @see routes/web.php:2659
 * @route '/farmasi/hutang-obat'
 */
 export const hutangObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -217,8 +200,7 @@ hutangObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2658
-* @see routes/web.php:2640
+* @see routes/web.php:2659
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.url = (options?: RouteQueryOptions) => {
@@ -226,8 +208,7 @@ hutangObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2658
-* @see routes/web.php:2640
+* @see routes/web.php:2659
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -236,8 +217,7 @@ hutangObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2658
-* @see routes/web.php:2640
+* @see routes/web.php:2659
 * @route '/farmasi/hutang-obat'
 */
 hutangObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -334,8 +314,7 @@ setLokasi.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2692
-* @see routes/web.php:2674
+* @see routes/web.php:2693
 * @route '/farmasi/resep-obat'
 */
 export const resepObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -349,8 +328,7 @@ resepObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2692
-* @see routes/web.php:2674
+* @see routes/web.php:2693
 * @route '/farmasi/resep-obat'
 */
 resepObat.url = (options?: RouteQueryOptions) => {
@@ -358,8 +336,7 @@ resepObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2692
-* @see routes/web.php:2674
+* @see routes/web.php:2693
 * @route '/farmasi/resep-obat'
 */
 resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -368,8 +345,7 @@ resepObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2692
-* @see routes/web.php:2674
+* @see routes/web.php:2693
 * @route '/farmasi/resep-obat'
 */
 resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -378,8 +354,7 @@ resepObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2697
-* @see routes/web.php:2679
+* @see routes/web.php:2698
 * @route '/farmasi/permintaan-resep'
 */
 export const permintaanResep = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -393,8 +368,7 @@ permintaanResep.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2697
-* @see routes/web.php:2679
+* @see routes/web.php:2698
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.url = (options?: RouteQueryOptions) => {
@@ -402,8 +376,7 @@ permintaanResep.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2697
-* @see routes/web.php:2679
+* @see routes/web.php:2698
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -412,8 +385,7 @@ permintaanResep.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:2697
-* @see routes/web.php:2679
+* @see routes/web.php:2698
 * @route '/farmasi/permintaan-resep'
 */
 permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -422,8 +394,7 @@ permintaanResep.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:2701
-* @see routes/web.php:2683
+* @see routes/web.php:2702
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 export const riwayatTransaksiGudang = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -437,8 +408,7 @@ riwayatTransaksiGudang.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2701
-* @see routes/web.php:2683
+* @see routes/web.php:2702
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
@@ -446,8 +416,7 @@ riwayatTransaksiGudang.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2701
-* @see routes/web.php:2683
+* @see routes/web.php:2702
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -456,8 +425,7 @@ riwayatTransaksiGudang.get = (options?: RouteQueryOptions): RouteDefinition<'get
 })
 
 /**
-* @see routes/web.php:2701
-* @see routes/web.php:2683
+* @see routes/web.php:2702
 * @route '/farmasi/riwayat-transaksi-gudang'
 */
 riwayatTransaksiGudang.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -510,8 +478,7 @@ riwayatBarangMedis.head = (options?: RouteQueryOptions): RouteDefinition<'head'>
 })
 
 /**
-* @see routes/web.php:2714
-* @see routes/web.php:2696
+* @see routes/web.php:2715
 * @route '/farmasi/stok-obat'
 */
 export const stokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -525,8 +492,7 @@ stokObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2714
-* @see routes/web.php:2696
+* @see routes/web.php:2715
 * @route '/farmasi/stok-obat'
 */
 stokObat.url = (options?: RouteQueryOptions) => {
@@ -534,8 +500,7 @@ stokObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2714
-* @see routes/web.php:2696
+* @see routes/web.php:2715
 * @route '/farmasi/stok-obat'
 */
 stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -544,8 +509,7 @@ stokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2714
-* @see routes/web.php:2696
+* @see routes/web.php:2715
 * @route '/farmasi/stok-obat'
 */
 stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -554,8 +518,7 @@ stokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2717
-* @see routes/web.php:2699
+* @see routes/web.php:2718
 * @route '/farmasi/stok-opname'
 */
 export const stokOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -569,8 +532,7 @@ stokOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2717
-* @see routes/web.php:2699
+* @see routes/web.php:2718
 * @route '/farmasi/stok-opname'
 */
 stokOpname.url = (options?: RouteQueryOptions) => {
@@ -578,8 +540,7 @@ stokOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2717
-* @see routes/web.php:2699
+* @see routes/web.php:2718
 * @route '/farmasi/stok-opname'
 */
 stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -588,8 +549,7 @@ stokOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2717
-* @see routes/web.php:2699
+* @see routes/web.php:2718
 * @route '/farmasi/stok-opname'
 */
 stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -598,8 +558,7 @@ stokOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2720
-* @see routes/web.php:2702
+* @see routes/web.php:2721
 * @route '/farmasi/darurat-stok'
 */
 export const daruratStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -613,8 +572,7 @@ daruratStok.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2720
-* @see routes/web.php:2702
+* @see routes/web.php:2721
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.url = (options?: RouteQueryOptions) => {
@@ -622,8 +580,7 @@ daruratStok.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2720
-* @see routes/web.php:2702
+* @see routes/web.php:2721
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -632,8 +589,7 @@ daruratStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2720
-* @see routes/web.php:2702
+* @see routes/web.php:2721
 * @route '/farmasi/darurat-stok'
 */
 daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -642,8 +598,7 @@ daruratStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2725
-* @see routes/web.php:2707
+* @see routes/web.php:2726
 * @route '/farmasi/sirkulasi-obat'
 */
 export const sirkulasiObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -657,8 +612,7 @@ sirkulasiObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2725
-* @see routes/web.php:2707
+* @see routes/web.php:2726
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.url = (options?: RouteQueryOptions) => {
@@ -666,8 +620,7 @@ sirkulasiObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2725
-* @see routes/web.php:2707
+* @see routes/web.php:2726
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -676,8 +629,7 @@ sirkulasiObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2725
-* @see routes/web.php:2707
+* @see routes/web.php:2726
 * @route '/farmasi/sirkulasi-obat'
 */
 sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -686,8 +638,7 @@ sirkulasiObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:2730
-* @see routes/web.php:2712
+* @see routes/web.php:2731
 * @route '/farmasi/cek-stok-obat'
 */
 export const cekStokObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -701,8 +652,7 @@ cekStokObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2730
-* @see routes/web.php:2712
+* @see routes/web.php:2731
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.url = (options?: RouteQueryOptions) => {
@@ -710,8 +660,7 @@ cekStokObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2730
-* @see routes/web.php:2712
+* @see routes/web.php:2731
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -720,8 +669,7 @@ cekStokObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2730
-* @see routes/web.php:2712
+* @see routes/web.php:2731
 * @route '/farmasi/cek-stok-obat'
 */
 cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -730,8 +678,7 @@ cekStokObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2733
-* @see routes/web.php:2715
+* @see routes/web.php:2734
 * @route '/farmasi/permintaan-obat'
 */
 export const permintaanObat = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -745,8 +692,7 @@ permintaanObat.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2733
-* @see routes/web.php:2715
+* @see routes/web.php:2734
 * @route '/farmasi/permintaan-obat'
 */
 permintaanObat.url = (options?: RouteQueryOptions) => {
@@ -754,8 +700,7 @@ permintaanObat.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2733
-* @see routes/web.php:2715
+* @see routes/web.php:2734
 * @route '/farmasi/permintaan-obat'
 */
 permintaanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -764,8 +709,7 @@ permintaanObat.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2733
-* @see routes/web.php:2715
+* @see routes/web.php:2734
 * @route '/farmasi/permintaan-obat'
 */
 permintaanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -774,8 +718,7 @@ permintaanObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 })
 
 /**
-* @see routes/web.php:2744
-* @see routes/web.php:2726
+* @see routes/web.php:2745
 * @route '/farmasi/sisa-stok'
 */
 export const sisaStok = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -789,8 +732,7 @@ sisaStok.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2744
-* @see routes/web.php:2726
+* @see routes/web.php:2745
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.url = (options?: RouteQueryOptions) => {
@@ -798,8 +740,7 @@ sisaStok.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2744
-* @see routes/web.php:2726
+* @see routes/web.php:2745
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -808,8 +749,7 @@ sisaStok.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2744
-* @see routes/web.php:2726
+* @see routes/web.php:2745
 * @route '/farmasi/sisa-stok'
 */
 sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -818,8 +758,7 @@ sisaStok.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:2757
-* @see routes/web.php:2739
+* @see routes/web.php:2758
 * @route '/farmasi/data-opname'
 */
 export const dataOpname = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -833,8 +772,7 @@ dataOpname.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:2757
-* @see routes/web.php:2739
+* @see routes/web.php:2758
 * @route '/farmasi/data-opname'
 */
 dataOpname.url = (options?: RouteQueryOptions) => {
@@ -842,8 +780,7 @@ dataOpname.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:2757
-* @see routes/web.php:2739
+* @see routes/web.php:2758
 * @route '/farmasi/data-opname'
 */
 dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -852,8 +789,7 @@ dataOpname.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:2757
-* @see routes/web.php:2739
+* @see routes/web.php:2758
 * @route '/farmasi/data-opname'
 */
 dataOpname.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -972,7 +908,7 @@ const farmasi = {
     permintaan: Object.assign(permintaan, permintaan),
     sisaStok: Object.assign(sisaStok, sisaStok71ee58),
     dataOpname: Object.assign(dataOpname, dataOpname),
-    farmasi: Object.assign(farmasiModule, farmasiModule),
+    farmasi: Object.assign(farmasi, farmasi),
     cetak: Object.assign(cetak, cetak),
     dataObat: Object.assign(dataObat, dataObatF6becc),
     setPenjualanBarang: Object.assign(setPenjualanBarang, setPenjualanBarang),
