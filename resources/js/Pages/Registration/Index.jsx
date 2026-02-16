@@ -1995,34 +1995,40 @@ export default function Registration({
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.5, delay: 0.5 }}
                             >
+                                <div className="w-full mb-3 rounded-lg border border-blue-200/70 dark:border-blue-800/60 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 p-3 shadow-sm">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700/80 dark:text-blue-300">Kontrol Loket</div>
+                                        <div className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-300">Antrian</div>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2 w-full">
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <label className="text-[11px] font-semibold text-slate-700 dark:text-gray-300 px-2 py-0.5 rounded-md bg-white/70 dark:bg-gray-900/30 border border-slate-200/70 dark:border-gray-700">Loket</label>
+                                        <select
+                                            value={selectedLoket}
+                                            onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
+                                            className="px-2 py-1 text-xs rounded-md border border-blue-200/80 dark:border-blue-700 bg-white/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 w-full sm:w-auto shadow-sm"
+                                        >
+                                            <option value={1}>Loket 1</option>
+                                            <option value={2}>Loket 2</option>
+                                            <option value={3}>Loket 3</option>
+                                            <option value={4}>Loket 4</option>
+                                        </select>
+                                    </div>
+                                    <div className="px-2 py-1 rounded-md bg-white/80 dark:bg-gray-900/30 border border-blue-200/80 dark:border-blue-800 w-full sm:w-auto shadow-sm">
+                                        <div className="flex items-center gap-2">
+                                            <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
+                                            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
+                                        </div>
+                                    </div>
+                                    <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                                    <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
+                                    </div>
+                                </div>
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 lg:mb-4">
                                     <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
                                         Cari Pasien
                                     </h3>
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                        <div className="flex flex-wrap items-center gap-2 w-full">
-                                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                                                <label className="text-xs font-semibold text-slate-700 dark:text-gray-300">Loket</label>
-                                                <select
-                                                    value={selectedLoket}
-                                                    onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
-                                                    className="px-2 py-1 text-xs rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 w-full sm:w-auto"
-                                                >
-                                                    <option value={1}>Loket 1</option>
-                                                    <option value={2}>Loket 2</option>
-                                                    <option value={3}>Loket 3</option>
-                                                    <option value={4}>Loket 4</option>
-                                                </select>
-                                            </div>
-                                            <div className="px-2 py-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
-                                                    <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
-                                                </div>
-                                            </div>
-                                            <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
-                                            <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
-                                            </div>
                                         <motion.button
                                             onClick={openPatientModal}
                                             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm w-full sm:w-auto mt-2 sm:mt-0 justify-center"
@@ -2048,7 +2054,7 @@ export default function Registration({
                                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                                 />
                                             </svg>
-                                        Tambah
+                                            Tambah
                                         </motion.button>
                                     </div>
                                 </div>
