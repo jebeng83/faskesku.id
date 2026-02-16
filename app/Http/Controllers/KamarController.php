@@ -85,8 +85,8 @@ class KamarController extends Controller
             'kd_kamar' => 'required|string|max:15|unique:kamar,kd_kamar',
             'kd_bangsal' => 'required|string|exists:bangsal,kd_bangsal',
             'trf_kamar' => 'required|numeric|min:0',
-            'status' => 'required|in:KOSONG,ISI',
-            'kelas' => 'nullable|in:1,2,3,VIP,Utama',
+            'status' => 'required|in:KOSONG,ISI,DIBERSIHKAN,DIBOOKING',
+            'kelas' => 'nullable|in:1,2,3,VIP,Utama,VVIP,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
             'statusdata' => 'nullable|in:0,1',
         ], [
             'kd_kamar.required' => 'Kode kamar wajib diisi',
@@ -99,6 +99,19 @@ class KamarController extends Controller
             'status.required' => 'Status kamar wajib dipilih',
             'status.in' => 'Status kamar tidak valid',
         ]);
+
+        $kelas = $validated['kelas'] ?? null;
+        if ($kelas !== null) {
+            $map = [
+                '1' => 'Kelas 1',
+                '2' => 'Kelas 2',
+                '3' => 'Kelas 3',
+                'Utama' => 'Kelas Utama',
+                'VIP' => 'Kelas VIP',
+                'VVIP' => 'Kelas VVIP',
+            ];
+            $validated['kelas'] = $map[$kelas] ?? $kelas;
+        }
 
         Kamar::create($validated);
 
@@ -144,8 +157,8 @@ class KamarController extends Controller
         $validated = $request->validate([
             'kd_bangsal' => 'required|string|exists:bangsal,kd_bangsal',
             'trf_kamar' => 'required|numeric|min:0',
-            'status' => 'required|in:KOSONG,ISI',
-            'kelas' => 'nullable|in:1,2,3,VIP,Utama',
+            'status' => 'required|in:KOSONG,ISI,DIBERSIHKAN,DIBOOKING',
+            'kelas' => 'nullable|in:1,2,3,VIP,Utama,VVIP,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
             'statusdata' => 'nullable|in:0,1',
         ], [
             'kd_bangsal.required' => 'Bangsal wajib dipilih',
@@ -156,6 +169,19 @@ class KamarController extends Controller
             'status.required' => 'Status kamar wajib dipilih',
             'status.in' => 'Status kamar tidak valid',
         ]);
+
+        $kelas = $validated['kelas'] ?? null;
+        if ($kelas !== null) {
+            $map = [
+                '1' => 'Kelas 1',
+                '2' => 'Kelas 2',
+                '3' => 'Kelas 3',
+                'Utama' => 'Kelas Utama',
+                'VIP' => 'Kelas VIP',
+                'VVIP' => 'Kelas VVIP',
+            ];
+            $validated['kelas'] = $map[$kelas] ?? $kelas;
+        }
 
         $kamar->update($validated);
 
@@ -329,10 +355,23 @@ class KamarController extends Controller
             'kd_kamar' => 'required|string|max:15|unique:kamar,kd_kamar',
             'kd_bangsal' => 'required|string|exists:bangsal,kd_bangsal',
             'trf_kamar' => 'required|numeric|min:0',
-            'status' => 'required|in:KOSONG,ISI',
-            'kelas' => 'nullable|in:1,2,3,VIP,Utama',
+            'status' => 'required|in:KOSONG,ISI,DIBERSIHKAN,DIBOOKING',
+            'kelas' => 'nullable|in:1,2,3,VIP,Utama,VVIP,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
             'statusdata' => 'nullable|in:0,1',
         ]);
+
+        $kelas = $validated['kelas'] ?? null;
+        if ($kelas !== null) {
+            $map = [
+                '1' => 'Kelas 1',
+                '2' => 'Kelas 2',
+                '3' => 'Kelas 3',
+                'Utama' => 'Kelas Utama',
+                'VIP' => 'Kelas VIP',
+                'VVIP' => 'Kelas VVIP',
+            ];
+            $validated['kelas'] = $map[$kelas] ?? $kelas;
+        }
 
         try {
             $kamar = Kamar::create($validated);
@@ -375,10 +414,23 @@ class KamarController extends Controller
         $validated = $request->validate([
             'kd_bangsal' => 'required|string|exists:bangsal,kd_bangsal',
             'trf_kamar' => 'required|numeric|min:0',
-            'status' => 'required|in:KOSONG,ISI',
-            'kelas' => 'nullable|in:1,2,3,VIP,Utama',
+            'status' => 'required|in:KOSONG,ISI,DIBERSIHKAN,DIBOOKING',
+            'kelas' => 'nullable|in:1,2,3,VIP,Utama,VVIP,Kelas 1,Kelas 2,Kelas 3,Kelas Utama,Kelas VIP,Kelas VVIP',
             'statusdata' => 'nullable|in:0,1',
         ]);
+
+        $kelas = $validated['kelas'] ?? null;
+        if ($kelas !== null) {
+            $map = [
+                '1' => 'Kelas 1',
+                '2' => 'Kelas 2',
+                '3' => 'Kelas 3',
+                'Utama' => 'Kelas Utama',
+                'VIP' => 'Kelas VIP',
+                'VVIP' => 'Kelas VVIP',
+            ];
+            $validated['kelas'] = $map[$kelas] ?? $kelas;
+        }
 
         try {
             $kamar->update($validated);

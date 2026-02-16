@@ -17,7 +17,7 @@ const variants = {
   item: { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } },
 };
 
-const kelasOptions = ["1", "2", "3", "VIP", "Utama"];
+const kelasOptions = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas Utama", "Kelas VIP", "Kelas VVIP"];
 
 export default function Kamar() {
   const [items, setItems] = useState([]);
