@@ -86,7 +86,7 @@ class SecurityHeadersMiddleware
             $csp = "default-src 'self'; ".
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com ".implode(' ', $httpAllowed).'; '.
                 "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com ".implode(' ', $httpAllowed).'; '.
-                "img-src 'self' data: https: http:; ".
+                "img-src 'self' data: blob: https: http:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 "connect-src 'self' https://cloudflareinsights.com ".implode(' ', array_merge($httpAllowed, $wsAllowed)).'; '.
                 "worker-src 'self' blob:; ".
@@ -108,7 +108,7 @@ class SecurityHeadersMiddleware
             $csp = "default-src 'self'; ".
                 $script.'; '.
                 $style.'; '.
-                "img-src 'self' data: https:; ".
+                "img-src 'self' data: blob: https:; ".
                 "font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.gstatic.com https://fonts.googleapis.com; ".
                 $connect.'; '.
                 "frame-src 'self' blob: data: https://www.google.com https://maps.google.com https://apijkn.bpjs-kesehatan.go.id https://mobile-faskes.bpjs-kesehatan.go.id https://vclaim.bpjs-kesehatan.go.id";
