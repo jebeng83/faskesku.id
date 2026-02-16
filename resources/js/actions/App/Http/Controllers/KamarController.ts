@@ -79,7 +79,7 @@ apiStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\KamarController::apiUpdate
-* @see app/Http/Controllers/KamarController.php:410
+* @see app/Http/Controllers/KamarController.php:416
 * @route '/api/kamar/{kd_kamar}'
 */
 export const apiUpdate = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ apiUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\KamarController::apiUpdate
-* @see app/Http/Controllers/KamarController.php:410
+* @see app/Http/Controllers/KamarController.php:416
 * @route '/api/kamar/{kd_kamar}'
 */
 apiUpdate.url = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ apiUpdate.url = (args: { kd_kamar: string | number } | [kd_kamar: string | numbe
 
 /**
 * @see \App\Http\Controllers\KamarController::apiUpdate
-* @see app/Http/Controllers/KamarController.php:410
+* @see app/Http/Controllers/KamarController.php:416
 * @route '/api/kamar/{kd_kamar}'
 */
 apiUpdate.put = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ apiUpdate.put = (args: { kd_kamar: string | number } | [kd_kamar: string | numbe
 
 /**
 * @see \App\Http\Controllers\KamarController::apiDestroy
-* @see app/Http/Controllers/KamarController.php:462
+* @see app/Http/Controllers/KamarController.php:474
 * @route '/api/kamar/{kd_kamar}'
 */
 export const apiDestroy = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ apiDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\KamarController::apiDestroy
-* @see app/Http/Controllers/KamarController.php:462
+* @see app/Http/Controllers/KamarController.php:474
 * @route '/api/kamar/{kd_kamar}'
 */
 apiDestroy.url = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ apiDestroy.url = (args: { kd_kamar: string | number } | [kd_kamar: string | numb
 
 /**
 * @see \App\Http\Controllers\KamarController::apiDestroy
-* @see app/Http/Controllers/KamarController.php:462
+* @see app/Http/Controllers/KamarController.php:474
 * @route '/api/kamar/{kd_kamar}'
 */
 apiDestroy.delete = (args: { kd_kamar: string | number } | [kd_kamar: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({

@@ -398,6 +398,12 @@ class KamarController extends Controller
                 'ok' => false,
                 'message' => 'Gagal menambahkan kamar. Periksa kembali data input.',
             ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Terjadi kesalahan server saat menyimpan kamar.',
+                'error_code' => 'KAMAR_STORE_FAILED',
+            ], 500);
         }
 
         return response()->json([
@@ -450,6 +456,12 @@ class KamarController extends Controller
                 'ok' => false,
                 'message' => 'Gagal memperbarui kamar. Periksa kembali data input.',
             ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Terjadi kesalahan server saat menyimpan kamar.',
+                'error_code' => 'KAMAR_UPDATE_FAILED',
+            ], 500);
         }
 
         return response()->json([

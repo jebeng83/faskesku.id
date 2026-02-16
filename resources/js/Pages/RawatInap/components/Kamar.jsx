@@ -18,6 +18,7 @@ const variants = {
 };
 
 const kelasOptions = ["Kelas 1", "Kelas 2", "Kelas 3", "Kelas Utama", "Kelas VIP", "Kelas VVIP"];
+const statusOptions = ["KOSONG", "ISI", "DIBERSIHKAN", "DIBOOKING"];
 
 export default function Kamar() {
   const [items, setItems] = useState([]);
@@ -123,7 +124,7 @@ export default function Kamar() {
   const handleUpdate = async () => {
     const id = encodeURIComponent(editForm.kd_kamar);
 
-    const validStatuses = ["KOSONG", "ISI"];
+    const validStatuses = statusOptions;
     const tarif = Number(String(editForm.trf_kamar).trim());
     const bangsalValid = bangsals.some((b) => b.kd_bangsal === editForm.kd_bangsal);
 
@@ -138,7 +139,7 @@ export default function Kamar() {
     }
 
     if (!validStatuses.includes(editForm.status)) {
-      toast.error("Status harus KOSONG atau ISI");
+      toast.error("Status tidak valid");
       return;
     }
 
@@ -255,6 +256,8 @@ export default function Kamar() {
                   <option value="all">Semua Status</option>
                   <option value="KOSONG">Kosong</option>
                   <option value="ISI">Isi</option>
+                  <option value="DIBERSIHKAN">Dibersihkan</option>
+                  <option value="DIBOOKING">Dibooking</option>
                 </select>
               </div>
               <div className="flex items-center gap-2">
@@ -330,8 +333,14 @@ export default function Kamar() {
                           {it.status ? (
                             it.status === "KOSONG" ? (
                               <span className="inline-flex items-center gap-1 text-blue-600">Kosong</span>
-                            ) : (
+                            ) : it.status === "ISI" ? (
                               <span className="inline-flex items-center gap-1 text-red-600">Isi</span>
+                            ) : it.status === "DIBERSIHKAN" ? (
+                              <span className="inline-flex items-center gap-1 text-amber-700">Dibersihkan</span>
+                            ) : it.status === "DIBOOKING" ? (
+                              <span className="inline-flex items-center gap-1 text-indigo-700">Dibooking</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-gray-700">{it.status}</span>
                             )
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -408,6 +417,8 @@ export default function Kamar() {
                 >
                   <option value="KOSONG">Kosong</option>
                   <option value="ISI">Isi</option>
+                  <option value="DIBERSIHKAN">Dibersihkan</option>
+                  <option value="DIBOOKING">Dibooking</option>
                 </select>
               </div>
               <div>
@@ -491,6 +502,8 @@ export default function Kamar() {
                 >
                   <option value="KOSONG">Kosong</option>
                   <option value="ISI">Isi</option>
+                  <option value="DIBERSIHKAN">Dibersihkan</option>
+                  <option value="DIBOOKING">Dibooking</option>
                 </select>
               </div>
               <div>
