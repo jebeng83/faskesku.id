@@ -1114,6 +1114,7 @@ export default function Index(props = {}) {
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Kamar</div>
                         <SearchableSelect
                             source="kamar"
+                            sourceParams={{ status: "KOSONG", statusdata: "1" }}
                             value={formCheckIn.kd_kamar}
                             onChange={(val) => setFormCheckIn((s) => ({ ...s, kd_kamar: val }))}
                             placeholder="Pilih kamar"
@@ -1215,6 +1216,7 @@ export default function Index(props = {}) {
                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Kamar Tujuan</div>
                         <SearchableSelect
                             source="kamar"
+                            sourceParams={{ status: "KOSONG", statusdata: "1" }}
                             value={formPindah.kd_kamar_tujuan}
                             onChange={(val) => setFormPindah((s) => ({ ...s, kd_kamar_tujuan: val }))}
                             placeholder="Pilih kamar tujuan"

@@ -369,13 +369,21 @@ const REFERENSI_CONFIG = {
         },
     },
     // Sumber: daftar Kamar rawat inap dari sistem lokal
-    // Endpoint: GET /api/ranap/kamar (mengembalikan { ok, list: [{ kd_kamar, nm_kamar, kd_bangsal, nm_bangsal }] })
+    // Endpoint: GET /api/kamar (mengembalikan { ok, list: [{ kd_kamar, kd_bangsal, nm_bangsal, trf_kamar, status, kelas, statusdata }] })
     kamar: {
         supportsSearch: true,
-        defaultParams: { start: 0, limit: 25, q: "" },
-        buildUrl: ({ q = "", start = 0, limit = 25 } = {}) => {
-            const params = new URLSearchParams({ q, start, limit });
-            return `/api/satusehat/ranap/kamar?${params.toString()}`;
+        defaultParams: { start: 0, limit: 25, q: "", statusdata: "1" },
+        buildUrl: ({ q = "", start = 0, limit = 25, statusdata = "1", status = "", kd_bangsal = "", kelas = "" } = {}) => {
+            const params = new URLSearchParams({
+                q,
+                start: String(start),
+                limit: String(limit),
+            });
+            if (statusdata !== "" && statusdata !== "all") params.set("statusdata", String(statusdata));
+            if (status) params.set("status", String(status));
+            if (kd_bangsal) params.set("kd_bangsal", String(kd_bangsal));
+            if (kelas) params.set("kelas", String(kelas));
+            return `/api/kamar?${params.toString()}`;
         },
         parse: (json) => {
             const list = json?.list || json?.data || [];

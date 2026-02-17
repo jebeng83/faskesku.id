@@ -26,17 +26,18 @@ class RajalPipelineService
             return '';
         }
 
-        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
-        if ($dt->lt($min)) {
-            $dt = $min;
+        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'UTC');
+        $dtUtc = $dt->copy()->setTimezone('UTC');
+        if ($dtUtc->lt($min)) {
+            $dtUtc = $min;
         }
 
-        $now = \Carbon\Carbon::now('Asia/Jakarta');
-        if ($dt->gt($now)) {
-            $dt = $now;
+        $nowUtc = \Carbon\Carbon::now('UTC');
+        if ($dtUtc->gt($nowUtc)) {
+            $dtUtc = $nowUtc;
         }
 
-        return $dt->toIso8601String();
+        return $dtUtc->toIso8601String();
     }
 
     public function updateEncounterByRawat(string $noRawat, string $encounterId, string $status = 'finished', string $tzOffset = '+07:00', string $endOverride = '', bool $dispatchCompositionJob = true): array
@@ -117,11 +118,9 @@ class RajalPipelineService
             'end' => $periodEndLocal,
         ];
 
-        $payload['statusHistory'] = [
-            ['status' => 'arrived', 'period' => ['start' => $periodStartLocal, 'end' => $periodStartLocal]],
-            ['status' => 'in-progress', 'period' => ['start' => $periodStartLocal, 'end' => $periodEndLocal]],
-            ['status' => 'finished', 'period' => ['start' => $periodEndLocal, 'end' => $periodEndLocal]],
-        ];
+        if (isset($payload['statusHistory'])) {
+            unset($payload['statusHistory']);
+        }
 
         if (isset($payload['diagnosis'])) {
             unset($payload['diagnosis']);
