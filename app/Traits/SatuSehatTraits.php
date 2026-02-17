@@ -336,6 +336,13 @@ trait SatuSehatTraits
             $body = $this->satusehatNormalizeEncounterTimestamps($body);
         }
 
+        $diagMode = strtolower(trim((string) ($options['compat']['encounter_diagnosis'] ?? $this->satusehatCompatOption('encounter_diagnosis', 'off'))));
+        if ($diagMode === '' || $diagMode === 'off') {
+            if (isset($body['diagnosis'])) {
+                unset($body['diagnosis']);
+            }
+        }
+
         $mode = strtolower(trim((string) ($options['compat']['encounter_status_history'] ?? $this->satusehatCompatOption('encounter_status_history', 'off'))));
         if ($mode === '') {
             $mode = 'off';
@@ -355,6 +362,25 @@ trait SatuSehatTraits
         }
 
         return $body;
+    }
+
+    protected function satusehatOperationOutcomeIndicatesDiagnosisNotFound(?array $json, string $rawBody): bool
+    {
+        $text = '';
+        if (is_array($json) && isset($json['issue']) && is_array($json['issue'])) {
+            foreach ($json['issue'] as $issue) {
+                if (! is_array($issue)) {
+                    continue;
+                }
+                $detailsText = is_array($issue['details'] ?? null) ? (string) ($issue['details']['text'] ?? '') : '';
+                $diagnostics = (string) ($issue['diagnostics'] ?? '');
+                $expr = is_array($issue['expression'] ?? null) ? implode(' ', array_map('strval', $issue['expression'])) : '';
+                $text .= ' '.$detailsText.' '.$diagnostics.' '.$expr;
+            }
+        }
+        $text = strtolower(trim($text.' '.$rawBody));
+
+        return str_contains($text, 'encounter.diagnosis') && (str_contains($text, 'element not found') || str_contains($text, '10457'));
     }
 
     protected function satusehatOperationOutcomeIndicatesStatusHistoryNotFound(?array $json, string $rawBody): bool
@@ -494,9 +520,31 @@ trait SatuSehatTraits
                     $status = $sent2['status'];
                     $json = $sent2['json'];
                     $ok = $sent2['ok'];
-                } elseif ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
-                    if (isset($bodyToSend['statusHistory'])) {
-                        unset($bodyToSend['statusHistory']);
+                } else {
+                    $needRetryStrip = false;
+                    $stripBody = $bodyToSend;
+
+                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        if (isset($stripBody['statusHistory'])) {
+                            unset($stripBody['statusHistory']);
+                        }
+                        $needRetryStrip = true;
+                    }
+
+                    if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        if (isset($stripBody['diagnosis'])) {
+                            unset($stripBody['diagnosis']);
+                        }
+                        $needRetryStrip = true;
+                    }
+
+                    if ($needRetryStrip) {
+                        $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $options, false);
+                        $sent2 = $sendOnce($stripBody);
+                        $resp = $sent2['resp'];
+                        $status = $sent2['status'];
+                        $json = $sent2['json'];
+                        $ok = $sent2['ok'];
                     }
                 }
             }

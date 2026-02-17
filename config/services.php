@@ -45,6 +45,7 @@ return [
         'organization_id' => env('SATUSEHAT_ORG_ID', ''),
         'compat' => [
             'encounter_status_history' => env('SATUSEHAT_COMPAT_ENCOUNTER_STATUSHISTORY', 'off'),
+            'encounter_diagnosis' => env('SATUSEHAT_COMPAT_ENCOUNTER_DIAGNOSIS', 'off'),
             'timestamp_mode' => env('SATUSEHAT_COMPAT_TIMESTAMP_MODE', 'utc'),
             'assume_timezone' => env('SATUSEHAT_COMPAT_ASSUME_TZ', 'Asia/Jakarta'),
         ],

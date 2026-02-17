@@ -264,17 +264,70 @@ class ProcessSatusehatDispatchBatchJob implements ShouldQueue
                     $errorText = (string) ($response['message'] ?? 'Gagal kirim MedicationDispense');
                 }
             } elseif ($step === 'composition') {
-                $enc = DB::table('satusehat_encounter')->where('no_rawat', $noRawat)->first(['satusehat_id', 'patient_id', 'practitioner_id']);
+                $enc = DB::table('satusehat_encounter')->where('no_rawat', $noRawat)->first(['satusehat_id', 'fhir_json']);
                 $encounterId = $enc ? trim((string) ($enc->satusehat_id ?? '')) : '';
-                $patientId = $enc ? trim((string) ($enc->patient_id ?? '')) : '';
-                $practitionerId = $enc ? trim((string) ($enc->practitioner_id ?? '')) : '';
+                $patientId = '';
+                $practitionerId = '';
+
+                $encPayload = null;
+                if ($enc && ! empty($enc->fhir_json)) {
+                    try {
+                        $encPayload = json_decode((string) $enc->fhir_json, true);
+                    } catch (\Throwable) {
+                        $encPayload = null;
+                    }
+                }
+
+                if (is_array($encPayload)) {
+                    $patientRef = (string) (($encPayload['subject']['reference'] ?? '') ?: '');
+                    if (str_starts_with($patientRef, 'Patient/')) {
+                        $patientId = substr($patientRef, strlen('Patient/'));
+                    }
+
+                    if (is_array($encPayload['participant'] ?? null)) {
+                        foreach ($encPayload['participant'] as $p) {
+                            $ref = (string) (($p['individual']['reference'] ?? '') ?: '');
+                            if (str_starts_with($ref, 'Practitioner/')) {
+                                $practitionerId = substr($ref, strlen('Practitioner/'));
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 if ($encounterId === '' || $patientId === '') {
-                    $legacy = DB::table('satu_sehat_encounter')->where('no_rawat', $noRawat)->first(['id_encounter_2', 'id_encounter', 'id_pasien_satusehat', 'id_dokter_satusehat']);
+                    $legacy = DB::table('satu_sehat_encounter')->where('no_rawat', $noRawat)->first(['id_encounter_2', 'id_encounter']);
                     if ($legacy) {
                         $encounterId = $encounterId !== '' ? $encounterId : (trim((string) ($legacy->id_encounter_2 ?? '')) ?: trim((string) ($legacy->id_encounter ?? '')));
-                        $patientId = $patientId !== '' ? $patientId : trim((string) ($legacy->id_pasien_satusehat ?? ''));
-                        $practitionerId = $practitionerId !== '' ? $practitionerId : trim((string) ($legacy->id_dokter_satusehat ?? ''));
+                    }
+                }
+
+                if ($patientId === '') {
+                    $reg = DB::table('reg_periksa')
+                        ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                        ->where('reg_periksa.no_rawat', $noRawat)
+                        ->first(['pasien.no_ktp']);
+                    $nik = $reg ? trim((string) ($reg->no_ktp ?? '')) : '';
+                    if ($nik !== '') {
+                        $mapping = DB::table('satusehat_patient_mapping')->where('nik', $nik)->first(['satusehat_id']);
+                        if ($mapping && ! empty($mapping->satusehat_id)) {
+                            $patientId = (string) $mapping->satusehat_id;
+                        }
+                    }
+                }
+
+                if ($practitionerId === '') {
+                    $kdDokter = trim((string) (DB::table('reg_periksa')->where('no_rawat', $noRawat)->value('kd_dokter') ?? ''));
+                    if ($kdDokter !== '') {
+                        $pegawai = DB::table('pegawai')->where('nik', $kdDokter)->first(['no_ktp']);
+                        $nikRaw = $pegawai ? (string) ($pegawai->no_ktp ?? '') : '';
+                        $nik = preg_replace('/\\D/', '', $nikRaw);
+                        if ($nik !== '' && strlen($nik) === 16) {
+                            $mapping = DB::table('satusehat_mapping_practitioner')->where('nik', $nik)->first(['satusehat_id']);
+                            if ($mapping && ! empty($mapping->satusehat_id)) {
+                                $practitionerId = (string) $mapping->satusehat_id;
+                            }
+                        }
                     }
                 }
 

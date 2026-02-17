@@ -118,17 +118,67 @@ class RajalPipelineService
             'end' => $periodEndLocal,
         ];
 
-        if (isset($payload['statusHistory'])) {
-            unset($payload['statusHistory']);
-        }
+        if ($status === 'finished') {
+            $payload['statusHistory'] = [
+                [
+                    'status' => 'arrived',
+                    'period' => ['start' => $periodStartLocal, 'end' => $periodStartLocal],
+                ],
+                [
+                    'status' => 'in-progress',
+                    'period' => ['start' => $periodStartLocal, 'end' => $periodEndLocal],
+                ],
+                [
+                    'status' => 'finished',
+                    'period' => ['start' => $periodEndLocal, 'end' => $periodEndLocal],
+                ],
+            ];
 
-        if (isset($payload['diagnosis'])) {
-            unset($payload['diagnosis']);
+            $diagnosis = $this->buildEncounterDiagnosis($noRawat);
+            if (! empty($diagnosis)) {
+                $payload['diagnosis'] = $diagnosis;
+            }
         }
 
         $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $payload, [
             'prefer_representation' => true,
+            'compat' => [
+                'encounter_status_history' => 'on',
+                'encounter_diagnosis' => 'on',
+            ],
         ]);
+
+        if (! $update['ok']) {
+            $rawBody = (string) ($update['body'] ?? '');
+            $json = is_array($update['json'] ?? null) ? $update['json'] : null;
+
+            $needRetry = false;
+            $retryPayload = $payload;
+
+            if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound($json, $rawBody)) {
+                if (isset($retryPayload['statusHistory'])) {
+                    unset($retryPayload['statusHistory']);
+                }
+                $needRetry = true;
+            }
+
+            if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound($json, $rawBody)) {
+                if (isset($retryPayload['diagnosis'])) {
+                    unset($retryPayload['diagnosis']);
+                }
+                $needRetry = true;
+            }
+
+            if ($needRetry) {
+                $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $retryPayload, [
+                    'prefer_representation' => true,
+                    'compat' => [
+                        'encounter_status_history' => 'off',
+                        'encounter_diagnosis' => 'off',
+                    ],
+                ]);
+            }
+        }
 
         if (! $update['ok']) {
             return [
@@ -172,6 +222,78 @@ class RajalPipelineService
             'status' => $update['status'] ?? 200,
             'resource' => $update['json'] ?? null,
         ];
+    }
+
+    private function buildEncounterDiagnosis(string $noRawat): array
+    {
+        $dxList = DB::table('diagnosa_pasien')
+            ->where('no_rawat', $noRawat)
+            ->orderBy('prioritas', 'asc')
+            ->limit(3)
+            ->get(['kd_penyakit', 'prioritas']);
+
+        if ($dxList->isEmpty()) {
+            return [];
+        }
+
+        $kodeList = $dxList->pluck('kd_penyakit')->filter()->map(fn ($v) => (string) $v)->all();
+        $existing = [];
+        if (! empty($kodeList)) {
+            $rows = DB::table('satu_sehat_condition')
+                ->where('no_rawat', $noRawat)
+                ->whereIn('kd_penyakit', $kodeList)
+                ->get(['kd_penyakit', 'id_condition']);
+            foreach ($rows as $r) {
+                $k = trim((string) ($r->kd_penyakit ?? ''));
+                $id = trim((string) ($r->id_condition ?? ''));
+                if ($k !== '' && $id !== '') {
+                    $existing[$k] = $id;
+                }
+            }
+        }
+
+        $conditionService = app(\App\Services\SatuSehat\ConditionService::class);
+
+        $diagnosis = [];
+        foreach ($dxList as $dx) {
+            $kode = trim((string) ($dx->kd_penyakit ?? ''));
+            if ($kode === '') {
+                continue;
+            }
+
+            $condId = $existing[$kode] ?? '';
+            if ($condId === '') {
+                $created = $conditionService->createCondition($noRawat, $kode, 'Ralan');
+                if (is_array($created)) {
+                    $condId = trim((string) ($created['id'] ?? ''));
+                }
+            }
+
+            if ($condId === '') {
+                continue;
+            }
+
+            $rank = (int) ($dx->prioritas ?? 0);
+            if ($rank <= 0) {
+                $rank = count($diagnosis) + 1;
+            }
+
+            $diagnosis[] = [
+                'condition' => [
+                    'reference' => 'Condition/'.$condId,
+                ],
+                'use' => [
+                    'coding' => [[
+                        'system' => 'http://terminology.hl7.org/CodeSystem/diagnosis-role',
+                        'code' => 'AD',
+                        'display' => 'Admission diagnosis',
+                    ]],
+                ],
+                'rank' => $rank,
+            ];
+        }
+
+        return $diagnosis;
     }
 
     public function pipelineByRawat(string $noRawat, string $tzOffset = '+07:00'): array
