@@ -558,19 +558,53 @@ trait SatuSehatTraits
             $ok = $sent1['ok'];
 
             $mode = strtolower(trim((string) ($options['compat']['encounter_status_history'] ?? $this->satusehatCompatOption('encounter_status_history', 'off'))));
-            if ($isEncounter && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && $mode === 'auto' && is_array($bodyToSend)) {
-                if ($this->satusehatOperationOutcomeIndicatesStatusHistoryRequired(is_array($json) ? $json : null, $resp->body())) {
-                    $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, true);
-                    $sent2 = $sendOnce($retryBody);
-                    $resp = $sent2['resp'];
-                    $status = $sent2['status'];
-                    $json = $sent2['json'];
-                    $ok = $sent2['ok'];
+            if ($isEncounter && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && is_array($bodyToSend)) {
+                if ($mode === 'auto') {
+                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryRequired(is_array($json) ? $json : null, $resp->body())) {
+                        $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, true);
+                        $sent2 = $sendOnce($retryBody);
+                        $resp = $sent2['resp'];
+                        $status = $sent2['status'];
+                        $json = $sent2['json'];
+                        $ok = $sent2['ok'];
+                    } else {
+                        $needRetryStrip = false;
+                        $stripBody = $bodyToSend;
+
+                        if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            if (isset($stripBody['statusHistory'])) {
+                                unset($stripBody['statusHistory']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            if (isset($stripBody['diagnosis'])) {
+                                unset($stripBody['diagnosis']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($needRetryStrip) {
+                            $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $options, false);
+                            $sent2 = $sendOnce($stripBody);
+                            $resp = $sent2['resp'];
+                            $status = $sent2['status'];
+                            $json = $sent2['json'];
+                            $ok = $sent2['ok'];
+                        }
+                    }
                 } else {
                     $needRetryStrip = false;
                     $stripBody = $bodyToSend;
+                    $retryOptions = $options;
+
+                    if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
+                        $retryOptions['compat'] = [];
+                    }
 
                     if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        $retryOptions['compat']['encounter_status_history'] = 'off';
                         if (isset($stripBody['statusHistory'])) {
                             unset($stripBody['statusHistory']);
                         }
@@ -578,6 +612,7 @@ trait SatuSehatTraits
                     }
 
                     if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        $retryOptions['compat']['encounter_diagnosis'] = 'off';
                         if (isset($stripBody['diagnosis'])) {
                             unset($stripBody['diagnosis']);
                         }
@@ -585,7 +620,7 @@ trait SatuSehatTraits
                     }
 
                     if ($needRetryStrip) {
-                        $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $options, false);
+                        $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $retryOptions, false);
                         $sent2 = $sendOnce($stripBody);
                         $resp = $sent2['resp'];
                         $status = $sent2['status'];
