@@ -264,6 +264,16 @@ trait SatuSehatTraits
         return is_array($body) && (($body['resourceType'] ?? '') === 'Patient');
     }
 
+    protected function satusehatIsBundleRequest(string $path, ?array $body = null): bool
+    {
+        $p = ltrim($path, '/');
+        if (str_starts_with($p, 'Bundle')) {
+            return true;
+        }
+
+        return is_array($body) && (($body['resourceType'] ?? '') === 'Bundle');
+    }
+
     protected function satusehatPreparePatientForSend(string $method, string $path, array $body, array $options): array
     {
         $modeMultipleBirth = strtolower(trim((string) (($options['compat']['patient_multiple_birth'] ?? null) ?? $this->satusehatCompatOption('patient_multiple_birth', 'off'))));
@@ -287,6 +297,41 @@ trait SatuSehatTraits
                     $body['address'][$i] = $addr;
                 }
             }
+        }
+
+        return $body;
+    }
+
+    protected function satusehatPrepareBundleForSend(string $method, string $path, array $body, array $options): array
+    {
+        if (! isset($body['entry']) || ! is_array($body['entry'])) {
+            return $body;
+        }
+
+        foreach ($body['entry'] as $i => $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $resource = is_array($entry['resource'] ?? null) ? $entry['resource'] : null;
+            if (! is_array($resource)) {
+                continue;
+            }
+            $rt = (string) ($resource['resourceType'] ?? '');
+            if ($rt === '') {
+                continue;
+            }
+
+            $entryMethod = strtoupper(trim((string) (($entry['request']['method'] ?? null) ?? $method)));
+            $entryUrl = trim((string) ($entry['request']['url'] ?? $rt));
+
+            if ($rt === 'Encounter') {
+                $resource = $this->satusehatPrepareEncounterForSend($entryMethod, $entryUrl, $resource, $options, false);
+            } elseif ($rt === 'Patient') {
+                $resource = $this->satusehatPreparePatientForSend($entryMethod, $entryUrl, $resource, $options);
+            }
+
+            $entry['resource'] = $resource;
+            $body['entry'][$i] = $entry;
         }
 
         return $body;
@@ -551,6 +596,14 @@ trait SatuSehatTraits
                 $bodyToSend = $this->satusehatPreparePatientForSend($method, $path, $bodyToSend, $options);
             }
 
+            $isBundle = $this->satusehatIsBundleRequest($path, is_array($body) ? $body : null);
+            if ($isBundle && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                if (! isset($options['compat']) || ! is_array($options['compat'])) {
+                    $options['compat'] = [];
+                }
+                $bodyToSend = $this->satusehatPrepareBundleForSend($method, $path, $bodyToSend, $options);
+            }
+
             $sent1 = $sendOnce(is_array($bodyToSend) ? $bodyToSend : null);
             $resp = $sent1['resp'];
             $status = $sent1['status'];
@@ -627,6 +680,33 @@ trait SatuSehatTraits
                         $json = $sent2['json'];
                         $ok = $sent2['ok'];
                     }
+                }
+            }
+
+            if ($isBundle && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && is_array($bodyToSend)) {
+                $needRetryStrip = false;
+                $retryOptions = $options;
+                if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
+                    $retryOptions['compat'] = [];
+                }
+
+                if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                    $retryOptions['compat']['encounter_status_history'] = 'off';
+                    $needRetryStrip = true;
+                }
+
+                if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                    $retryOptions['compat']['encounter_diagnosis'] = 'off';
+                    $needRetryStrip = true;
+                }
+
+                if ($needRetryStrip) {
+                    $retryBody = $this->satusehatPrepareBundleForSend($method, $path, $bodyToSend, $retryOptions);
+                    $sent2 = $sendOnce($retryBody);
+                    $resp = $sent2['resp'];
+                    $status = $sent2['status'];
+                    $json = $sent2['json'];
+                    $ok = $sent2['ok'];
                 }
             }
 
