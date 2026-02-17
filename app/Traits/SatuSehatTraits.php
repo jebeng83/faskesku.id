@@ -254,6 +254,44 @@ trait SatuSehatTraits
         return is_array($body) && (($body['resourceType'] ?? '') === 'Encounter');
     }
 
+    protected function satusehatIsPatientRequest(string $path, ?array $body = null): bool
+    {
+        $p = ltrim($path, '/');
+        if (str_starts_with($p, 'Patient')) {
+            return true;
+        }
+
+        return is_array($body) && (($body['resourceType'] ?? '') === 'Patient');
+    }
+
+    protected function satusehatPreparePatientForSend(string $method, string $path, array $body, array $options): array
+    {
+        $modeMultipleBirth = strtolower(trim((string) (($options['compat']['patient_multiple_birth'] ?? null) ?? $this->satusehatCompatOption('patient_multiple_birth', 'off'))));
+        if ($modeMultipleBirth !== 'on') {
+            if (array_key_exists('multipleBirthInteger', $body)) {
+                unset($body['multipleBirthInteger']);
+            }
+            if (array_key_exists('multipleBirthBoolean', $body)) {
+                unset($body['multipleBirthBoolean']);
+            }
+        }
+
+        $modeAddressExt = strtolower(trim((string) (($options['compat']['patient_address_extension'] ?? null) ?? $this->satusehatCompatOption('patient_address_extension', 'off'))));
+        if ($modeAddressExt !== 'on' && isset($body['address']) && is_array($body['address'])) {
+            foreach ($body['address'] as $i => $addr) {
+                if (! is_array($addr)) {
+                    continue;
+                }
+                if (array_key_exists('extension', $addr)) {
+                    unset($addr['extension']);
+                    $body['address'][$i] = $addr;
+                }
+            }
+        }
+
+        return $body;
+    }
+
     protected function satusehatNormalizeEncounterTimestamps(array $body): array
     {
         if (isset($body['period']) && is_array($body['period'])) {
@@ -503,6 +541,14 @@ trait SatuSehatTraits
                     $options['compat'] = [];
                 }
                 $bodyToSend = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, false);
+            }
+
+            $isPatient = $this->satusehatIsPatientRequest($path, is_array($body) ? $body : null);
+            if ($isPatient && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                if (! isset($options['compat']) || ! is_array($options['compat'])) {
+                    $options['compat'] = [];
+                }
+                $bodyToSend = $this->satusehatPreparePatientForSend($method, $path, $bodyToSend, $options);
             }
 
             $sent1 = $sendOnce(is_array($bodyToSend) ? $bodyToSend : null);
