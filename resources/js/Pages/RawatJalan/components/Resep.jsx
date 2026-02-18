@@ -618,26 +618,32 @@ export default function Resep({
     };
 
     const updateRacikanGroup = (id, key, value) => {
-        setRacikanGroups((prev) => prev.map((g) => (g.id === id ? { ...g, [key]: value } : g)));
-        if (key === 'jml_dr') {
-            setRacikanGroups((prev) => prev.map((g) => {
+        setRacikanGroups((prev) =>
+            prev.map((g) => {
                 if (g.id !== id) return g;
+                const nextGroup = { ...g, [key]: value };
+                if (key !== "jml_dr") return nextGroup;
+
+                const jmlDr = Number(value) || 0;
                 const updatedItems = (g.items || []).map((it) => {
-                    const kapasitas = parseFloat(it.kapasitas || 0) || 0;
-                    const p1 = parseFloat(it.p1 || 0) || 0;
-                    const p2 = parseFloat(it.p2 || 0) || 0;
-                    const kandungan = parseFloat(it.kandungan || 0) || 0;
+                    const kapasitas = Number(it.kapasitas) || 0;
+                    const p1 = Number(it.p1) || 0;
+                    const p2 = Number(it.p2) || 0;
+                    const kandungan = Number(it.kandungan) || 0;
+
                     let jml = 0;
                     if (kapasitas > 0 && kandungan > 0) {
-                        jml = ((Number(value) || 0) * kandungan) / kapasitas;
+                        jml = (jmlDr * kandungan) / kapasitas;
                     } else if (p1 > 0 && p2 > 0) {
-                        jml = (Number(value) || 0) * (p1 / p2);
+                        jml = jmlDr * (p1 / p2);
                     }
-                    return { ...it, jml: jml };
+
+                    return { ...it, jml };
                 });
-                return { ...g, items: updatedItems };
-            }));
-        }
+
+                return { ...nextGroup, items: updatedItems };
+            })
+        );
     };
 
     const addRacikanItem = (groupId) => {
@@ -649,35 +655,39 @@ export default function Resep({
     };
 
     const updateRacikanItem = (groupId, itemId, key, value) => {
-        setRacikanGroups((prev) => prev.map((g) => {
-            if (g.id !== groupId) return g;
-            const updated = (g.items || []).map((it) => (it.id === itemId ? { ...it, [key]: value } : it));
-            return { ...g, items: updated };
-        }));
-        if (['p1', 'p2', 'kandungan'].includes(key)) {
-            setRacikanGroups((prev) => prev.map((g) => {
+        setRacikanGroups((prev) =>
+            prev.map((g) => {
                 if (g.id !== groupId) return g;
-                const updated = (g.items || []).map((it) => {
+                const jmlDr = Number(g.jml_dr) || 0;
+
+                const updatedItems = (g.items || []).map((it) => {
                     if (it.id !== itemId) return it;
-                    const kapasitas = parseFloat(it.kapasitas || 0) || 0;
-                    const p1 = parseFloat(key === 'p1' ? value : it.p1 || 0) || 0;
-                    const p2 = parseFloat(key === 'p2' ? value : it.p2 || 0) || 0;
-                    const kandungan = parseFloat(key === 'kandungan' ? value : it.kandungan || 0) || 0;
-                    let jml = 0;
-                    let nextKandungan = kandungan;
-                    if (kapasitas > 0 && kandungan > 0) {
-                        jml = ((Number(g.jml_dr) || 0) * kandungan) / kapasitas;
-                    } else if (p1 > 0 && p2 > 0) {
-                        jml = (Number(g.jml_dr) || 0) * (p1 / p2);
-                        if (kapasitas > 0 && (!nextKandungan || nextKandungan === 0)) {
-                            nextKandungan = kapasitas * (p1 / p2);
-                        }
+
+                    const next = { ...it, [key]: value };
+
+                    const kapasitas = Number(next.kapasitas) || 0;
+                    const p1 = Number(next.p1) || 0;
+                    const p2 = Number(next.p2) || 0;
+                    const kandunganInput = Number(next.kandungan) || 0;
+
+                    let nextKandungan = kandunganInput;
+                    if (["p1", "p2", "kapasitas"].includes(key) && kapasitas > 0 && p1 > 0 && p2 > 0) {
+                        nextKandungan = kapasitas * (p1 / p2);
                     }
-                    return { ...it, jml: jml, kandungan: nextKandungan };
+
+                    let jml = 0;
+                    if (kapasitas > 0 && nextKandungan > 0) {
+                        jml = (jmlDr * nextKandungan) / kapasitas;
+                    } else if (p1 > 0 && p2 > 0) {
+                        jml = jmlDr * (p1 / p2);
+                    }
+
+                    return { ...next, kandungan: nextKandungan, jml };
                 });
-                return { ...g, items: updated };
-            }));
-        }
+
+                return { ...g, items: updatedItems };
+            })
+        );
     };
 
     const selectRacikanObat = async (groupId, itemId, obat) => {
