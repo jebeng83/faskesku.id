@@ -2204,13 +2204,20 @@ export default function Registration({
                                                               >
                                                                   <div className="flex justify-between items-start gap-2">
                                                                       <div className="flex-1 min-w-0">
-                                                                          <div className="flex items-center gap-2 mb-1">
+                                                                          <div className="flex flex-wrap items-center gap-2 mb-1">
                                                                               <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
                                                                                   {patient.nm_pasien}
                                                                               </h4>
-                                                                              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
-                                                                                  {patient.no_rkm_medis}
-                                                                              </span>
+                                                                              <div className="flex flex-wrap items-center gap-1">
+                                                                                  <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                                                      {patient.no_rkm_medis}
+                                                                                  </span>
+                                                                                  {(patient.penjab?.png_jawab || patient.kd_pj) && (
+                                                                                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                                                          {patient.penjab?.png_jawab || patient.kd_pj}
+                                                                                      </span>
+                                                                                  )}
+                                                                              </div>
                                                                           </div>
                                                                           
                                                                           <div className="flex flex-wrap gap-x-3 gap-y-1 mb-1 text-xs text-gray-600 dark:text-gray-400">
