@@ -132,14 +132,15 @@ class EncounterService
      */
     private function buildEncounterResource($regPeriksa, $patientId, $practitionerId, $locationId, $organizationId)
     {
-        $periodStart = Carbon::parse($regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg)
-            ->setTimezone('Asia/Jakarta')
+        $periodStart = Carbon::parse($regPeriksa->tgl_registrasi.' '.$regPeriksa->jam_reg, 'Asia/Jakarta')
+            ->setTimezone('UTC')
             ->toIso8601String();
         
         $resource = [
             'resourceType' => 'Encounter',
             'identifier' => [[
                 'system' => 'http://sys-ids.kemkes.go.id/encounter/' . $organizationId,
+                'use' => 'official',
                 'value' => $regPeriksa->no_rawat
             ]],
             'status' => $this->mapStatus($regPeriksa->stts),
@@ -351,34 +352,8 @@ class EncounterService
             $encounter['reasonCode'] = $reasonCodes;
         }
 
-        if (isset($encounter['statusHistory']) && is_array($encounter['statusHistory'])) {
-            $fixed = [];
-            foreach ($encounter['statusHistory'] as $h) {
-                if (! is_array($h)) {
-                    continue;
-                }
-                $period = is_array($h['period'] ?? null) ? $h['period'] : [];
-                $s = trim((string) ($period['start'] ?? ''));
-                $e = trim((string) ($period['end'] ?? ''));
-                if ($s === '' && $e === '') {
-                    continue;
-                }
-                if ($s === '') {
-                    $s = $e;
-                }
-                if ($e === '') {
-                    $e = $s;
-                }
-                $fixed[] = [
-                    'status' => (string) ($h['status'] ?? 'in-progress'),
-                    'period' => ['start' => $s, 'end' => $e],
-                ];
-            }
-            if (empty($fixed)) {
-                unset($encounter['statusHistory']);
-            } else {
-                $encounter['statusHistory'] = $fixed;
-            }
+        if (isset($encounter['statusHistory'])) {
+            unset($encounter['statusHistory']);
         }
 
         if (isset($encounter['diagnosis'])) {
@@ -562,6 +537,10 @@ class EncounterService
         // Update fields
         if (isset($updates['status'])) {
             $encounter['status'] = $updates['status'];
+        }
+
+        if (isset($encounter['statusHistory'])) {
+            unset($encounter['statusHistory']);
         }
 
         if (isset($encounter['diagnosis'])) {

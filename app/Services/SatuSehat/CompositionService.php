@@ -219,17 +219,34 @@ class CompositionService
             'reference' => $authorRef,
         ]];
 
-        $method = 'POST';
-        $path = 'Composition';
-        $action = 'created';
         if ($existingId !== '') {
-            $body['id'] = $existingId;
-            $method = 'PUT';
-            $path = 'Composition/'.$existingId;
-            $action = 'updated';
+            $existing = $this->satusehatRequest('GET', 'Composition/'.$existingId);
+            if ($existing['ok']) {
+                return [
+                    'ok' => true,
+                    'action' => 'skipped',
+                    'composition_id' => $existingId,
+                    'identifier_value' => $identifierValue,
+                    'resource' => $existing['json'] ?? null,
+                ];
+            }
+
+            $identifierToken = 'http://sys-ids.kemkes.go.id/composition/'.$orgIhs.'|'.$identifierValue;
+            $search = $this->satusehatRequest('GET', 'Composition', null, ['query' => ['identifier' => $identifierToken]]);
+            if ($search['ok'] && isset(($search['json']['entry'] ?? [])[0]['resource']['id'])) {
+                $found = (string) $search['json']['entry'][0]['resource']['id'];
+
+                return [
+                    'ok' => true,
+                    'action' => 'skipped',
+                    'composition_id' => $found,
+                    'identifier_value' => $identifierValue,
+                    'resource' => $search['json']['entry'][0]['resource'] ?? null,
+                ];
+            }
         }
 
-        $res = $this->satusehatRequest($method, $path, $body, [
+        $res = $this->satusehatRequest('POST', 'Composition', $body, [
             'prefer_representation' => true,
             'local_id' => $identifierValue,
         ]);
@@ -253,7 +270,7 @@ class CompositionService
 
         return [
             'ok' => true,
-            'action' => $action,
+            'action' => 'created',
             'composition_id' => $compositionId,
             'identifier_value' => $identifierValue,
             'resource' => $res['json'] ?? null,

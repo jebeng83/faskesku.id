@@ -6,6 +6,7 @@ use App\Models\Kamar;
 use App\Models\Bangsal;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
 
@@ -399,10 +400,20 @@ class KamarController extends Controller
                 'message' => 'Gagal menambahkan kamar. Periksa kembali data input.',
             ], 422);
         } catch (\Throwable $e) {
+            $requestId = (string) $request->header('X-Debug-Request-Id', '');
+            Log::error('Kamar apiStore failed', [
+                'request_id' => $requestId,
+                'user_id' => auth()->id(),
+                'payload' => $request->only(['kd_kamar', 'kd_bangsal', 'trf_kamar', 'status', 'kelas', 'statusdata']),
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'ok' => false,
                 'message' => 'Terjadi kesalahan server saat menyimpan kamar.',
                 'error_code' => 'KAMAR_STORE_FAILED',
+                'request_id' => $requestId,
             ], 500);
         }
 
@@ -457,10 +468,21 @@ class KamarController extends Controller
                 'message' => 'Gagal memperbarui kamar. Periksa kembali data input.',
             ], 422);
         } catch (\Throwable $e) {
+            $requestId = (string) $request->header('X-Debug-Request-Id', '');
+            Log::error('Kamar apiUpdate failed', [
+                'request_id' => $requestId,
+                'user_id' => auth()->id(),
+                'kd_kamar' => $id,
+                'payload' => $request->only(['kd_bangsal', 'trf_kamar', 'status', 'kelas', 'statusdata']),
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'ok' => false,
                 'message' => 'Terjadi kesalahan server saat menyimpan kamar.',
                 'error_code' => 'KAMAR_UPDATE_FAILED',
+                'request_id' => $requestId,
             ], 500);
         }
 

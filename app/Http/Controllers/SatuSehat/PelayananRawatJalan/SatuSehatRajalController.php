@@ -34,17 +34,18 @@ class SatuSehatRajalController extends Controller
             return '';
         }
 
-        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'Asia/Jakarta');
-        if ($dt->lt($min)) {
-            $dt = $min;
+        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'UTC');
+        $dtUtc = $dt->copy()->setTimezone('UTC');
+        if ($dtUtc->lt($min)) {
+            $dtUtc = $min;
         }
 
-        $now = \Carbon\Carbon::now('Asia/Jakarta');
-        if ($dt->gt($now)) {
-            $dt = $now;
+        $nowUtc = \Carbon\Carbon::now('UTC');
+        if ($dtUtc->gt($nowUtc)) {
+            $dtUtc = $nowUtc;
         }
 
-        return $dt->toIso8601String();
+        return $dtUtc->toIso8601String();
     }
 
     public function createEncounter(Request $request)
@@ -700,14 +701,9 @@ class SatuSehatRajalController extends Controller
         $period['start'] = $start;
         $payload['period'] = $period;
 
-        $startVal = (string) ($period['start'] ?? '');
-        $sh = is_array($payload['statusHistory'] ?? null) ? $payload['statusHistory'] : [];
-        // Ensure every statusHistory has both period.start and period.end
-        $newSh = [];
-        $newSh[] = ['status' => 'arrived', 'period' => ['start' => $startVal ?: $end, 'end' => $startVal ?: $end]];
-        $newSh[] = ['status' => 'in-progress', 'period' => ['start' => $startVal ?: $end, 'end' => $end]];
-        $newSh[] = ['status' => 'finished', 'period' => ['start' => $end, 'end' => $end]];
-        $payload['statusHistory'] = $newSh;
+        if (isset($payload['statusHistory'])) {
+            unset($payload['statusHistory']);
+        }
 
         if (isset($payload['diagnosis'])) {
             unset($payload['diagnosis']);

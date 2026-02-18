@@ -201,6 +201,313 @@ trait SatuSehatTraits
         ], $extra);
     }
 
+    protected function satusehatCompatOption(string $key, mixed $default = null): mixed
+    {
+        $val = config('services.satusehat.compat.'.$key);
+
+        return $val !== null ? $val : $default;
+    }
+
+    protected function satusehatCompatAssumeTimezone(): string
+    {
+        $tz = (string) $this->satusehatCompatOption('assume_timezone', 'Asia/Jakarta');
+
+        return $tz !== '' ? $tz : 'Asia/Jakarta';
+    }
+
+    protected function satusehatNormalizeDateTimeToUtc(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        $value = preg_replace('/(T\d{2}:\d{2}:\d{2}):\d{2}([+-]\d{2}:\d{2})$/', '$1$2', $value) ?? $value;
+
+        try {
+            $dt = \Carbon\Carbon::parse($value, $this->satusehatCompatAssumeTimezone());
+        } catch (\Throwable) {
+            return '';
+        }
+
+        $min = \Carbon\Carbon::parse('2014-06-03 00:00:00', 'UTC');
+        $dtUtc = $dt->copy()->setTimezone('UTC');
+        if ($dtUtc->lt($min)) {
+            $dtUtc = $min;
+        }
+
+        $nowUtc = \Carbon\Carbon::now('UTC');
+        if ($dtUtc->gt($nowUtc)) {
+            $dtUtc = $nowUtc;
+        }
+
+        return $dtUtc->toIso8601String();
+    }
+
+    protected function satusehatIsEncounterRequest(string $path, ?array $body = null): bool
+    {
+        $p = ltrim($path, '/');
+        if (str_starts_with($p, 'Encounter')) {
+            return true;
+        }
+
+        return is_array($body) && (($body['resourceType'] ?? '') === 'Encounter');
+    }
+
+    protected function satusehatIsPatientRequest(string $path, ?array $body = null): bool
+    {
+        $p = ltrim($path, '/');
+        if (str_starts_with($p, 'Patient')) {
+            return true;
+        }
+
+        return is_array($body) && (($body['resourceType'] ?? '') === 'Patient');
+    }
+
+    protected function satusehatIsBundleRequest(string $path, ?array $body = null): bool
+    {
+        $p = ltrim($path, '/');
+        if (str_starts_with($p, 'Bundle')) {
+            return true;
+        }
+
+        return is_array($body) && (($body['resourceType'] ?? '') === 'Bundle');
+    }
+
+    protected function satusehatPreparePatientForSend(string $method, string $path, array $body, array $options): array
+    {
+        $modeMultipleBirth = strtolower(trim((string) (($options['compat']['patient_multiple_birth'] ?? null) ?? $this->satusehatCompatOption('patient_multiple_birth', 'off'))));
+        if ($modeMultipleBirth !== 'on') {
+            if (array_key_exists('multipleBirthInteger', $body)) {
+                unset($body['multipleBirthInteger']);
+            }
+            if (array_key_exists('multipleBirthBoolean', $body)) {
+                unset($body['multipleBirthBoolean']);
+            }
+        }
+
+        $modeAddressExt = strtolower(trim((string) (($options['compat']['patient_address_extension'] ?? null) ?? $this->satusehatCompatOption('patient_address_extension', 'off'))));
+        if ($modeAddressExt !== 'on' && isset($body['address']) && is_array($body['address'])) {
+            foreach ($body['address'] as $i => $addr) {
+                if (! is_array($addr)) {
+                    continue;
+                }
+                if (array_key_exists('extension', $addr)) {
+                    unset($addr['extension']);
+                    $body['address'][$i] = $addr;
+                }
+            }
+        }
+
+        return $body;
+    }
+
+    protected function satusehatPrepareBundleForSend(string $method, string $path, array $body, array $options): array
+    {
+        if (! isset($body['entry']) || ! is_array($body['entry'])) {
+            return $body;
+        }
+
+        foreach ($body['entry'] as $i => $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $resource = is_array($entry['resource'] ?? null) ? $entry['resource'] : null;
+            if (! is_array($resource)) {
+                continue;
+            }
+            $rt = (string) ($resource['resourceType'] ?? '');
+            if ($rt === '') {
+                continue;
+            }
+
+            $entryMethod = strtoupper(trim((string) (($entry['request']['method'] ?? null) ?? $method)));
+            $entryUrl = trim((string) ($entry['request']['url'] ?? $rt));
+
+            if ($rt === 'Encounter') {
+                $resource = $this->satusehatPrepareEncounterForSend($entryMethod, $entryUrl, $resource, $options, false);
+            } elseif ($rt === 'Patient') {
+                $resource = $this->satusehatPreparePatientForSend($entryMethod, $entryUrl, $resource, $options);
+            }
+
+            $entry['resource'] = $resource;
+            $body['entry'][$i] = $entry;
+        }
+
+        return $body;
+    }
+
+    protected function satusehatNormalizeEncounterTimestamps(array $body): array
+    {
+        if (isset($body['period']) && is_array($body['period'])) {
+            foreach (['start', 'end'] as $k) {
+                if (isset($body['period'][$k]) && is_string($body['period'][$k])) {
+                    $v = $this->satusehatNormalizeDateTimeToUtc($body['period'][$k]);
+                    if ($v !== '') {
+                        $body['period'][$k] = $v;
+                    }
+                }
+            }
+        }
+
+        if (isset($body['statusHistory']) && is_array($body['statusHistory'])) {
+            foreach ($body['statusHistory'] as $i => $h) {
+                if (! is_array($h)) {
+                    continue;
+                }
+                if (! isset($h['period']) || ! is_array($h['period'])) {
+                    continue;
+                }
+                foreach (['start', 'end'] as $k) {
+                    if (isset($h['period'][$k]) && is_string($h['period'][$k])) {
+                        $v = $this->satusehatNormalizeDateTimeToUtc($h['period'][$k]);
+                        if ($v !== '') {
+                            $body['statusHistory'][$i]['period'][$k] = $v;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($body['classHistory']) && is_array($body['classHistory'])) {
+            foreach ($body['classHistory'] as $i => $h) {
+                if (! is_array($h)) {
+                    continue;
+                }
+                if (! isset($h['period']) || ! is_array($h['period'])) {
+                    continue;
+                }
+                foreach (['start', 'end'] as $k) {
+                    if (isset($h['period'][$k]) && is_string($h['period'][$k])) {
+                        $v = $this->satusehatNormalizeDateTimeToUtc($h['period'][$k]);
+                        if ($v !== '') {
+                            $body['classHistory'][$i]['period'][$k] = $v;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $body;
+    }
+
+    protected function satusehatBuildEncounterStatusHistory(array $body): ?array
+    {
+        $status = strtolower(trim((string) ($body['status'] ?? '')));
+        if ($status !== 'finished') {
+            return null;
+        }
+
+        $period = is_array($body['period'] ?? null) ? $body['period'] : [];
+        $start = trim((string) ($period['start'] ?? ''));
+        $end = trim((string) ($period['end'] ?? ''));
+        if ($start === '' || $end === '') {
+            return null;
+        }
+
+        return [
+            ['status' => 'arrived', 'period' => ['start' => $start, 'end' => $start]],
+            ['status' => 'in-progress', 'period' => ['start' => $start, 'end' => $end]],
+            ['status' => 'finished', 'period' => ['start' => $end, 'end' => $end]],
+        ];
+    }
+
+    protected function satusehatPrepareEncounterForSend(string $method, string $path, array $body, array $options, bool $forceStatusHistory = false): array
+    {
+        $timestampMode = strtolower(trim((string) ($options['compat']['timestamp_mode'] ?? $this->satusehatCompatOption('timestamp_mode', 'utc'))));
+        if ($timestampMode === 'utc') {
+            $body = $this->satusehatNormalizeEncounterTimestamps($body);
+        }
+
+        $diagMode = strtolower(trim((string) ($options['compat']['encounter_diagnosis'] ?? $this->satusehatCompatOption('encounter_diagnosis', 'off'))));
+        if ($diagMode === '' || $diagMode === 'off') {
+            if (isset($body['diagnosis'])) {
+                unset($body['diagnosis']);
+            }
+        }
+
+        $mode = strtolower(trim((string) ($options['compat']['encounter_status_history'] ?? $this->satusehatCompatOption('encounter_status_history', 'off'))));
+        if ($mode === '') {
+            $mode = 'off';
+        }
+
+        if ($mode === 'off' || ($mode === 'auto' && ! $forceStatusHistory)) {
+            if (isset($body['statusHistory'])) {
+                unset($body['statusHistory']);
+            }
+        } elseif ($mode === 'on' || ($mode === 'auto' && $forceStatusHistory)) {
+            if (! isset($body['statusHistory'])) {
+                $sh = $this->satusehatBuildEncounterStatusHistory($body);
+                if ($sh !== null) {
+                    $body['statusHistory'] = $sh;
+                }
+            }
+        }
+
+        return $body;
+    }
+
+    protected function satusehatOperationOutcomeIndicatesDiagnosisNotFound(?array $json, string $rawBody): bool
+    {
+        $text = '';
+        if (is_array($json) && isset($json['issue']) && is_array($json['issue'])) {
+            foreach ($json['issue'] as $issue) {
+                if (! is_array($issue)) {
+                    continue;
+                }
+                $detailsText = is_array($issue['details'] ?? null) ? (string) ($issue['details']['text'] ?? '') : '';
+                $diagnostics = (string) ($issue['diagnostics'] ?? '');
+                $expr = is_array($issue['expression'] ?? null) ? implode(' ', array_map('strval', $issue['expression'])) : '';
+                $text .= ' '.$detailsText.' '.$diagnostics.' '.$expr;
+            }
+        }
+        $text = strtolower(trim($text.' '.$rawBody));
+
+        return str_contains($text, 'encounter.diagnosis') && (str_contains($text, 'element not found') || str_contains($text, '10457'));
+    }
+
+    protected function satusehatOperationOutcomeIndicatesStatusHistoryNotFound(?array $json, string $rawBody): bool
+    {
+        $text = '';
+        if (is_array($json) && isset($json['issue']) && is_array($json['issue'])) {
+            foreach ($json['issue'] as $issue) {
+                if (! is_array($issue)) {
+                    continue;
+                }
+                $detailsText = is_array($issue['details'] ?? null) ? (string) ($issue['details']['text'] ?? '') : '';
+                $diagnostics = (string) ($issue['diagnostics'] ?? '');
+                $expr = is_array($issue['expression'] ?? null) ? implode(' ', array_map('strval', $issue['expression'])) : '';
+                $text .= ' '.$detailsText.' '.$diagnostics.' '.$expr;
+            }
+        }
+        $text = strtolower(trim($text.' '.$rawBody));
+
+        return str_contains($text, 'encounter.statushistory') && (str_contains($text, 'element not found') || str_contains($text, '10122'));
+    }
+
+    protected function satusehatOperationOutcomeIndicatesStatusHistoryRequired(?array $json, string $rawBody): bool
+    {
+        $text = '';
+        if (is_array($json) && isset($json['issue']) && is_array($json['issue'])) {
+            foreach ($json['issue'] as $issue) {
+                if (! is_array($issue)) {
+                    continue;
+                }
+                $detailsText = is_array($issue['details'] ?? null) ? (string) ($issue['details']['text'] ?? '') : '';
+                $diagnostics = (string) ($issue['diagnostics'] ?? '');
+                $expr = is_array($issue['expression'] ?? null) ? implode(' ', array_map('strval', $issue['expression'])) : '';
+                $text .= ' '.$detailsText.' '.$diagnostics.' '.$expr;
+            }
+        }
+        $text = strtolower(trim($text.' '.$rawBody));
+
+        if (! str_contains($text, 'encounter.statushistory')) {
+            return false;
+        }
+
+        return str_contains($text, 'required') || str_contains($text, 'wajib') || str_contains($text, 'must') || str_contains($text, 'missing');
+    }
+
     /**
      * Request generic ke FHIR API.
      *
@@ -249,29 +556,159 @@ trait SatuSehatTraits
                 $req = $req->withOptions(['query' => $query]);
             }
 
-            // Kirim request
-            if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
-                // Pastikan nilai numeric tetap sebagai number saat JSON encoding
-                // Gunakan json_encode manual dengan flag untuk memastikan tipe number tetap number
-                // JSON_PRESERVE_ZERO_FRACTION memastikan float tetap sebagai number, bukan string
-                // CRITICAL: Laravel HTTP client dengan ['json' => $body] mungkin mengubah float menjadi string
-                // Gunakan json_encode manual untuk kontrol penuh atas encoding
-                $jsonBody = json_encode($body ?? [], JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
-                // withBody() akan set Content-Type otomatis, tapi kita sudah set di headers
-                $resp = $req->withBody($jsonBody, 'application/fhir+json')->send(strtoupper($method), $url);
-            } else {
-                $resp = $req->send(strtoupper($method), $url);
+            $sendOnce = function (?array $sendBody) use ($req, $method, $url) {
+                if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                    $jsonBody = json_encode($sendBody ?? [], JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
+                    $resp = $req->withBody($jsonBody, 'application/fhir+json')->send(strtoupper($method), $url);
+                } else {
+                    $resp = $req->send(strtoupper($method), $url);
+                }
+
+                $status = $resp->status();
+                $json = null;
+                try {
+                    $json = $resp->json();
+                } catch (\Throwable) {
+                }
+
+                return [
+                    'resp' => $resp,
+                    'status' => $status,
+                    'json' => $json,
+                    'ok' => $resp->successful(),
+                ];
+            };
+
+            $bodyToSend = $body;
+            $isEncounter = $this->satusehatIsEncounterRequest($path, is_array($body) ? $body : null);
+            if ($isEncounter && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                if (! isset($options['compat']) || ! is_array($options['compat'])) {
+                    $options['compat'] = [];
+                }
+                $bodyToSend = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, false);
             }
 
-            $status = $resp->status();
-            $json = null;
-            try {
-                $json = $resp->json();
-            } catch (\Throwable $e) {
-                // Biarkan kosong jika bukan JSON
+            $isPatient = $this->satusehatIsPatientRequest($path, is_array($body) ? $body : null);
+            if ($isPatient && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                if (! isset($options['compat']) || ! is_array($options['compat'])) {
+                    $options['compat'] = [];
+                }
+                $bodyToSend = $this->satusehatPreparePatientForSend($method, $path, $bodyToSend, $options);
             }
 
-            $ok = $resp->successful();
+            $isBundle = $this->satusehatIsBundleRequest($path, is_array($body) ? $body : null);
+            if ($isBundle && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+                if (! isset($options['compat']) || ! is_array($options['compat'])) {
+                    $options['compat'] = [];
+                }
+                $bodyToSend = $this->satusehatPrepareBundleForSend($method, $path, $bodyToSend, $options);
+            }
+
+            $sent1 = $sendOnce(is_array($bodyToSend) ? $bodyToSend : null);
+            $resp = $sent1['resp'];
+            $status = $sent1['status'];
+            $json = $sent1['json'];
+            $ok = $sent1['ok'];
+
+            $mode = strtolower(trim((string) ($options['compat']['encounter_status_history'] ?? $this->satusehatCompatOption('encounter_status_history', 'off'))));
+            if ($isEncounter && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && is_array($bodyToSend)) {
+                if ($mode === 'auto') {
+                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryRequired(is_array($json) ? $json : null, $resp->body())) {
+                        $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, true);
+                        $sent2 = $sendOnce($retryBody);
+                        $resp = $sent2['resp'];
+                        $status = $sent2['status'];
+                        $json = $sent2['json'];
+                        $ok = $sent2['ok'];
+                    } else {
+                        $needRetryStrip = false;
+                        $stripBody = $bodyToSend;
+
+                        if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            if (isset($stripBody['statusHistory'])) {
+                                unset($stripBody['statusHistory']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            if (isset($stripBody['diagnosis'])) {
+                                unset($stripBody['diagnosis']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($needRetryStrip) {
+                            $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $options, false);
+                            $sent2 = $sendOnce($stripBody);
+                            $resp = $sent2['resp'];
+                            $status = $sent2['status'];
+                            $json = $sent2['json'];
+                            $ok = $sent2['ok'];
+                        }
+                    }
+                } else {
+                    $needRetryStrip = false;
+                    $stripBody = $bodyToSend;
+                    $retryOptions = $options;
+
+                    if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
+                        $retryOptions['compat'] = [];
+                    }
+
+                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        $retryOptions['compat']['encounter_status_history'] = 'off';
+                        if (isset($stripBody['statusHistory'])) {
+                            unset($stripBody['statusHistory']);
+                        }
+                        $needRetryStrip = true;
+                    }
+
+                    if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        $retryOptions['compat']['encounter_diagnosis'] = 'off';
+                        if (isset($stripBody['diagnosis'])) {
+                            unset($stripBody['diagnosis']);
+                        }
+                        $needRetryStrip = true;
+                    }
+
+                    if ($needRetryStrip) {
+                        $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $retryOptions, false);
+                        $sent2 = $sendOnce($stripBody);
+                        $resp = $sent2['resp'];
+                        $status = $sent2['status'];
+                        $json = $sent2['json'];
+                        $ok = $sent2['ok'];
+                    }
+                }
+            }
+
+            if ($isBundle && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && is_array($bodyToSend)) {
+                $needRetryStrip = false;
+                $retryOptions = $options;
+                if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
+                    $retryOptions['compat'] = [];
+                }
+
+                if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                    $retryOptions['compat']['encounter_status_history'] = 'off';
+                    $needRetryStrip = true;
+                }
+
+                if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                    $retryOptions['compat']['encounter_diagnosis'] = 'off';
+                    $needRetryStrip = true;
+                }
+
+                if ($needRetryStrip) {
+                    $retryBody = $this->satusehatPrepareBundleForSend($method, $path, $bodyToSend, $retryOptions);
+                    $sent2 = $sendOnce($retryBody);
+                    $resp = $sent2['resp'];
+                    $status = $sent2['status'];
+                    $json = $sent2['json'];
+                    $ok = $sent2['ok'];
+                }
+            }
 
             // Auto-Logging ke satusehat_resources
             if ($ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && isset($json['resourceType'])) {

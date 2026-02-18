@@ -43,6 +43,14 @@ return [
         'client_id' => env('SATUSEHAT_CLIENT_ID', ''),
         'client_secret' => env('SATUSEHAT_CLIENT_SECRET', ''),
         'organization_id' => env('SATUSEHAT_ORG_ID', ''),
+        'compat' => [
+            'encounter_status_history' => env('SATUSEHAT_COMPAT_ENCOUNTER_STATUSHISTORY', 'off'),
+            'encounter_diagnosis' => env('SATUSEHAT_COMPAT_ENCOUNTER_DIAGNOSIS', 'off'),
+            'patient_multiple_birth' => env('SATUSEHAT_COMPAT_PATIENT_MULTIPLE_BIRTH', 'off'),
+            'patient_address_extension' => env('SATUSEHAT_COMPAT_PATIENT_ADDRESS_EXTENSION', 'off'),
+            'timestamp_mode' => env('SATUSEHAT_COMPAT_TIMESTAMP_MODE', 'utc'),
+            'assume_timezone' => env('SATUSEHAT_COMPAT_ASSUME_TZ', 'Asia/Jakarta'),
+        ],
     ],
 
     'whatsapp' => [

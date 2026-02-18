@@ -29,12 +29,67 @@ export default function Kamar() {
   const [kelas, setKelas] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [debugEnabled, setDebugEnabled] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
   const [bangsals, setBangsals] = useState([]);
   const [createForm, setCreateForm] = useState({ kd_kamar: "", kd_bangsal: "", trf_kamar: "", status: "KOSONG", kelas: "", statusdata: "1" });
   const [editForm, setEditForm] = useState({ kd_kamar: "", kd_bangsal: "", trf_kamar: "", status: "KOSONG", kelas: "", statusdata: "1" });
 
   const headers = useMemo(() => ({ Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }), []);
   const currency = useMemo(() => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }), []);
+
+  const makeRequestId = () => {
+    try {
+      if (typeof window !== "undefined" && window.crypto?.randomUUID) return window.crypto.randomUUID();
+    } catch (_e) {}
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  };
+
+  const safeStringify = (val) => {
+    try {
+      return JSON.stringify(val, null, 2);
+    } catch (_e) {
+      return String(val ?? "");
+    }
+  };
+
+  const normalizeAxiosError = (e) => {
+    const statusCode = e?.response?.status ?? null;
+    const statusText = e?.response?.statusText ?? "";
+    const contentType = e?.response?.headers?.["content-type"] ?? "";
+    const data = e?.response?.data ?? null;
+    const dataPreview = typeof data === "string" ? data.slice(0, 2000) : data;
+    return {
+      message: e?.message || "Request gagal",
+      statusCode,
+      statusText,
+      contentType,
+      data: dataPreview,
+    };
+  };
+
+  const captureDebug = (payload) => {
+    if (!debugEnabled) return;
+    const entry = { at: new Date().toISOString(), ...payload };
+    setDebugInfo(entry);
+    try {
+      // eslint-disable-next-line no-console
+      console.warn("[Kamar Debug]", entry);
+    } catch (_e) {}
+  };
+
+  useEffect(() => {
+    try {
+      const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const fromQuery = qs?.get("debug_kamar") === "1";
+      const fromStorage = typeof window !== "undefined" ? window.localStorage.getItem("debug_kamar") === "1" : false;
+      const enabled = Boolean(fromQuery || fromStorage);
+      setDebugEnabled(enabled);
+    } catch (_e) {
+      setDebugEnabled(false);
+    }
+  }, []);
 
   const ensureCsrf = async () => {
     try {
@@ -55,6 +110,7 @@ export default function Kamar() {
 
   const fetchKamar = async () => {
     setLoading(true);
+    const requestId = makeRequestId();
     try {
       const params = {
         start: 0,
@@ -64,20 +120,14 @@ export default function Kamar() {
         status: status !== "all" ? status : undefined,
         kelas: kelas !== "all" ? kelas : undefined,
       };
-      const res = await axios.get("/api/kamar", { params, headers, withCredentials: true });
+      captureDebug({ request: { id: requestId, method: "GET", url: "/api/kamar", params } });
+      const res = await axios.get("/api/kamar", { params, headers: { ...headers, "X-Debug-Request-Id": requestId }, withCredentials: true });
       const list = Array.isArray(res?.data?.list) ? res.data.list : Array.isArray(res?.data?.data) ? res.data.data : [];
       setItems(list);
     } catch (_e) {
-      try {
-        const params = { start: 0, limit: 100, q: search || undefined, kd_bangsal: kdBangsal !== "all" ? kdBangsal : undefined };
-        const res2 = await axios.get("/api/satusehat/ranap/kamar", { params, headers, withCredentials: true });
-        const list2 = Array.isArray(res2?.data?.list) ? res2.data.list : [];
-        const mapped = list2.map((x) => ({ kd_kamar: x.kd_kamar, kd_bangsal: x.kd_bangsal, nm_bangsal: x.nm_bangsal, trf_kamar: null, status: null, kelas: null, statusdata: null }));
-        setItems(mapped);
-      } catch (__e) {
-        toast.error("Gagal memuat data kamar");
-        setItems([]);
-      }
+      captureDebug({ request: { id: requestId, method: "GET", url: "/api/kamar" }, error: normalizeAxiosError(_e) });
+      toast.error("Gagal memuat data kamar");
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -88,6 +138,7 @@ export default function Kamar() {
       toast.error("Kode kamar, bangsal, dan tarif wajib diisi");
       return;
     }
+    const requestId = makeRequestId();
     try {
       await ensureCsrf();
       const payload = {
@@ -98,14 +149,19 @@ export default function Kamar() {
         kelas: createForm.kelas || undefined,
         statusdata: createForm.statusdata || undefined,
       };
-      await axios.post("/api/kamar", payload, { headers, withCredentials: true });
+      captureDebug({ request: { id: requestId, method: "POST", url: "/api/kamar", payload } });
+      const resp = await axios.post("/api/kamar", payload, { headers: { ...headers, "X-Debug-Request-Id": requestId }, withCredentials: true });
+      captureDebug({ response: { id: requestId, statusCode: resp?.status ?? null, data: resp?.data ?? null } });
       setCreateOpen(false);
       setCreateForm({ kd_kamar: "", kd_bangsal: "", trf_kamar: "", status: "KOSONG", kelas: "", statusdata: "1" });
       toast.success("Kamar berhasil ditambahkan");
       fetchKamar();
     } catch (e) {
-      const msg = e?.response?.data?.message || "Gagal menambahkan kamar";
+      const err = normalizeAxiosError(e);
+      captureDebug({ request: { id: requestId, method: "POST", url: "/api/kamar" }, error: err });
+      const msg = e?.response?.data?.message || e?.response?.data?.error_code || err.message || "Gagal menambahkan kamar";
       toast.error(msg);
+      setDebugOpen(true);
     }
   };
 
@@ -154,35 +210,48 @@ export default function Kamar() {
       ...(statusdataVal !== null ? { statusdata: statusdataVal } : {}),
     };
 
+    const requestId = makeRequestId();
     try {
       await ensureCsrf();
-      await axios.put(`/api/kamar/${id}`, payload, { headers, withCredentials: true });
+      captureDebug({ request: { id: requestId, method: "PUT", url: `/api/kamar/${id}`, payload } });
+      const resp = await axios.put(`/api/kamar/${id}`, payload, { headers: { ...headers, "X-Debug-Request-Id": requestId }, withCredentials: true });
+      captureDebug({ response: { id: requestId, statusCode: resp?.status ?? null, data: resp?.data ?? null } });
       setEditOpen(false);
       toast.success("Kamar berhasil diperbarui");
       fetchKamar();
     } catch (e) {
+      const err = normalizeAxiosError(e);
+      captureDebug({ request: { id: requestId, method: "PUT", url: `/api/kamar/${id}` }, error: err });
       const errors = e?.response?.data?.errors;
       if (errors && typeof errors === "object") {
         const firstKey = Object.keys(errors)[0];
         const firstMsg = Array.isArray(errors[firstKey]) ? errors[firstKey][0] : String(errors[firstKey]);
         toast.error(firstMsg || "Gagal memperbarui kamar");
       } else {
-        const msg = e?.response?.data?.message || "Gagal memperbarui kamar";
+        const msg = e?.response?.data?.message || e?.response?.data?.error_code || err.message || "Gagal memperbarui kamar";
         toast.error(msg);
       }
+      setDebugOpen(true);
     }
   };
 
   const handleDelete = async (kd) => {
+    const requestId = makeRequestId();
     try {
       await ensureCsrf();
       const id = encodeURIComponent(kd);
-      await axios.delete(`/api/kamar/${id}`, { headers, withCredentials: true });
-      toast.success("Kamar berhasil dihapus");
+      captureDebug({ request: { id: requestId, method: "DELETE", url: `/api/kamar/${id}` } });
+      const resp = await axios.delete(`/api/kamar/${id}`, { headers: { ...headers, "X-Debug-Request-Id": requestId }, withCredentials: true });
+      captureDebug({ response: { id: requestId, statusCode: resp?.status ?? null, data: resp?.data ?? null } });
+      const msg = resp?.data?.message || "Kamar berhasil dihapus";
+      toast.success(msg);
       fetchKamar();
     } catch (e) {
-      const msg = e?.response?.data?.message || "Gagal menghapus kamar";
+      const err = normalizeAxiosError(e);
+      captureDebug({ request: { id: requestId, method: "DELETE", url: `/api/kamar/${encodeURIComponent(kd)}` }, error: err });
+      const msg = e?.response?.data?.message || e?.response?.data?.error_code || err.message || "Gagal menghapus kamar";
       toast.error(msg);
+      setDebugOpen(true);
     }
   };
 
@@ -534,6 +603,48 @@ export default function Kamar() {
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Batal</Button>
               <Button onClick={handleUpdate}>Simpan</Button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          show={debugOpen}
+          onClose={() => setDebugOpen(false)}
+          title="Debug Request Kamar"
+          size="lg"
+          zIndex={10060}
+          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
+          headerClassName="bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50"
+          titleClassName="font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
+          showTopGradient
+          backdropClassName="bg-black/30 backdrop-blur-sm"
+        >
+          <div className="space-y-3">
+            <div className="text-xs text-gray-600 dark:text-gray-300">
+              Aktifkan debug via URL: <span className="font-mono">?debug_kamar=1</span> atau tombol Debug.
+            </div>
+            <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/40 p-3">
+              <pre className="text-xs whitespace-pre-wrap break-words text-gray-800 dark:text-gray-100">
+                {debugInfo ? safeStringify(debugInfo) : "Belum ada data debug. Coba ulangi Simpan/Ubah/Hapus."}
+              </pre>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  try {
+                    if (debugInfo) navigator.clipboard?.writeText(safeStringify(debugInfo));
+                    toast.success("Debug disalin");
+                  } catch (_e) {
+                    toast.error("Gagal menyalin debug");
+                  }
+                }}
+              >
+                Copy
+              </Button>
+              <Button variant="outline" onClick={() => setDebugOpen(false)}>
+                Tutup
+              </Button>
             </div>
           </div>
         </Modal>
