@@ -1512,7 +1512,12 @@ class RawatJalanController extends Controller
     public function suratSehat($noRawat)
     {
         $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
-            ->with(['patient', 'dokter'])
+            ->with([
+                'patient.kelurahan',
+                'patient.kecamatan',
+                'patient.kabupaten',
+                'dokter',
+            ])
             ->firstOrFail();
 
         $patient = $rawatJalan->patient;
@@ -1884,7 +1889,12 @@ class RawatJalanController extends Controller
     public function suratSakit($noRawat)
     {
         $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
-            ->with(['patient', 'dokter'])
+            ->with([
+                'patient.kelurahan',
+                'patient.kecamatan',
+                'patient.kabupaten',
+                'dokter',
+            ])
             ->firstOrFail();
 
         $patient = $rawatJalan->patient;

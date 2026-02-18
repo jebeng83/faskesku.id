@@ -40,6 +40,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         }
     }, []);
 
+
     useEffect(() => {
         let active = true;
 
@@ -223,12 +224,12 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     };
 
     const patientFullAddress = () => {
-        const normalize = (value) => (value ?? '').toString().trim();
-        const kel = normalize(patient?.kelurahan?.nm_kel || patient?.kelurahanpj || patient?.kelurahan);
-        const kec = normalize(patient?.kecamatan?.nm_kec || patient?.kecamatanpj || patient?.kecamatan);
-        const kab = normalize(patient?.kabupaten?.nm_kab || patient?.kabupatenpj || patient?.kabupaten);
-
-        const parts = [normalize(patient?.alamat), kel, kec, kab].filter(Boolean);
+        const parts = [
+            rawatJalan?.patient?.alamat,
+            rawatJalan?.patient?.kelurahan?.nm_kel || rawatJalan?.patient?.kd_kel,
+            rawatJalan?.patient?.kecamatan?.nm_kec || rawatJalan?.patient?.kd_kec,
+            rawatJalan?.patient?.kabupaten?.nm_kab || rawatJalan?.patient?.kd_kab,
+        ].filter(Boolean);
         return parts.join(', ');
     };
 
@@ -691,7 +692,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                         <div className="print-text-black">{patient?.jk === 'L' ? 'Laki-laki' : patient?.jk === 'P' ? 'Perempuan' : safeText(patient?.jk)}</div>
                                                         <div className="text-gray-700 print-text-black">Alamat</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black uppercase whitespace-normal break-words">
+                                                        <div className="text-gray-900 dark:text-white break-words whitespace-normal print-text-black">
                                                             {patientFullAddress() || safeText(patient?.alamat)}
                                                         </div>
                                                     </div>
@@ -734,7 +735,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 <div className="w-[86mm] text-xs print:text-[10px]">
                                                     <div className="text-center">
                                                         <div className="print-text-black">Validasi Dokumen</div>
-                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
                                                             {valQrDataUrl ? (
                                                                 <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
                                                             ) : (

@@ -869,7 +869,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                 <div className="w-full md:w-auto md:flex-1 text-xs print:text-[10px] print:flex-1 print:min-w-0">
                                                     <div className="text-center">
                                                         <div className="print-text-black">Validasi Dokumen</div>
-                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
                                                             {valQrDataUrl ? (
                                                                 <img src={valQrDataUrl} alt="QR Validasi" className="w-full h-full object-contain" />
                                                             ) : (
