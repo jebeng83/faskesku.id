@@ -49,6 +49,9 @@ export default function Registration({
     const [queueTodayList, setQueueTodayList] = useState([]);
     const [selectedLoket, setSelectedLoket] = useState(1);
     const manualSearchRef = useRef(false);
+    const searchAbortRef = useRef(null);
+    const searchCacheRef = useRef(new Map());
+    const searchLastRef = useRef({ term: "", alamat: "", data: [] });
     const [usePatientAddress, setUsePatientAddress] = useState(false);
 
     useEffect(() => {
@@ -698,52 +701,133 @@ export default function Registration({
 
     // Search patients
     const handleSearch = async (term, alamat = "") => {
-        if (!term.trim() && !String(alamat || "").trim()) {
+        const t = String(term || "").trim();
+        const a = String(alamat || "").trim().toLowerCase();
+        if (t.length < 3 && a.length < 3) {
             setSearchResults([]);
+            setIsSearching(false);
             return;
         }
+
+        const isNumeric = /^[0-9]+$/.test(t);
+        const tokens = isNumeric ? [] : t.toLowerCase().split(/\s+/).filter(Boolean);
+        const serverTerm = isNumeric ? (t.length >= 6 ? t : t.slice(0, 3)) : (tokens[0] || t);
+        const cacheKey = `${serverTerm}|${a}`;
+        const fullKey = isNumeric ? cacheKey : `${t.toLowerCase()}|${a}`;
+
+        const filterLocal = (rows) => {
+            if (!Array.isArray(rows)) return [];
+            if (isNumeric) {
+                return rows.filter((p) => {
+                    const rm = String(p?.no_rkm_medis || "");
+                    const ktp = String(p?.no_ktp || "");
+                    const peserta = String(p?.no_peserta || "");
+                    return rm.startsWith(t) || ktp.startsWith(t) || peserta.startsWith(t);
+                });
+            }
+            if (tokens.length > 1) {
+                return rows.filter((p) => {
+                    const name = String(p?.nm_pasien || "").toLowerCase();
+                    return tokens.every((tk) => name.includes(tk));
+                });
+            }
+            return rows;
+        };
+
+        const cached = searchCacheRef.current.get(cacheKey);
+        if (cached) {
+            const filtered = filterLocal(cached);
+            if (filtered.length > 0 || tokens.length <= 1 || isNumeric) {
+                setSearchResults(filtered);
+                setIsSearching(false);
+                return;
+            }
+        }
+
+        let queryTerm = serverTerm;
+        let queryKey = cacheKey;
+        if (!isNumeric && tokens.length > 1) {
+            queryTerm = t;
+            queryKey = fullKey;
+            const cachedFull = searchCacheRef.current.get(queryKey);
+            if (cachedFull) {
+                setSearchResults(filterLocal(cachedFull));
+                setIsSearching(false);
+                return;
+            }
+        }
+
+        if (searchAbortRef.current) {
+            searchAbortRef.current.abort();
+        }
+        const controller = new AbortController();
+        searchAbortRef.current = controller;
 
         setIsSearching(true);
         try {
             const response = await axios.get("/registration/search-patients", {
-                params: { search: term, alamat },
+                params: { search: queryTerm, alamat: a },
+                signal: controller.signal,
             });
             const data = Array.isArray(response?.data?.data) ? response.data.data : [];
-            const a = String(alamat || "").trim().toLowerCase();
-            const filtered = a
-                ? data.filter((p) => {
-                      const addr = [
-                          p?.alamat,
-                          p?.alamatpj,
-                          p?.kelurahanpj,
-                          p?.kecamatanpj,
-                          p?.kabupatenpj,
-                          p?.propinsipj,
-                      ]
-                          .filter(Boolean)
-                          .join(", ")
-                          .toLowerCase();
-                      return addr.includes(a);
-                  })
-                : data;
-            setSearchResults(filtered);
+            searchCacheRef.current.set(queryKey, data);
+            searchLastRef.current = { term: queryTerm.toLowerCase(), alamat: a, data };
+            setSearchResults(filterLocal(data));
         } catch (error) {
+            if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+                return;
+            }
             console.error("Error searching patients:", error);
             notify('error', 'Gagal', 'Gagal mencari data pasien');
         } finally {
-            setIsSearching(false);
+            if (searchAbortRef.current === controller) {
+                setIsSearching(false);
+            }
         }
     };
 
     // Handle search input change with debounce (search + alamat)
     useEffect(() => {
+        const t = String(searchTerm || "").trim();
+        const a = String(alamatTerm || "").trim().toLowerCase();
+        const last = searchLastRef.current;
+        if (t.length >= 3 || a.length >= 3) {
+            if (last?.data?.length && last.alamat === a && t.toLowerCase().startsWith(last.term)) {
+                const isNumeric = /^[0-9]+$/.test(t);
+                let filtered = last.data;
+                if (isNumeric) {
+                    filtered = last.data.filter((p) => {
+                        const rm = String(p?.no_rkm_medis || "");
+                        const ktp = String(p?.no_ktp || "");
+                        const peserta = String(p?.no_peserta || "");
+                        return rm.startsWith(t) || ktp.startsWith(t) || peserta.startsWith(t);
+                    });
+                } else {
+                    const tokens = t.toLowerCase().split(/\s+/).filter(Boolean);
+                    if (tokens.length > 1) {
+                        filtered = last.data.filter((p) => {
+                            const name = String(p?.nm_pasien || "").toLowerCase();
+                            return tokens.every((tk) => name.includes(tk));
+                        });
+                    } else if (tokens.length === 1) {
+                        filtered = last.data.filter((p) => {
+                            const name = String(p?.nm_pasien || "").toLowerCase();
+                            return name.includes(tokens[0]);
+                        });
+                    }
+                }
+                if (filtered.length > 0) {
+                    setSearchResults(filtered);
+                }
+            }
+        }
         const timeoutId = setTimeout(() => {
             if (manualSearchRef.current) {
                 manualSearchRef.current = false;
                 return;
             }
             handleSearch(searchTerm, alamatTerm);
-        }, 500);
+        }, 200);
 
         return () => clearTimeout(timeoutId);
     }, [searchTerm, alamatTerm]);
