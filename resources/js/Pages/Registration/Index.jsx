@@ -53,6 +53,8 @@ export default function Registration({
     const searchCacheRef = useRef(new Map());
     const searchLastRef = useRef({ term: "", alamat: "", data: [] });
     const [usePatientAddress, setUsePatientAddress] = useState(false);
+    const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
+    const [isRightCollapsed, setIsRightCollapsed] = useState(false);
 
     useEffect(() => {
         if (usePatientAddress && selectedPatient) {
@@ -2065,7 +2067,6 @@ export default function Registration({
                 transition={{ duration: 0.5, delay: 0.2 }}
             >
                 <div className="flex flex-col lg:flex-row items-stretch min-h-0">
-                    {/* Left Panel - Patient Search (Mobile: Full Width, Desktop: 40%) */}
                     <motion.div
                         className="w-full lg:w-2/5 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 px-4 lg:px-6 pt-4 lg:pt-6 pb-0"
                         initial={{ opacity: 0, x: -50 }}
@@ -2073,78 +2074,84 @@ export default function Registration({
                         transition={{ duration: 0.6, delay: 0.3 }}
                     >
                         <div className="h-full flex flex-col">
-                            <motion.div
-                                className="mb-4 lg:mb-6"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5, delay: 0.5 }}
-                            >
-                                <div className="w-full mb-3 rounded-lg border border-blue-200/70 dark:border-blue-800/60 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 p-3 shadow-sm">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700/80 dark:text-blue-300">Kontrol Loket</div>
-                                        <div className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-300">Antrian</div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2 w-full">
-                                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                                            <label className="text-[11px] font-semibold text-slate-700 dark:text-gray-300 px-2 py-0.5 rounded-md bg-white/70 dark:bg-gray-900/30 border border-slate-200/70 dark:border-gray-700">Loket</label>
-                                        <select
-                                            value={selectedLoket}
-                                            onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
-                                            className="px-2 py-1 text-xs rounded-md border border-blue-200/80 dark:border-blue-700 bg-white/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 w-full sm:w-auto shadow-sm"
-                                        >
-                                            <option value={1}>Loket 1</option>
-                                            <option value={2}>Loket 2</option>
-                                            <option value={3}>Loket 3</option>
-                                            <option value={4}>Loket 4</option>
-                                        </select>
-                                    </div>
-                                    <div className="px-2 py-1 rounded-md bg-white/80 dark:bg-gray-900/30 border border-blue-200/80 dark:border-blue-800 w-full sm:w-auto shadow-sm">
-                                        <div className="flex items-center gap-2">
-                                            <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
-                                            <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
+                            <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40">
+                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    Panel Pencarian
+                                </h3>
+                            </div>
+                            {!isLeftCollapsed && (
+                                <>
+                                <motion.div
+                                    className="mb-4 lg:mb-6"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.5, delay: 0.5 }}
+                                >
+                                    <div className="w-full mb-3 rounded-lg border border-blue-200/70 dark:border-blue-800/60 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 p-3 shadow-sm">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700/80 dark:text-blue-300">Kontrol Loket</div>
+                                            <div className="text-[10px] font-semibold text-blue-600/80 dark:text-blue-300">Antrian</div>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-2 w-full">
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                <label className="text-[11px] font-semibold text-slate-700 dark:text-gray-300 px-2 py-0.5 rounded-md bg-white/70 dark:bg-gray-900/30 border border-slate-200/70 dark:border-gray-700">Loket</label>
+                                            <select
+                                                value={selectedLoket}
+                                                onChange={(e) => setSelectedLoket(parseInt(e.target.value, 10))}
+                                                className="px-2 py-1 text-xs rounded-md border border-blue-200/80 dark:border-blue-700 bg-white/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 w-full sm:w-auto shadow-sm"
+                                            >
+                                                <option value={1}>Loket 1</option>
+                                                <option value={2}>Loket 2</option>
+                                                <option value={3}>Loket 3</option>
+                                                <option value={4}>Loket 4</option>
+                                            </select>
+                                        </div>
+                                        <div className="px-2 py-1 rounded-md bg-white/80 dark:bg-gray-900/30 border border-blue-200/80 dark:border-blue-800 w-full sm:w-auto shadow-sm">
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-base font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">{formatQueueLabel(queueCurrent?.nomor, queueCurrent?.prefix)}</div>
+                                                <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300">{queueStatusCode ?? '-'}</span>
+                                            </div>
+                                        </div>
+                                        <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
+                                        <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
                                         </div>
                                     </div>
-                                    <motion.button disabled={!queueCurrent?.nomor} onClick={() => handleCallLoketQueue(false)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Panggil</motion.button>
-                                    <motion.button disabled={!queueCurrent?.nomor && !queueLastCalledNumber} onClick={() => handleCallLoketQueue(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>Ulang</motion.button>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 lg:mb-4">
-                                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
-                                        Cari Pasien
-                                    </h3>
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                                        <motion.button
-                                            onClick={openPatientModal}
-                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm w-full sm:w-auto mt-2 sm:mt-0 justify-center"
-                                            whileHover={{ scale: 1.05, y: -1 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{
-                                                duration: 0.3,
-                                                delay: 0.6,
-                                            }}
-                                        >
-                                            <svg
-                                                className="w-3 h-3"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 lg:mb-4">
+                                        <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+                                            Cari Pasien
+                                        </h3>
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                                            <motion.button
+                                                onClick={openPatientModal}
+                                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 text-xs rounded-md flex items-center gap-1 transition-colors shadow-sm w-full sm:w-auto mt-2 sm:mt-0 justify-center"
+                                                whileHover={{ scale: 1.05, y: -1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{
+                                                    duration: 0.3,
+                                                    delay: 0.6,
+                                                }}
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                                />
-                                            </svg>
-                                            Tambah
-                                        </motion.button>
+                                                <svg
+                                                    className="w-3 h-3"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                                    />
+                                                </svg>
+                                                Tambah
+                                            </motion.button>
+                                        </div>
                                     </div>
-                                </div>
-
-                                {/* Search Inputs: Keyword + Alamat */}
-                                <div className="grid grid-cols-5 gap-2 items-center">
+                                    
+                                    <div className="grid grid-cols-5 gap-2 items-center">
                                     <motion.div
                                         className="relative col-span-3"
                                         whileFocus={{ scale: 1.02 }}
@@ -2421,10 +2428,11 @@ export default function Registration({
                                     </motion.div>
                                 )}
                             </div>
+                                </>
+                            )}
                         </div>
                     </motion.div>
 
-                    {/* Right Panel - Registration List (Mobile: Full Width, Desktop: 60%) */}
                     <motion.div
                         className="w-full lg:w-3/5 px-4 lg:px-6 pt-4 lg:pt-6 pb-3"
                         initial={{ opacity: 0, x: 50 }}
@@ -2432,7 +2440,12 @@ export default function Registration({
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
                         <div className="h-full flex flex-col">
-                            {/* Inline Registration Form (replaces list + pagination) */}
+                            <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40">
+                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    Panel Registrasi
+                                </h3>
+                            </div>
+                            {!isRightCollapsed && (
                             <div className="flex-1 overflow-y-auto">
                                 {!selectedPatient ? (
                                     <motion.div
@@ -2473,9 +2486,25 @@ export default function Registration({
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3 }}
                                         >
-                                            <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
-                                                Registrasi Periksa - {selectedPatient?.nm_pasien}
-                                            </h3>
+                                            <div className="pr-4">
+                                                <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+                                                    {selectedPatient?.nm_pasien}
+                                                </h3>
+                                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                    {selectedPatient?.no_rkm_medis && (
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                            {selectedPatient.no_rkm_medis}
+                                                        </span>
+                                                    )}
+                                                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+                                                        <span className="flex items-center gap-1">
+                                                            <span>{selectedPatient?.jk === "L" ? "L" : "P"}</span>
+                                                            <span>•</span>
+                                                            <span>{selectedPatient?.umur || "-"}</span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         <div className="flex items-center gap-2">
                                             <span className={srkBadgeClasses(srkStatus.status)}>
                                                 {srkStatus.status === "SUDAH_SRK" ? "Sudah SRK" : (srkStatus.status === "BELUM_SRK" ? "Belum SRK" : "Unknown")}
@@ -2759,38 +2788,38 @@ export default function Registration({
 
                                         {/* BPJS Kepesertaan - tampil di bawah form registrasi */}
                                         <motion.div
-                                            className="mt-4 mb-4"
+                                            className="mt-3 mb-3"
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3, delay: 0.1 }}
                                         >
-                                            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                                                 <div className="flex items-start justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <IdentificationIcon className="h-5 w-5 text-slate-500" />
+                                                    <div className="flex items-center gap-1.5">
+                                                        <IdentificationIcon className="h-4 w-4 text-slate-500" />
                                                         <div>
-                                                            <div className="text-sm font-semibold text-slate-800">
+                                                            <div className="text-xs font-semibold text-slate-800">
                                                                 Kepesertaan BPJS
                                                             </div>
-                                                            <div className="text-xs text-slate-500">
+                                                            <div className="text-[11px] text-slate-500 leading-tight">
                                                                 Cek otomatis berdasarkan NIK pasien
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5">
                                                         <input
                                                             type="text"
                                                             inputMode="numeric"
                                                             value={bpjsNik}
                                                             onChange={(e) => setBpjsNik(sanitizeNik(e.target.value))}
                                                             placeholder="Masukkan NIK"
-                                                            className="w-36 rounded-md border border-slate-300 px-1.5 py-0.5 text-xs"
+                                                            className="w-32 rounded-md border border-slate-300 px-1 py-0.5 text-[11px]"
                                                         />
                                                         <button
                                                             type="button"
                                                             onClick={() => fetchBpjsByNik()}
                                                             disabled={bpjsLoading}
-                                                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-white shadow ${bpjsLoading ? "bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                                                            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-white shadow ${bpjsLoading ? "bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"}`}
                                                         >
                                                             {bpjsLoading ? (
                                                                 <ArrowPathIcon className="h-3 w-3 animate-spin" />
@@ -2806,21 +2835,21 @@ export default function Registration({
                                                                 setBpjsError(null);
                                                                 setBpjsData(null);
                                                             }}
-                                                            className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs hover:bg-slate-50"
+                                                            className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] hover:bg-slate-50"
                                                         >
                                                             Reset
                                                         </button>
-                                                        <div className="hidden md:flex items-center gap-2 ml-2">
+                                                        <div className="hidden md:flex items-center gap-1.5 ml-1">
                                                             {bpjsLoading ? (
-                                                                <span className="text-slate-600 text-xs">Memuat…</span>
+                                                                <span className="text-slate-600 text-[11px]">Memuat…</span>
                                                             ) : bpjsError ? (
-                                                                <span className="text-red-700 text-xs">{bpjsError}</span>
+                                                                <span className="text-red-700 text-[11px]">{bpjsError}</span>
                                                             ) : bpjsData?.response ? (
                                                                 <>
-                                                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bpjsData.response?.aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                                                    <span className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium ${bpjsData.response?.aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
                                                                         {bpjsData.response?.aktif ? 'AKTIF' : 'TIDAK AKTIF'}
                                                                     </span>
-                                                                    <span className="text-xs text-slate-700 truncate max-w-[12rem]">
+                                                                    <span className="text-[11px] text-slate-700 truncate max-w-[10rem]">
                                                                         FKTP: {bpjsData.response?.kdProviderPst?.nmProvider || '-'}
                                                                     </span>
                                                                 </>
@@ -2830,42 +2859,42 @@ export default function Registration({
                                                 </div>
 
                                                 {/* Status */}
-                                                <div className="mt-2 flex items-center gap-2">
+                                                <div className="mt-1.5 flex items-center gap-1.5">
                                                     {bpjsLoading ? (
                                                         <>
-                                                            <ArrowPathIcon className="h-4 w-4 animate-spin text-emerald-600" />
-                                                            <span className="text-slate-700 text-sm">Memuat…</span>
+                                                            <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+                                                            <span className="text-slate-700 text-[11px]">Memuat…</span>
                                                         </>
                                                     ) : bpjsError ? (
                                                         <>
-                                                            <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
-                                                            <span className="text-red-700 text-sm">{bpjsError}</span>
+                                                            <ExclamationTriangleIcon className="h-3.5 w-3.5 text-red-600" />
+                                                            <span className="text-red-700 text-[11px]">{bpjsError}</span>
                                                         </>
                                                     ) : bpjsData?.response ? (
                                                         <>
-                                                            <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
-                                                            <span className="text-slate-700 text-sm">{bpjsData?.metaData?.message || "OK"}</span>
+                                                            <CheckCircleIcon className="h-3.5 w-3.5 text-emerald-600" />
+                                                            <span className="text-slate-700 text-[11px]">{bpjsData?.metaData?.message || "OK"}</span>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <IdentificationIcon className="h-4 w-4 text-slate-500" />
-                                                            <span className="text-slate-600 text-sm">Siap mencari</span>
+                                                            <IdentificationIcon className="h-3.5 w-3.5 text-slate-500" />
+                                                            <span className="text-slate-600 text-[11px]">Siap mencari</span>
                                                         </>
                                                     )}
                                                 </div>
 
                                                 {/* Hasil singkat */}
                                                 {bpjsData?.response && (
-                                                    <div className="mt-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                    <div className="mt-1.5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Nama Peserta</div>
-                                                            <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-800">
+                                                            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-800">
                                                                 <span className="truncate">{bpjsData.response?.nama || "-"}</span>
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">No. Kartu</div>
-                                                            <div className="mt-0.5 flex items-center gap-1 text-xs text-slate-800">
+                                                            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-800">
                                                                 <span>{bpjsData.response?.noKartu || "-"}</span>
                                                                 {bpjsData.response?.noKartu && (
                                                                     <button
@@ -2883,7 +2912,7 @@ export default function Registration({
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Status</div>
                                                             <div className="mt-0.5 text-xs">
                                                                 {bpjsData.response?.aktif ? (
@@ -2893,25 +2922,25 @@ export default function Registration({
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">NIK</div>
-                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.noKTP || "-"}</div>
+                                                            <div className="mt-0.5 text-[11px] text-slate-800">{bpjsData.response?.noKTP || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Provider FKTP</div>
-                                                            <div className="mt-0.5 text-xs text-slate-800 truncate">{bpjsData.response?.kdProviderPst?.nmProvider || "-"}</div>
+                                                            <div className="mt-0.5 text-[11px] text-slate-800 truncate">{bpjsData.response?.kdProviderPst?.nmProvider || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Kelas</div>
-                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || "-"}</div>
+                                                            <div className="mt-0.5 text-[11px] text-slate-800">{bpjsData.response?.jnsKelas?.nama || bpjsData.response?.jnsKelas?.kode || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Mulai Aktif</div>
-                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.tglMulaiAktif || "-"}</div>
+                                                            <div className="mt-0.5 text-[11px] text-slate-800">{bpjsData.response?.tglMulaiAktif || "-"}</div>
                                                         </div>
-                                                        <div className="rounded-lg border border-slate-200 px-2 py-1.5">
+                                                        <div className="rounded-lg border border-slate-200 px-1.5 py-1">
                                                             <div className="text-[10px] text-slate-500">Akhir Berlaku</div>
-                                                            <div className="mt-0.5 text-xs text-slate-800">{bpjsData.response?.tglAkhirBerlaku || "-"}</div>
+                                                            <div className="mt-0.5 text-[11px] text-slate-800">{bpjsData.response?.tglAkhirBerlaku || "-"}</div>
                                                         </div>
                                                     </div>
                                                 )}
@@ -2920,8 +2949,30 @@ export default function Registration({
                                     </div>
                                 )}
                             </div>
+                            )}
                         </div>
                     </motion.div>
+                </div>
+                <div className="flex items-center justify-end px-4 lg:px-6 pb-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            const nextCollapsed = !(isLeftCollapsed && isRightCollapsed);
+                            setIsLeftCollapsed(nextCollapsed);
+                            setIsRightCollapsed(nextCollapsed);
+                        }}
+                        className="px-2.5 py-1.5 text-xs rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5"
+                        title={isLeftCollapsed && isRightCollapsed ? "Tampilkan panel" : "Minimize panel"}
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {isLeftCollapsed && isRightCollapsed ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            )}
+                        </svg>
+                        {isLeftCollapsed && isRightCollapsed ? "Buka Panel" : "Minimize Panel"}
+                    </button>
                 </div>
             </motion.div>
 
@@ -3293,43 +3344,43 @@ export default function Registration({
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-center text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Aksi
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 No Reg
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 No Rawat
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Pasien
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 RM
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Poliklinik
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Dokter
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Penanggung
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Status
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Status Poli
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Cara Daftar
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Jam
                                             </th>
-                                            <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-right text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Biaya
                                             </th>
                                         </tr>
@@ -3346,7 +3397,7 @@ export default function Registration({
                                                         : "")
                                                 }
                                             >
-                                                <td className="px-3 py-2 text-center overflow-visible">
+                                                <td className="px-2 py-1 text-center overflow-visible whitespace-nowrap">
                                                     <div className="relative action-dropdown">
                                                         <button
                                                             onClick={(e) => {
@@ -3357,11 +3408,11 @@ export default function Registration({
                                                                         : reg.no_rawat
                                                                 );
                                                             }}
-                                                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                                                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
                                                             title="Aksi"
                                                         >
                                                             <svg
-                                                                className="w-5 h-5"
+                                                                className="w-4 h-4"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -3500,10 +3551,10 @@ export default function Registration({
                                                     </div>
                                                 </td>
                                                 
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.no_reg}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[140px] truncate">
                                                     <button
                                                         type="button"
                                                         title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
@@ -3517,25 +3568,25 @@ export default function Registration({
                                                         {reg.no_rawat}
                                                     </button>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[160px] truncate">
                                                     {reg.pasien?.nm_pasien}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.no_rkm_medis}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[120px] truncate">
                                                     {reg.poliklinik?.nm_poli}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[160px] truncate">
                                                     {reg.dokter?.nm_dokter}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[120px] truncate">
                                                     {reg.penjab?.png_jawab}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs whitespace-nowrap">
                                                     <span
                                                         className={
-                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            "px-1.5 py-0.5 rounded-full text-[10px] " +
                                                             (reg.stts ===
                                                             "Belum"
                                                                 ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
@@ -3548,10 +3599,10 @@ export default function Registration({
                                                         {reg.stts}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs whitespace-nowrap">
                                                     <span
                                                         className={
-                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            "px-1.5 py-0.5 rounded-full text-[10px] " +
                                                             (reg.status_poli ===
                                                             "Baru"
                                                                 ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
@@ -3561,13 +3612,13 @@ export default function Registration({
                                                         {reg.status_poli}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.keputusan ?? "-"}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.jam_reg?.slice(0, 5)}
                                                 </td>
-                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-right text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     Rp{" "}
                                                     {(
                                                         reg.biaya_reg ?? 0
@@ -3729,10 +3780,25 @@ export default function Registration({
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3, delay: 0.1 }}
                                 >
-                                    <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white pr-4">
-                                        Registrasi Periksa -{" "}
-                                        {selectedPatient?.nm_pasien}
-                                    </h3>
+                                    <div className="pr-4">
+                                        <h3 className="text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+                                            {selectedPatient?.nm_pasien}
+                                        </h3>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                                            {selectedPatient?.no_rkm_medis && (
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                                                    {selectedPatient.no_rkm_medis}
+                                                </span>
+                                            )}
+                                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+                                                <span className="flex items-center gap-1">
+                                                    <span>{selectedPatient?.jk === "L" ? "L" : "P"}</span>
+                                                    <span>•</span>
+                                                    <span>{selectedPatient?.umur || "-"}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="flex items-center gap-2">
                                         <motion.button
                                             onClick={() =>
