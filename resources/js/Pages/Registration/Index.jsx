@@ -3293,43 +3293,43 @@ export default function Registration({
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-3 py-2 text-center text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-center text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Aksi
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 No Reg
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 No Rawat
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Pasien
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 RM
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Poliklinik
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Dokter
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Penanggung
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Status
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Status Poli
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Cara Daftar
                                             </th>
-                                            <th className="px-3 py-2 text-left text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-left text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Jam
                                             </th>
-                                            <th className="px-3 py-2 text-right text-xs lg:text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                            <th className="px-2 py-1 text-right text-[11px] lg:text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
                                                 Biaya
                                             </th>
                                         </tr>
@@ -3346,7 +3346,7 @@ export default function Registration({
                                                         : "")
                                                 }
                                             >
-                                                <td className="px-3 py-2 text-center overflow-visible">
+                                                <td className="px-2 py-1 text-center overflow-visible whitespace-nowrap">
                                                     <div className="relative action-dropdown">
                                                         <button
                                                             onClick={(e) => {
@@ -3357,11 +3357,11 @@ export default function Registration({
                                                                         : reg.no_rawat
                                                                 );
                                                             }}
-                                                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                                                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
                                                             title="Aksi"
                                                         >
                                                             <svg
-                                                                className="w-5 h-5"
+                                                                className="w-4 h-4"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -3500,10 +3500,10 @@ export default function Registration({
                                                     </div>
                                                 </td>
                                                 
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.no_reg}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[140px] truncate">
                                                     <button
                                                         type="button"
                                                         title="Buka halaman Rawat Jalan / Lanjutan dan panggil antrean otomatis"
@@ -3517,25 +3517,25 @@ export default function Registration({
                                                         {reg.no_rawat}
                                                     </button>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[160px] truncate">
                                                     {reg.pasien?.nm_pasien}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.no_rkm_medis}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[120px] truncate">
                                                     {reg.poliklinik?.nm_poli}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[160px] truncate">
                                                     {reg.dokter?.nm_dokter}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap max-w-[120px] truncate">
                                                     {reg.penjab?.png_jawab}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs whitespace-nowrap">
                                                     <span
                                                         className={
-                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            "px-1.5 py-0.5 rounded-full text-[10px] " +
                                                             (reg.stts ===
                                                             "Belum"
                                                                 ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300"
@@ -3548,10 +3548,10 @@ export default function Registration({
                                                         {reg.stts}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs whitespace-nowrap">
                                                     <span
                                                         className={
-                                                            "px-2 py-1 rounded-full text-xs " +
+                                                            "px-1.5 py-0.5 rounded-full text-[10px] " +
                                                             (reg.status_poli ===
                                                             "Baru"
                                                                 ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
@@ -3561,13 +3561,13 @@ export default function Registration({
                                                         {reg.status_poli}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.keputusan ?? "-"}
                                                 </td>
-                                                <td className="px-3 py-2 text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     {reg.jam_reg?.slice(0, 5)}
                                                 </td>
-                                                <td className="px-3 py-2 text-right text-xs lg:text-sm text-gray-700 dark:text-gray-300">
+                                                <td className="px-2 py-1 text-right text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
                                                     Rp{" "}
                                                     {(
                                                         reg.biaya_reg ?? 0
