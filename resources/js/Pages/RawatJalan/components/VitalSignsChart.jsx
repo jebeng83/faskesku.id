@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
+    Area,
+    AreaChart,
     LineChart,
     Line,
     XAxis,
@@ -10,7 +12,7 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 
-const VitalSignsChart = ({ data = [] }) => {
+const VitalSignsChart = ({ data = [], variant = 'default' }) => {
     const [activeChart, setActiveChart] = useState('trend');
     const [selectedVital, setSelectedVital] = useState('all');
 
@@ -94,6 +96,15 @@ const VitalSignsChart = ({ data = [] }) => {
         spo2: '#8b5cf6'
     };
 
+    const cardColors = {
+        suhu: { stroke: '#0891b2', fill: 'rgba(8, 145, 178, 0.18)' },
+        sistolik: { stroke: '#ef4444', fill: 'rgba(239, 68, 68, 0.18)' },
+        diastolik: { stroke: '#16a34a', fill: 'rgba(22, 163, 74, 0.18)' },
+        nadi: { stroke: '#f59e0b', fill: 'rgba(245, 158, 11, 0.18)' },
+        respirasi: { stroke: '#7c3aed', fill: 'rgba(124, 58, 237, 0.18)' },
+        spo2: { stroke: '#10b981', fill: 'rgba(16, 185, 129, 0.18)' },
+    };
+
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
@@ -125,6 +136,146 @@ const VitalSignsChart = ({ data = [] }) => {
                     <p className="text-lg font-medium">Tidak ada data vital signs</p>
                     <p className="text-sm">Data akan muncul setelah pemeriksaan dilakukan</p>
                 </div>
+            </div>
+        );
+    }
+
+    if (variant === 'cards') {
+        const Card = ({ title, children }) => (
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+                </div>
+                <div className="p-6">
+                    <div className="h-72">
+                        {children}
+                    </div>
+                </div>
+            </div>
+        );
+
+        const axisCommon = {
+            tick: { fontSize: 12 },
+            angle: -45,
+            textAnchor: 'end',
+            height: 70,
+        };
+
+        return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card title="Grafik Suhu Tubuh">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="datetime" {...axisCommon} />
+                            <YAxis tick={{ fontSize: 12 }} domain={[34, 42]} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="suhu"
+                                stroke={cardColors.suhu.stroke}
+                                fill={cardColors.suhu.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="Suhu (°C)"
+                                connectNulls={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+
+                <Card title="Grafik Tekanan Darah">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="datetime" {...axisCommon} />
+                            <YAxis tick={{ fontSize: 12 }} domain={[40, 200]} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="sistolik"
+                                stroke={cardColors.sistolik.stroke}
+                                fill={cardColors.sistolik.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="Sistole"
+                                connectNulls={false}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="diastolik"
+                                stroke={cardColors.diastolik.stroke}
+                                fill={cardColors.diastolik.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="Diastole"
+                                connectNulls={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+
+                <Card title="Grafik Nadi & Respirasi">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="datetime" {...axisCommon} />
+                            <YAxis tick={{ fontSize: 12 }} domain={[0, 180]} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="nadi"
+                                stroke={cardColors.nadi.stroke}
+                                fill={cardColors.nadi.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="Nadi (x/menit)"
+                                connectNulls={false}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="respirasi"
+                                stroke={cardColors.respirasi.stroke}
+                                fill={cardColors.respirasi.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="Respirasi (x/menit)"
+                                connectNulls={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
+
+                <Card title="Grafik SpO2">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="datetime" {...axisCommon} />
+                            <YAxis tick={{ fontSize: 12 }} domain={[80, 100]} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <Area
+                                type="monotone"
+                                dataKey="spo2"
+                                stroke={cardColors.spo2.stroke}
+                                fill={cardColors.spo2.fill}
+                                strokeWidth={2}
+                                dot={{ r: 4 }}
+                                activeDot={{ r: 6 }}
+                                name="SpO2 (%)"
+                                connectNulls={false}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </Card>
             </div>
         );
     }

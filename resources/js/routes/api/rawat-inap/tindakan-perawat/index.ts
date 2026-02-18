@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:873
+* @see app/Http/Controllers/RawatInapController.php:874
 * @route '/api/rawat-inap/tindakan-perawat'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:873
+* @see app/Http/Controllers/RawatInapController.php:874
 * @route '/api/rawat-inap/tindakan-perawat'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::store
-* @see app/Http/Controllers/RawatInapController.php:873
+* @see app/Http/Controllers/RawatInapController.php:874
 * @route '/api/rawat-inap/tindakan-perawat'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
