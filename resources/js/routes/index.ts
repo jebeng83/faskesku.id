@@ -78,7 +78,7 @@ logout.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
 /**
-* @see routes/web.php:86
+* @see routes/web.php:87
 * @route '/landing'
 */
 export const landing = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -92,7 +92,7 @@ landing.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:86
+* @see routes/web.php:87
 * @route '/landing'
 */
 landing.url = (options?: RouteQueryOptions) => {
@@ -100,7 +100,7 @@ landing.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:86
+* @see routes/web.php:87
 * @route '/landing'
 */
 landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -109,7 +109,7 @@ landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:86
+* @see routes/web.php:87
 * @route '/landing'
 */
 landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -118,7 +118,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:641
+* @see routes/web.php:642
 * @route '/keep-alive'
 */
 export const keepAlive = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -132,7 +132,7 @@ keepAlive.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:641
+* @see routes/web.php:642
 * @route '/keep-alive'
 */
 keepAlive.url = (options?: RouteQueryOptions) => {
@@ -140,7 +140,7 @@ keepAlive.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:641
+* @see routes/web.php:642
 * @route '/keep-alive'
 */
 keepAlive.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -149,7 +149,7 @@ keepAlive.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:641
+* @see routes/web.php:642
 * @route '/keep-alive'
 */
 keepAlive.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -158,7 +158,7 @@ keepAlive.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:645
+* @see routes/web.php:646
 * @route '/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -172,7 +172,7 @@ dashboard.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:645
+* @see routes/web.php:646
 * @route '/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -180,7 +180,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:645
+* @see routes/web.php:646
 * @route '/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,7 +189,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:645
+* @see routes/web.php:646
 * @route '/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -198,7 +198,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:650
+* @see routes/web.php:651
 * @route '/layout-utama'
 */
 export const layoutUtama = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -212,7 +212,7 @@ layoutUtama.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:650
+* @see routes/web.php:651
 * @route '/layout-utama'
 */
 layoutUtama.url = (options?: RouteQueryOptions) => {
@@ -220,7 +220,7 @@ layoutUtama.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:650
+* @see routes/web.php:651
 * @route '/layout-utama'
 */
 layoutUtama.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -229,7 +229,7 @@ layoutUtama.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:650
+* @see routes/web.php:651
 * @route '/layout-utama'
 */
 layoutUtama.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -238,7 +238,7 @@ layoutUtama.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:1726
+* @see routes/web.php:1727
 * @route '/docs/{section?}'
 */
 export const docs = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -252,7 +252,7 @@ docs.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:1726
+* @see routes/web.php:1727
 * @route '/docs/{section?}'
 */
 docs.url = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -282,7 +282,7 @@ docs.url = (args?: { section?: string | number } | [section: string | number ] |
 }
 
 /**
-* @see routes/web.php:1726
+* @see routes/web.php:1727
 * @route '/docs/{section?}'
 */
 docs.get = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -291,7 +291,7 @@ docs.get = (args?: { section?: string | number } | [section: string | number ] |
 })
 
 /**
-* @see routes/web.php:1726
+* @see routes/web.php:1727
 * @route '/docs/{section?}'
 */
 docs.head = (args?: { section?: string | number } | [section: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

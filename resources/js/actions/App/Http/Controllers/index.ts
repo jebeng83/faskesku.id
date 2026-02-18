@@ -40,6 +40,7 @@ import RegPeriksaController from './RegPeriksaController'
 import PembayaranController from './PembayaranController'
 import ProfileController from './ProfileController'
 import setting from './setting'
+import CatatanObservasiRanapController from './CatatanObservasiRanapController'
 import IGD from './IGD'
 import IGDController from './IGDController'
 import KamarOperasiController from './KamarOperasiController'
@@ -94,6 +95,7 @@ const Controllers = {
     PembayaranController: Object.assign(PembayaranController, PembayaranController),
     ProfileController: Object.assign(ProfileController, ProfileController),
     setting: Object.assign(setting, setting),
+    CatatanObservasiRanapController: Object.assign(CatatanObservasiRanapController, CatatanObservasiRanapController),
     IGD: Object.assign(IGD, IGD),
     IGDController: Object.assign(IGDController, IGDController),
     KamarOperasiController: Object.assign(KamarOperasiController, KamarOperasiController),

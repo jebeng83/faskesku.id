@@ -430,6 +430,10 @@ trait SatuSehatTraits
         if ($mode === '') {
             $mode = 'off';
         }
+        $capKey = 'satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv();
+        if (Cache::get($capKey)) {
+            $mode = 'off';
+        }
 
         if ($mode === 'off' || ($mode === 'auto' && ! $forceStatusHistory)) {
             if (isset($body['statusHistory'])) {
@@ -625,6 +629,7 @@ trait SatuSehatTraits
                         $stripBody = $bodyToSend;
 
                         if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
                             if (isset($stripBody['statusHistory'])) {
                                 unset($stripBody['statusHistory']);
                             }
@@ -657,6 +662,7 @@ trait SatuSehatTraits
                     }
 
                     if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                        Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
                         $retryOptions['compat']['encounter_status_history'] = 'off';
                         if (isset($stripBody['statusHistory'])) {
                             unset($stripBody['statusHistory']);
@@ -691,6 +697,7 @@ trait SatuSehatTraits
                 }
 
                 if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                    Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
                     $retryOptions['compat']['encounter_status_history'] = 'off';
                     $needRetryStrip = true;
                 }

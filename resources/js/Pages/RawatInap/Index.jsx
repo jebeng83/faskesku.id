@@ -138,9 +138,9 @@ export default function Index(props = {}) {
             'Dirujuk': { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
             'Rujuk': { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
         };
-        
+
         const config = statusConfig[status] || { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' };
-        
+
         return (
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
                 {status}
@@ -489,7 +489,7 @@ export default function Index(props = {}) {
     };
 
     return (
-        <LayoutUtama title="Rawat Inap" left={<SidebarRawatInapMenu title="Rawat Inap" />}> 
+        <LayoutUtama title="Rawat Inap" left={<SidebarRawatInapMenu title="Rawat Inap" />}>
             <Head title="Rawat Inap" />
 
             <div className="px-4 sm:px-6 lg:px-8 py-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
@@ -673,7 +673,7 @@ export default function Index(props = {}) {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ttl. Biaya</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dokter</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status Pulang</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
@@ -715,17 +715,17 @@ export default function Index(props = {}) {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.kamar || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.nm_bangsal || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formatRupiah(row.trf_kamar)}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                        <div className="max-w-[240px] truncate" title={row.diagnosa_awal || ''}>{row.diagnosa_awal || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                        <div className="max-w-[240px] truncate" title={row.diagnosa_akhir || ''}>{row.diagnosa_akhir || '-'}</div>
-                                    </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formatRupiah(row.trf_kamar)}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                <div className="max-w-[240px] truncate" title={row.diagnosa_awal || ''}>{row.diagnosa_awal || '-'}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                                <div className="max-w-[240px] truncate" title={row.diagnosa_akhir || ''}>{row.diagnosa_akhir || '-'}</div>
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_masuk ? new Date(row.tgl_masuk).toLocaleDateString('id-ID') : '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_masuk || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_keluar ? new Date(row.tgl_keluar).toLocaleDateString('id-ID') : '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_keluar || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_masuk || '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.tgl_keluar ? new Date(row.tgl_keluar).toLocaleDateString('id-ID') : '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.jam_keluar || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                 <AnimatePresence mode="wait" initial={false}>
                                                     <motion.span
@@ -740,7 +740,7 @@ export default function Index(props = {}) {
                                                     </motion.span>
                                                 </AnimatePresence>
                                             </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formatRupiah(row.ttl_biaya)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{formatRupiah(row.ttl_biaya)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{row.dokter?.nm_dokter || '-'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">{getStatusBadge(row.stts_pulang || '-')}</td>
                                         </motion.tr>
@@ -775,13 +775,12 @@ export default function Index(props = {}) {
                                 <Link
                                     key={index}
                                     href={link.url || '#'}
-                                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                                        link.active 
-                                            ? 'bg-indigo-600 text-white' 
-                                            : link.url 
-                                                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${link.active
+                                            ? 'bg-indigo-600 text-white'
+                                            : link.url
+                                                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                                    }`}
+                                        }`}
                                     preserveState
                                     preserveScroll
                                     dangerouslySetInnerHTML={{ __html: link.label }}
@@ -844,11 +843,10 @@ export default function Index(props = {}) {
                                                 type="button"
                                                 onClick={() => setMenuTab(t.key)}
                                                 disabled={busy}
-                                                className={`h-9 px-3 rounded-md text-xs font-semibold border whitespace-nowrap transition-colors duration-100 ${
-                                                    active
+                                                className={`h-9 px-3 rounded-md text-xs font-semibold border whitespace-nowrap transition-colors duration-100 ${active
                                                         ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
                                                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                                                } ${busy ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                    } ${busy ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             >
                                                 {t.label}
                                             </button>
@@ -921,11 +919,10 @@ export default function Index(props = {}) {
                                             router.visit(route('akutansi.billing-rawat-inap.page', { no_rawat: selectedRow?.no_rawat || '' }));
                                         }}
                                         disabled={busy || !selectedRow?.no_rawat}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${
-                                            busy || !selectedRow?.no_rawat
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat
                                                 ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
                                                 : 'bg-white dark:bg-gray-800 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800 hover:bg-cyan-50/60 dark:hover:bg-cyan-900/20'
-                                        }`}
+                                            }`}
                                     >
                                         Billing
                                     </button>
@@ -936,11 +933,10 @@ export default function Index(props = {}) {
                                             openHapus(selectedRow);
                                         }}
                                         disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
-                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${
-                                            busy || !selectedRow?.no_rawat || selectedIsPulang
+                                        className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang
                                                 ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
                                                 : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'
-                                        }`}
+                                            }`}
                                     >
                                         Hapus
                                     </button>
@@ -988,6 +984,24 @@ export default function Index(props = {}) {
                                         className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-50/60 dark:hover:bg-blue-900/20'}`}
                                     >
                                         Canvas Ranap
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            router.get(route('rawat-inap.lanjutan'), {
+                                                no_rawat: selectedRow?.no_rawat || '',
+                                                no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                tab: 'observasi',
+                                            }, {
+                                                preserveScroll: true,
+                                                preserveState: true,
+                                            });
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
+                                    >
+                                        Observasi Pasien
                                     </button>
                                 </div>
                             ) : null}

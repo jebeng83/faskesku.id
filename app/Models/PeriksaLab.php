@@ -37,6 +37,7 @@ class PeriksaLab extends Model
         'biaya',
         'kd_dokter',
         'status',
+        'bagian_perujuk',
         'kategori',
     ];
 

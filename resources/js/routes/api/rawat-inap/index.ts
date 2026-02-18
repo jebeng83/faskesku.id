@@ -5,7 +5,7 @@ import tindakanPerawat from './tindakan-perawat'
 import tindakanDokterPerawat from './tindakan-dokter-perawat'
 /**
 * @see \App\Http\Controllers\RawatInapController::jenisTindakan
-* @see app/Http/Controllers/RawatInapController.php:718
+* @see app/Http/Controllers/RawatInapController.php:719
 * @route '/api/rawat-inap/jenis-tindakan'
 */
 export const jenisTindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -20,7 +20,7 @@ jenisTindakan.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::jenisTindakan
-* @see app/Http/Controllers/RawatInapController.php:718
+* @see app/Http/Controllers/RawatInapController.php:719
 * @route '/api/rawat-inap/jenis-tindakan'
 */
 jenisTindakan.url = (options?: RouteQueryOptions) => {
@@ -29,7 +29,7 @@ jenisTindakan.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::jenisTindakan
-* @see app/Http/Controllers/RawatInapController.php:718
+* @see app/Http/Controllers/RawatInapController.php:719
 * @route '/api/rawat-inap/jenis-tindakan'
 */
 jenisTindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -39,7 +39,7 @@ jenisTindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RawatInapController::jenisTindakan
-* @see app/Http/Controllers/RawatInapController.php:718
+* @see app/Http/Controllers/RawatInapController.php:719
 * @route '/api/rawat-inap/jenis-tindakan'
 */
 jenisTindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -49,7 +49,7 @@ jenisTindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 
 /**
 * @see \App\Http\Controllers\RawatInapController::cekBilling
-* @see app/Http/Controllers/RawatInapController.php:770
+* @see app/Http/Controllers/RawatInapController.php:771
 * @route '/api/rawat-inap/cek-billing/{noRawat}'
 */
 export const cekBilling = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -64,7 +64,7 @@ cekBilling.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::cekBilling
-* @see app/Http/Controllers/RawatInapController.php:770
+* @see app/Http/Controllers/RawatInapController.php:771
 * @route '/api/rawat-inap/cek-billing/{noRawat}'
 */
 cekBilling.url = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -91,7 +91,7 @@ cekBilling.url = (args: { noRawat: string | number } | [noRawat: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::cekBilling
-* @see app/Http/Controllers/RawatInapController.php:770
+* @see app/Http/Controllers/RawatInapController.php:771
 * @route '/api/rawat-inap/cek-billing/{noRawat}'
 */
 cekBilling.get = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -101,7 +101,7 @@ cekBilling.get = (args: { noRawat: string | number } | [noRawat: string | number
 
 /**
 * @see \App\Http\Controllers\RawatInapController::cekBilling
-* @see app/Http/Controllers/RawatInapController.php:770
+* @see app/Http/Controllers/RawatInapController.php:771
 * @route '/api/rawat-inap/cek-billing/{noRawat}'
 */
 cekBilling.head = (args: { noRawat: string | number } | [noRawat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

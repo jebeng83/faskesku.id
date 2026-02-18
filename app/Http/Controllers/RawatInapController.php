@@ -289,6 +289,7 @@ class RawatInapController extends Controller
             'params' => [
                 'no_rawat' => $noRawat,
                 'no_rkm_medis' => $noRkmMedis,
+                'tab' => $request->query('tab'),
             ],
         ]);
     }

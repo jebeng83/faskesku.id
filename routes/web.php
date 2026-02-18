@@ -14,6 +14,7 @@ use App\Http\Controllers\Akutansi\RekeningController;
 use App\Http\Controllers\Akutansi\SetAkunController;
 use App\Http\Controllers\Akutansi\SetoranBankController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CatatanObservasiRanapController;
 use App\Http\Controllers\DaftarTarifController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\EmployeeController;
@@ -2528,6 +2529,11 @@ Route::middleware('auth')->group(function () {
     Route::post('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'storePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.store');
     Route::delete('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'deletePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.delete');
     Route::put('rawat-inap/pemeriksaan-ranap', [RawatInapController::class, 'updatePemeriksaanRanap'])->name('rawat-inap.pemeriksaan-ranap.update');
+
+    Route::get('rawat-inap/catatan-observasi', [CatatanObservasiRanapController::class, 'getRecords'])->name('rawat-inap.catatan-observasi.index');
+    Route::post('rawat-inap/catatan-observasi', [CatatanObservasiRanapController::class, 'store'])->name('rawat-inap.catatan-observasi.store');
+    Route::put('rawat-inap/catatan-observasi', [CatatanObservasiRanapController::class, 'update'])->name('rawat-inap.catatan-observasi.update');
+    Route::delete('rawat-inap/catatan-observasi', [CatatanObservasiRanapController::class, 'destroy'])->name('rawat-inap.catatan-observasi.delete');
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');

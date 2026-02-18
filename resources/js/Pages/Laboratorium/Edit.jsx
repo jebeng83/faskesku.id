@@ -15,9 +15,11 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 		tgl_periksa: periksaLab.tgl_periksa
 			? new Date(periksaLab.tgl_periksa).toISOString().split("T")[0]
 			: "",
-		jam: periksaLab.jam || "",
+		jam: periksaLab.jam ? (typeof periksaLab.jam === 'string' && periksaLab.jam.includes('T') ? periksaLab.jam.split('T')[1].substring(0, 8) : periksaLab.jam) : "",
 		dokter_perujuk: periksaLab.dokter_perujuk || "",
-		petugas: periksaLab.petugas || "",
+		bagian_perujuk: periksaLab.bagian_perujuk || "",
+		kategori: periksaLab.kategori || "",
+		nip: periksaLab.nip || "",
 		status: periksaLab.status || "Menunggu",
 		keterangan: periksaLab.keterangan || "",
 	});
@@ -33,7 +35,9 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		transform((payload) => ({ ...payload, _method: "PUT" }));
-		post(route("laboratorium.update", periksaLab.no_rawat), {
+		// Jika no_rawat mengandung '/', ziggy-js akan menanganinya, 
+		// tapi kita pastikan URL-nya terbentuk dengan benar
+		post(route("laboratorium.update", { noRawat: periksaLab.no_rawat }), {
 			forceFormData: true,
 			onSuccess: () => {
 				setAlertConfig({
@@ -164,11 +168,10 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 										type="date"
 										value={data.tgl_periksa}
 										onChange={(e) => setData("tgl_periksa", e.target.value)}
-										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-											errors.tgl_periksa
-												? "border-red-500"
-												: "border-gray-300"
-										}`}
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.tgl_periksa
+											? "border-red-500"
+											: "border-gray-300"
+											}`}
 										required
 									/>
 									{errors.tgl_periksa && (
@@ -187,9 +190,8 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 										type="time"
 										value={data.jam}
 										onChange={(e) => setData("jam", e.target.value)}
-										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-											errors.jam ? "border-red-500" : "border-gray-300"
-										}`}
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.jam ? "border-red-500" : "border-gray-300"
+											}`}
 										required
 									/>
 									{errors.jam && (
@@ -207,15 +209,58 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 										value={data.dokter_perujuk}
 										onChange={(e) => setData("dokter_perujuk", e.target.value)}
 										placeholder="Nama dokter perujuk"
-										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-											errors.dokter_perujuk
-												? "border-red-500"
-												: "border-gray-300"
-										}`}
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.dokter_perujuk
+											? "border-red-500"
+											: "border-gray-300"
+											}`}
 									/>
 									{errors.dokter_perujuk && (
 										<p className="mt-1 text-sm text-red-600">
 											{errors.dokter_perujuk}
+										</p>
+									)}
+								</div>
+
+								{/* Bagian Perujuk */}
+								<div>
+									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										Bagian Perujuk
+									</label>
+									<input
+										type="text"
+										value={data.bagian_perujuk}
+										onChange={(e) => setData("bagian_perujuk", e.target.value)}
+										placeholder="Nama bagian perujuk"
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.bagian_perujuk
+												? "border-red-500"
+												: "border-gray-300"
+											}`}
+									/>
+									{errors.bagian_perujuk && (
+										<p className="mt-1 text-sm text-red-600">
+											{errors.bagian_perujuk}
+										</p>
+									)}
+								</div>
+
+								{/* Kategori */}
+								<div>
+									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										Kategori
+									</label>
+									<input
+										type="text"
+										value={data.kategori}
+										onChange={(e) => setData("kategori", e.target.value)}
+										placeholder="Kategori pemeriksaan"
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.kategori
+												? "border-red-500"
+												: "border-gray-300"
+											}`}
+									/>
+									{errors.kategori && (
+										<p className="mt-1 text-sm text-red-600">
+											{errors.kategori}
 										</p>
 									)}
 								</div>
@@ -227,10 +272,10 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 									</label>
 									<SearchableSelect
 										options={petugasOptions}
-										value={data.petugas}
-										onChange={(value) => setData("petugas", value)}
+										value={data.nip}
+										onChange={(value) => setData("nip", value)}
 										placeholder="Pilih atau cari petugas..."
-										error={errors.petugas}
+										error={errors.nip}
 									/>
 								</div>
 
@@ -242,9 +287,8 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 									<select
 										value={data.status}
 										onChange={(e) => setData("status", e.target.value)}
-										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-											errors.status ? "border-red-500" : "border-gray-300"
-										}`}
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.status ? "border-red-500" : "border-gray-300"
+											}`}
 										required
 									>
 										<option value="Menunggu">Menunggu</option>
@@ -266,11 +310,10 @@ export default function Edit({ periksaLab, jenisPerawatan, petugas }) {
 										onChange={(e) => setData("keterangan", e.target.value)}
 										rows={3}
 										placeholder="Keterangan tambahan..."
-										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-											errors.keterangan
-												? "border-red-500"
-												: "border-gray-300"
-										}`}
+										className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.keterangan
+											? "border-red-500"
+											: "border-gray-300"
+											}`}
 									/>
 									{errors.keterangan && (
 										<p className="mt-1 text-sm text-red-600">
