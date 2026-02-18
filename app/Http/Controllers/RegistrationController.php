@@ -89,7 +89,7 @@ class RegistrationController extends Controller
             }
         }
 
-        $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten'])
+        $patients = $query->with(['kelurahan', 'kecamatan', 'kabupaten', 'penjab'])
             ->orderBy('no_rkm_medis', 'desc')
             ->limit(100)
             ->get();

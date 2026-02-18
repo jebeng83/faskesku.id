@@ -343,6 +343,9 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
     const backToRalanUrl = route('rawat-jalan.index');
 
     const Layout = embedded ? ({ children }) => <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div> : SidebarRalan;
+    const lamasakitValue = String(formData.lamasakit || "").trim();
+    const lamasakitNumber = lamasakitValue.replace(/\s*hari\s*/gi, " ").trim();
+    const lamasakitDisplay = lamasakitNumber || lamasakitValue;
 
     return (
         <Layout>
@@ -845,7 +848,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                         )}
                                                         <div className="text-gray-700 print-text-black">Istirahat</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="font-semibold print-text-bold">{safeText(formData.lamasakit)} hari</div>
+                                                        <div className="font-semibold print-text-bold">{safeText(lamasakitDisplay)} hari</div>
                                                         <div className="text-gray-700 print-text-black">Dari Tanggal</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
                                                         <div className="print-text-black">{formatShortDate(formData.tanggalawal)}</div>
@@ -857,7 +860,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                             </div>
 
                                             <div className="mt-2 text-xs leading-tight print:mt-1.5 print-text-black print:text-[10px]">
-                                                Berdasarkan hasil pemeriksaan kesehatan, yang bersangkutan dalam keadaan <span className="font-bold print-text-bold uppercase">Sakit</span> dan memerlukan istirahat selama <span className="font-bold print-text-bold">{formData.lamasakit || '...'}</span> hari terhitung sejak tanggal <span className="font-semibold print-text-bold">{formatDate(formData.tanggalawal)}</span> sampai dengan <span className="font-semibold print-text-bold">{formatDate(formData.tanggalakhir)}</span>.
+                                                Berdasarkan hasil pemeriksaan kesehatan, yang bersangkutan dalam keadaan <span className="font-bold print-text-bold uppercase">Sakit</span> dan memerlukan istirahat selama <span className="font-bold print-text-bold">{lamasakitDisplay || '...'}</span> hari terhitung sejak tanggal <span className="font-semibold print-text-bold">{formatDate(formData.tanggalawal)}</span> sampai dengan <span className="font-semibold print-text-bold">{formatDate(formData.tanggalakhir)}</span>.
                                             </div>
 
                                             <div className="mt-1.5 text-xs leading-tight print:mt-1 print:mb-2 print-text-black">
