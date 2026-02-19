@@ -11,6 +11,7 @@ import PermintaanLab from './components/PermintaanLab';
 import TarifTindakan from './components/TarifTindakan';
 import Konsultasi from './components/Konsultasi';
 import CatatanObservasiRanap from './Catatan/CatatanObservasiRanap';
+import CatatanKeperawatanRanap from './Catatan/CatatanKeperawatanRanap';
 
 export default function Lanjutan({ rawatInap, params }) {
     const [activeTab, setActiveTab] = useState(params?.tab || 'cppt');
@@ -19,7 +20,7 @@ export default function Lanjutan({ rawatInap, params }) {
 
     const handleTabChange = (tab) => setActiveTab(tab);
     const toggle = (section) => setOpenAcc(prev => ({ ...prev, [section]: !prev[section] }));
-    
+
     useEffect(() => {
         const nextTab = params?.tab || 'cppt';
         setActiveTab((prev) => (prev === nextTab ? prev : nextTab));
@@ -49,6 +50,10 @@ export default function Lanjutan({ rawatInap, params }) {
         {
             key: 'observasi', title: 'Observasi', subtitle: 'Catatan Observasi Pasien', color: 'indigo',
             icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        },
+        {
+            key: 'keperawatan', title: 'Keperawatan', subtitle: 'Catatan Keperawatan', color: 'emerald',
+            icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
         }
     ];
 
@@ -59,7 +64,8 @@ export default function Lanjutan({ rawatInap, params }) {
             green: { active: 'bg-green-100 text-green-700 border-green-500', inactive: 'text-gray-600 hover:text-green-600 hover:bg-green-50' },
             red: { active: 'bg-red-100 text-red-700 border-red-500', inactive: 'text-gray-600 hover:text-red-600 hover:bg-red-50' },
             purple: { active: 'bg-purple-100 text-purple-700 border-purple-500', inactive: 'text-gray-600 hover:text-purple-600 hover:bg-purple-50' },
-            indigo: { active: 'bg-indigo-100 text-indigo-700 border-indigo-500', inactive: 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50' }
+            indigo: { active: 'bg-indigo-100 text-indigo-700 border-indigo-500', inactive: 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50' },
+            emerald: { active: 'bg-emerald-100 text-emerald-700 border-emerald-500', inactive: 'text-gray-600 hover:text-emerald-600 hover:bg-emerald-50' }
         };
         return colors[color][isActive ? 'active' : 'inactive'];
     };
@@ -79,6 +85,7 @@ export default function Lanjutan({ rawatInap, params }) {
             case 'diagnosa': return <Diagnosa {...commonProps} kdPj={rawatInap?.kd_pj || rawatInap?.penjab?.kd_pj || ''} />;
             case 'lab': return <PermintaanLab {...commonProps} />;
             case 'observasi': return <CatatanObservasiRanap {...commonProps} />;
+            case 'keperawatan': return <CatatanKeperawatanRanap {...commonProps} />;
             default: return <CpptSoap {...commonProps} context="ranap" />;
         }
     };

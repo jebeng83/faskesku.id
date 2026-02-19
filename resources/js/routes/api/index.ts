@@ -190,7 +190,7 @@ setHargaObat.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:447
+* @see routes/web.php:448
 * @route '/api/antrian-poli'
 */
 export const antrianPoli = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -204,7 +204,7 @@ antrianPoli.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:447
+* @see routes/web.php:448
 * @route '/api/antrian-poli'
 */
 antrianPoli.url = (options?: RouteQueryOptions) => {
@@ -212,7 +212,7 @@ antrianPoli.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:447
+* @see routes/web.php:448
 * @route '/api/antrian-poli'
 */
 antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -221,7 +221,7 @@ antrianPoli.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:447
+* @see routes/web.php:448
 * @route '/api/antrian-poli'
 */
 antrianPoli.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
