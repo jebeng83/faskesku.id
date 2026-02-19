@@ -776,10 +776,10 @@ export default function Index(props = {}) {
                                     key={index}
                                     href={link.url || '#'}
                                     className={`px-3 py-2 text-sm rounded-lg transition-colors ${link.active
-                                            ? 'bg-indigo-600 text-white'
-                                            : link.url
-                                                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                        ? 'bg-indigo-600 text-white'
+                                        : link.url
+                                            ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                                         }`}
                                     preserveState
                                     preserveScroll
@@ -844,8 +844,8 @@ export default function Index(props = {}) {
                                                 onClick={() => setMenuTab(t.key)}
                                                 disabled={busy}
                                                 className={`h-9 px-3 rounded-md text-xs font-semibold border whitespace-nowrap transition-colors duration-100 ${active
-                                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
-                                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                                                     } ${busy ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             >
                                                 {t.label}
@@ -920,8 +920,8 @@ export default function Index(props = {}) {
                                         }}
                                         disabled={busy || !selectedRow?.no_rawat}
                                         className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat
-                                                ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                                                : 'bg-white dark:bg-gray-800 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800 hover:bg-cyan-50/60 dark:hover:bg-cyan-900/20'
+                                            ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                            : 'bg-white dark:bg-gray-800 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800 hover:bg-cyan-50/60 dark:hover:bg-cyan-900/20'
                                             }`}
                                     >
                                         Billing
@@ -934,8 +934,8 @@ export default function Index(props = {}) {
                                         }}
                                         disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
                                         className={`h-10 min-w-[110px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang
-                                                ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
-                                                : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'
+                                            ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed'
+                                            : 'bg-white dark:bg-gray-800 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-50/60 dark:hover:bg-red-900/20'
                                             }`}
                                     >
                                         Hapus
@@ -1002,6 +1002,24 @@ export default function Index(props = {}) {
                                         className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20'}`}
                                     >
                                         Observasi Pasien
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeMenu();
+                                            router.get(route('rawat-inap.lanjutan'), {
+                                                no_rawat: selectedRow?.no_rawat || '',
+                                                no_rkm_medis: selectedRow?.patient?.no_rkm_medis || '',
+                                                tab: 'keperawatan',
+                                            }, {
+                                                preserveScroll: true,
+                                                preserveState: true,
+                                            });
+                                        }}
+                                        disabled={busy || !selectedRow?.no_rawat || selectedIsPulang}
+                                        className={`h-10 min-w-[160px] whitespace-nowrap rounded-md text-xs font-semibold border ${busy || !selectedRow?.no_rawat || selectedIsPulang ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 border-gray-200 dark:border-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20'}`}
+                                    >
+                                        Catatan Keperawatan
                                     </button>
                                 </div>
                             ) : null}
