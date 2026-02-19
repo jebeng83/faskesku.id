@@ -1623,12 +1623,16 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
         const normalized = rows.map((r) => {
             const updated = { ...r };
             numericFields.forEach((f) => {
-                if (updated[f] != null && updated[f] !== '') {
-                    const normalizedVal = String(updated[f]).replace(/,/g, '.');
-                    const parsed = parseFloat(normalizedVal);
-                    if (!isNaN(parsed)) {
-                        updated[f] = String(Math.floor(parsed)).slice(0, 9);
-                    }
+                if (updated[f] == null || updated[f] === '') {
+                    updated[f] = '0';
+                    return;
+                }
+                const normalizedVal = String(updated[f]).replace(/,/g, '.');
+                const parsed = parseFloat(normalizedVal);
+                if (!isNaN(parsed)) {
+                    updated[f] = String(Math.floor(parsed)).slice(0, 9);
+                } else {
+                    updated[f] = '0';
                 }
             });
             // Hitung otomatis Biaya Item sebagai jumlah komponen numerik
@@ -1675,14 +1679,14 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                 la: '',
                 pd: '',
                 pa: '',
-                bagian_rs: '',
-                bhp: '',
-                bagian_perujuk: '',
-                bagian_dokter: '',
-                bagian_laborat: '',
-                kso: '',
-                menejemen: '',
-                biaya_item: ''
+                bagian_rs: '0',
+                bhp: '0',
+                bagian_perujuk: '0',
+                bagian_dokter: '0',
+                bagian_laborat: '0',
+                kso: '0',
+                menejemen: '0',
+                biaya_item: '0'
             }
         ]);
     };
@@ -1856,6 +1860,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.bagian_rs}
                                                         onChange={(e) => handleChange(idx, 'bagian_rs', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'bagian_rs', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
@@ -1870,6 +1877,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.bhp}
                                                         onChange={(e) => handleChange(idx, 'bhp', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'bhp', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
@@ -1884,6 +1894,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.bagian_perujuk}
                                                         onChange={(e) => handleChange(idx, 'bagian_perujuk', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'bagian_perujuk', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
@@ -1898,6 +1911,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.bagian_dokter}
                                                         onChange={(e) => handleChange(idx, 'bagian_dokter', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'bagian_dokter', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
@@ -1912,6 +1928,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.bagian_laborat}
                                                         onChange={(e) => handleChange(idx, 'bagian_laborat', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'bagian_laborat', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
@@ -1926,6 +1945,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.kso}
                                                         onChange={(e) => handleChange(idx, 'kso', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'kso', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
@@ -1939,6 +1961,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.menejemen}
                                                         onChange={(e) => handleChange(idx, 'menejemen', e.target.value)}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'menejemen', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                     />
                                                 </td>
@@ -1952,6 +1977,9 @@ const EditTemplateModal = ({ isOpen, onClose, rows = [], setRows = () => {}, onS
                                                         placeholder="0"
                                                         value={row.biaya_item}
                                                         readOnly
+                                                        onBlur={(e) => {
+                                                            if (e.target.value === '') handleChange(idx, 'biaya_item', '0');
+                                                        }}
                                                         onKeyDown={handleEnterFocusNext}
                                                         required
                                                     />
