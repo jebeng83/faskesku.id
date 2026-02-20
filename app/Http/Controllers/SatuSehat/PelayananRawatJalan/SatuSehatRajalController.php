@@ -701,8 +701,51 @@ class SatuSehatRajalController extends Controller
         $period['start'] = $start;
         $payload['period'] = $period;
 
-        if (isset($payload['statusHistory'])) {
-            unset($payload['statusHistory']);
+        $orgIhs = $this->satusehatOrganizationId();
+        if ($orgIhs === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'SATUSEHAT_ORG_ID belum diisi',
+            ], 422);
+        }
+
+        if (! isset($payload['serviceProvider']) || ! is_array($payload['serviceProvider'])) {
+            $payload['serviceProvider'] = [];
+        }
+        if (trim((string) ($payload['serviceProvider']['reference'] ?? '')) === '') {
+            $payload['serviceProvider']['reference'] = 'Organization/'.$orgIhs;
+        }
+
+        $statusHistoryOk = isset($payload['statusHistory']) && is_array($payload['statusHistory']) && ! empty($payload['statusHistory']);
+        if (! $statusHistoryOk) {
+            $currentStatus = (string) ($payload['status'] ?? 'in-progress');
+            if ($currentStatus === 'finished') {
+                $payload['statusHistory'] = [
+                    [
+                        'status' => 'planned',
+                        'period' => ['start' => $start, 'end' => $start],
+                    ],
+                    [
+                        'status' => 'in-progress',
+                        'period' => ['start' => $start, 'end' => $end],
+                    ],
+                    [
+                        'status' => 'finished',
+                        'period' => ['start' => $end, 'end' => $end],
+                    ],
+                ];
+            } else {
+                $payload['statusHistory'] = [
+                    [
+                        'status' => 'planned',
+                        'period' => ['start' => $start, 'end' => $start],
+                    ],
+                    [
+                        'status' => $currentStatus,
+                        'period' => ['start' => $start, 'end' => $start],
+                    ],
+                ];
+            }
         }
 
         if (isset($payload['diagnosis'])) {

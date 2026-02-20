@@ -486,7 +486,15 @@ trait SatuSehatTraits
         }
         $text = strtolower(trim($text.' '.$rawBody));
 
-        return str_contains($text, 'encounter.statushistory') && (str_contains($text, 'element not found') || str_contains($text, '10122'));
+        if (! str_contains($text, 'encounter.statushistory')) {
+            return false;
+        }
+
+        if (str_contains($text, '10122')) {
+            return false;
+        }
+
+        return str_contains($text, 'element not found') || str_contains($text, 'unknown element') || str_contains($text, 'unrecognized') || str_contains($text, 'not supported');
     }
 
     protected function satusehatOperationOutcomeIndicatesStatusHistoryRequired(?array $json, string $rawBody): bool
@@ -509,7 +517,7 @@ trait SatuSehatTraits
             return false;
         }
 
-        return str_contains($text, 'required') || str_contains($text, 'wajib') || str_contains($text, 'must') || str_contains($text, 'missing');
+        return str_contains($text, '10122') || str_contains($text, 'required') || str_contains($text, 'wajib') || str_contains($text, 'must') || str_contains($text, 'missing');
     }
 
     /**
@@ -618,6 +626,7 @@ trait SatuSehatTraits
             if ($isEncounter && ! $ok && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']) && is_array($bodyToSend)) {
                 if ($mode === 'auto') {
                     if ($this->satusehatOperationOutcomeIndicatesStatusHistoryRequired(is_array($json) ? $json : null, $resp->body())) {
+                        Cache::forget('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv());
                         $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $options, true);
                         $sent2 = $sendOnce($retryBody);
                         $resp = $sent2['resp'];
@@ -653,38 +662,49 @@ trait SatuSehatTraits
                         }
                     }
                 } else {
-                    $needRetryStrip = false;
-                    $stripBody = $bodyToSend;
                     $retryOptions = $options;
-
                     if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
                         $retryOptions['compat'] = [];
                     }
 
-                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
-                        Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
-                        $retryOptions['compat']['encounter_status_history'] = 'off';
-                        if (isset($stripBody['statusHistory'])) {
-                            unset($stripBody['statusHistory']);
-                        }
-                        $needRetryStrip = true;
-                    }
-
-                    if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
-                        $retryOptions['compat']['encounter_diagnosis'] = 'off';
-                        if (isset($stripBody['diagnosis'])) {
-                            unset($stripBody['diagnosis']);
-                        }
-                        $needRetryStrip = true;
-                    }
-
-                    if ($needRetryStrip) {
-                        $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $retryOptions, false);
-                        $sent2 = $sendOnce($stripBody);
+                    if ($this->satusehatOperationOutcomeIndicatesStatusHistoryRequired(is_array($json) ? $json : null, $resp->body())) {
+                        Cache::forget('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv());
+                        $retryOptions['compat']['encounter_status_history'] = 'on';
+                        $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $bodyToSend, $retryOptions, true);
+                        $sent2 = $sendOnce($retryBody);
                         $resp = $sent2['resp'];
                         $status = $sent2['status'];
                         $json = $sent2['json'];
                         $ok = $sent2['ok'];
+                    } else {
+                        $needRetryStrip = false;
+                        $stripBody = $bodyToSend;
+
+                        if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
+                            $retryOptions['compat']['encounter_status_history'] = 'off';
+                            if (isset($stripBody['statusHistory'])) {
+                                unset($stripBody['statusHistory']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
+                            $retryOptions['compat']['encounter_diagnosis'] = 'off';
+                            if (isset($stripBody['diagnosis'])) {
+                                unset($stripBody['diagnosis']);
+                            }
+                            $needRetryStrip = true;
+                        }
+
+                        if ($needRetryStrip) {
+                            $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $retryOptions, false);
+                            $sent2 = $sendOnce($stripBody);
+                            $resp = $sent2['resp'];
+                            $status = $sent2['status'];
+                            $json = $sent2['json'];
+                            $ok = $sent2['ok'];
+                        }
                     }
                 }
             }

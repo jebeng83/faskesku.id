@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+let openModalCount = 0;
+let previousBodyOverflow = "";
+
 // Variants untuk transisi sangat halus dan lembut
 const backdropVariants = {
 	hidden: { opacity: 0 },
@@ -75,14 +78,24 @@ export default function Modal({
 			}
 		};
 
-		if (show) {
+		if (show && typeof document !== "undefined") {
+			if (openModalCount === 0) {
+				previousBodyOverflow = document.body.style.overflow || "";
+			}
+			openModalCount += 1;
+
 			document.addEventListener("keydown", handleEscape);
 			document.body.style.overflow = "hidden";
 		}
 
 		return () => {
-			document.removeEventListener("keydown", handleEscape);
-			document.body.style.overflow = "unset";
+			if (typeof document !== "undefined") {
+				document.removeEventListener("keydown", handleEscape);
+				openModalCount = Math.max(0, openModalCount - 1);
+				if (openModalCount === 0) {
+					document.body.style.overflow = previousBodyOverflow;
+				}
+			}
 		};
 	}, [show, onClose]);
 
@@ -120,13 +133,13 @@ export default function Modal({
 					/>
 
 					{/* Modal */}
-					<div className="flex min-h-full items-center justify-center p-4">
+					<div className="flex min-h-full items-start justify-center p-4">
 						<motion.div
 							variants={finalModalVariants}
 							initial="hidden"
 							animate="visible"
 							exit="exit"
-							className={`relative w-full ${sizeClasses[size]} overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl ${className}`}
+							className={`relative w-full ${sizeClasses[size]} flex flex-col max-h-[calc(100vh-2rem)] overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl ${className}`}
 						>
 							{showTopGradient && (
 								<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
@@ -157,7 +170,7 @@ export default function Modal({
 							</div>
 
 							{/* Content */}
-							<div className="px-6 py-4">{children}</div>
+							<div className="flex-1 px-6 py-4 overflow-y-auto">{children}</div>
 						</motion.div>
 					</div>
 				</div>

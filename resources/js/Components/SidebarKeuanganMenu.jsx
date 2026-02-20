@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import {
@@ -11,6 +11,8 @@ import {
   BookOpen,
   FileText,
   Receipt,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import usePermission from "@/hooks/usePermission";
 
@@ -20,6 +22,28 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
   const [openPengaturan, setOpenPengaturan] = useState(true);
   const [openJurnal, setOpenJurnal] = useState(true);
   const [openAkutansi, setOpenAkutansi] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("keuanganSidebarCollapsed");
+      if (saved !== null) setCollapsed(saved === "true");
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("keuanganSidebarCollapsed", String(collapsed));
+    } catch { }
+    if (typeof window !== "undefined" && typeof window.CustomEvent === "function") {
+      window.dispatchEvent(new window.CustomEvent("layoutSidebarCollapsed", { detail: { key: "keuangan", collapsed } }));
+    }
+    if (collapsed) {
+      setOpenPengaturan(false);
+      setOpenJurnal(false);
+      setOpenAkutansi(false);
+    }
+  }, [collapsed]);
 
   const items = useMemo(
     () => [
@@ -91,9 +115,19 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
 
   return (
     <div className="h-full overflow-y-auto p-3 text-white">
-      <div className="h-14 flex items-center px-3 gap-2">
-        <Wallet className="w-5 h-5" />
-        <span className="font-semibold truncate">{title}</span>
+      <div className="h-14 flex items-center px-3 gap-2 justify-between">
+        <div className={`flex items-center gap-2 min-w-0 ${collapsed ? "justify-center w-full" : ""}`}>
+          <Wallet className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span className="font-semibold truncate">{title}</span>}
+        </div>
+        <button
+          type="button"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={() => setCollapsed((v) => !v)}
+          className="flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-white/10"
+        >
+          {collapsed ? <ChevronsRight className="w-4 h-4 text-white/80" /> : <ChevronsLeft className="w-4 h-4 text-white/80" />}
+        </button>
       </div>
       <nav className="px-2 py-2 space-y-1 text-white/90">
         {filteredItems.map((item) => (
@@ -102,25 +136,31 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
               <button
                 type="button"
                 onClick={() => {
+                  if (collapsed) return;
                   if (item.label === "Pengaturan Akun") setOpenPengaturan((v) => !v);
                   else if (item.label === "Jurnal") setOpenJurnal((v) => !v);
                   else if (item.label === "Akutansi") setOpenAkutansi((v) => !v);
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/10"
+                className={`w-full flex items-center py-2 rounded-md hover:bg-white/10 ${collapsed ? "justify-center px-2" : "gap-3 px-3"}`}
               >
                 <span className="text-white/90">{item.icon}</span>
-                <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white/70">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
+                {!collapsed && (
+                  <>
+                    <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white/70">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </>
+                )}
               </button>
-              {(
+              {!collapsed && (
+                (
                 item.label === "Pengaturan Akun"
                   ? openPengaturan
                   : item.label === "Jurnal"
                   ? openJurnal
                   : openAkutansi
-              ) && (
+                ) && (
                 <div className="ml-2 pl-3 border-l border-white/10 space-y-1 mt-1">
                   {item.children.map((c) => (
                     <Link
@@ -135,18 +175,18 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
                     </Link>
                   ))}
                 </div>
-              )}
+              ))}
             </div>
           ) : (
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+              className={`flex items-center py-2 rounded-md transition-colors ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${
                 isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
               }`}
             >
               <span className="text-white/90">{item.icon}</span>
-              <span className="text-sm font-medium">{item.label}</span>
+              {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
             </Link>
           )
         ))}
@@ -154,4 +194,3 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
     </div>
   );
 }
-

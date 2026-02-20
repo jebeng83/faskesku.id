@@ -2541,6 +2541,11 @@ Route::middleware('auth')->group(function () {
     Route::post('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'store'])->name('rawat-inap.catatan-keperawatan.store');
     Route::put('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'update'])->name('rawat-inap.catatan-keperawatan.update');
     Route::delete('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'destroy'])->name('rawat-inap.catatan-keperawatan.delete');
+
+    // Handover Perawat
+    Route::get('rawat-inap/handover', [RawatInapController::class, 'handover'])->name('rawat-inap.handover');
+    Route::get('rawat-inap/handover-data', [RawatInapController::class, 'handoverData'])->name('rawat-inap.handover-data');
+
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');
