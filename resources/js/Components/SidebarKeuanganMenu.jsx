@@ -11,6 +11,8 @@ import {
   BookOpen,
   FileText,
   Receipt,
+  BarChart2,
+  Scale,
 } from "lucide-react";
 import usePermission from "@/hooks/usePermission";
 
@@ -20,6 +22,7 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
   const [openPengaturan, setOpenPengaturan] = useState(true);
   const [openJurnal, setOpenJurnal] = useState(true);
   const [openAkutansi, setOpenAkutansi] = useState(true);
+  const [openLaporanKeuangan, setOpenLaporanKeuangan] = useState(true);
 
   const items = useMemo(
     () => [
@@ -55,11 +58,17 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
           { label: "Billing", href: "/akutansi/billing", icon: <Receipt className="w-4 h-4" />, permission: "akutansi.billing" },
           { label: "Nota Jalan", href: "/akutansi/nota-jalan", icon: <Receipt className="w-4 h-4" />, permission: "akutansi.nota-jalan" },
           { label: "Nota Inap", href: "/akutansi/nota-inap", icon: <Receipt className="w-4 h-4" /> },
-          { label: "Cash Flow", href: "/akutansi/cashflow", icon: <Wallet className="w-4 h-4" />, permission: "akutansi.cash-flow" },
-          { label: "Neraca", href: "/akutansi/neraca", icon: <Receipt className="w-4 h-4" />, permission: "akutansi.neraca" },
-          { label: "Mutasi Rekening", href: "/akutansi/mutasi-rekening", icon: <Banknote className="w-4 h-4" />, permission: "akutansi.mutasi-rekening" },
           { label: "Mutasi Kas", href: "/akutansi/mutasi-kas", icon: <Wallet className="w-4 h-4" />, permission: "akutansi.mutasi-kas" },
           { label: "Setoran Bank", href: "/akutansi/setoran-bank", icon: <Banknote className="w-4 h-4" />, permission: "akutansi.setoran-bank" },
+        ],
+      },
+      {
+        label: "Laporan Keuangan",
+        icon: <BarChart2 className="w-4 h-4" />,
+        children: [
+          { label: "Neraca", href: "/akutansi/neraca", icon: <Scale className="w-4 h-4" />, permission: "akutansi.neraca" },
+          { label: "Cash Flow", href: "/akutansi/cashflow", icon: <Wallet className="w-4 h-4" />, permission: "akutansi.cash-flow" },
+          { label: "Mutasi Rekening", href: "/akutansi/mutasi-rekening", icon: <Banknote className="w-4 h-4" />, permission: "akutansi.mutasi-rekening" },
         ],
       },
     ],
@@ -108,6 +117,7 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
                   if (item.label === "Pengaturan Akun") setOpenPengaturan((v) => !v);
                   else if (item.label === "Jurnal") setOpenJurnal((v) => !v);
                   else if (item.label === "Akutansi") setOpenAkutansi((v) => !v);
+                  else if (item.label === "Laporan Keuangan") setOpenLaporanKeuangan((v) => !v);
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
               >
@@ -122,7 +132,9 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
                   ? openPengaturan
                   : item.label === "Jurnal"
                   ? openJurnal
-                  : openAkutansi
+                  : item.label === "Akutansi"
+                  ? openAkutansi
+                  : openLaporanKeuangan
               ) && (
                 <div className="ml-2 pl-3 border-l border-white/10 space-y-1 mt-1">
                   {item.children.map((c) => (
