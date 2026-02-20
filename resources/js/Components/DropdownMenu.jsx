@@ -37,8 +37,8 @@ export default function DropdownMenu({
 	}, []);
 
 	const getPositionClasses = () => {
-        const baseClasses =
-            "absolute z-[1000] mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
+		const baseClasses =
+			"absolute z-[10000] mt-1 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none";
 
 		// Position (top/bottom)
 		const positionClasses =
@@ -94,7 +94,7 @@ export default function DropdownMenu({
 	const portalMenu = isOpen ? (
 		<div
 			ref={menuRef}
-			className="fixed z-[3000] w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+			className="fixed z-[10000] w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
 			style={menuStyles}
 		>
 			<div className="py-1 bg-white dark:bg-gray-800 rounded-md shadow-xs">
@@ -105,7 +105,7 @@ export default function DropdownMenu({
 
 	return (
 		<div
-			className={`relative inline-block text-left ${isOpen ? "z-[2000]" : "z-50"} ${className}`}
+			className={`relative inline-block text-left ${isOpen ? "z-[10000]" : "z-50"} ${className}`}
 		>
 			<div ref={triggerRef} onClick={() => setIsOpen(!isOpen)}>
 				{trigger}
