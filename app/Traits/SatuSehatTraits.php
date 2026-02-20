@@ -274,6 +274,28 @@ trait SatuSehatTraits
         return is_array($body) && (($body['resourceType'] ?? '') === 'Bundle');
     }
 
+    protected function satusehatIsJsonPatchBody(array $body): bool
+    {
+        if (! function_exists('array_is_list') || ! array_is_list($body) || $body === []) {
+            return false;
+        }
+
+        foreach ($body as $op) {
+            if (! is_array($op)) {
+                return false;
+            }
+            if (! array_key_exists('op', $op) || ! array_key_exists('path', $op)) {
+                return false;
+            }
+            $opName = strtolower(trim((string) $op['op']));
+            if ($opName === '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected function satusehatPreparePatientForSend(string $method, string $path, array $body, array $options): array
     {
         $modeMultipleBirth = strtolower(trim((string) (($options['compat']['patient_multiple_birth'] ?? null) ?? $this->satusehatCompatOption('patient_multiple_birth', 'off'))));
@@ -421,7 +443,7 @@ trait SatuSehatTraits
 
         $diagMode = strtolower(trim((string) ($options['compat']['encounter_diagnosis'] ?? $this->satusehatCompatOption('encounter_diagnosis', 'off'))));
         if ($diagMode === '' || $diagMode === 'off') {
-            if (isset($body['diagnosis'])) {
+            if (array_key_exists('diagnosis', $body)) {
                 unset($body['diagnosis']);
             }
         }
@@ -436,7 +458,7 @@ trait SatuSehatTraits
         }
 
         if ($mode === 'off' || ($mode === 'auto' && ! $forceStatusHistory)) {
-            if (isset($body['statusHistory'])) {
+            if (array_key_exists('statusHistory', $body)) {
                 unset($body['statusHistory']);
             }
         } elseif ($mode === 'on' || ($mode === 'auto' && $forceStatusHistory)) {
@@ -490,10 +512,6 @@ trait SatuSehatTraits
             return false;
         }
 
-        if (str_contains($text, '10122')) {
-            return false;
-        }
-
         return str_contains($text, 'element not found') || str_contains($text, 'unknown element') || str_contains($text, 'unrecognized') || str_contains($text, 'not supported');
     }
 
@@ -517,7 +535,7 @@ trait SatuSehatTraits
             return false;
         }
 
-        return str_contains($text, '10122') || str_contains($text, 'required') || str_contains($text, 'wajib') || str_contains($text, 'must') || str_contains($text, 'missing');
+        return str_contains($text, 'required') || str_contains($text, 'wajib') || str_contains($text, 'must') || str_contains($text, 'missing');
     }
 
     /**
@@ -551,9 +569,10 @@ trait SatuSehatTraits
 
         $url = $fhirBase.'/'.ltrim($path, '/');
 
-        $headers = $this->satusehatHeaders($options['headers'] ?? []);
         $query = $options['query'] ?? [];
         $preferRepresentation = $options['prefer_representation'] ?? false;
+        $isJsonPatch = strtoupper($method) === 'PATCH' && is_array($body) && $this->satusehatIsJsonPatchBody($body);
+        $headers = $isJsonPatch ? $this->satusehatPatchHeaders($options['headers'] ?? []) : $this->satusehatHeaders($options['headers'] ?? []);
         if ($preferRepresentation) {
             $headers['Prefer'] = 'return=representation';
         }
@@ -568,11 +587,48 @@ trait SatuSehatTraits
                 $req = $req->withOptions(['query' => $query]);
             }
 
-            $sendOnce = function (?array $sendBody) use ($req, $method, $url) {
+            $lastSentDebug = null;
+            $sendOnce = function (?array $sendBody) use ($req, $method, $url, &$lastSentDebug, $isJsonPatch) {
                 if (in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
                     $jsonBody = json_encode($sendBody ?? [], JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
-                    $resp = $req->withBody($jsonBody, 'application/fhir+json')->send(strtoupper($method), $url);
+                    if ($isJsonPatch) {
+                        $ops = [];
+                        if (is_array($sendBody)) {
+                            foreach ($sendBody as $op) {
+                                if (! is_array($op)) {
+                                    continue;
+                                }
+                                $ops[] = trim((string) ($op['op'] ?? '')).' '.trim((string) ($op['path'] ?? ''));
+                                if (count($ops) >= 20) {
+                                    break;
+                                }
+                            }
+                        }
+                        $lastSentDebug = [
+                            'is_json_patch' => true,
+                            'ops' => $ops,
+                            'json_len' => is_string($jsonBody) ? strlen($jsonBody) : null,
+                        ];
+                        $resp = $req->withBody($jsonBody, 'application/json-patch+json')->send(strtoupper($method), $url);
+                    } else {
+                        $lastSentDebug = [
+                            'is_json_patch' => false,
+                            'keys' => is_array($sendBody) ? array_values(array_keys($sendBody)) : null,
+                            'has_statusHistory' => is_array($sendBody) && array_key_exists('statusHistory', $sendBody),
+                            'has_diagnosis' => is_array($sendBody) && array_key_exists('diagnosis', $sendBody),
+                            'json_has_statusHistory' => is_string($jsonBody) && str_contains(strtolower($jsonBody), '"statushistory"'),
+                            'json_has_diagnosis' => is_string($jsonBody) && str_contains(strtolower($jsonBody), '"diagnosis"'),
+                        ];
+                        $resp = $req->withBody($jsonBody, 'application/fhir+json')->send(strtoupper($method), $url);
+                    }
                 } else {
+                    $lastSentDebug = [
+                        'keys' => null,
+                        'has_statusHistory' => null,
+                        'has_diagnosis' => null,
+                        'json_has_statusHistory' => null,
+                        'json_has_diagnosis' => null,
+                    ];
                     $resp = $req->send(strtoupper($method), $url);
                 }
 
@@ -593,7 +649,7 @@ trait SatuSehatTraits
 
             $bodyToSend = $body;
             $isEncounter = $this->satusehatIsEncounterRequest($path, is_array($body) ? $body : null);
-            if ($isEncounter && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+            if ($isEncounter && ! $isJsonPatch && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
                 if (! isset($options['compat']) || ! is_array($options['compat'])) {
                     $options['compat'] = [];
                 }
@@ -601,7 +657,7 @@ trait SatuSehatTraits
             }
 
             $isPatient = $this->satusehatIsPatientRequest($path, is_array($body) ? $body : null);
-            if ($isPatient && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
+            if ($isPatient && ! $isJsonPatch && is_array($bodyToSend) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
                 if (! isset($options['compat']) || ! is_array($options['compat'])) {
                     $options['compat'] = [];
                 }
@@ -634,27 +690,38 @@ trait SatuSehatTraits
                         $json = $sent2['json'];
                         $ok = $sent2['ok'];
                     } else {
-                        $needRetryStrip = false;
-                        $stripBody = $bodyToSend;
+                        $needRetry = false;
+                        $retryOptions = $options;
+                        if (! isset($retryOptions['compat']) || ! is_array($retryOptions['compat'])) {
+                            $retryOptions['compat'] = [];
+                        }
+                        $retryBody = $bodyToSend;
+                        $forceStatusHistory = false;
 
                         if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
-                            Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
-                            if (isset($stripBody['statusHistory'])) {
-                                unset($stripBody['statusHistory']);
+                            if (array_key_exists('statusHistory', $bodyToSend)) {
+                                Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
+                                if (array_key_exists('statusHistory', $retryBody)) {
+                                    unset($retryBody['statusHistory']);
+                                }
+                            } else {
+                                Cache::forget('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv());
+                                $forceStatusHistory = true;
                             }
-                            $needRetryStrip = true;
+                            $needRetry = true;
                         }
 
                         if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
-                            if (isset($stripBody['diagnosis'])) {
-                                unset($stripBody['diagnosis']);
+                            $retryOptions['compat']['encounter_diagnosis'] = 'off';
+                            if (array_key_exists('diagnosis', $retryBody)) {
+                                unset($retryBody['diagnosis']);
+                                $needRetry = true;
                             }
-                            $needRetryStrip = true;
                         }
 
-                        if ($needRetryStrip) {
-                            $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $options, false);
-                            $sent2 = $sendOnce($stripBody);
+                        if ($needRetry) {
+                            $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $retryBody, $retryOptions, $forceStatusHistory);
+                            $sent2 = $sendOnce($retryBody);
                             $resp = $sent2['resp'];
                             $status = $sent2['status'];
                             $json = $sent2['json'];
@@ -677,29 +744,36 @@ trait SatuSehatTraits
                         $json = $sent2['json'];
                         $ok = $sent2['ok'];
                     } else {
-                        $needRetryStrip = false;
-                        $stripBody = $bodyToSend;
+                        $needRetry = false;
+                        $retryBody = $bodyToSend;
+                        $forceStatusHistory = false;
 
                         if ($this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound(is_array($json) ? $json : null, $resp->body())) {
-                            Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
-                            $retryOptions['compat']['encounter_status_history'] = 'off';
-                            if (isset($stripBody['statusHistory'])) {
-                                unset($stripBody['statusHistory']);
+                            if (array_key_exists('statusHistory', $bodyToSend)) {
+                                Cache::put('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv(), true, 86400);
+                                $retryOptions['compat']['encounter_status_history'] = 'off';
+                                if (array_key_exists('statusHistory', $retryBody)) {
+                                    unset($retryBody['statusHistory']);
+                                }
+                            } else {
+                                Cache::forget('satusehat.capability.encounter_status_history_not_supported.'.$this->satusehatEnv());
+                                $retryOptions['compat']['encounter_status_history'] = 'on';
+                                $forceStatusHistory = true;
                             }
-                            $needRetryStrip = true;
+                            $needRetry = true;
                         }
 
                         if ($this->satusehatOperationOutcomeIndicatesDiagnosisNotFound(is_array($json) ? $json : null, $resp->body())) {
                             $retryOptions['compat']['encounter_diagnosis'] = 'off';
-                            if (isset($stripBody['diagnosis'])) {
-                                unset($stripBody['diagnosis']);
+                            if (array_key_exists('diagnosis', $retryBody)) {
+                                unset($retryBody['diagnosis']);
+                                $needRetry = true;
                             }
-                            $needRetryStrip = true;
                         }
 
-                        if ($needRetryStrip) {
-                            $stripBody = $this->satusehatPrepareEncounterForSend($method, $path, $stripBody, $retryOptions, false);
-                            $sent2 = $sendOnce($stripBody);
+                        if ($needRetry) {
+                            $retryBody = $this->satusehatPrepareEncounterForSend($method, $path, $retryBody, $retryOptions, $forceStatusHistory);
+                            $sent2 = $sendOnce($retryBody);
                             $resp = $sent2['resp'];
                             $status = $sent2['status'];
                             $json = $sent2['json'];
@@ -789,6 +863,7 @@ trait SatuSehatTraits
                     'method' => $method,
                     'url' => $url,
                     'status' => $status,
+                    'sent' => $lastSentDebug,
                     'body' => $resp->body(),
                 ]);
             }
