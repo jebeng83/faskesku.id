@@ -756,7 +756,10 @@ export default function SettingIndex({ settings = [], flash }) {
                 {/* Catatan: Menggunakan <div> biasa untuk menghindari isu fokus/blur saat mengetik di input.
                    Sebelumnya card ini dibungkus MotionCard (framer-motion) yang berpotensi me-recreate
                    node DOM pada setiap perubahan state sehingga input kehilangan fokus setelah 1 karakter. */}
-                <div className="p-6 border-slate-200 mt-6 rounded-2xl border bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+                <div
+                    id="app-settings"
+                    className="p-6 border-slate-200 mt-6 rounded-2xl border bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
+                >
                     <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-600 text-white shadow">

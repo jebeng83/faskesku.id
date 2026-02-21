@@ -43,6 +43,7 @@ return [
         'client_id' => env('SATUSEHAT_CLIENT_ID', ''),
         'client_secret' => env('SATUSEHAT_CLIENT_SECRET', ''),
         'organization_id' => env('SATUSEHAT_ORG_ID', ''),
+        'webhook_secret' => env('SATUSEHAT_WEBHOOK_SECRET', ''),
         'compat' => [
             'encounter_status_history' => env('SATUSEHAT_COMPAT_ENCOUNTER_STATUSHISTORY', 'off'),
             'encounter_diagnosis' => env('SATUSEHAT_COMPAT_ENCOUNTER_DIAGNOSIS', 'off'),
