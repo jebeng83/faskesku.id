@@ -1039,154 +1039,170 @@ export default function UGD() {
           <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
             <div className="relative px-4 py-2.5 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Plus className="w-4 h-4" />
                   Tambah Pasien UGD
                 </h3>
-                <Button onClick={() => setIsPatientModalOpen(true)} variant="success" size="sm" className="px-2 py-1 text-xs h-7">
-                  <Plus className="w-3 h-3 mr-1" /> Pasien Baru
-                </Button>
+                <div className="flex items-center gap-2">
+                  <div className="w-32">
+                    <Input type="date" value={form.tgl_registrasi} onChange={onChange("tgl_registrasi")} className="h-8 text-xs bg-white/80" error={!!errors.tgl_registrasi} />
+                  </div>
+                  <div className="w-24">
+                    <Input type="time" value={form.jam_reg} onChange={onChange("jam_reg")} className="h-8 text-xs bg-white/80" error={!!errors.jam_reg} />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="relative p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[80vh] sm:max-h-[70vh] overflow-y-auto">
-              <div className="md:col-span-2 space-y-3">
-                <div className="flex flex-col md:flex-row gap-2 sm:gap-3 items-stretch">
-                  <div className="relative md:basis-[40%]">
-                    <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Cari Pasien (Nama / NIK / No Peserta / No. RM)" className="h-8 pl-10 text-xs" />
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    <Search className="w-4 h-4 text-blue-600" />
+                    Cari Pasien
                   </div>
-                  <div className="md:basis-[35%]">
-                    <Input value={alamatTerm} onChange={(e) => setAlamatTerm(e.target.value)} placeholder="Filter Alamat (opsional)" className="h-8 text-xs" />
+                  <div className="flex flex-col md:flex-row gap-2 sm:gap-3 items-stretch">
+                    <div className="relative md:basis-[40%]">
+                      <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Cari Pasien (Nama / NIK / No Peserta / No. RM)" className="h-8 pl-10 text-xs" />
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
+                    <div className="md:basis-[35%]">
+                      <Input value={alamatTerm} onChange={(e) => setAlamatTerm(e.target.value)} placeholder="Filter Alamat (opsional)" className="h-8 text-xs" />
+                    </div>
+                    <div className="md:basis-[25%]">
+                      <Button onClick={() => setIsPatientModalOpen(true)} variant="success" size="sm" className="w-full h-8 text-xs">
+                        <Plus className="w-3 h-3 mr-1" /> Pasien Baru
+                      </Button>
+                    </div>
                   </div>
-                  <div className="md:basis-[15%]">
-                    <Input type="date" value={form.tgl_registrasi} onChange={onChange("tgl_registrasi")} className="h-8 text-xs" error={!!errors.tgl_registrasi} />
-                  </div>
-                  <div className="md:basis-[10%]">
-                    <Input type="time" value={form.jam_reg} onChange={onChange("jam_reg")} className="h-8 text-xs" error={!!errors.jam_reg} />
-                  </div>
-                </div>
-                <div className="max-h-56 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700">
-                  {isSearching ? (
-                    <div className="p-2 text-xs text-gray-500 dark:text-gray-400">Mencari pasien...</div>
-                  ) : (searchResults?.length ? (
-                    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {searchResults.map((p) => (
-                        <li key={p.no_rkm_medis} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => selectPatient(p)}>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">{p.nm_pasien} <span className="font-mono text-xs text-gray-500">({p.no_rkm_medis})</span></div>
-                              <div className="text-xs text-gray-600 dark:text-gray-300">{[p.alamat, p.kelurahan?.nm_kel, p.kecamatan?.nm_kec, p.kabupaten?.nm_kab].filter(Boolean).join(', ')}</div>
+                  <div className="max-h-56 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700">
+                    {isSearching ? (
+                      <div className="p-2 text-xs text-gray-500 dark:text-gray-400">Mencari pasien...</div>
+                    ) : (searchResults?.length ? (
+                      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {searchResults.map((p) => (
+                          <li key={p.no_rkm_medis} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onClick={() => selectPatient(p)}>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">{p.nm_pasien} <span className="font-mono text-xs text-gray-500">({p.no_rkm_medis})</span></div>
+                                <div className="text-xs text-gray-600 dark:text-gray-300">{[p.alamat, p.kelurahan?.nm_kel, p.kecamatan?.nm_kec, p.kabupaten?.nm_kab].filter(Boolean).join(', ')}</div>
+                              </div>
+                              <Button onClick={(e) => { e.stopPropagation(); selectPatient(p); }} size="sm" className="px-2 py-1 text-xs h-7 bg-blue-600 hover:bg-blue-700 text-white">Pilih</Button>
                             </div>
-                            <Button onClick={(e) => { e.stopPropagation(); selectPatient(p); }} size="sm" className="px-2 py-1 text-xs h-7 bg-blue-600 hover:bg-blue-700 text-white">Pilih</Button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="p-2 text-xs text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
-                <div className="sm:basis-[10%] w-full">
-                  <Label>No. RM</Label>
-                  <Input value={form.no_rkm_medis} onChange={onChange("no_rkm_medis")} placeholder="No. RM" className="h-8 text-xs px-2 py-1" error={!!errors.no_rkm_medis} />
-                </div>
-                <div className="sm:basis-[30%] w-full">
-                  <Label>Nama Pasien</Label>
-                  <Input value={form.nm_pasien} onChange={onChange("nm_pasien")} placeholder="Nama Pasien" className="h-8 text-xs px-2 py-1" />
-                </div>
-                <div className="sm:basis-[10%] w-full">
-                  <Label required>Poliklinik</Label>
-                  <div className="px-2 py-1 h-8 flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-xs text-gray-900 dark:text-white">
-                    {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || igdKdPoli})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-2 text-xs text-gray-500 dark:text-gray-400">Tidak ada hasil</div>
+                    ))}
                   </div>
                 </div>
-                <div className="sm:basis-[25%] w-full">
-                  <Label required>Dokter</Label>
-                  <select value={form.kd_dokter} onChange={onChange("kd_dokter")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_dokter ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}>
-                    <option value="">Pilih Dokter</option>
-                    {(Array.isArray(dokterOptions) ? dokterOptions : []).map((d) => (
-                      <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="sm:basis-[25%] w-full">
-                  <Label required>Cara Bayar</Label>
-                  <select value={form.kd_pj} onChange={onChange("kd_pj")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_pj ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}>
-                    <option value="">Pilih Cara Bayar</option>
-                    {(Array.isArray(penjabOptions) ? penjabOptions : []).map((p) => (
-                      <option key={p.kd_pj} value={p.kd_pj}>{p.png_jawab}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                <div className="rounded-xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-900/60 p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label>No. RM</Label>
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {form.no_rkm_medis || "-"}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Nama Pasien</Label>
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {form.nm_pasien || "-"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+                    <div className="w-full">
+                      <Label required>Poliklinik</Label>
+                      <div className="px-2 py-1 h-8 flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-xs text-gray-900 dark:text-white">
+                        {(poliIGD?.nm_poli || "IGD")} <span className="text-xs text-gray-500">({poliIGD?.kd_poli || igdKdPoli})</span>
+                      </div>
+                    </div>
+                    <div className="w-full">
+                      <Label required>Dokter</Label>
+                      <select value={form.kd_dokter} onChange={onChange("kd_dokter")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_dokter ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}>
+                        <option value="">Pilih Dokter</option>
+                        {(Array.isArray(dokterOptions) ? dokterOptions : []).map((d) => (
+                          <option key={d.kd_dokter} value={d.kd_dokter}>{d.nm_dokter}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-full">
+                      <Label required>Cara Bayar</Label>
+                      <select value={form.kd_pj} onChange={onChange("kd_pj")} className={`w-full h-8 px-2 py-1 text-xs border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${errors.kd_pj ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-transparent'}`}>
+                        <option value="">Pilih Cara Bayar</option>
+                        {(Array.isArray(penjabOptions) ? penjabOptions : []).map((p) => (
+                          <option key={p.kd_pj} value={p.kd_pj}>{p.png_jawab}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                <Label className="mb-0 text-xs">Status Poli</Label>
-                <span className={(form.status_poli === "Baru") ? "inline-flex px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300" : "inline-flex px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300"}>
-                  {form.status_poli || "Baru"}
-                </span>
-                <Label className="mb-0 text-xs">Biaya Registrasi</Label>
-                <div className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-xs text-gray-900 dark:text-white">
-                  {currency.format(Number(form.biaya_reg || 0))}
-                </div>
-                <Label className="mb-0 text-xs">No. Registrasi</Label>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400">Terakhir: {noRegInfo.last || '-'}</span>
-                {noRegError ? (
-                  <span className="text-[10px] text-red-600 dark:text-red-400">{String(noRegError)}</span>
-                ) : null}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <Input value={form.no_reg} onChange={onChange("no_reg")} placeholder="No. Registrasi" className="h-8 text-xs px-2 py-1 w-40 md:w-48" readOnly />
-                  <div className="hidden md:flex items-center gap-2 ml-2">
-                    {isSelectedBpjs && (
-                      <>
-                        {bpjsLoading ? (
-                          <span className="text-gray-600 text-xs">Memuat…</span>
-                        ) : bpjsError ? (
-                          <span className="text-red-700 text-xs">{bpjsError}</span>
-                        ) : (bpjsData?.response ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Label className="mb-0 text-xs">Status Poli</Label>
+                    <span className={(form.status_poli === "Baru") ? "inline-flex px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300" : "inline-flex px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300"}>
+                      {form.status_poli || "Baru"}
+                    </span>
+                    <Label className="mb-0 text-xs">Biaya Registrasi</Label>
+                    <div className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-xs text-gray-900 dark:text-white">
+                      {currency.format(Number(form.biaya_reg || 0))}
+                    </div>
+                    <Label className="mb-0 text-xs">No. Registrasi</Label>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Terakhir: {noRegInfo.last || '-'}</span>
+                    {noRegError ? (
+                      <span className="text-[10px] text-red-600 dark:text-red-400">{String(noRegError)}</span>
+                    ) : null}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                      <Input value={form.no_reg} onChange={onChange("no_reg")} placeholder="No. Registrasi" className="h-8 text-xs px-2 py-1 w-40 md:w-48" readOnly />
+                      <div className="hidden md:flex items-center gap-2 ml-2">
+                        {isSelectedBpjs && (
                           <>
-                            <span className="text-[10px] text-gray-700">Status BPJS :</span>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bpjsData.response?.aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                              {bpjsData.response?.aktif ? 'AKTIF' : 'TIDAK AKTIF'}
-                            </span>
-                            <span className="text-xs text-gray-700 truncate max-w-[12rem]">
-                              FKTP: {bpjsData.response?.kdProviderPst?.nmProvider || '-'}
-                            </span>
+                            {bpjsLoading ? (
+                              <span className="text-gray-600 text-xs">Memuat…</span>
+                            ) : bpjsError ? (
+                              <span className="text-red-700 text-xs">{bpjsError}</span>
+                            ) : (bpjsData?.response ? (
+                              <>
+                                <span className="text-[10px] text-gray-700">Status BPJS :</span>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${bpjsData.response?.aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                  {bpjsData.response?.aktif ? 'AKTIF' : 'TIDAK AKTIF'}
+                                </span>
+                                <span className="text-xs text-gray-700 truncate max-w-[12rem]">
+                                  FKTP: {bpjsData.response?.kdProviderPst?.nmProvider || '-'}
+                                </span>
+                              </>
+                            ) : null)}
                           </>
-                        ) : null)}
-                      </>
-                    )}
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-
-
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label required className="text-xs">Nama Penanggung Jawab</Label>
-                    <Input value={form.p_jawab} onChange={onChange("p_jawab")} placeholder="Nama Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.p_jawab} />
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label required className="text-xs">Nama Penanggung Jawab</Label>
+                        <Input value={form.p_jawab} onChange={onChange("p_jawab")} placeholder="Nama Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.p_jawab} />
+                      </div>
+                      <div>
+                        <Label required className="text-xs">Hubungan</Label>
+                        <Input value={form.hubunganpj} onChange={onChange("hubunganpj")} placeholder="Hubungan P.J." className="h-8 text-xs px-2 py-1" error={!!errors.hubunganpj} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <Label required className="text-xs">Alamat Penanggung Jawab</Label>
+                        {selectedPatient && (
+                          <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+                            <input type="checkbox" checked={usePatientAddress} onChange={(e) => setUsePatientAddress(e.target.checked)} />
+                            Gunakan alamat pasien
+                          </label>
+                        )}
+                      </div>
+                      <Input value={form.almt_pj} onChange={onChange("almt_pj")} placeholder="Alamat Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.almt_pj} />
+                    </div>
                   </div>
-                  <div>
-                    <Label required className="text-xs">Hubungan</Label>
-                    <Input value={form.hubunganpj} onChange={onChange("hubunganpj")} placeholder="Hubungan P.J." className="h-8 text-xs px-2 py-1" error={!!errors.hubunganpj} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <Label required className="text-xs">Alamat Penanggung Jawab</Label>
-                    {selectedPatient && (
-                      <label className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
-                        <input type="checkbox" checked={usePatientAddress} onChange={(e) => setUsePatientAddress(e.target.checked)} />
-                        Gunakan alamat pasien
-                      </label>
-                    )}
-                  </div>
-                  <Input value={form.almt_pj} onChange={onChange("almt_pj")} placeholder="Alamat Penanggung Jawab" className="h-8 text-xs px-2 py-1" error={!!errors.almt_pj} />
                 </div>
               </div>
             </div>
