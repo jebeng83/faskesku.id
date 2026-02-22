@@ -2455,6 +2455,9 @@ Route::middleware('auth')->group(function () {
         ->name('rawat-jalan.surat-sakit')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
+    Route::post('rawat-jalan/surat-nikah/store', [RawatJalanController::class, 'storeSuratNikah'])->name('rawat-jalan.surat-nikah.store');
+    Route::post('rawat-jalan/surat-hamil/store', [RawatJalanController::class, 'storeSuratHamil'])->name('rawat-jalan.surat-hamil.store');
+    Route::post('rawat-jalan/surat-cuti-hamil/store', [RawatJalanController::class, 'storeSuratCutiHamil'])->name('rawat-jalan.surat-cuti-hamil.store');
 
     // Awal Keperawatan Umum (Ralan)
     Route::get('rawat-jalan/awal-keperawatan-umum/{no_rawat}', [RawatJalanController::class, 'awalKeperawatanUmum'])

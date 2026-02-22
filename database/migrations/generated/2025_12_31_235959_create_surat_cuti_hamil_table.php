@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->string('keterangan_hamil', 25)->nullable();
                 $table->date('terhitung_mulai')->nullable();
                 $table->date('perkiraan_lahir')->nullable();
-                $table->string('no_surat', 20)->nullable()->unique('no_surat');
+                $table->string('no_surat', 40)->nullable()->unique('no_surat');
             });
         }
     }

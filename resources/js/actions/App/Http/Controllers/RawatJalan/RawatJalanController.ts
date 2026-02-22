@@ -1570,6 +1570,108 @@ storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 })
 
 /**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @route '/rawat-jalan/surat-nikah/store'
+*/
+export const storeSuratNikah = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratNikah.url(options),
+    method: 'post',
+})
+
+storeSuratNikah.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/surat-nikah/store',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @route '/rawat-jalan/surat-nikah/store'
+*/
+storeSuratNikah.url = (options?: RouteQueryOptions) => {
+    return storeSuratNikah.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @route '/rawat-jalan/surat-nikah/store'
+*/
+storeSuratNikah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratNikah.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @route '/rawat-jalan/surat-hamil/store'
+*/
+export const storeSuratHamil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratHamil.url(options),
+    method: 'post',
+})
+
+storeSuratHamil.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/surat-hamil/store',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @route '/rawat-jalan/surat-hamil/store'
+*/
+storeSuratHamil.url = (options?: RouteQueryOptions) => {
+    return storeSuratHamil.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @route '/rawat-jalan/surat-hamil/store'
+*/
+storeSuratHamil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratHamil.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @route '/rawat-jalan/surat-cuti-hamil/store'
+*/
+export const storeSuratCutiHamil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratCutiHamil.url(options),
+    method: 'post',
+})
+
+storeSuratCutiHamil.definition = {
+    methods: ["post"],
+    url: '/rawat-jalan/surat-cuti-hamil/store',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @route '/rawat-jalan/surat-cuti-hamil/store'
+*/
+storeSuratCutiHamil.url = (options?: RouteQueryOptions) => {
+    return storeSuratCutiHamil.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @route '/rawat-jalan/surat-cuti-hamil/store'
+*/
+storeSuratCutiHamil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: storeSuratCutiHamil.url(options),
+    method: 'post',
+})
+
+/**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::awalKeperawatanUmum
 * @see app/Http/Controllers/RawatJalan/RawatJalanController.php:1749
 * @route '/rawat-jalan/awal-keperawatan-umum/{no_rawat}'
@@ -2119,6 +2221,6 @@ destroy.delete = (args: { rawat_jalan: string | number } | [rawat_jalan: string 
     method: 'delete',
 })
 
-const RawatJalanController = { storePemeriksaanRalan, updatePemeriksaanRalan, getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, publicSuratSehat, publicSuratSakit, verifySuratSakit, nextNoSuratSakit, checkDuplicateSuratSakit, nextNoSuratSehat, checkDuplicateSuratSehat, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, deletePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, updateStatus, create, store, show, edit, update, destroy }
+const RawatJalanController = { storePemeriksaanRalan, updatePemeriksaanRalan, getDiagnosaPasien, storeDiagnosaPasien, searchDiagnosaPenyakit, publicSuratSehat, publicSuratSakit, verifySuratSakit, nextNoSuratSakit, checkDuplicateSuratSakit, nextNoSuratSehat, checkDuplicateSuratSehat, suratSakitByNomor, verifySuratSakitByNomor, storeValidasiTtd, describeValidasiTtd, findValidasiTtd, lanjutan, index, riwayat, getRiwayatPemeriksaan, pemeriksaanRalan, deletePemeriksaanRalan, getobatRalanPublic, getPemeriksaanLabPublic, getRadiologiPublic, searchPegawai, getStatistics, suratSehat, storeSuratSehat, suratSakit, storeSuratSakit, storeSuratNikah, storeSuratHamil, storeSuratCutiHamil, awalKeperawatanUmum, storePenilaianAwalKeperawatanRalan, updatePenilaianAwalKeperawatanRalan, destroyPenilaianAwalKeperawatanRalan, updateStatus, create, store, show, edit, update, destroy }
 
 export default RawatJalanController

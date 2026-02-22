@@ -2872,4 +2872,108 @@ class RawatJalanController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Store surat nikah
+     */
+    public function storeSuratNikah(Request $request)
+    {
+        $request->validate([
+            'no_surat' => 'required|string|max:40',
+            'no_rawat' => 'required|string|max:17',
+            'no_ktp_suami' => 'nullable|string|max:20',
+            'nm_suami' => 'required|string|max:50',
+            'tgl_lahir' => 'required|date',
+            'umur' => 'nullable|string|max:10',
+            'jk' => 'nullable|string|max:20', 
+            'alamat' => 'nullable|string|max:200',
+            'hasil_pp_test' => 'nullable|string|max:20',
+            'tanggal_pp_test' => 'nullable|date',
+            'pekerjaan' => 'nullable|string|max:30',
+            'tanggal' => 'nullable|date',
+            'tanggal_nikah' => 'nullable|date',
+        ]);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('suratnikah')) {
+            $data = [
+                'no_surat' => (string) $request->input('no_surat'),
+                'no_rawat' => (string) $request->input('no_rawat'),
+                'no_ktp_suami' => (string) $request->input('no_ktp_suami'),
+                'nm_suami' => (string) $request->input('nm_suami'),
+                'tgl_lahir' => (string) $request->input('tgl_lahir'),
+                'umur' => (string) ($request->input('umur') ?: '0'),
+                'jk' => (string) ($request->input('jk') ?: 'Perjaka'),
+                'alamat' => (string) ($request->input('alamat') ?: ''),
+                'hasil_pp_test' => (string) ($request->input('hasil_pp_test') ?: 'Negatif'),
+                'tanggal_pp_test' => (string) ($request->input('tanggal_pp_test') ?: date('Y-m-d')),
+                'pekerjaan' => (string) ($request->input('pekerjaan') ?: 'Karyawan Swasta'),
+                'tanggal' => (string) ($request->input('tanggal') ?: ($request->input('tanggal_nikah') ?: date('Y-m-d'))),
+                'tanggal_nikah' => (string) ($request->input('tanggal_nikah') ?: ($request->input('tanggal') ?: date('Y-m-d'))),
+            ];
+
+            \Illuminate\Support\Facades\DB::table('suratnikah')->updateOrInsert(
+                ['no_surat' => $data['no_surat']],
+                $data
+            );
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'Surat nikah berhasil disimpan']);
+    }
+
+    public function storeSuratCutiHamil(Request $request)
+    {
+        $request->validate([
+            'no_surat' => 'required|string|max:40',
+            'no_rawat' => 'required|string|max:17',
+            'keterangan_hamil' => 'nullable|string|max:25',
+            'terhitung_mulai' => 'nullable|date',
+            'perkiraan_lahir' => 'nullable|date',
+        ]);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('surat_cuti_hamil')) {
+            $data = [
+                'no_surat' => (string) $request->input('no_surat'),
+                'no_rawat' => (string) $request->input('no_rawat'),
+                'keterangan_hamil' => (string) $request->input('keterangan_hamil'),
+                'terhitung_mulai' => (string) $request->input('terhitung_mulai'),
+                'perkiraan_lahir' => (string) $request->input('perkiraan_lahir'),
+            ];
+
+            \Illuminate\Support\Facades\DB::table('surat_cuti_hamil')->updateOrInsert(
+                ['no_rawat' => $data['no_rawat']],
+                $data
+            );
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'Surat cuti hamil berhasil disimpan']);
+    }
+
+    /**
+     * Store surat hamil
+     */
+    public function storeSuratHamil(Request $request)
+    {
+        $request->validate([
+            'no_surat' => 'required|string|max:40',
+            'no_rawat' => 'required|string|max:17',
+            'tanggalperiksa' => 'required|date',
+            'hasilperiksa' => 'required|string|max:50',
+        ]);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('surat_hamil')) {
+            $data = [
+                'no_surat' => (string) $request->input('no_surat'),
+                'no_rawat' => (string) $request->input('no_rawat'),
+                'tanggalperiksa' => (string) $request->input('tanggalperiksa'),
+                'hasilperiksa' => (string) $request->input('hasilperiksa'),
+            ];
+
+            \Illuminate\Support\Facades\DB::table('surat_hamil')->updateOrInsert(
+                ['no_surat' => $data['no_surat']],
+                $data
+            );
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'Surat hamil berhasil disimpan']);
+    }
 }
