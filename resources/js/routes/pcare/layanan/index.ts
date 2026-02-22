@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../wayfinder'
 /**
-* @see routes/web.php:3015
+* @see routes/web.php:3023
 * @route '/pcare/data-peserta-by-nik'
 */
 export const cekPesertaNik = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ cekPesertaNik.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3015
+* @see routes/web.php:3023
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ cekPesertaNik.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3015
+* @see routes/web.php:3023
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ cekPesertaNik.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3015
+* @see routes/web.php:3023
 * @route '/pcare/data-peserta-by-nik'
 */
 cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ cekPesertaNik.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => (
 })
 
 /**
-* @see routes/web.php:3020
+* @see routes/web.php:3028
 * @route '/pcare/data-peserta-by-kartu'
 */
 export const cekPesertaKartu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ cekPesertaKartu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3020
+* @see routes/web.php:3028
 * @route '/pcare/data-peserta-by-kartu'
 */
 cekPesertaKartu.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ cekPesertaKartu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3020
+* @see routes/web.php:3028
 * @route '/pcare/data-peserta-by-kartu'
 */
 cekPesertaKartu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ cekPesertaKartu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:3020
+* @see routes/web.php:3028
 * @route '/pcare/data-peserta-by-kartu'
 */
 cekPesertaKartu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -80,7 +80,7 @@ cekPesertaKartu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =>
 })
 
 /**
-* @see routes/web.php:3029
+* @see routes/web.php:3037
 * @route '/pcare/layanan'
 */
 export const pcare = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ pcare.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3029
+* @see routes/web.php:3037
 * @route '/pcare/layanan'
 */
 pcare.url = (options?: RouteQueryOptions) => {
@@ -102,7 +102,7 @@ pcare.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3029
+* @see routes/web.php:3037
 * @route '/pcare/layanan'
 */
 pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -111,7 +111,7 @@ pcare.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3029
+* @see routes/web.php:3037
 * @route '/pcare/layanan'
 */
 pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -120,7 +120,7 @@ pcare.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3034
+* @see routes/web.php:3042
 * @route '/pcare/layanan/data-prolanis'
 */
 export const dataProlanis = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -134,7 +134,7 @@ dataProlanis.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3034
+* @see routes/web.php:3042
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.url = (options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ dataProlanis.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3034
+* @see routes/web.php:3042
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ dataProlanis.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3034
+* @see routes/web.php:3042
 * @route '/pcare/layanan/data-prolanis'
 */
 dataProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -160,7 +160,7 @@ dataProlanis.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3038
+* @see routes/web.php:3046
 * @route '/pcare/layanan/prolanis-dm'
 */
 export const prolanisDm = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -174,7 +174,7 @@ prolanisDm.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3038
+* @see routes/web.php:3046
 * @route '/pcare/layanan/prolanis-dm'
 */
 prolanisDm.url = (options?: RouteQueryOptions) => {
@@ -182,7 +182,7 @@ prolanisDm.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3038
+* @see routes/web.php:3046
 * @route '/pcare/layanan/prolanis-dm'
 */
 prolanisDm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -191,7 +191,7 @@ prolanisDm.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3038
+* @see routes/web.php:3046
 * @route '/pcare/layanan/prolanis-dm'
 */
 prolanisDm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -200,7 +200,7 @@ prolanisDm.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3046
+* @see routes/web.php:3054
 * @route '/pcare/layanan/prolanis-ht'
 */
 export const prolanisHt = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -214,7 +214,7 @@ prolanisHt.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3046
+* @see routes/web.php:3054
 * @route '/pcare/layanan/prolanis-ht'
 */
 prolanisHt.url = (options?: RouteQueryOptions) => {
@@ -222,7 +222,7 @@ prolanisHt.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3046
+* @see routes/web.php:3054
 * @route '/pcare/layanan/prolanis-ht'
 */
 prolanisHt.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -231,7 +231,7 @@ prolanisHt.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3046
+* @see routes/web.php:3054
 * @route '/pcare/layanan/prolanis-ht'
 */
 prolanisHt.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -240,7 +240,7 @@ prolanisHt.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3054
+* @see routes/web.php:3062
 * @route '/pcare/layanan/mcu'
 */
 export const mcu = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -254,7 +254,7 @@ mcu.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3054
+* @see routes/web.php:3062
 * @route '/pcare/layanan/mcu'
 */
 mcu.url = (options?: RouteQueryOptions) => {
@@ -262,7 +262,7 @@ mcu.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3054
+* @see routes/web.php:3062
 * @route '/pcare/layanan/mcu'
 */
 mcu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -271,7 +271,7 @@ mcu.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3054
+* @see routes/web.php:3062
 * @route '/pcare/layanan/mcu'
 */
 mcu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -280,7 +280,7 @@ mcu.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3058
+* @see routes/web.php:3066
 * @route '/pcare/layanan/srk-per-penyakit'
 */
 export const srkPerPenyakit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -294,7 +294,7 @@ srkPerPenyakit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3058
+* @see routes/web.php:3066
 * @route '/pcare/layanan/srk-per-penyakit'
 */
 srkPerPenyakit.url = (options?: RouteQueryOptions) => {
@@ -302,7 +302,7 @@ srkPerPenyakit.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3058
+* @see routes/web.php:3066
 * @route '/pcare/layanan/srk-per-penyakit'
 */
 srkPerPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -311,7 +311,7 @@ srkPerPenyakit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3058
+* @see routes/web.php:3066
 * @route '/pcare/layanan/srk-per-penyakit'
 */
 srkPerPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -320,7 +320,7 @@ srkPerPenyakit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => 
 })
 
 /**
-* @see routes/web.php:3062
+* @see routes/web.php:3070
 * @route '/pcare/layanan/detail-peserta-srk'
 */
 export const detailPesertaSrk = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -334,7 +334,7 @@ detailPesertaSrk.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3062
+* @see routes/web.php:3070
 * @route '/pcare/layanan/detail-peserta-srk'
 */
 detailPesertaSrk.url = (options?: RouteQueryOptions) => {
@@ -342,7 +342,7 @@ detailPesertaSrk.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3062
+* @see routes/web.php:3070
 * @route '/pcare/layanan/detail-peserta-srk'
 */
 detailPesertaSrk.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -351,7 +351,7 @@ detailPesertaSrk.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => 
 })
 
 /**
-* @see routes/web.php:3062
+* @see routes/web.php:3070
 * @route '/pcare/layanan/detail-peserta-srk'
 */
 detailPesertaSrk.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

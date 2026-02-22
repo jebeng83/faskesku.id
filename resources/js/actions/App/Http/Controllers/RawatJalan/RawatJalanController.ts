@@ -1807,7 +1807,7 @@ storeSuratSakit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3090
 * @route '/rawat-jalan/surat-nikah/store'
 */
 export const storeSuratNikah = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1822,7 +1822,7 @@ storeSuratNikah.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3090
 * @route '/rawat-jalan/surat-nikah/store'
 */
 storeSuratNikah.url = (options?: RouteQueryOptions) => {
@@ -1831,7 +1831,7 @@ storeSuratNikah.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratNikah
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2879
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3090
 * @route '/rawat-jalan/surat-nikah/store'
 */
 storeSuratNikah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1841,7 +1841,7 @@ storeSuratNikah.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3165
 * @route '/rawat-jalan/surat-hamil/store'
 */
 export const storeSuratHamil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1856,7 +1856,7 @@ storeSuratHamil.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3165
 * @route '/rawat-jalan/surat-hamil/store'
 */
 storeSuratHamil.url = (options?: RouteQueryOptions) => {
@@ -1865,7 +1865,7 @@ storeSuratHamil.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2954
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3165
 * @route '/rawat-jalan/surat-hamil/store'
 */
 storeSuratHamil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1875,7 +1875,7 @@ storeSuratHamil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3134
 * @route '/rawat-jalan/surat-cuti-hamil/store'
 */
 export const storeSuratCutiHamil = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -1890,7 +1890,7 @@ storeSuratCutiHamil.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3134
 * @route '/rawat-jalan/surat-cuti-hamil/store'
 */
 storeSuratCutiHamil.url = (options?: RouteQueryOptions) => {
@@ -1899,7 +1899,7 @@ storeSuratCutiHamil.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::storeSuratCutiHamil
-* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:2923
+* @see app/Http/Controllers/RawatJalan/RawatJalanController.php:3134
 * @route '/rawat-jalan/surat-cuti-hamil/store'
 */
 storeSuratCutiHamil.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
