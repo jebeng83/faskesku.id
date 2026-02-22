@@ -453,16 +453,20 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                         <select
                                             value="sakit"
                                             onChange={(e) => {
-                                                if (e.target.value === "sehat" && rawatJalan?.no_rawat) {
-                                                    router.visit(
-                                                        route("rawat-jalan.surat-sehat", rawatJalan.no_rawat)
-                                                    );
+                                                if (!rawatJalan?.no_rawat) return;
+                                                const value = e.target.value;
+                                                if (value === "sehat") {
+                                                    router.visit(route("rawat-jalan.surat-sehat", rawatJalan.no_rawat));
+                                                }
+                                                if (value === "hamil") {
+                                                    router.visit(route("rawat-jalan.surat-hamil", rawatJalan.no_rawat));
                                                 }
                                             }}
                                             className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="sehat">Surat Keterangan Sehat</option>
                                             <option value="sakit">Surat Keterangan Sakit</option>
+                                            <option value="hamil">Surat Keterangan Hamil</option>
                                         </select>
                                     </div>
                                     {(submitError || duplicateWarning) && (
@@ -902,7 +906,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalawal)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
                                                             {qrDataUrl ? (
                                                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (

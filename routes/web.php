@@ -159,6 +159,10 @@ Route::get('/surat-sehat', [RawatJalanController::class, 'publicSuratSehat'])
 // Public validation for Surat Keterangan Sakit (berbasis no_surat)
 Route::get('/surat-sakit', [RawatJalanController::class, 'publicSuratSakit'])
     ->name('public.surat-sakit.show');
+Route::get('/surat-hamil', [RawatJalanController::class, 'publicSuratHamil'])
+    ->name('public.surat-hamil.show');
+Route::get('/surat-nikah', [RawatJalanController::class, 'publicSuratNikah'])
+    ->name('public.surat-nikah.show');
 
 Route::get('/anjungan/pasien-mandiri', function () {
     $setting = null;
@@ -2303,6 +2307,20 @@ Route::middleware('auth')->group(function () {
             'to' => null,
             'total' => 0,
         ];
+        $suratHamil = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+        $suratNikah = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
 
         if (Schema::hasTable('surat_keterangan_sehat')) {
             $querySehat = DB::table('surat_keterangan_sehat')
@@ -2389,9 +2407,91 @@ Route::middleware('auth')->group(function () {
                 ->withQueryString();
         }
 
+        if (Schema::hasTable('surat_hamil')) {
+            $queryHamil = DB::table('surat_hamil')
+                ->leftJoin('reg_periksa', 'surat_hamil.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'surat_hamil.no_surat',
+                    'surat_hamil.no_rawat',
+                    'surat_hamil.tanggalperiksa',
+                    'surat_hamil.hasilperiksa',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $queryHamil->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('surat_hamil.no_surat', 'like', $like)
+                        ->orWhere('surat_hamil.no_rawat', 'like', $like)
+                        ->orWhere('surat_hamil.hasilperiksa', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $queryHamil->whereBetween('surat_hamil.tanggalperiksa', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $queryHamil->where('surat_hamil.tanggalperiksa', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $queryHamil->where('surat_hamil.tanggalperiksa', '<=', $endDate);
+            }
+
+            $suratHamil = $queryHamil
+                ->orderBy('surat_hamil.tanggalperiksa', 'desc')
+                ->orderBy('surat_hamil.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
+        if (Schema::hasTable('suratnikah')) {
+            $queryNikah = DB::table('suratnikah')
+                ->leftJoin('reg_periksa', 'suratnikah.no_rawat', '=', 'reg_periksa.no_rawat')
+                ->leftJoin('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                ->select(
+                    'suratnikah.no_surat',
+                    'suratnikah.no_rawat',
+                    'suratnikah.nm_suami',
+                    'suratnikah.no_ktp_suami',
+                    'suratnikah.tanggal_nikah',
+                    'pasien.nm_pasien',
+                    'pasien.no_rkm_medis'
+                );
+
+            if ($search !== '') {
+                $queryNikah->where(function ($q) use ($search) {
+                    $like = '%'.$search.'%';
+                    $q->where('suratnikah.no_surat', 'like', $like)
+                        ->orWhere('suratnikah.no_rawat', 'like', $like)
+                        ->orWhere('suratnikah.nm_suami', 'like', $like)
+                        ->orWhere('suratnikah.no_ktp_suami', 'like', $like)
+                        ->orWhere('pasien.nm_pasien', 'like', $like)
+                        ->orWhere('pasien.no_rkm_medis', 'like', $like);
+                });
+            }
+
+            if ($startDate !== '' && $endDate !== '') {
+                $queryNikah->whereBetween('suratnikah.tanggal_nikah', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $queryNikah->where('suratnikah.tanggal_nikah', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $queryNikah->where('suratnikah.tanggal_nikah', '<=', $endDate);
+            }
+
+            $suratNikah = $queryNikah
+                ->orderBy('suratnikah.tanggal_nikah', 'desc')
+                ->orderBy('suratnikah.no_surat', 'desc')
+                ->paginate(15)
+                ->withQueryString();
+        }
+
         return Inertia::render('RawatJalan/components/SuratSehatList', [
             'suratSehat' => $suratSehat,
             'suratSakit' => $suratSakit,
+            'suratHamil' => $suratHamil,
+            'suratNikah' => $suratNikah,
             'tab' => $tab,
             'filters' => [
                 'search' => $search,
@@ -2472,6 +2572,12 @@ Route::middleware('auth')->group(function () {
     // moved to public routes above
     Route::get('rawat-jalan/surat-sakit/{no_rawat}', [RawatJalanController::class, 'suratSakit'])
         ->name('rawat-jalan.surat-sakit')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-jalan/surat-hamil/{no_rawat}', [RawatJalanController::class, 'suratHamil'])
+        ->name('rawat-jalan.surat-hamil')
+        ->where('no_rawat', '.*');
+    Route::get('rawat-jalan/surat-nikah/{no_rawat}', [RawatJalanController::class, 'suratNikah'])
+        ->name('rawat-jalan.surat-nikah')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
     Route::post('rawat-jalan/surat-nikah/store', [RawatJalanController::class, 'storeSuratNikah'])->name('rawat-jalan.surat-nikah.store');
