@@ -14,6 +14,9 @@ export default function ActionDropdown({
     deleteTitle = "Hapus",
     createUserTitle = "Buat User",
     className = "",
+    dropdownPosition = "bottom",
+    dropdownAlign = "end",
+    usePortal = false,
 }) {
     const handleDelete = () => {
         onDelete(item);
@@ -42,6 +45,9 @@ export default function ActionDropdown({
                 </button>
             }
             className={className}
+            position={dropdownPosition}
+            align={dropdownAlign}
+            usePortal={usePortal}
         >
             {customItems && (
                 <>

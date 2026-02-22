@@ -21,7 +21,8 @@
         }
 
         .preview-container {
-            max-width: 210mm;
+            width: 210mm;
+            min-height: 297mm;
             margin: 0 auto;
             background-color: #fff;
             padding: 20mm;
@@ -87,20 +88,20 @@
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #000;
-            padding-bottom: 15px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 8px;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .header p {
-            margin: 5px 0;
-            font-size: 12px;
+            margin: 2px 0;
+            font-size: 10px;
         }
 
         .title {
@@ -114,7 +115,7 @@
         .info-section {
             display: table;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .info-left,
@@ -122,20 +123,20 @@
             display: table-cell;
             width: 50%;
             vertical-align: top;
-            padding-right: 15px;
+            padding-right: 10px;
         }
 
         .info-right {
             padding-right: 0;
-            padding-left: 15px;
+            padding-left: 10px;
         }
 
         .info-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
             border-bottom: 1px solid #000;
-            padding-bottom: 5px;
+            padding-bottom: 3px;
         }
 
         .info-table {
@@ -144,13 +145,14 @@
         }
 
         .info-table td {
-            padding: 4px;
-            font-size: 11px;
+            padding: 2px 3px;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
         .info-table td:first-child {
             width: 35%;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .info-table td:nth-child(2) {
@@ -223,7 +225,7 @@
         }
 
         .signature-section {
-            margin-top: 40px;
+            margin-top: 20px;
             display: table;
             width: 100%;
         }
@@ -324,7 +326,6 @@
         <div class="info-section">
             <!-- Identitas Pasien - Kiri -->
             <div class="info-left">
-                <div class="info-title">IDENTITAS PASIEN</div>
                 <table class="info-table">
                     <tr>
                         <td>No. Rekam Medis</td>
@@ -334,7 +335,7 @@
                     <tr>
                         <td>Nama Pasien</td>
                         <td>:</td>
-                        <td>{{ $permintaanLab['reg_periksa']['patient']['nm_pasien'] ?? '-' }}</td>
+                        <td style="font-weight: 700;">{{ $permintaanLab['reg_periksa']['patient']['nm_pasien'] ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td>Jenis Kelamin</td>
@@ -350,52 +351,34 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Tanggal Lahir</td>
+                        <td>Tgl Lahir / Usia</td>
                         <td>:</td>
                         <td>
                             @if(!empty($permintaanLab['reg_periksa']['patient']['tgl_lahir']) &&
                             $permintaanLab['reg_periksa']['patient']['tgl_lahir'] !== '0000-00-00')
                             @php
+                            $tglLahirFormatted = null;
+                            $usiaDisplay = null;
                             try {
                             $tglLahir = \Carbon\Carbon::parse($permintaanLab['reg_periksa']['patient']['tgl_lahir']);
                             if ($tglLahir->year > 1900 && $tglLahir->year < 2100) { $tglLahirFormatted=$tglLahir->
                                 locale('id')->isoFormat('D MMMM YYYY');
-                                } else {
-                                $tglLahirFormatted = null;
                                 }
-                                } catch (\Exception $e) {
-                                $tglLahirFormatted = null;
-                                }
-                                @endphp
-                                @if(!empty($tglLahirFormatted))
-                                {{ $tglLahirFormatted }}
-                                @else
-                                -
-                                @endif
-                                @else
-                                -
-                                @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Usia</td>
-                        <td>:</td>
-                        <td>
-                            @if(!empty($permintaanLab['reg_periksa']['patient']['tgl_lahir']))
-                            @php
-                            $tglLahir = \Carbon\Carbon::parse($permintaanLab['reg_periksa']['patient']['tgl_lahir']);
                             $tglPeriksa = !empty($permintaanLab['tgl_hasil']) && $permintaanLab['tgl_hasil'] !==
                             '0000-00-00'
                             ? \Carbon\Carbon::parse($permintaanLab['tgl_hasil'])
                             : \Carbon\Carbon::now();
                             $usiaTahun = (int) $tglLahir->diffInYears($tglPeriksa, false);
-                            $usiaBulan = (int) $tglLahir->copy()->addYears($usiaTahun)->diffInMonths($tglPeriksa,
-                            false);
+                            $usiaDisplay = $usiaTahun.' th';
+                            } catch (\Exception $e) {
+                            $tglLahirFormatted = null;
+                            $usiaDisplay = null;
+                            }
                             @endphp
-                            @if($usiaBulan > 0)
-                            {{ $usiaTahun }} tahun {{ $usiaBulan }} bulan
+                            @if(!empty($tglLahirFormatted))
+                            {{ $tglLahirFormatted }}@if(!empty($usiaDisplay)) ({{ $usiaDisplay }})@endif
                             @else
-                            {{ $usiaTahun }} tahun
+                            -
                             @endif
                             @else
                             -
@@ -405,14 +388,13 @@
                     <tr>
                         <td>Alamat</td>
                         <td>:</td>
-                        <td>{{ $permintaanLab['reg_periksa']['patient']['alamat'] ?? '-' }}</td>
+                        <td>{{ $permintaanLab['reg_periksa']['patient']['alamat_lengkap'] ?? $permintaanLab['reg_periksa']['patient']['alamat'] ?? '-' }}</td>
                     </tr>
                 </table>
             </div>
 
             <!-- Data Petugas dan Dokter - Kanan -->
             <div class="info-right">
-                <div class="info-title">DATA PETUGAS & DOKTER</div>
                 <table class="info-table">
                     <tr>
                         <td>No. Order</td>
@@ -420,7 +402,7 @@
                         <td>{{ $permintaanLab['noorder'] ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td>Tanggal Permintaan</td>
+                        <td>Tgl. Permintaan</td>
                         <td>:</td>
                         <td>
                             @if(!empty($permintaanLab['tgl_permintaan']))
@@ -437,11 +419,11 @@
                                 }
                                 @endphp
                                 @if(!empty($tglPermintaanFormatted))
-                                <div>{{ $tglPermintaanFormatted }}</div>
+                                <span>{{ $tglPermintaanFormatted }}</span>
                                 @if(!empty($permintaanLab['jam_permintaan']) && $permintaanLab['jam_permintaan'] !==
                                 '00:00:00' && $permintaanLab['jam_permintaan'] !== '00:00')
-                                <div style="font-size: 10px; color: #666; margin-top: 2px;">pukul {{
-                                    substr($permintaanLab['jam_permintaan'], 0, 5) }}</div>
+                                <span style="font-size: 10px; color: #666; margin-left: 6px;">pukul {{
+                                    substr($permintaanLab['jam_permintaan'], 0, 5) }}</span>
                                 @endif
                                 @else
                                 -
@@ -469,11 +451,11 @@
                                 }
                                 @endphp
                                 @if(!empty($tglSampelFormatted))
-                                <div>{{ $tglSampelFormatted }}</div>
+                                <span>{{ $tglSampelFormatted }}</span>
                                 @if(!empty($permintaanLab['jam_sampel']) && $permintaanLab['jam_sampel'] !== '00:00:00'
                                 && $permintaanLab['jam_sampel'] !== '00:00')
-                                <div style="font-size: 10px; color: #666; margin-top: 2px;">pukul {{
-                                    substr($permintaanLab['jam_sampel'], 0, 5) }}</div>
+                                <span style="font-size: 10px; color: #666; margin-left: 6px;">pukul {{
+                                    substr($permintaanLab['jam_sampel'], 0, 5) }}</span>
                                 @endif
                                 @else
                                 -
@@ -501,11 +483,11 @@
                                 }
                                 @endphp
                                 @if(!empty($tglHasilFormatted))
-                                <div>{{ $tglHasilFormatted }}</div>
+                                <span>{{ $tglHasilFormatted }}</span>
                                 @if(!empty($permintaanLab['jam_hasil']) && $permintaanLab['jam_hasil'] !== '00:00:00' &&
                                 $permintaanLab['jam_hasil'] !== '00:00')
-                                <div style="font-size: 10px; color: #666; margin-top: 2px;">pukul {{
-                                    substr($permintaanLab['jam_hasil'], 0, 5) }}</div>
+                                <span style="font-size: 10px; color: #666; margin-left: 6px;">pukul {{
+                                    substr($permintaanLab['jam_hasil'], 0, 5) }}</span>
                                 @endif
                                 @else
                                 -
@@ -520,27 +502,12 @@
                         <td>:</td>
                         <td>{{ $permintaanLab['dokter']['nm_dokter'] ?? $permintaanLab['dokter_perujuk'] ?? '-' }}</td>
                     </tr>
-                    @if(!empty($periksaLab['petugas']['nama']))
-                    <tr>
-                        <td>Petugas Lab</td>
-                        <td>:</td>
-                        <td>{{ $periksaLab['petugas']['nama'] }}</td>
-                    </tr>
-                    @endif
-                    @if(!empty($periksaLab['dokterPj']['nm_dokter']))
-                    <tr>
-                        <td>Dokter Penanggung Jawab</td>
-                        <td>:</td>
-                        <td>{{ $periksaLab['dokterPj']['nm_dokter'] }}</td>
-                    </tr>
-                    @endif
                 </table>
             </div>
         </div>
 
         <!-- Hasil Pemeriksaan -->
         <div class="results-section">
-            <div class="results-title">HASIL PEMERIKSAAN</div>
             <table class="results-table">
                 <thead>
                     <tr>
@@ -591,9 +558,9 @@
         <!-- Tanda Tangan -->
         <div class="signature-section">
             <div class="signature-left">
-                <p style="margin-bottom: 10px; font-size: 11px;">Petugas Lab</p>
+                <p style="margin-bottom: 6px; font-size: 11px;">Petugas Lab</p>
                 <!-- QR Code Petugas Lab -->
-                <div style="text-align: center; margin-bottom: 10px;">
+                <div style="text-align: center; margin-bottom: 6px;">
                     <div style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
                         {!! $qrCodePetugasSvg ?? '' !!}
                     </div>
@@ -603,9 +570,9 @@
                 </div>
             </div>
             <div class="signature-right">
-                <p style="margin-bottom: 10px; font-size: 11px;">Dokter Penanggung Jawab</p>
+                <p style="margin-bottom: 6px; font-size: 11px;">Dokter Penanggung Jawab</p>
                 <!-- QR Code Dokter Penanggung Jawab -->
-                <div style="text-align: center; margin-bottom: 5px;">
+                <div style="text-align: center; margin-bottom: 6px;">
                     <div style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
                         {!! $qrCodeDokterSvg ?? '' !!}
                     </div>

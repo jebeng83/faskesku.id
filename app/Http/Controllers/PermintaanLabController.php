@@ -1546,7 +1546,10 @@ class PermintaanLabController extends Controller
         try {
             // Ambil data permintaan lab dengan relasi lengkap
             $permintaanLab = PermintaanLab::with([
-                'regPeriksa.patient',
+                'regPeriksa.patient.kelurahan',
+                'regPeriksa.patient.kecamatan',
+                'regPeriksa.patient.kabupaten',
+                'regPeriksa.patient.propinsi',
                 'dokter',
                 'detailPermintaan.templateLaboratorium',
                 'detailPermintaan.jnsPerawatanLab',
@@ -1669,6 +1672,19 @@ class PermintaanLabController extends Controller
                 ];
             }
 
+            $patient = $permintaanLab->regPeriksa?->patient;
+            $alamatLengkap = null;
+            if ($patient) {
+                $alamatParts = array_filter([
+                    $patient->alamat ? (string) $patient->alamat : null,
+                    $patient->kelurahan?->nm_kel ? (string) $patient->kelurahan->nm_kel : null,
+                    $patient->kecamatan?->nm_kec ? (string) $patient->kecamatan->nm_kec : null,
+                    $patient->kabupaten?->nm_kab ? (string) $patient->kabupaten->nm_kab : null,
+                    $patient->propinsi?->nm_prop ? (string) $patient->propinsi->nm_prop : null,
+                ], fn ($value) => !empty($value));
+                $alamatLengkap = !empty($alamatParts) ? implode(', ', $alamatParts) : null;
+            }
+
             $permintaanLabData = [
                 'noorder' => (string) $permintaanLab->noorder,
                 'no_rawat' => (string) $permintaanLab->no_rawat,
@@ -1680,12 +1696,13 @@ class PermintaanLabController extends Controller
                 'jam_hasil' => $formatTime($permintaanLab->jam_hasil),
                 'dokter_perujuk' => $permintaanLab->dokter_perujuk ? (string) $permintaanLab->dokter_perujuk : null,
                 'reg_periksa' => [
-                    'patient' => $permintaanLab->regPeriksa?->patient ? [
-                        'no_rkm_medis' => (string) $permintaanLab->regPeriksa->patient->no_rkm_medis,
-                        'nm_pasien' => (string) $permintaanLab->regPeriksa->patient->nm_pasien,
-                        'jk' => $permintaanLab->regPeriksa->patient->jk ? (string) $permintaanLab->regPeriksa->patient->jk : null,
-                        'tgl_lahir' => $formatDate($permintaanLab->regPeriksa->patient->tgl_lahir),
-                        'alamat' => $permintaanLab->regPeriksa->patient->alamat ? (string) $permintaanLab->regPeriksa->patient->alamat : null,
+                    'patient' => $patient ? [
+                        'no_rkm_medis' => (string) $patient->no_rkm_medis,
+                        'nm_pasien' => (string) $patient->nm_pasien,
+                        'jk' => $patient->jk ? (string) $patient->jk : null,
+                        'tgl_lahir' => $formatDate($patient->tgl_lahir),
+                        'alamat' => $patient->alamat ? (string) $patient->alamat : null,
+                        'alamat_lengkap' => $alamatLengkap,
                     ] : null,
                 ],
                 'dokter' => $permintaanLab->dokter ? [
