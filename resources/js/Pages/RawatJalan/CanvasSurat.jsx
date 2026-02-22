@@ -579,7 +579,19 @@ export default function CanvasSurat({ patient, defaultDate, token = "", noRawat 
   }, []);
 
 
-  const [selectedType, setSelectedType] = useState(LETTER_TYPES[0].value);
+  const [selectedType, setSelectedType] = useState(() => {
+    if (typeof window === "undefined") return LETTER_TYPES[0].value;
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const rawType = params.get("type");
+      const normalized = String(rawType || "").trim().toUpperCase();
+      if (!normalized) return LETTER_TYPES[0].value;
+      const match = LETTER_TYPES.find((t) => String(t.value || "").toUpperCase() === normalized);
+      return match ? match.value : LETTER_TYPES[0].value;
+    } catch {
+      return LETTER_TYPES[0].value;
+    }
+  });
   const [visitDate, setVisitDate] = useState(defaultDate || today);
   const [pat, setPat] = useState(patient || null);
   const [doc, setDoc] = useState(null);

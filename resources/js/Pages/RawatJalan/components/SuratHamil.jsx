@@ -1,35 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import SidebarRalan from '@/Layouts/SidebarRalan';
 import { todayDateString } from '@/tools/datetime';
 import QRCode from 'qrcode';
 
-export default function SuratSehat({ rawatJalan, patient, dokter, setting, suratSehatData, embedded = false, templateSelector, validationUrl }) {
+export default function SuratHamil({ rawatJalan, patient, dokter, setting, suratHamilData, embedded = false, templateSelector, validationUrl }) {
     const [formData, setFormData] = useState({
-        no_surat: suratSehatData?.no_surat || '',
+        no_surat: suratHamilData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
-        tanggalsurat: suratSehatData?.tanggalsurat || todayDateString(),
-        berat: suratSehatData?.berat || '',
-        tinggi: suratSehatData?.tinggi || '',
-        tensi: suratSehatData?.tensi || '',
-        suhu: suratSehatData?.suhu || '',
-        butawarna: suratSehatData?.butawarna || 'Tidak',
-        keperluan: suratSehatData?.keperluan || '',
-        kesimpulan: suratSehatData?.kesimpulan || 'Sehat'
+        tanggalperiksa: suratHamilData?.tanggalperiksa || todayDateString(),
+        hasilperiksa: suratHamilData?.hasilperiksa || 'Hamil',
     });
 
     const [isLoading, setIsLoading] = useState(false);
-    const [hasSaved, setHasSaved] = useState(!!suratSehatData);
+    const [hasSaved, setHasSaved] = useState(!!suratHamilData);
     const [submitError, setSubmitError] = useState('');
-    const [duplicateWarning, setDuplicateWarning] = useState('');
-    const [duplicateExists, setDuplicateExists] = useState(false);
     const [ttdQrDataUrl, setTtdQrDataUrl] = useState('');
     const [valQrDataUrl, setValQrDataUrl] = useState('');
-
-    // Check for print mode from URL
     const [isPrintMode, setIsPrintMode] = useState(false);
-    
+
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('mode') === 'print') {
@@ -40,113 +30,42 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         }
     }, []);
 
-
     useEffect(() => {
-        let active = true;
-
-        if (!formData.tanggalsurat) return;
-        
-        // Skip auto-generate if editing existing data (should have no_surat)
-        // Unless date changed, then we might want to regenerate if it follows a pattern (optional)
-        // But for now, if suratSehatData exists and date matches, we keep the original number
-        if (suratSehatData?.no_surat && suratSehatData.tanggalsurat === formData.tanggalsurat) {
-             setFormData(prev => ({ ...prev, no_surat: suratSehatData.no_surat }));
-             return;
+        if (!formData.tanggalperiksa) return;
+        if (suratHamilData?.no_surat && suratHamilData.tanggalperiksa === formData.tanggalperiksa) {
+            setFormData((prev) => ({ ...prev, no_surat: suratHamilData.no_surat }));
+            return;
         }
-
-        const ac = new AbortController();
-        const t = setTimeout(async () => {
+        try {
+            const d = new Date(formData.tanggalperiksa);
+            if (Number.isNaN(d.getTime())) return;
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const key = `suratSeq:SKHAMIL:${yyyy}`;
+            let curr = 0;
             try {
-                const url = route('rawat-jalan.surat-sehat.next-no-surat', {
-                    tanggal: formData.tanggalsurat,
-                });
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: { Accept: 'application/json' },
-                    credentials: 'include',
-                    signal: ac.signal,
-                });
-                const json = await res.json().catch(() => null);
-                if (!active) return;
-
-                const nextNoSurat = (json?.nomor ?? json?.no_surat ?? '').toString().trim();
-                if (!nextNoSurat) return;
-
-                setFormData(prev => ({ ...prev, no_surat: nextNoSurat }));
-            } catch {
-                return;
-            }
-        }, 150);
-
-        return () => {
-            active = false;
-            ac.abort();
-            clearTimeout(t);
-        };
-    }, [formData.tanggalsurat, suratSehatData]);
+                const raw = localStorage.getItem(key);
+                curr = raw ? parseInt(raw, 10) || 0 : 0;
+            } catch { }
+            const next = curr + 1;
+            try {
+                localStorage.setItem(key, String(next));
+            } catch { }
+            const seq = String(next).padStart(5, '0');
+            const nomor = `SKHAMIL${yyyy}${mm}${dd}${seq}`;
+            setFormData((prev) => ({ ...prev, no_surat: nomor }));
+        } catch { }
+    }, [formData.tanggalperiksa, suratHamilData]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSubmitError('');
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
-
-    useEffect(() => {
-        let active = true;
-        setDuplicateExists(false);
-        setDuplicateWarning('');
-
-        if (!formData.no_rawat || !formData.tanggalsurat) return;
-
-        // Skip duplicate check if we are editing the same record properties
-        // Or if no_surat matches existing record
-        if (suratSehatData && 
-            (formData.no_surat === suratSehatData.no_surat)) {
-            return;
-        }
-
-        const ac = new AbortController();
-        const t = setTimeout(async () => {
-            try {
-                const url = route('rawat-jalan.surat-sehat.check-duplicate', {
-                    no_rawat: formData.no_rawat,
-                    tanggalsurat: formData.tanggalsurat,
-                    no_surat: formData.no_surat,
-                });
-                const res = await fetch(url, {
-                    method: 'GET',
-                    headers: { Accept: 'application/json' },
-                    credentials: 'include',
-                    signal: ac.signal,
-                });
-                const json = await res.json().catch(() => null);
-                if (!active) return;
-
-                if (json?.exists) {
-                    setDuplicateExists(true);
-                    setDuplicateWarning(json?.message || 'Tidak bisa simpan. Data surat sehat sudah ada untuk No. RM dan tanggal yang sama.');
-                } else {
-                    setDuplicateExists(false);
-                    setDuplicateWarning('');
-                }
-            } catch {
-                if (!active) return;
-                setDuplicateExists(false);
-                setDuplicateWarning('');
-            }
-        }, 250);
-
-        return () => {
-            active = false;
-            clearTimeout(t);
-            try {
-                ac.abort();
-            } catch { }
-        };
-    }, [formData.no_rawat, formData.no_surat, formData.tanggalsurat, suratSehatData]);
 
     const firstErrorMessage = (errors) => {
         if (!errors) return '';
@@ -166,26 +85,27 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     const handleSubmit = (e) => {
         e.preventDefault();
         setSubmitError('');
-
-        if (duplicateExists) {
-            setSubmitError(duplicateWarning || 'Tidak bisa simpan. Data surat sehat sudah ada untuk No. RM dan tanggal yang sama.');
-            return;
-        }
-
         setIsLoading(true);
 
-        router.post(route('rawat-jalan.surat-sehat.store'), formData, {
+        const payload = {
+            no_surat: formData.no_surat,
+            no_rawat: formData.no_rawat,
+            tanggalperiksa: formData.tanggalperiksa,
+            hasilperiksa: formData.hasilperiksa,
+        };
+
+        router.post(route('rawat-jalan.surat-hamil.store'), payload, {
             onSuccess: () => {
                 setHasSaved(true);
             },
             onError: (errors) => {
-                const msg = firstErrorMessage(errors) || 'Tidak bisa menyimpan surat sehat.';
+                const msg = firstErrorMessage(errors) || 'Tidak bisa menyimpan surat hamil.';
                 setSubmitError(msg);
                 setIsLoading(false);
             },
             onFinish: () => {
                 setIsLoading(false);
-            }
+            },
         });
     };
 
@@ -199,7 +119,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -233,13 +153,13 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
         return parts.join(', ');
     };
 
-    const ttdQrText = [
+    const ttdQrText = useMemo(() => ([
         `Dikeluarkan oleh: ${safeText(setting?.nama_instansi)}`,
         `Ditandatangani oleh: ${safeText(dokter?.nm_dokter)}`,
         `Untuk: ${safeText(patient?.nm_pasien)}`,
         `No Surat: ${safeText(formData.no_surat)}`,
-        `Pada: ${formatDate(formData.tanggalsurat)}`,
-    ].join('\n');
+        `Pada: ${formatDate(formData.tanggalperiksa)}`,
+    ].join('\n')), [setting?.nama_instansi, dokter?.nm_dokter, patient?.nm_pasien, formData.no_surat, formData.tanggalperiksa]);
 
     useEffect(() => {
         let active = true;
@@ -250,12 +170,11 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
             .catch(() => {
                 if (active) setTtdQrDataUrl('');
             });
-
         return () => {
             active = false;
         };
     }, [ttdQrText]);
-    
+
     useEffect(() => {
         let active = true;
         const url = (validationUrl || '').toString();
@@ -270,12 +189,11 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
     }, [validationUrl]);
 
     const backToRalanUrl = route('rawat-jalan.index');
-
     const Layout = embedded ? ({ children }) => <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div> : SidebarRalan;
 
     return (
         <Layout>
-            {!embedded && <Head title="Surat Sehat" />}
+            {!embedded && <Head title="Surat Keterangan Hamil" />}
             <style>{`
                 @page { 
                     size: A4 portrait; 
@@ -296,17 +214,14 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                     .print-container * {
                         visibility: visible !important;
                     }
-                    /* Hide all navigation elements */
                     nav, header, footer, .sidebar, [role="navigation"] {
                         display: none !important;
                     }
-                    /* Hide AppLayout/SidebarRalan navigation */
                     body > div > div > nav,
                     body > div > div > aside,
                     body > div > div > header {
                         display: none !important;
                     }
-                    /* Ensure content takes full width */
                     body > div > div > main,
                     body > div > div {
                         margin: 0 !important;
@@ -319,37 +234,22 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                         top: 0;
                         left: 0;
                         right: 0;
-                        width: 210mm;
-                        min-height: 297mm;
-                        margin: 0 auto;
-                        padding: 12mm;
-                        box-sizing: border-box;
-                        background: #fff !important;
+                        bottom: 0;
+                        background: #fff;
+                        z-index: 9999;
                     }
-                    
-                    /* Print-specific text colors - HITAM PEKAT */
-                    .print-text-black {
-                        color: #000 !important;
-                    }
-                    .print-text-bold {
-                        font-weight: 700 !important;
-                        color: #000 !important;
-                    }
+                    .print-text-black { color: #000 !important; }
+                    .print-text-bold { font-weight: 700 !important; }
                 }
             `}</style>
 
             <div className="space-y-6">
-                {/* Header */}
                 <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg print:hidden">
                     <div className="p-6">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Surat Sehat
-                                </h2>
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                    Cetak surat keterangan sehat untuk pasien
-                                </p>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Surat Keterangan Hamil</h2>
+                                <p className="text-gray-600 dark:text-gray-400 mt-1">Cetak surat keterangan hamil untuk pasien</p>
                             </div>
                             <div className="flex gap-3">
                                 {!embedded && (
@@ -366,9 +266,8 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                     </div>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-blue-50/80 via-white/70 to-indigo-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
+                <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-pink-50/80 via-white/70 to-rose-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
-                        {/* Form */}
                         {!isPrintMode && (
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -378,26 +277,26 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                     </div>
                                 )}
                                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                                    <div className="mb-3 p-2 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-lg">
-                                        <label className="block text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1">
+                                    <div className="mb-3 p-2 bg-pink-50 dark:bg-pink-900/30 border border-pink-100 dark:border-pink-800 rounded-lg">
+                                        <label className="block text-xs font-medium text-pink-700 dark:text-pink-300 mb-1">
                                             Jenis Surat
                                         </label>
                                         <select
-                                            value="sehat"
+                                            value="hamil"
                                             onChange={(e) => {
                                                 if (!rawatJalan?.no_rawat) return;
                                                 const value = e.target.value;
+                                                if (value === "sehat") {
+                                                    router.visit(route("rawat-jalan.surat-sehat", rawatJalan.no_rawat));
+                                                }
                                                 if (value === "sakit") {
                                                     router.visit(route("rawat-jalan.surat-sakit", rawatJalan.no_rawat));
-                                                }
-                                                if (value === "hamil") {
-                                                    router.visit(route("rawat-jalan.surat-hamil", rawatJalan.no_rawat));
                                                 }
                                                 if (value === "nikah") {
                                                     router.visit(route("rawat-jalan.surat-nikah", rawatJalan.no_rawat));
                                                 }
                                             }}
-                                            className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                         >
                                             <option value="sehat">Surat Keterangan Sehat</option>
                                             <option value="sakit">Surat Keterangan Sakit</option>
@@ -405,12 +304,16 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                             <option value="nikah">Surat Keterangan Nikah</option>
                                         </select>
                                     </div>
+
+                                    {submitError && (
+                                        <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-200">
+                                            {submitError}
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* Nomor Surat */}
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Nomor Surat
-                                            </label>
+                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nomor Surat</label>
                                             <input
                                                 type="text"
                                                 name="no_surat"
@@ -420,37 +323,24 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 required
                                             />
                                         </div>
-
-                                        {/* Tanggal Surat */}
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Tanggal Surat
-                                            </label>
+                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Periksa</label>
                                             <input
                                                 type="date"
-                                                name="tanggalsurat"
-                                                value={formData.tanggalsurat}
+                                                name="tanggalperiksa"
+                                                value={formData.tanggalperiksa}
                                                 onChange={handleInputChange}
-                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
                                                 required
                                             />
                                         </div>
                                     </div>
 
-                                    {(duplicateWarning || submitError) && (
-                                        <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-200">
-                                            {duplicateWarning || submitError}
-                                        </div>
-                                    )}
-
-                                    {/* Data Pasien (Read Only) */}
                                     <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
                                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Data Pasien</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Nama Pasien
-                                                </label>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Pasien</label>
                                                 <input
                                                     type="text"
                                                     value={patient?.nm_pasien || ''}
@@ -459,9 +349,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    No. RM
-                                                </label>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">No. Rekam Medis</label>
                                                 <input
                                                     type="text"
                                                     value={patient?.no_rkm_medis || ''}
@@ -472,136 +360,27 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                         </div>
                                     </div>
 
-                                    {/* Pemeriksaan Fisik */}
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Pemeriksaan Fisik</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {/* Berat Badan */}
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Berat Badan (kg)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="berat"
-                                                    value={formData.berat}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Contoh: 65"
-                                                    className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                    required
-                                                />
-                                            </div>
-
-                                            {/* Tinggi Badan */}
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Tinggi Badan (cm)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="tinggi"
-                                                    value={formData.tinggi}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Contoh: 170"
-                                                    className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                    required
-                                                />
-                                            </div>
-
-                                            {/* Tekanan Darah */}
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Tekanan Darah
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="tensi"
-                                                    value={formData.tensi}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Contoh: 120/80"
-                                                    className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                    required
-                                                />
-                                            </div>
-
-                                            {/* Suhu Tubuh */}
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                    Suhu Tubuh (°C)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="suhu"
-                                                    value={formData.suhu}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Contoh: 36.5"
-                                                    className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Pemeriksaan Tambahan */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* Buta Warna */}
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Buta Warna
-                                            </label>
-                                            <select
-                                                name="butawarna"
-                                                value={formData.butawarna}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                required
-                                            >
-                                                <option value="Tidak">Tidak</option>
-                                                <option value="Ya">Ya</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Keperluan */}
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                Keperluan
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="keperluan"
-                                                value={formData.keperluan}
-                                                onChange={handleInputChange}
-                                                placeholder="Contoh: Melamar kerja, Sekolah, dll"
-                                                className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Kesimpulan */}
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Kesimpulan
-                                        </label>
+                                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hasil Pemeriksaan</label>
                                         <select
-                                            name="kesimpulan"
-                                            value={formData.kesimpulan}
+                                            name="hasilperiksa"
+                                            value={formData.hasilperiksa}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                            className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
                                             required
                                         >
-                                            <option value="Sehat">Sehat</option>
-                                            <option value="Tidak Sehat">Tidak Sehat</option>
+                                            <option value="Hamil">Hamil</option>
+                                            <option value="Tidak Hamil">Tidak Hamil</option>
+                                            <option value="Suspek Hamil">Suspek Hamil</option>
                                         </select>
                                     </div>
 
-                                    {/* Submit Button */}
                                     <div className="flex justify-end pt-2 gap-3">
                                         <button
                                             type="button"
                                             onClick={handlePrint}
                                             disabled={!hasSaved}
-                                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
+                                            className="bg-pink-600 hover:bg-pink-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                                 <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6v-8z" />
@@ -610,8 +389,8 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={isLoading || duplicateExists}
-                                            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
+                                            disabled={isLoading}
+                                            className="bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold"
                                         >
                                             {isLoading ? (
                                                 <>
@@ -626,7 +405,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                    {suratSehatData || hasSaved ? 'Edit' : 'Simpan'}
+                                                    {suratHamilData || hasSaved ? 'Edit' : 'Simpan'}
                                                 </>
                                             )}
                                         </button>
@@ -636,12 +415,10 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                         </div>
                         )}
 
-                        {/* Print Preview */}
                         <div className={`lg:col-span-7 xl:col-span-8 ${isPrintMode ? 'lg:col-span-12 flex justify-center' : ''}`}>
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg print:shadow-none lg:sticky lg:top-20">
                                 <div className="p-4 sm:p-6 print:p-0">
                                     <div className="mx-auto w-full bg-white text-gray-900 rounded-xl border border-gray-200 shadow-sm print:shadow-none print:border-0 print:rounded-none print-container print:p-3">
-                                        {/* Kop Surat */}
                                         <div className="px-5 pt-4 pb-3 border-b-2 border-gray-800 print:px-4 print:pt-1 print:pb-1">
                                             <div className="flex items-center gap-4 print:gap-3">
                                                 {setting?.logo && (
@@ -669,10 +446,9 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                             </div>
                                         </div>
 
-                                        {/* Judul Surat */}
                                         <div className="px-5 pt-3 pb-2 print:px-3 print:pt-1 print:pb-1">
                                             <div className="text-center">
-                                                <div className="text-sm font-bold tracking-wide underline">SURAT KETERANGAN SEHAT</div>
+                                                <div className="text-sm font-bold tracking-wide underline">SURAT KETERANGAN HAMIL</div>
                                                 <div className="text-xs text-gray-700 mt-0.5">Nomor: {safeText(formData.no_surat)}</div>
                                             </div>
                                         </div>
@@ -709,30 +485,18 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 <div className="rounded-lg border border-gray-300 px-2.5 py-1.5 print:border-gray-800 print:px-2 print:py-1">
                                                     <div className="text-[10px] font-bold tracking-wide mb-0.5 print-text-bold uppercase print:mb-1">HASIL PEMERIKSAAN</div>
                                                     <div className="grid grid-cols-[85px_3px_1fr] gap-x-1 gap-y-0.5">
-                                                        <div className="text-gray-700 print-text-black">Berat Badan</div>
+                                                        <div className="text-gray-700 print-text-black">Tanggal Periksa</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{safeText(formData.berat)} kg</div>
-                                                        <div className="text-gray-700 print-text-black">Tinggi Badan</div>
+                                                        <div className="print-text-black">{formatShortDate(formData.tanggalperiksa)}</div>
+                                                        <div className="text-gray-700 print-text-black">Hasil Periksa</div>
                                                         <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{safeText(formData.tinggi)} cm</div>
-                                                        <div className="text-gray-700 print-text-black">Tekanan Darah</div>
-                                                        <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{safeText(formData.tensi)} mmHg</div>
-                                                        <div className="text-gray-700 print-text-black">Suhu Tubuh</div>
-                                                        <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{safeText(formData.suhu)} °C</div>
-                                                        <div className="text-gray-700 print-text-black">Buta Warna</div>
-                                                        <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="print-text-black">{safeText(formData.butawarna)}</div>
-                                                        <div className="text-gray-700 print-text-black">Keperluan</div>
-                                                        <div className="text-gray-700 print-text-black">:</div>
-                                                        <div className="font-semibold print-text-bold leading-none">{safeText(formData.keperluan)}</div>
+                                                        <div className="font-semibold print-text-bold leading-none">{safeText(formData.hasilperiksa)}</div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="mt-2 text-xs leading-tight print:mt-1.5 print-text-black print:text-[10px]">
-                                                Maka yang bersangkutan dinyatakan <span className="font-bold text-lg print-text-bold print:text-sm">{safeText(formData.kesimpulan).toUpperCase()}</span> dan dapat melakukan aktivitas normal.
+                                                Maka yang bersangkutan dinyatakan <span className="font-bold text-lg print-text-bold print:text-sm">{safeText(formData.hasilperiksa).toUpperCase()}</span>.
                                             </div>
 
                                             <div className="mt-1.5 text-xs leading-tight print:mt-1 print-text-black">
@@ -754,7 +518,7 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 </div>
                                                 <div className="w-[86mm] text-xs print:text-[10px]">
                                                     <div className="text-center">
-                                                        <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalsurat)}</div>
+                                                        <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalperiksa)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
                                                         <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
                                                             {ttdQrDataUrl ? (

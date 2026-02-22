@@ -2515,7 +2515,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                                                 onClick={handleOpenSurat}
                                                 disabled={!currentNoRawat}
                                                 className="text-xs px-3 py-1.5 rounded border bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 disabled:opacity-60"
-                                                title="Buat surat (pilih Surat Sehat / Surat Sakit)"
+                                                title="Buat surat"
                                             >
                                                 Surat
                                             </button>
