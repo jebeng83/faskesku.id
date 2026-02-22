@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -60,7 +60,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -69,7 +69,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::store
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -79,7 +79,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 export const update = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -94,7 +94,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 update.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -121,7 +121,7 @@ update.url = (args: { nama_instansi: string | number } | [nama_instansi: string 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::update
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 update.put = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -131,7 +131,7 @@ update.put = (args: { nama_instansi: string | number } | [nama_instansi: string 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 export const destroy = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -146,7 +146,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 destroy.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -173,7 +173,7 @@ destroy.url = (args: { nama_instansi: string | number } | [nama_instansi: string
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::destroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 destroy.delete = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -183,7 +183,7 @@ destroy.delete = (args: { nama_instansi: string | number } | [nama_instansi: str
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::wallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 export const wallpaper = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -198,7 +198,7 @@ wallpaper.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::wallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 wallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -225,7 +225,7 @@ wallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: stri
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::wallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 wallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -235,7 +235,7 @@ wallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: stri
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::wallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 wallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -245,7 +245,7 @@ wallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: str
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::logo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 export const logo = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -260,7 +260,7 @@ logo.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::logo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 logo.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -287,7 +287,7 @@ logo.url = (args: { nama_instansi: string | number } | [nama_instansi: string | 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::logo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 logo.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -297,7 +297,7 @@ logo.get = (args: { nama_instansi: string | number } | [nama_instansi: string | 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::logo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 logo.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

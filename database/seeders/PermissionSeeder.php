@@ -349,6 +349,7 @@ class PermissionSeeder extends Seeder
             'rawat-inap.canvas',
             'rawat-inap.catatan-observasi',
             'rawat-inap.catatan-keperawatan',
+            'rawat-inap.handover',
             'view-bangsal',
             'create-bangsal',
             'edit-bangsal',

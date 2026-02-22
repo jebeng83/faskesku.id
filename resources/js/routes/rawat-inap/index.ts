@@ -136,6 +136,95 @@ pemeriksaanRanap.head = (options?: RouteQueryOptions): RouteDefinition<'head'> =
 
 /**
 * @see routes/web.php:2563
+* @see \App\Http\Controllers\RawatInapController::handover
+* @see app/Http/Controllers/RawatInapController.php:1270
+* @route '/rawat-inap/handover'
+*/
+export const handover = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: handover.url(options),
+    method: 'get',
+})
+
+handover.definition = {
+    methods: ["get","head"],
+    url: '/rawat-inap/handover',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handover
+* @see app/Http/Controllers/RawatInapController.php:1270
+* @route '/rawat-inap/handover'
+*/
+handover.url = (options?: RouteQueryOptions) => {
+    return handover.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handover
+* @see app/Http/Controllers/RawatInapController.php:1270
+* @route '/rawat-inap/handover'
+*/
+handover.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: handover.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handover
+* @see app/Http/Controllers/RawatInapController.php:1270
+* @route '/rawat-inap/handover'
+*/
+handover.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: handover.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handoverData
+* @see app/Http/Controllers/RawatInapController.php:1277
+* @route '/rawat-inap/handover-data'
+*/
+export const handoverData = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: handoverData.url(options),
+    method: 'get',
+})
+
+handoverData.definition = {
+    methods: ["get","head"],
+    url: '/rawat-inap/handover-data',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handoverData
+* @see app/Http/Controllers/RawatInapController.php:1277
+* @route '/rawat-inap/handover-data'
+*/
+handoverData.url = (options?: RouteQueryOptions) => {
+    return handoverData.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handoverData
+* @see app/Http/Controllers/RawatInapController.php:1277
+* @route '/rawat-inap/handover-data'
+*/
+handoverData.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: handoverData.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\RawatInapController::handoverData
+* @see app/Http/Controllers/RawatInapController.php:1277
+* @route '/rawat-inap/handover-data'
+*/
+handoverData.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: handoverData.url(options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:2552
 * @route '/rawat-inap/bangsal'
 */
 export const bangsal = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -542,7 +631,7 @@ edit.head = (args: { rawat_inap: string | number } | [rawat_inap: string | numbe
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:699
+* @see app/Http/Controllers/RawatInapController.php:722
 * @route '/rawat-inap/{rawat_inap}'
 */
 export const update = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -557,7 +646,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:699
+* @see app/Http/Controllers/RawatInapController.php:722
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -584,7 +673,7 @@ update.url = (args: { rawat_inap: string | number } | [rawat_inap: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:699
+* @see app/Http/Controllers/RawatInapController.php:722
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.put = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -594,7 +683,7 @@ update.put = (args: { rawat_inap: string | number } | [rawat_inap: string | numb
 
 /**
 * @see \App\Http\Controllers\RawatInapController::update
-* @see app/Http/Controllers/RawatInapController.php:699
+* @see app/Http/Controllers/RawatInapController.php:722
 * @route '/rawat-inap/{rawat_inap}'
 */
 update.patch = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -604,7 +693,7 @@ update.patch = (args: { rawat_inap: string | number } | [rawat_inap: string | nu
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:709
+* @see app/Http/Controllers/RawatInapController.php:732
 * @route '/rawat-inap/{rawat_inap}'
 */
 export const destroy = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -619,7 +708,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:709
+* @see app/Http/Controllers/RawatInapController.php:732
 * @route '/rawat-inap/{rawat_inap}'
 */
 destroy.url = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -646,7 +735,7 @@ destroy.url = (args: { rawat_inap: string | number } | [rawat_inap: string | num
 
 /**
 * @see \App\Http\Controllers\RawatInapController::destroy
-* @see app/Http/Controllers/RawatInapController.php:709
+* @see app/Http/Controllers/RawatInapController.php:732
 * @route '/rawat-inap/{rawat_inap}'
 */
 destroy.delete = (args: { rawat_inap: string | number } | [rawat_inap: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -660,6 +749,8 @@ const rawatInap = {
     pemeriksaanRanap: Object.assign(pemeriksaanRanap, pemeriksaanRanap416adb),
     catatanObservasi: Object.assign(catatanObservasi, catatanObservasi),
     catatanKeperawatan: Object.assign(catatanKeperawatan, catatanKeperawatan),
+    handover: Object.assign(handover, handover),
+    handoverData: Object.assign(handoverData, handoverData),
     bangsal: Object.assign(bangsal, bangsal),
     kamar: Object.assign(kamar, kamar),
     setHargaKamar: Object.assign(setHargaKamar, setHargaKamar),

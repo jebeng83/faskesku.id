@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, usePage, router } from "@inertiajs/react";
-import { ChevronDownIcon, ChevronRightIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronRightIcon, ChevronLeftIcon, Bars3Icon, ArrowUturnLeftIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { route } from "ziggy-js";
 import { getRawatJalanFilters } from '@/tools/rawatJalanFilters';
@@ -44,8 +44,9 @@ const isMenuEnabled = (menu) => {
 };
 
 export default function SidebarMenu({
-    collapsed = false,
+    collapsed: collapsedProp,
     title = "Faskesku",
+    onToggle,
 }) {
     const { menu_hierarchy = [], current_menu } = usePage().props;
     const normalizedMenus = Array.isArray(menu_hierarchy)
@@ -56,6 +57,31 @@ export default function SidebarMenu({
     const [expandedMenus, setExpandedMenus] = useState(new Set());
     // Drawer state untuk mobile (efek slide-in + overlay)
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [collapsedState, setCollapsedState] = useState(false);
+    const collapsed = typeof collapsedProp === "boolean" ? collapsedProp : collapsedState;
+
+    useEffect(() => {
+        if (typeof collapsedProp === "boolean") return;
+        try {
+            const saved = localStorage.getItem("appSidebarCollapsed");
+            if (saved !== null) setCollapsedState(saved === "true");
+        } catch {}
+    }, [collapsedProp]);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem("appSidebarCollapsed", String(collapsed));
+        } catch {}
+    }, [collapsed]);
+
+    const toggleCollapsed = () => {
+        const next = !collapsed;
+        if (typeof onToggle === "function") {
+            onToggle(next);
+            return;
+        }
+        setCollapsedState(next);
+    };
 
 	// Debug logging (remove in production)
     useEffect(() => {}, [current_menu, menu_hierarchy]);
@@ -534,10 +560,18 @@ export default function SidebarMenu({
                     <>
                         {/* Logo - Collapsed */}
                         <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-                            <div className="flex items-center justify-center">
+                            <div className="flex flex-col items-center justify-center gap-2">
                                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
                                     <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={toggleCollapsed}
+                                    className="p-1 rounded-md hover:bg-white/10 text-white/80"
+                                    aria-label="Expand sidebar"
+                                >
+                                    <ChevronRightIcon className="h-4 w-4" />
+                                </button>
                             </div>
                         </div>
                         <nav className="px-1 pb-2 flex-1">{renderCollapsed(normalizedMenus)}</nav>
@@ -546,14 +580,24 @@ export default function SidebarMenu({
                     <>
                         {/* Logo - Normal */}
                         <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-                                    <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+                                        <span className="text-white font-bold text-sm drop-shadow-sm">F</span>
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-bold text-white text-sm truncate">{title}</span>
+                                        <span className="text-xs text-white/80 -mt-1 truncate">Elektronik Rekam Medis</span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-white text-sm">{title}</span>
-                                    <span className="text-xs text-white/80 -mt-1">Elektronik Rekam Medis</span>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={toggleCollapsed}
+                                    className="p-2 rounded-md hover:bg-white/10 text-white/80"
+                                    aria-label="Collapse sidebar"
+                                >
+                                    <ChevronLeftIcon className="h-4 w-4" />
+                                </button>
                             </div>
                         </div>
                         <motion.nav className="px-4 py-4 pb-4 space-y-1 flex-1" variants={listVariants} initial="hidden" animate="show">

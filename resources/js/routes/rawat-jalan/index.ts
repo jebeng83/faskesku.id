@@ -6,6 +6,9 @@ import pemeriksaanRalanC19e15 from './pemeriksaan-ralan'
 import asuhanKeperawatan from './asuhan-keperawatan'
 import berkasDigital from './berkas-digital'
 import dokter from './dokter'
+import suratNikah from './surat-nikah'
+import suratHamil from './surat-hamil'
+import suratCutiHamil from './surat-cuti-hamil'
 import status from './status'
 /**
 * @see \App\Http\Controllers\RawatJalan\RawatJalanController::lanjutan
@@ -1057,6 +1060,9 @@ const rawatJalan = {
     berkasDigital: Object.assign(berkasDigital, berkasDigital),
     dokter: Object.assign(dokter, dokter),
     statistics: Object.assign(statistics, statistics),
+    suratNikah: Object.assign(suratNikah, suratNikah),
+    suratHamil: Object.assign(suratHamil, suratHamil),
+    suratCutiHamil: Object.assign(suratCutiHamil, suratCutiHamil),
     awalKeperawatanUmum: Object.assign(awalKeperawatanUmum, awalKeperawatanUmum),
     status: Object.assign(status, status),
     create: Object.assign(create, create),

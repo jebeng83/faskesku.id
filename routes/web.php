@@ -2474,6 +2474,9 @@ Route::middleware('auth')->group(function () {
         ->name('rawat-jalan.surat-sakit')
         ->where('no_rawat', '.*');
     Route::post('rawat-jalan/surat-sakit', [RawatJalanController::class, 'storeSuratSakit'])->name('rawat-jalan.surat-sakit.store');
+    Route::post('rawat-jalan/surat-nikah/store', [RawatJalanController::class, 'storeSuratNikah'])->name('rawat-jalan.surat-nikah.store');
+    Route::post('rawat-jalan/surat-hamil/store', [RawatJalanController::class, 'storeSuratHamil'])->name('rawat-jalan.surat-hamil.store');
+    Route::post('rawat-jalan/surat-cuti-hamil/store', [RawatJalanController::class, 'storeSuratCutiHamil'])->name('rawat-jalan.surat-cuti-hamil.store');
 
     // Awal Keperawatan Umum (Ralan)
     Route::get('rawat-jalan/awal-keperawatan-umum/{no_rawat}', [RawatJalanController::class, 'awalKeperawatanUmum'])
@@ -2560,6 +2563,11 @@ Route::middleware('auth')->group(function () {
     Route::post('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'store'])->name('rawat-inap.catatan-keperawatan.store');
     Route::put('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'update'])->name('rawat-inap.catatan-keperawatan.update');
     Route::delete('rawat-inap/catatan-keperawatan', [CatatanKeperawatanRanapController::class, 'destroy'])->name('rawat-inap.catatan-keperawatan.delete');
+
+    // Handover Perawat
+    Route::get('rawat-inap/handover', [RawatInapController::class, 'handover'])->name('rawat-inap.handover');
+    Route::get('rawat-inap/handover-data', [RawatInapController::class, 'handoverData'])->name('rawat-inap.handover-data');
+
     Route::get('rawat-inap/bangsal', function () {
         return Inertia::render('RawatInap/components/Bangsal');
     })->name('rawat-inap.bangsal');

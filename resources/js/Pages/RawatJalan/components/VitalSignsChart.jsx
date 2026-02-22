@@ -25,7 +25,7 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
             .map((item, index) => {
                 const date = new Date(item.tgl_perawatan);
                 const time = item.jam_rawat ? item.jam_rawat.substring(0, 5) : '';
-                
+
                 // Parse tensi (blood pressure) - format: "120/80"
                 const tensiParts = item.tensi ? item.tensi.split('/') : [];
                 const sistolik = tensiParts[0] ? parseInt(tensiParts[0]) : null;
@@ -60,7 +60,7 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
     // Vital signs ranges for color coding
     const getVitalStatus = (vital, value) => {
         if (!value) return 'normal';
-        
+
         const ranges = {
             suhu: { low: 36.1, high: 37.2 },
             sistolik: { low: 90, high: 140 },
@@ -280,6 +280,97 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
         );
     }
 
+    if (variant === 'minimal-grid') {
+        const axisCommon = {
+            tick: { fontSize: 10 },
+            angle: -30,
+            textAnchor: 'end',
+            height: 40,
+        };
+
+        return (
+            <div className="grid grid-cols-2 gap-3 h-full">
+                <div className="flex flex-col h-full">
+                    <span className="text-[10px] font-bold text-gray-500 mb-1">Suhu</span>
+                    <div className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                                <XAxis dataKey="time" {...axisCommon} />
+                                <YAxis tick={{ fontSize: 9 }} domain={[34, 42]} width={20} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="suhu"
+                                    stroke={cardColors.suhu.stroke}
+                                    fill={cardColors.suhu.fill}
+                                    strokeWidth={2}
+                                    dot={{ r: 2 }}
+                                    name="Suhu"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="flex flex-col h-full">
+                    <span className="text-[10px] font-bold text-gray-500 mb-1">TD</span>
+                    <div className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                                <XAxis dataKey="time" {...axisCommon} />
+                                <YAxis tick={{ fontSize: 9 }} domain={[40, 200]} width={20} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area type="monotone" dataKey="sistolik" stroke={cardColors.sistolik.stroke} fill={cardColors.sistolik.fill} strokeWidth={2} dot={{ r: 2 }} name="Sis" />
+                                <Area type="monotone" dataKey="diastolik" stroke={cardColors.diastolik.stroke} fill={cardColors.diastolik.fill} strokeWidth={2} dot={{ r: 2 }} name="Dia" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="flex flex-col h-full">
+                    <span className="text-[10px] font-bold text-gray-500 mb-1">HR/RR</span>
+                    <div className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                                <XAxis dataKey="time" {...axisCommon} />
+                                <YAxis tick={{ fontSize: 9 }} domain={[0, 180]} width={20} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area type="monotone" dataKey="nadi" stroke={cardColors.nadi.stroke} fill={cardColors.nadi.fill} strokeWidth={2} dot={{ r: 2 }} name="HR" />
+                                <Area type="monotone" dataKey="respirasi" stroke={cardColors.respirasi.stroke} fill={cardColors.respirasi.fill} strokeWidth={2} dot={{ r: 2 }} name="RR" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="flex flex-col h-full">
+                    <span className="text-[10px] font-bold text-gray-500 mb-1">SpO2</span>
+                    <div className="flex-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                                <XAxis dataKey="time" {...axisCommon} />
+                                <YAxis tick={{ fontSize: 9 }} domain={[80, 100]} width={20} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="spo2"
+                                    stroke={cardColors.spo2.stroke}
+                                    fill={cardColors.spo2.fill}
+                                    strokeWidth={2}
+                                    dot={{ r: 2 }}
+                                    name="SpO2"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             {/* Header */}
@@ -292,21 +383,19 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
                     <div className="flex gap-2">
                         <button
                             onClick={() => setActiveChart('trend')}
-                            className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                                activeChart === 'trend'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition-colors ${activeChart === 'trend'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                                }`}
                         >
                             Trend
                         </button>
                         <button
                             onClick={() => setActiveChart('summary')}
-                            className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                                activeChart === 'summary'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition-colors ${activeChart === 'summary'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                                }`}
                         >
                             Ringkasan
                         </button>
@@ -321,11 +410,10 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setSelectedVital('all')}
-                                className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                                    selectedVital === 'all'
-                                        ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                }`}
+                                className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedVital === 'all'
+                                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                    }`}
                             >
                                 Semua
                             </button>
@@ -333,11 +421,10 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
                                 <button
                                     key={vital}
                                     onClick={() => setSelectedVital(vital)}
-                                    className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                                        selectedVital === vital
-                                            ? 'text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                                    }`}
+                                    className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedVital === vital
+                                        ? 'text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                        }`}
                                     style={selectedVital === vital ? { backgroundColor: color } : {}}
                                 >
                                     {vital === 'suhu' && 'Suhu'}
@@ -355,8 +442,8 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                                    <XAxis 
-                                        dataKey="datetime" 
+                                    <XAxis
+                                        dataKey="datetime"
                                         tick={{ fontSize: 12 }}
                                         angle={-45}
                                         textAnchor="end"
@@ -365,7 +452,7 @@ const VitalSignsChart = ({ data = [], variant = 'default' }) => {
                                     <YAxis tick={{ fontSize: 12 }} />
                                     <Tooltip content={<CustomTooltip />} />
                                     <Legend />
-                                    
+
                                     {(selectedVital === 'all' || selectedVital === 'suhu') && (
                                         <Line
                                             type="monotone"
