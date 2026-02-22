@@ -393,16 +393,12 @@ export default function SuratSehat({ rawatJalan, patient, dokter, setting, surat
                                                 if (value === "hamil") {
                                                     router.visit(route("rawat-jalan.surat-hamil", rawatJalan.no_rawat));
                                                 }
-                                                if (value === "nikah") {
-                                                    router.visit(route("rawat-jalan.surat-nikah", rawatJalan.no_rawat));
-                                                }
                                             }}
                                             className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="sehat">Surat Keterangan Sehat</option>
                                             <option value="sakit">Surat Keterangan Sakit</option>
                                             <option value="hamil">Surat Keterangan Hamil</option>
-                                            <option value="nikah">Surat Keterangan Nikah</option>
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

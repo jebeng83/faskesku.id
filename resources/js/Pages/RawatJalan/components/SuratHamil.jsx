@@ -10,7 +10,7 @@ export default function SuratHamil({ rawatJalan, patient, dokter, setting, surat
         no_surat: suratHamilData?.no_surat || '',
         no_rawat: rawatJalan?.no_rawat || '',
         tanggalperiksa: suratHamilData?.tanggalperiksa || todayDateString(),
-        hasilperiksa: suratHamilData?.hasilperiksa || 'Hamil',
+        hasilperiksa: suratHamilData?.hasilperiksa || 'ditemukan tanda-tanda kehamilan',
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -292,16 +292,12 @@ export default function SuratHamil({ rawatJalan, patient, dokter, setting, surat
                                                 if (value === "sakit") {
                                                     router.visit(route("rawat-jalan.surat-sakit", rawatJalan.no_rawat));
                                                 }
-                                                if (value === "nikah") {
-                                                    router.visit(route("rawat-jalan.surat-nikah", rawatJalan.no_rawat));
-                                                }
                                             }}
                                             className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                         >
                                             <option value="sehat">Surat Keterangan Sehat</option>
                                             <option value="sakit">Surat Keterangan Sakit</option>
                                             <option value="hamil">Surat Keterangan Hamil</option>
-                                            <option value="nikah">Surat Keterangan Nikah</option>
                                         </select>
                                     </div>
 
@@ -369,9 +365,8 @@ export default function SuratHamil({ rawatJalan, patient, dokter, setting, surat
                                             className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
                                             required
                                         >
-                                            <option value="Hamil">Hamil</option>
-                                            <option value="Tidak Hamil">Tidak Hamil</option>
-                                            <option value="Suspek Hamil">Suspek Hamil</option>
+                                            <option value="ditemukan tanda-tanda kehamilan">Ditemukan tanda-tanda kehamilan</option>
+                                            <option value="tidak ditemukan tanda-tanda kehamilan">Tidak ditemukan tanda-tanda kehamilan</option>
                                         </select>
                                     </div>
 

@@ -17,7 +17,7 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
         alamat: suratNikahData?.alamat || '',
         hasil_pp_test: suratNikahData?.hasil_pp_test || 'Negatif',
         tanggal_pp_test: suratNikahData?.tanggal_pp_test || '',
-        pekerjaan: suratNikahData?.pekerjaan || '',
+        pekerjaan: suratNikahData?.pekerjaan || 'Karyawan Swasta',
         tanggal: suratNikahData?.tanggal || todayDateString(),
         tanggal_nikah: suratNikahData?.tanggal_nikah || todayDateString(),
     });
@@ -215,7 +215,7 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
     }, [validationUrl]);
 
     const backToRalanUrl = route('rawat-jalan.index');
-    const pekerjaanOptions = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Pelajar', 'Mahasiswa', 'Lainnya'];
+    const pekerjaanOptions = ['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Pelajar', 'Mahasiswa', 'Buruh', 'Lain-lain'];
     const statusOptions = ['Perjaka', 'Dudha', 'Menikah'];
     const hasilPpOptions = ['Negatif', 'Positif'];
     const Layout = embedded ? ({ children }) => <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{children}</div> : SidebarRalan;
@@ -309,28 +309,9 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
                                         <label className="block text-xs font-medium text-purple-700 dark:text-purple-300 mb-1">
                                             Jenis Surat
                                         </label>
-                                        <select
-                                            value="nikah"
-                                            onChange={(e) => {
-                                                if (!rawatJalan?.no_rawat) return;
-                                                const value = e.target.value;
-                                                if (value === "sehat") {
-                                                    router.visit(route("rawat-jalan.surat-sehat", rawatJalan.no_rawat));
-                                                }
-                                                if (value === "sakit") {
-                                                    router.visit(route("rawat-jalan.surat-sakit", rawatJalan.no_rawat));
-                                                }
-                                                if (value === "hamil") {
-                                                    router.visit(route("rawat-jalan.surat-hamil", rawatJalan.no_rawat));
-                                                }
-                                            }}
-                                            className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        >
-                                            <option value="sehat">Surat Keterangan Sehat</option>
-                                            <option value="sakit">Surat Keterangan Sakit</option>
-                                            <option value="hamil">Surat Keterangan Hamil</option>
-                                            <option value="nikah">Surat Keterangan Nikah</option>
-                                        </select>
+                                        <div className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                            Surat Keterangan Nikah
+                                        </div>
                                     </div>
 
                                     {submitError && (
@@ -467,7 +448,6 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
                                                     onChange={handleInputChange}
                                                     className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
                                                 >
-                                                    <option value="">Pilih pekerjaan</option>
                                                     {pekerjaanOptions.map((opt) => (
                                                         <option key={opt} value={opt}>{opt}</option>
                                                     ))}
