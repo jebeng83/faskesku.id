@@ -2045,7 +2045,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
     const handleOpenSurat = () => {
         if (!currentNoRawat) return;
-        router.visit(route("rawat-jalan.canvas-surat", { no_rawat: currentNoRawat }));
+        router.visit(route("rawat-jalan.surat-sehat", currentNoRawat));
     };
 
     const openSoapHistoryModal = async (showAll = false) => {
