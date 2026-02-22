@@ -181,8 +181,12 @@ class SettingController extends Controller
      * dengan struktur di atas. Endpoints berikut mengembalikan JSON agar mudah
      * diintegrasikan pada card “Setting Aplikasi” di halaman React.
      */
-    public function appIndex()
+    public function appIndex(Request $request)
     {
+        if ($request->inertia()) {
+            return $this->index();
+        }
+
         if (! Schema::hasTable('setting')) {
             return response()->json(['message' => 'Tabel `setting` tidak ditemukan'], 404);
         }

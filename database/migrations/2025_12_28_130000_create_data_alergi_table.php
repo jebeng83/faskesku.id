@@ -11,6 +11,9 @@ return new class extends Migration
     {
         if (! Schema::hasTable('data_alergi')) {
             Schema::create('data_alergi', function (Blueprint $table) {
+                $table->charset = 'latin1';
+                $table->collation = 'latin1_swedish_ci';
+
                 $table->string('kd_alergi', 5);
                 $table->string('nm_alergi', 100);
                 $table->unsignedInteger('kode_jenis');

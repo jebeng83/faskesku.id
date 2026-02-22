@@ -701,24 +701,105 @@ class SatuSehatRajalController extends Controller
         $period['start'] = $start;
         $payload['period'] = $period;
 
-        if (isset($payload['statusHistory'])) {
-            unset($payload['statusHistory']);
+        $orgIhs = $this->satusehatOrganizationId();
+        if ($orgIhs === '') {
+            return response()->json([
+                'ok' => false,
+                'message' => 'SATUSEHAT_ORG_ID belum diisi',
+            ], 422);
         }
 
-        if (isset($payload['diagnosis'])) {
+        if (! isset($payload['serviceProvider']) || ! is_array($payload['serviceProvider'])) {
+            $payload['serviceProvider'] = [];
+        }
+        if (trim((string) ($payload['serviceProvider']['reference'] ?? '')) === '') {
+            $payload['serviceProvider']['reference'] = 'Organization/'.$orgIhs;
+        }
+
+        if (array_key_exists('diagnosis', $payload)) {
             unset($payload['diagnosis']);
         }
 
+        $updateMethod = 'PUT';
         $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $payload, [
             'prefer_representation' => true,
         ]);
         if (! $update['ok']) {
-            return response()->json([
-                'ok' => false,
-                'status' => $update['status'],
-                'error' => $update['error'],
-                'body' => $update['body'] ?? null,
-            ], $update['status'] ?: 400);
+            $rawBody = (string) ($update['body'] ?? '');
+            $json = is_array($update['json'] ?? null) ? $update['json'] : null;
+
+            $needPatchFallback = $this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound($json, $rawBody)
+                || $this->satusehatOperationOutcomeIndicatesDiagnosisNotFound($json, $rawBody);
+
+            if ($needPatchFallback) {
+                $patch = [
+                    ['op' => 'replace', 'path' => '/status', 'value' => (string) ($payload['status'] ?? 'finished')],
+                ];
+
+                $periodNow = is_array($payload['period'] ?? null) ? $payload['period'] : null;
+                if (is_array($periodNow)) {
+                    $startNow = trim((string) ($periodNow['start'] ?? ''));
+                    if ($startNow === '' && $start !== '') {
+                        $patch[] = [
+                            'op' => array_key_exists('start', $periodNow) ? 'replace' : 'add',
+                            'path' => '/period/start',
+                            'value' => $start,
+                        ];
+                    }
+                    $patch[] = [
+                        'op' => array_key_exists('end', $periodNow) ? 'replace' : 'add',
+                        'path' => '/period/end',
+                        'value' => $end,
+                    ];
+                } else {
+                    $patch[] = [
+                        'op' => 'add',
+                        'path' => '/period',
+                        'value' => ['start' => $start, 'end' => $end],
+                    ];
+                }
+
+                $spRef = trim((string) ($payload['serviceProvider']['reference'] ?? ''));
+                if ($spRef === '' && $orgIhs !== '') {
+                    if (isset($payload['serviceProvider']) && is_array($payload['serviceProvider'])) {
+                        $patch[] = [
+                            'op' => array_key_exists('reference', $payload['serviceProvider']) ? 'replace' : 'add',
+                            'path' => '/serviceProvider/reference',
+                            'value' => 'Organization/'.$orgIhs,
+                        ];
+                    } else {
+                        $patch[] = [
+                            'op' => 'add',
+                            'path' => '/serviceProvider',
+                            'value' => ['reference' => 'Organization/'.$orgIhs],
+                        ];
+                    }
+                }
+
+                $patchRes = $this->satusehatRequest('PATCH', 'Encounter/'.$encounterId, $patch, [
+                    'prefer_representation' => true,
+                ]);
+
+                if (! $patchRes['ok']) {
+                    return response()->json([
+                        'ok' => false,
+                        'status' => $patchRes['status'] ?: $update['status'],
+                        'error' => $patchRes['error'] ?: $update['error'],
+                        'put_body' => $update['body'] ?? null,
+                        'patch_body' => $patchRes['body'] ?? null,
+                    ], ($patchRes['status'] ?: $update['status']) ?: 400);
+                }
+
+                $updateMethod = 'PATCH';
+                $update = $patchRes;
+            } else {
+                return response()->json([
+                    'ok' => false,
+                    'status' => $update['status'],
+                    'error' => $update['error'],
+                    'body' => $update['body'] ?? null,
+                ], $update['status'] ?: 400);
+            }
         }
 
         try {
@@ -727,7 +808,7 @@ class SatuSehatRajalController extends Controller
                 ['no_rawat' => $no_rawat],
                 ['id_encounter_2' => $savedId]
             );
-            Log::channel('daily')->info('[SATUSEHAT][Encounter PUT] stored', [
+            Log::channel('daily')->info('[SATUSEHAT][Encounter '.$updateMethod.'] stored', [
                 'no_rawat' => $no_rawat,
                 'encounter_id' => $savedId,
                 'status' => $update['status'],
@@ -752,7 +833,7 @@ class SatuSehatRajalController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            Log::channel('daily')->error('[SATUSEHAT][Encounter PUT] store failed', [
+            Log::channel('daily')->error('[SATUSEHAT][Encounter '.$updateMethod.'] store failed', [
                 'error' => $e->getMessage(),
             ]);
         }

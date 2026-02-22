@@ -271,7 +271,7 @@ appIndex.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appStore
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 export const appStore = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -286,7 +286,7 @@ appStore.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appStore
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 appStore.url = (options?: RouteQueryOptions) => {
@@ -295,7 +295,7 @@ appStore.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appStore
-* @see app/Http/Controllers/setting/SettingController.php:246
+* @see app/Http/Controllers/setting/SettingController.php:250
 * @route '/setting/app'
 */
 appStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -305,7 +305,7 @@ appStore.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appUpdate
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 export const appUpdate = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -320,7 +320,7 @@ appUpdate.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appUpdate
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 appUpdate.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -347,7 +347,7 @@ appUpdate.url = (args: { nama_instansi: string | number } | [nama_instansi: stri
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appUpdate
-* @see app/Http/Controllers/setting/SettingController.php:301
+* @see app/Http/Controllers/setting/SettingController.php:305
 * @route '/setting/app/{nama_instansi}'
 */
 appUpdate.put = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -357,7 +357,7 @@ appUpdate.put = (args: { nama_instansi: string | number } | [nama_instansi: stri
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appDestroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 export const appDestroy = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -372,7 +372,7 @@ appDestroy.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appDestroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 appDestroy.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -399,7 +399,7 @@ appDestroy.url = (args: { nama_instansi: string | number } | [nama_instansi: str
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appDestroy
-* @see app/Http/Controllers/setting/SettingController.php:405
+* @see app/Http/Controllers/setting/SettingController.php:409
 * @route '/setting/app/{nama_instansi}'
 */
 appDestroy.delete = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -409,7 +409,7 @@ appDestroy.delete = (args: { nama_instansi: string | number } | [nama_instansi: 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 export const appWallpaper = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -424,7 +424,7 @@ appWallpaper.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -451,7 +451,7 @@ appWallpaper.url = (args: { nama_instansi: string | number } | [nama_instansi: s
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -461,7 +461,7 @@ appWallpaper.get = (args: { nama_instansi: string | number } | [nama_instansi: s
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appWallpaper
-* @see app/Http/Controllers/setting/SettingController.php:419
+* @see app/Http/Controllers/setting/SettingController.php:423
 * @route '/setting/app/{nama_instansi}/wallpaper'
 */
 appWallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -471,7 +471,7 @@ appWallpaper.head = (args: { nama_instansi: string | number } | [nama_instansi: 
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 export const appLogo = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -486,7 +486,7 @@ appLogo.definition = {
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.url = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -513,7 +513,7 @@ appLogo.url = (args: { nama_instansi: string | number } | [nama_instansi: string
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.get = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -523,7 +523,7 @@ appLogo.get = (args: { nama_instansi: string | number } | [nama_instansi: string
 
 /**
 * @see \App\Http\Controllers\setting\SettingController::appLogo
-* @see app/Http/Controllers/setting/SettingController.php:449
+* @see app/Http/Controllers/setting/SettingController.php:453
 * @route '/setting/app/{nama_instansi}/logo'
 */
 appLogo.head = (args: { nama_instansi: string | number } | [nama_instansi: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

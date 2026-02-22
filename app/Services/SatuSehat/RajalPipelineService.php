@@ -140,6 +140,7 @@ class RajalPipelineService
             }
         }
 
+        $updateMethod = 'PUT';
         $update = $this->satusehatRequest('PUT', 'Encounter/'.$encounterId, $payload, [
             'prefer_representation' => true,
             'compat' => [
@@ -181,6 +182,64 @@ class RajalPipelineService
         }
 
         if (! $update['ok']) {
+            $rawBody = (string) ($update['body'] ?? '');
+            $json = is_array($update['json'] ?? null) ? $update['json'] : null;
+
+            $needPatchFallback = $this->satusehatOperationOutcomeIndicatesStatusHistoryNotFound($json, $rawBody)
+                || $this->satusehatOperationOutcomeIndicatesDiagnosisNotFound($json, $rawBody);
+
+            if ($needPatchFallback) {
+                $orgIhs = $this->satusehatOrganizationId();
+                $patch = [
+                    ['op' => 'replace', 'path' => '/status', 'value' => $status],
+                ];
+
+                $patch[] = ['op' => 'add', 'path' => '/period', 'value' => ['start' => $periodStartLocal, 'end' => $periodEndLocal]];
+
+                $spRef = trim((string) ($payload['serviceProvider']['reference'] ?? ''));
+                if ($spRef === '' && $orgIhs !== '') {
+                    if (isset($payload['serviceProvider']) && is_array($payload['serviceProvider'])) {
+                        $patch[] = [
+                            'op' => array_key_exists('reference', $payload['serviceProvider']) ? 'replace' : 'add',
+                            'path' => '/serviceProvider/reference',
+                            'value' => 'Organization/'.$orgIhs,
+                        ];
+                    } else {
+                        $patch[] = [
+                            'op' => 'add',
+                            'path' => '/serviceProvider',
+                            'value' => ['reference' => 'Organization/'.$orgIhs],
+                        ];
+                    }
+                }
+
+                $patchRes = $this->satusehatRequest('PATCH', 'Encounter/'.$encounterId, $patch, [
+                    'prefer_representation' => true,
+                ]);
+
+                if (! $patchRes['ok']) {
+                    return [
+                        'ok' => false,
+                        'status' => $patchRes['status'] ?: $update['status'] ?: 400,
+                        'error' => $patchRes['error'] ?: $update['error'],
+                        'put_body' => $update['body'] ?? null,
+                        'patch_body' => $patchRes['body'] ?? null,
+                    ];
+                }
+
+                $updateMethod = 'PATCH';
+                $update = $patchRes;
+            } else {
+                return [
+                    'ok' => false,
+                    'status' => $update['status'] ?: 400,
+                    'error' => $update['error'],
+                    'body' => $update['body'] ?? null,
+                ];
+            }
+        }
+
+        if (! $update['ok']) {
             return [
                 'ok' => false,
                 'status' => $update['status'] ?: 400,
@@ -211,7 +270,7 @@ class RajalPipelineService
                 }
             }
         } catch (\Throwable $e) {
-            Log::channel('daily')->error('[SATUSEHAT][Encounter PUT] store failed', [
+            Log::channel('daily')->error('[SATUSEHAT][Encounter '.$updateMethod.'] store failed', [
                 'no_rawat' => $noRawat,
                 'error' => $e->getMessage(),
             ]);

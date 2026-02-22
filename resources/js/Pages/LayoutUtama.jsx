@@ -26,9 +26,64 @@ export default function LayoutUtama({
 }) {
   const [activeView, _setActiveView] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { auth } = usePage().props || {};
+  const page = usePage();
+  const { auth } = page.props || {};
   const [employeeName, setEmployeeName] = useState(null);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const nik = auth?.user?.nik || auth?.user?.nip || null;
+
+  const pathname = (() => {
+    try {
+      const u = new URL(page?.url || "", window.location.origin);
+      return u.pathname || window.location.pathname;
+    } catch {
+      return window.location.pathname;
+    }
+  })();
+  const moduleKey = (() => {
+    if (pathname.startsWith("/rawat-inap/bangsal")) return "tarif";
+    if (pathname.startsWith("/daftar-tarif") || pathname.startsWith("/kategori-perawatan") || pathname.startsWith("/poliklinik")) return "tarif";
+    if (pathname.startsWith("/rawat-inap") || pathname.startsWith("/igd")) return "ranap";
+    if (pathname.startsWith("/laporan")) return "laporan";
+    if (pathname.startsWith("/laboratorium")) return "laboratorium";
+    if (pathname.startsWith("/farmasi")) return "farmasi";
+    if (pathname.startsWith("/akutansi")) return "keuangan";
+    return null;
+  })();
+
+  useEffect(() => {
+    if (!moduleKey) {
+      setIsLeftCollapsed(false);
+      return;
+    }
+    try {
+      const saved = localStorage.getItem(`${moduleKey}SidebarCollapsed`);
+      if (saved !== null) setIsLeftCollapsed(saved === "true");
+    } catch { }
+    const handlerRanap = (e) => {
+      if (moduleKey !== "ranap") return;
+      const next = Boolean(e?.detail?.collapsed);
+      setIsLeftCollapsed(next);
+      try {
+        localStorage.setItem("ranapSidebarCollapsed", String(next));
+      } catch { }
+    };
+    const handlerGeneric = (e) => {
+      const key = e?.detail?.key;
+      if (!key || key !== moduleKey) return;
+      const next = Boolean(e?.detail?.collapsed);
+      setIsLeftCollapsed(next);
+      try {
+        localStorage.setItem(`${moduleKey}SidebarCollapsed`, String(next));
+      } catch { }
+    };
+    window.addEventListener("ranapSidebarCollapsed", handlerRanap);
+    window.addEventListener("layoutSidebarCollapsed", handlerGeneric);
+    return () => {
+      window.removeEventListener("ranapSidebarCollapsed", handlerRanap);
+      window.removeEventListener("layoutSidebarCollapsed", handlerGeneric);
+    };
+  }, [moduleKey]);
 
   useEffect(() => {
     if (!auth || auth?.user?.nama) return;
@@ -184,7 +239,10 @@ export default function LayoutUtama({
 
       <main className="pt-14 flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 flex-shrink-0 bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white border-r border-blue-400/20 overflow-y-auto">
+        <aside
+          className={`hidden lg:block flex-shrink-0 bg-gradient-to-b from-blue-700 via-blue-800 to-blue-900 text-white border-r border-blue-400/20 overflow-y-auto transition-[width] duration-300 ${moduleKey ? (isLeftCollapsed ? "w-16" : "w-64") : "w-64"
+            }`}
+        >
           <div className="h-full p-3">
             {left}
           </div>

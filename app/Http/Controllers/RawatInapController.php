@@ -432,12 +432,35 @@ class RawatInapController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $rows = DB::table('pemeriksaan_ranap')
-            ->where('no_rawat', $noRawat)
-            ->orderByDesc('tgl_perawatan')
-            ->orderByDesc('jam_rawat')
+        $rows = DB::table('pemeriksaan_ranap as pr')
+            ->leftJoin('pegawai as pg', function ($join) {
+                $join->on(DB::raw('trim(pg.nik)'), '=', DB::raw('trim(pr.nip)'));
+            })
+            ->where('pr.no_rawat', $noRawat)
+            ->orderByDesc('pr.tgl_perawatan')
+            ->orderByDesc('pr.jam_rawat')
             ->get([
-                'no_rawat', 'tgl_perawatan', 'jam_rawat', 'suhu_tubuh', 'tensi', 'nadi', 'respirasi', 'tinggi', 'berat', 'spo2', 'gcs', 'kesadaran', 'keluhan', 'pemeriksaan', 'alergi', 'rtl', 'penilaian', 'instruksi', 'evaluasi', 'nip',
+                'pr.no_rawat',
+                'pr.tgl_perawatan',
+                'pr.jam_rawat',
+                'pr.suhu_tubuh',
+                'pr.tensi',
+                'pr.nadi',
+                'pr.respirasi',
+                'pr.tinggi',
+                'pr.berat',
+                'pr.spo2',
+                'pr.gcs',
+                'pr.kesadaran',
+                'pr.keluhan',
+                'pr.pemeriksaan',
+                'pr.alergi',
+                'pr.rtl',
+                'pr.penilaian',
+                'pr.instruksi',
+                'pr.evaluasi',
+                'pr.nip',
+                DB::raw('pg.nama as nama_petugas'),
             ]);
 
         return response()->json(['data' => $rows]);
@@ -1242,5 +1265,176 @@ class RawatInapController extends Controller
         $ket = 'Posting otomatis tindakan Rawat Inap no_rawat '.$noRawat.(is_string($noRm) && $noRm !== '' ? ' (RM '.$noRm.')' : '');
 
         return $postingService->post($noRawat, $ket, $tglPerawatan);
+    }
+
+    public function handover(Request $request)
+    {
+        return Inertia::render('RawatInap/Catatan/HandOver', [
+            'title' => 'Monitoring Handover Perawat',
+        ]);
+    }
+
+    public function handoverData(Request $request)
+    {
+        $kiLatest = DB::table('kamar_inap as ki')
+            ->select([
+                'ki.no_rawat',
+                DB::raw('max(concat(ki.tgl_masuk," ",ki.jam_masuk)) as masuk_dt'),
+            ])
+            ->groupBy('ki.no_rawat');
+
+        $patients = RegPeriksa::query()
+            ->with([
+                'patient:no_rkm_medis,nm_pasien,tgl_lahir,jk',
+                'dokter:kd_dokter,nm_dokter',
+            ])
+            ->joinSub($kiLatest, 'kil', function ($join) {
+                $join->on('kil.no_rawat', '=', 'reg_periksa.no_rawat');
+            })
+            ->join('kamar_inap', function ($join) {
+                $join->on('kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                    ->on(DB::raw('concat(kamar_inap.tgl_masuk," ",kamar_inap.jam_masuk)'), '=', DB::raw('kil.masuk_dt'));
+            })
+            ->leftJoin('kamar as km', function ($join) {
+                $join->on(DB::raw('trim(km.kd_kamar)'), '=', DB::raw('trim(kamar_inap.kd_kamar)'));
+            })
+            ->leftJoin('bangsal', 'bangsal.kd_bangsal', '=', 'km.kd_bangsal')
+            ->where('reg_periksa.status_lanjut', 'Ranap')
+            ->whereNull('kamar_inap.tgl_keluar')
+            ->select([
+                'reg_periksa.no_rawat',
+                'reg_periksa.no_rkm_medis',
+                'reg_periksa.kd_dokter',
+                'reg_periksa.kd_poli',
+                'kamar_inap.kd_kamar as kamar',
+                'bangsal.nm_bangsal',
+                'kamar_inap.tgl_masuk',
+                'kamar_inap.jam_masuk',
+            ])
+            ->get();
+
+        foreach ($patients as $p) {
+            // Latest Vitals
+            $p->vitals = DB::table('catatan_observasi_ranap')
+                ->where('no_rawat', $p->no_rawat)
+                ->orderByDesc('tgl_perawatan')
+                ->orderByDesc('jam_rawat')
+                ->limit(20)
+                ->get();
+
+            // Latest SOAP & Advis
+            $p->soap = DB::table('pemeriksaan_ranap')
+                ->where('no_rawat', $p->no_rawat)
+                ->orderByDesc('tgl_perawatan')
+                ->orderByDesc('jam_rawat')
+                ->first();
+
+            $p->soap_dokter = DB::table('pemeriksaan_ranap as pr')
+                ->join('dokter as d', function ($join) {
+                    $join->on(DB::raw('trim(d.kd_dokter)'), '=', DB::raw('trim(pr.nip)'));
+                })
+                ->where('pr.no_rawat', $p->no_rawat)
+                ->where(function ($q) {
+                    $q->whereRaw("coalesce(trim(pr.rtl),'') <> ''")
+                        ->orWhereRaw("coalesce(trim(pr.instruksi),'') <> ''");
+                })
+                ->orderByDesc('pr.tgl_perawatan')
+                ->orderByDesc('pr.jam_rawat')
+                ->first([
+                    'pr.no_rawat',
+                    'pr.tgl_perawatan',
+                    'pr.jam_rawat',
+                    'pr.rtl',
+                    'pr.instruksi',
+                    'd.kd_dokter',
+                    'd.nm_dokter',
+                ]);
+
+            $noResepRanap = DB::table('resep_obat')
+                ->where('no_rawat', $p->no_rawat)
+                ->orderByDesc('tgl_peresepan')
+                ->orderByDesc('jam_peresepan')
+                ->orderByDesc('tgl_perawatan')
+                ->orderByDesc('jam')
+                ->value('no_resep');
+
+            $resepRanapItems = collect([]);
+            if ($noResepRanap) {
+                $resepRanapItems = DB::table('resep_dokter as rd')
+                    ->join('databarang as db', 'db.kode_brng', '=', 'rd.kode_brng')
+                    ->where('rd.no_resep', $noResepRanap)
+                    ->orderBy('db.nama_brng')
+                    ->get([
+                        'rd.kode_brng',
+                        'db.nama_brng',
+                        'rd.jml',
+                        'rd.aturan_pakai',
+                    ]);
+            }
+
+            $p->resep_ranap = [
+                'no_resep' => $noResepRanap,
+                'items' => $resepRanapItems,
+            ];
+
+            $noRawatRalan = DB::table('reg_periksa')
+                ->where('no_rkm_medis', $p->no_rkm_medis)
+                ->where('status_lanjut', 'Ralan')
+                ->orderByDesc('tgl_registrasi')
+                ->orderByDesc('jam_reg')
+                ->value('no_rawat');
+
+            $ralanSoap = null;
+            if ($noRawatRalan) {
+                $ralanSoap = DB::table('pemeriksaan_ralan')
+                    ->where('no_rawat', $noRawatRalan)
+                    ->orderByDesc('tgl_perawatan')
+                    ->orderByDesc('jam_rawat')
+                    ->first(['no_rawat', 'tgl_perawatan', 'jam_rawat', 'instruksi']);
+            }
+
+            $noResep = null;
+            $resepItems = collect([]);
+            if ($noRawatRalan) {
+                $noResep = DB::table('resep_obat')
+                    ->where('no_rawat', $noRawatRalan)
+                    ->orderByDesc('tgl_peresepan')
+                    ->orderByDesc('jam_peresepan')
+                    ->value('no_resep');
+            }
+            if ($noResep) {
+                $resepItems = DB::table('resep_dokter as rd')
+                    ->join('databarang as db', 'db.kode_brng', '=', 'rd.kode_brng')
+                    ->where('rd.no_resep', $noResep)
+                    ->orderBy('db.nama_brng')
+                    ->get([
+                        'rd.kode_brng',
+                        'db.nama_brng',
+                        'rd.jml',
+                        'rd.aturan_pakai',
+                    ]);
+            }
+
+            $p->ralan = [
+                'no_rawat' => $noRawatRalan,
+                'tgl_perawatan' => $ralanSoap ? $ralanSoap->tgl_perawatan : null,
+                'jam_rawat' => $ralanSoap ? $ralanSoap->jam_rawat : null,
+                'instruksi' => $ralanSoap ? $ralanSoap->instruksi : null,
+                'resep' => [
+                    'no_resep' => $noResep,
+                    'items' => $resepItems,
+                ],
+            ];
+
+            // Latest Nursing Notes
+            $p->nursing_notes = DB::table('catatan_keperawatan_ranap')
+                ->where('no_rawat', $p->no_rawat)
+                ->orderByDesc('tanggal')
+                ->orderByDesc('jam')
+                ->limit(5)
+                ->get();
+        }
+
+        return response()->json(['data' => $patients]);
     }
 }

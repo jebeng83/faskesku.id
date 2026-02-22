@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import {
   ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   HomeIcon,
   UserGroupIcon,
   ClipboardDocumentListIcon,
@@ -12,15 +14,42 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { route } from "ziggy-js";
 
 export default function LanjutanRegistrasiSidebar({
-  collapsed = false,
+  collapsed: collapsedProp,
   title = "Registrasi Pasien",
   menuConfig = {},
+  onToggle,
 }) {
+  const storageKey = "registrasiLanjutanSidebarCollapsed";
+  const [collapsedState, setCollapsedState] = useState(false);
+  const collapsed = typeof collapsedProp === "boolean" ? collapsedProp : collapsedState;
   const [expandedMenus, setExpandedMenus] = useState(new Set());
   const shouldReduceMotion = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1];
   const baseDuration = shouldReduceMotion ? 0 : 0.18;
   const expandDuration = shouldReduceMotion ? 0 : 0.22;
+
+  useEffect(() => {
+    if (typeof collapsedProp === "boolean") return;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) setCollapsedState(saved === "true");
+    } catch { }
+  }, [collapsedProp]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, String(collapsed));
+    } catch { }
+  }, [collapsed]);
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    if (typeof onToggle === "function") {
+      onToggle(next);
+      return;
+    }
+    setCollapsedState(next);
+  };
 
   // Map icon names to Heroicon components
   const iconMap = {
@@ -375,7 +404,7 @@ export default function LanjutanRegistrasiSidebar({
       <div className="h-full flex flex-col">
         {/* Logo - Collapsed */}
         <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-2">
             <motion.div
               className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center shadow-lg border border-blue-400/20"
               whileHover={{ scale: 1.05 }}
@@ -383,6 +412,14 @@ export default function LanjutanRegistrasiSidebar({
             >
               <span className="text-white font-bold text-lg drop-shadow-sm">R</span>
             </motion.div>
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              className="p-1 rounded-md hover:bg-white/10 text-white/80"
+              aria-label="Expand sidebar"
+            >
+              <ChevronRightIcon className="h-4 w-4" />
+            </button>
           </div>
         </div>
         <nav className="px-2 py-4 flex-1 overflow-y-auto">{renderCollapsed(registrasiMenus)}</nav>
@@ -394,15 +431,25 @@ export default function LanjutanRegistrasiSidebar({
     <div className="h-full flex flex-col">
       {/* Logo - Normal */}
       <div className="p-4 border-b border-blue-400/30 dark:border-blue-600/30 flex-shrink-0">
-        <motion.div className="flex items-center gap-3" whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center shadow-lg border border-blue-400/20">
-            <span className="text-white font-bold text-lg drop-shadow-sm">R</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text.white text-base leading-tight text-white">{title}</span>
-            <span className="text-xs text-blue-200 -mt-0.5 leading-tight">Registrasi</span>
-          </div>
-        </motion.div>
+        <div className="flex items-center justify-between gap-3">
+          <motion.div className="flex items-center gap-3 min-w-0" whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center shadow-lg border border-blue-400/20">
+              <span className="text-white font-bold text-lg drop-shadow-sm">R</span>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text.white text-base leading-tight text-white truncate">{title}</span>
+              <span className="text-xs text-blue-200 -mt-0.5 leading-tight truncate">Registrasi</span>
+            </div>
+          </motion.div>
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="p-2 rounded-md hover:bg-white/10 text-white/80"
+            aria-label="Collapse sidebar"
+          >
+            <ChevronLeftIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <motion.nav className="px-3 py-4 space-y-2 flex-1 overflow-y-auto" variants={listVariants} initial="hidden" animate="show">

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import {
@@ -11,6 +11,8 @@ import {
   BookOpen,
   FileText,
   Receipt,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import usePermission from "@/hooks/usePermission";
 
@@ -20,6 +22,28 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
   const [openPengaturan, setOpenPengaturan] = useState(true);
   const [openJurnal, setOpenJurnal] = useState(true);
   const [openAkutansi, setOpenAkutansi] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("keuanganSidebarCollapsed");
+      if (saved !== null) setCollapsed(saved === "true");
+    } catch { }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("keuanganSidebarCollapsed", String(collapsed));
+    } catch { }
+    if (typeof window !== "undefined" && typeof window.CustomEvent === "function") {
+      window.dispatchEvent(new window.CustomEvent("layoutSidebarCollapsed", { detail: { key: "keuangan", collapsed } }));
+    }
+    if (collapsed) {
+      setOpenPengaturan(false);
+      setOpenJurnal(false);
+      setOpenAkutansi(false);
+    }
+  }, [collapsed]);
 
   const items = useMemo(
     () => [
@@ -94,9 +118,19 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
 
   return (
     <div className="h-full overflow-y-auto p-3 text-white">
-      <div className="h-14 flex items-center px-3 gap-2">
-        <Wallet className="w-5 h-5" />
-        <span className="font-semibold truncate">{title}</span>
+      <div className="h-14 flex items-center px-3 gap-2 justify-between">
+        <div className={`flex items-center gap-2 min-w-0 ${collapsed ? "justify-center w-full" : ""}`}>
+          <Wallet className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span className="font-semibold truncate">{title}</span>}
+        </div>
+        <button
+          type="button"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={() => setCollapsed((v) => !v)}
+          className="flex items-center justify-center w-9 h-9 rounded-md transition-colors hover:bg-white/10"
+        >
+          {collapsed ? <ChevronsRight className="w-4 h-4 text-white/80" /> : <ChevronsLeft className="w-4 h-4 text-white/80" />}
+        </button>
       </div>
       <nav className="px-2 py-2 space-y-1 text-white/90">
         {filteredItems.map((item) => (
@@ -105,25 +139,31 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
               <button
                 type="button"
                 onClick={() => {
+                  if (collapsed) return;
                   if (item.label === "Pengaturan Akun") setOpenPengaturan((v) => !v);
                   else if (item.label === "Jurnal") setOpenJurnal((v) => !v);
                   else if (item.label === "Akutansi") setOpenAkutansi((v) => !v);
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
+                className={`w-full flex items-center rounded-xl transition-all duration-300 hover:bg-white/10 ${collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2"}`}
               >
                 <span className="text-white/90">{item.icon}</span>
-                <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white/70">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
+                {!collapsed && (
+                  <>
+                    <span className="text-sm font-semibold flex-1 text-left">{item.label}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-white/70">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </>
+                )}
               </button>
-              {(
+              {!collapsed && (
+                (
                 item.label === "Pengaturan Akun"
                   ? openPengaturan
                   : item.label === "Jurnal"
                   ? openJurnal
                   : openAkutansi
-              ) && (
+                ) && (
                 <div className="ml-2 pl-3 border-l border-white/10 space-y-1 mt-1">
                   {item.children.map((c) => (
                     <Link
@@ -138,7 +178,7 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
                     </Link>
                   ))}
                 </div>
-              )}
+              ))}
             </div>
           ) : (
             <Link
@@ -146,12 +186,12 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
               href={item.href}
               className={
                 item.label.toLowerCase() === "dashboard"
-                  ? `relative w-full flex items-center gap-3 p-3 text-sm font-medium rounded-xl transition-all duration-300 group ${
+                  ? `relative w-full flex items-center text-sm font-medium rounded-xl transition-all duration-300 group ${collapsed ? "justify-center p-2" : "gap-3 p-3"} ${
                       isActive(item.href)
                         ? "text-white bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-[0_10px_30px_rgba(79,70,229,0.45)] ring-1 ring-white/20"
                         : "text-white/90 hover:text-white bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 hover:from-blue-500/30 hover:via-indigo-500/30 hover:to-purple-500/30 border border-white/15 backdrop-blur-sm hover:shadow-[0_6px_18px_rgba(59,130,246,0.25)]"
                     }`
-                  : `flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
+                  : `flex items-center rounded-xl transition-all duration-300 ${collapsed ? "justify-center px-2 py-2" : "gap-3 px-3 py-2"} ${
                       isActive(item.href) ? "bg-white/20 text-white" : "hover:bg-white/10"
                     }`
               }
@@ -159,7 +199,7 @@ export default function SidebarKeuanganMenu({ title = "Keuangan" }) {
               <span className="text-white/90">
                 {renderIcon(item.icon, item.label.toLowerCase() === "dashboard")}
               </span>
-              <span className="text-sm font-medium">{item.label}</span>
+              {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
             </Link>
           )
         ))}
