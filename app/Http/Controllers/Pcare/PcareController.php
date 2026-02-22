@@ -2489,8 +2489,38 @@ class PcareController extends Controller
         ];
 
         $start = microtime(true);
+        $timestamp = $this->generateTimestamp();
         try {
-            $result = $this->pcareRequest('POST', 'pendaftaran', [], $payload, ['Content-Type' => 'text/plain']);
+            $result = $this->pcareRequest('POST', 'pendaftaran', [], $payload, ['Content-Type' => 'text/plain'], $timestamp);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $response = $e->response;
+            $status = $response ? (int) $response->status() : 500;
+            $rawBody = $response ? (string) $response->body() : '';
+            $processed = $rawBody !== '' ? $this->maybeDecryptAndDecompress($rawBody, $timestamp) : null;
+
+            $this->savePcarePendaftaran($noRawat, $reg, $pasien, $kdProviderPeserta, $noKartu, $kdPoli, $nmPoli, $keluhan, $sistole, $diastole, $beratBadan, $tinggiBadan, $respRate, $lingkarPerut, $heartRate, '10', '', false, $tglPerawatan);
+
+            try {
+                \Illuminate\Support\Facades\Log::channel('bpjs')->error('PCare addPendaftaran RequestException', [
+                    'no_rawat' => $noRawat,
+                    'http_status' => $status,
+                    'error' => $e->getMessage(),
+                    'processed' => is_array($processed) ? $processed : (string) $processed,
+                ]);
+            } catch (\Throwable $logErr) {
+            }
+
+            if (is_array($processed)) {
+                return response()->json($processed, $status);
+            }
+
+            return response()->json([
+                'metaData' => [
+                    'message' => 'Gagal mengirim ke BPJS PCare: '.$e->getMessage(),
+                    'code' => $status,
+                ],
+                'response' => $processed,
+            ], $status);
         } catch (\Throwable $e) {
             // Simpan ke tabel sebagai Gagal
             $this->savePcarePendaftaran($noRawat, $reg, $pasien, $kdProviderPeserta, $noKartu, $kdPoli, $nmPoli, $keluhan, $sistole, $diastole, $beratBadan, $tinggiBadan, $respRate, $lingkarPerut, $heartRate, '10', '', false, $tglPerawatan);
@@ -2504,7 +2534,7 @@ class PcareController extends Controller
         }
 
         $response = $result['response'];
-        $processed = $this->maybeDecryptAndDecompress($response->body(), $result['timestamp_used']);
+        $processed = $this->maybeDecryptAndDecompress($response->body(), $timestamp);
         $durationMs = (int) round((microtime(true) - $start) * 1000);
 
         // Ekstrak noUrut dari response jika tersedia

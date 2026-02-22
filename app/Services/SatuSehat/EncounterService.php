@@ -85,6 +85,10 @@ class EncounterService
         
         // Get Organization ID (optional)
         $organizationId = $this->satusehatOrganizationId();
+
+        if ($sendToSatuSehat && trim((string) $organizationId) === '') {
+            throw new \Exception('SATUSEHAT_ORG_ID (services.satusehat.organization_id) belum diisi');
+        }
         
         // Build Encounter resource
         $encounter = $this->buildEncounterResource(
@@ -97,7 +101,13 @@ class EncounterService
         
         // Send to SATU SEHAT jika diminta
         if ($sendToSatuSehat && $patientId && $practitionerId && $locationId) {
-            $response = $this->satusehatRequest('POST', 'Encounter', $encounter);
+            $response = $this->satusehatRequest('POST', 'Encounter', $encounter, [
+                'prefer_representation' => true,
+                'compat' => [
+                    'encounter_status_history' => 'on',
+                    'encounter_diagnosis' => 'off',
+                ],
+            ]);
             
             if (!$response['ok']) {
                 Log::error("Gagal kirim Encounter ke SATU SEHAT", [
@@ -138,11 +148,6 @@ class EncounterService
         
         $resource = [
             'resourceType' => 'Encounter',
-            'identifier' => [[
-                'system' => 'http://sys-ids.kemkes.go.id/encounter/' . $organizationId,
-                'use' => 'official',
-                'value' => $regPeriksa->no_rawat
-            ]],
             'status' => $this->mapStatus($regPeriksa->stts),
             'class' => [
                 'system' => 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
@@ -153,6 +158,15 @@ class EncounterService
                 'start' => $periodStart
             ]
         ];
+
+        $currentStatus = (string) ($resource['status'] ?? 'in-progress');
+        $resource['statusHistory'] = [[
+            'status' => $currentStatus,
+            'period' => [
+                'start' => $periodStart,
+                'end' => $periodStart,
+            ],
+        ]];
         
         // Add subject (Patient)
         if ($patientId) {
@@ -191,6 +205,11 @@ class EncounterService
         
         // Add serviceProvider (Organization)
         if ($organizationId) {
+            $resource['identifier'] = [[
+                'system' => 'http://sys-ids.kemkes.go.id/encounter/' . $organizationId,
+                'use' => 'official',
+                'value' => $regPeriksa->no_rawat
+            ]];
             $resource['serviceProvider'] = [
                 'reference' => "Organization/{$organizationId}"
             ];
@@ -205,7 +224,7 @@ class EncounterService
     private function mapStatus($stts)
     {
         $statusMap = [
-            'Belum' => 'planned',
+            'Belum' => 'arrived',
             'Sudah' => 'arrived',
             'Berkas Diterima' => 'in-progress',
             'Selesai' => 'finished',
@@ -352,10 +371,6 @@ class EncounterService
             $encounter['reasonCode'] = $reasonCodes;
         }
 
-        if (isset($encounter['statusHistory'])) {
-            unset($encounter['statusHistory']);
-        }
-
         if (isset($encounter['diagnosis'])) {
             unset($encounter['diagnosis']);
         }
@@ -386,11 +401,42 @@ class EncounterService
     private function ensureEncounterReferences(array $encounter, string $noRawat, $regPeriksa = null): array
     {
         $orgId = $this->satusehatOrganizationId();
+        if (trim((string) $orgId) === '') {
+            throw new \Exception('SATUSEHAT_ORG_ID (services.satusehat.organization_id) belum diisi');
+        }
         if (! isset($encounter['serviceProvider']) || ! is_array($encounter['serviceProvider'])) {
             $encounter['serviceProvider'] = [];
         }
         if (($encounter['serviceProvider']['reference'] ?? '') === '' && $orgId !== '') {
             $encounter['serviceProvider']['reference'] = 'Organization/'.$orgId;
+        }
+
+        $statusHistoryOk = isset($encounter['statusHistory']) && is_array($encounter['statusHistory']) && ! empty($encounter['statusHistory']);
+        if (! $statusHistoryOk) {
+            $periodStart = is_array($encounter['period'] ?? null) ? (string) ($encounter['period']['start'] ?? '') : '';
+            $periodEnd = is_array($encounter['period'] ?? null) ? (string) ($encounter['period']['end'] ?? '') : '';
+            if ($periodStart !== '') {
+                $currentStatus = (string) ($encounter['status'] ?? 'in-progress');
+                $history = [
+                    [
+                        'status' => 'planned',
+                        'period' => [
+                            'start' => $periodStart,
+                            'end' => $periodStart,
+                        ],
+                    ],
+                ];
+                if ($currentStatus !== 'planned') {
+                    $history[] = [
+                        'status' => $currentStatus,
+                        'period' => [
+                            'start' => $periodStart,
+                            'end' => $periodEnd !== '' ? $periodEnd : $periodStart,
+                        ],
+                    ];
+                }
+                $encounter['statusHistory'] = $history;
+            }
         }
 
         $subjectRef = is_array($encounter['subject'] ?? null) ? (string) ($encounter['subject']['reference'] ?? '') : '';

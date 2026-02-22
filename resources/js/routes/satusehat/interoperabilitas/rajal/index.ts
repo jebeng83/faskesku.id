@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
 /**
-* @see routes/web.php:3314
+* @see routes/web.php:3321
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 export const encounter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ encounter.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3314
+* @see routes/web.php:3321
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ encounter.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3314
+* @see routes/web.php:3321
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ encounter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:3314
+* @see routes/web.php:3321
 * @route '/satusehat/interoperabilitas/rajal/encounter'
 */
 encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ encounter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:3318
+* @see routes/web.php:3325
 * @route '/satusehat/interoperabilitas/rajal/prosedur-tindakan'
 */
 export const prosedur_tindakan = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ prosedur_tindakan.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:3318
+* @see routes/web.php:3325
 * @route '/satusehat/interoperabilitas/rajal/prosedur-tindakan'
 */
 prosedur_tindakan.url = (options?: RouteQueryOptions) => {
@@ -62,7 +62,7 @@ prosedur_tindakan.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:3318
+* @see routes/web.php:3325
 * @route '/satusehat/interoperabilitas/rajal/prosedur-tindakan'
 */
 prosedur_tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ prosedur_tindakan.get = (options?: RouteQueryOptions): RouteDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:3318
+* @see routes/web.php:3325
 * @route '/satusehat/interoperabilitas/rajal/prosedur-tindakan'
 */
 prosedur_tindakan.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({

@@ -69,8 +69,8 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
     const [endDate, setEndDate] = useState(defaultEndDate);
     const [isSearching, setIsSearching] = useState(false);
     
-    // Tab state - default berdasarkan filter status dari server, atau 'ranap' jika tidak ada
-    const [activeTab, setActiveTab] = useState((filters.status || "ranap").toLowerCase()); // 'ralan' atau 'ranap'
+    // Tab state - default berdasarkan filter status dari server, atau 'ralan' jika tidak ada
+    const [activeTab, setActiveTab] = useState((filters.status || "ralan").toLowerCase()); // 'ralan' atau 'ranap'
     const [activeSubTab, setActiveSubTab] = useState("permintaan"); // 'permintaan' atau 'item'
     
     // Alert state
@@ -228,12 +228,11 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         setDokter("");
         setStartDate(today);
         setEndDate(today);
-        // Reset tab ke ranap sebagai default
-        setActiveTab("ranap");
+        setActiveTab("ralan");
         router.get(
             route("laboratorium.permintaan-lab.index"),
             { 
-                status: "ranap",
+                status: "ralan",
                 start_date: today,
                 end_date: today,
             },

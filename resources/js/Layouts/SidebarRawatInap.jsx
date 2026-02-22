@@ -28,18 +28,18 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
       if (savedCollapsed !== null) setIsSidebarCollapsed(savedCollapsed === "true");
       const savedOpen = localStorage.getItem("ranapSidebarOpen");
       if (savedOpen !== null) setIsSidebarOpen(savedOpen === "true");
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem("ranapSidebarCollapsed", String(isSidebarCollapsed));
-    } catch (_) {}
+    } catch (_) { }
   }, [isSidebarCollapsed]);
   useEffect(() => {
     try {
       localStorage.setItem("ranapSidebarOpen", String(isSidebarOpen));
-    } catch (_) {}
+    } catch (_) { }
   }, [isSidebarOpen]);
 
   useEffect(() => {
@@ -94,6 +94,11 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
             href: route("rawat-inap.index"),
             icon: <Users className="w-4 h-4" />,
           },
+          {
+            label: "Handover",
+            href: route("rawat-inap.handover"),
+            icon: <Activity className="w-4 h-4" />,
+          },
         ],
       },
     ],
@@ -112,13 +117,12 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       <aside
-        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-indigo-600 via-indigo-700 to-indigo-800 dark:from-indigo-900 dark:via-indigo-950 dark:to-black shadow-2xl border-r border-indigo-500/20 dark:border-indigo-800 z-40 transition-all duration-300 ${
-          isSidebarOpen
+        className={`fixed top-0 left-0 h-full bg-gradient-to-b from-indigo-600 via-indigo-700 to-indigo-800 dark:from-indigo-900 dark:via-indigo-950 dark:to-black shadow-2xl border-r border-indigo-500/20 dark:border-indigo-800 z-40 transition-all duration-300 ${isSidebarOpen
             ? "w-64 translate-x-0"
             : isSidebarCollapsed
-            ? "w-16 -translate-x-full lg:translate-x-0"
-            : "w-64 -translate-x-full lg:translate-x-0"
-        }`}
+              ? "w-16 -translate-x-full lg:translate-x-0"
+              : "w-64 -translate-x-full lg:translate-x-0"
+          }`}
       >
         <div className="h-14 flex items-center px-3 gap-2 text-white">
           <Bed className="w-5 h-5" />
@@ -185,13 +189,12 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
       )}
 
       <header
-        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${
-          isSidebarOpen
+        className={`fixed top-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex-shrink-0 transition-all duration-300 ${isSidebarOpen
             ? "left-64 right-0"
             : isSidebarCollapsed
-            ? "left-0 right-0 lg:left-16"
-            : "left-0 right-0 lg:left-64"
-        }`}
+              ? "left-0 right-0 lg:left-16"
+              : "left-0 right-0 lg:left-64"
+          }`}
       >
         <div className="h-full flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -269,7 +272,7 @@ export default function SidebarRawatInap({ title = "Rawat Inap", children }) {
                           form.appendChild(csrfInput);
                           document.body.appendChild(form);
                           form.submit();
-                        } catch {}
+                        } catch { }
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
