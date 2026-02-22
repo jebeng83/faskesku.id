@@ -22,6 +22,7 @@ import { Toaster } from "@/Components/ui";
 import PatientCreateModal from "@/Components/PatientCreateModal";
 import PatientEditModal from "@/Components/PatientEditModal";
 import PenjabQuickCreateModal from "@/Components/PenjabQuickCreateModal";
+import DropdownMenu, { DropdownItem } from "@/Components/DropdownMenu";
 import { todayDateString, nowDateTimeString, getAppTimeZone } from "@/tools/datetime";
 import { toast } from "@/tools/toast";
 
@@ -291,9 +292,6 @@ export default function Registration({
         data: null,
         raw: "",
     });
-
-    // State untuk dropdown menu aksi per baris
-    const [openDropdown, setOpenDropdown] = useState(null);
 
     // State untuk popup menu cetak
     const [isPrintMenuOpen, setIsPrintMenuOpen] = useState(false);
@@ -1833,28 +1831,10 @@ export default function Registration({
         setStats(calculateStats(registrations));
     }, []);
 
-    // Close dropdown saat klik di luar
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (openDropdown && !event.target.closest('.action-dropdown')) {
-                setOpenDropdown(null);
-            }
-        }
-
-        if (openDropdown) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [openDropdown]);
-
     // Fungsi untuk membuka popup menu cetak
     const openPrintMenu = (reg) => {
         setSelectedRegForPrint(reg);
         setIsPrintMenuOpen(true);
-        setOpenDropdown(null);
     };
 
     // Fungsi untuk menutup popup menu cetak
@@ -3398,157 +3378,153 @@ export default function Registration({
                                                 }
                                             >
                                                 <td className="px-2 py-1 text-center overflow-visible whitespace-nowrap">
-                                                    <div className="relative action-dropdown">
-                                                        <button
+                                                    <DropdownMenu
+                                                        trigger={
+                                                            <button
+                                                                className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                                                                title="Aksi"
+                                                                type="button"
+                                                            >
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        }
+                                                        position="bottom"
+                                                        align="start"
+                                                        stopPropagation
+                                                        closeOnSelect
+                                                    >
+                                                        <DropdownItem
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                setOpenDropdown(
-                                                                    openDropdown === reg.no_rawat
-                                                                        ? null
-                                                                        : reg.no_rawat
-                                                                );
+                                                                openDetailModal(reg);
                                                             }}
-                                                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                                                            title="Aksi"
+                                                            icon={
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                    />
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                    />
+                                                                </svg>
+                                                            }
                                                         >
-                                                            <svg
-                                                                className="w-4 h-4"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
+                                                            Detail
+                                                        </DropdownItem>
+                                                        <DropdownItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleEditRegistration(reg);
+                                                            }}
+                                                            icon={
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
+                                                                    />
+                                                                </svg>
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </DropdownItem>
+                                                        <DropdownItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCheckIn(reg);
+                                                            }}
+                                                            icon={
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            }
+                                                        >
+                                                            Check-In
+                                                        </DropdownItem>
+                                                        <DropdownItem
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openPrintMenu(reg);
+                                                            }}
+                                                            icon={
+                                                                <svg
+                                                                    className="w-4 h-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                                                    />
+                                                                </svg>
+                                                            }
+                                                        >
+                                                            Cetak
+                                                        </DropdownItem>
+                                                        {reg.stts === "Belum" && (
+                                                            <DropdownItem
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleCancelRegistration(reg);
+                                                                }}
+                                                                className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                icon={
+                                                                    <svg
+                                                                        className="w-4 h-4"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth={2}
+                                                                            d="M6 18L18 6M6 6l12 12"
+                                                                        />
+                                                                    </svg>
+                                                                }
                                                             >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={2}
-                                                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                        {openDropdown === reg.no_rawat && (
-                                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-52 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-[1000]">
-                                                                <div className="py-1">
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            openDetailModal(reg);
-                                                                            setOpenDropdown(null);
-                                                                        }}
-                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                                                                    >
-                                                                        <svg
-                                                                            className="w-4 h-4"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                strokeWidth={2}
-                                                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                            />
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                strokeWidth={2}
-                                                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                                            />
-                                                                        </svg>
-                                                                        Detail
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleEditRegistration(reg);
-                                                                            setOpenDropdown(null);
-                                                                        }}
-                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                                                                    >
-                                                                        <svg
-                                                                            className="w-4 h-4"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                strokeWidth={2}
-                                                                                d="M11 5h2m-6 6h6m-3 6h6M7 7l10 10"
-                                                                            />
-                                                                        </svg>
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleCheckIn(reg);
-                                                                            setOpenDropdown(null);
-                                                                        }}
-                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                                                                    >
-                                                                        <svg
-                                                                            className="w-4 h-4"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                        </svg>
-                                                                        Check-In
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            openPrintMenu(reg);
-                                                                        }}
-                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                                                                    >
-                                                                        <svg
-                                                                            className="w-4 h-4"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            viewBox="0 0 24 24"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                strokeWidth={2}
-                                                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                                                                            />
-                                                                        </svg>
-                                                                        Cetak
-                                                                    </button>
-                                                                    {reg.stts === "Belum" && (
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                handleCancelRegistration(reg);
-                                                                                setOpenDropdown(null);
-                                                                            }}
-                                                                            className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                                                                        >
-                                                                            <svg
-                                                                                className="w-4 h-4"
-                                                                                fill="none"
-                                                                                stroke="currentColor"
-                                                                                viewBox="0 0 24 24"
-                                                                            >
-                                                                                <path
-                                                                                    strokeLinecap="round"
-                                                                                    strokeLinejoin="round"
-                                                                                    strokeWidth={2}
-                                                                                    d="M6 18L18 6M6 6l12 12"
-                                                                                />
-                                                                            </svg>
-                                                                            Batal
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
+                                                                Batal
+                                                            </DropdownItem>
                                                         )}
-                                                    </div>
+                                                    </DropdownMenu>
                                                 </td>
                                                 
                                                 <td className="px-2 py-1 text-[11px] lg:text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">

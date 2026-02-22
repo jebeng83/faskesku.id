@@ -8,6 +8,8 @@ export default function DropdownMenu({
 	position = "bottom",
 	align = "end",
 	usePortal = true,
+	stopPropagation = false,
+	closeOnSelect = false,
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const triggerRef = useRef(null);
@@ -118,14 +120,38 @@ export default function DropdownMenu({
 		<div
 			className={`relative inline-block text-left overflow-visible ${className}`}
 		>
-			<div ref={triggerRef} onClick={() => setIsOpen(!isOpen)}>
+			<div
+				ref={triggerRef}
+				onClick={(event) => {
+					if (stopPropagation) event.stopPropagation();
+					setIsOpen(!isOpen);
+				}}
+			>
 				{trigger}
 			</div>
 
 			{usePortal
-				? typeof document !== "undefined" && createPortal(portalMenu, document.body)
+				? typeof document !== "undefined" &&
+					createPortal(
+						<div
+							onClick={(event) => {
+								if (stopPropagation) event.stopPropagation();
+								if (closeOnSelect) setIsOpen(false);
+							}}
+						>
+							{portalMenu}
+						</div>,
+						document.body
+					)
 				: isOpen && (
-						<div className={getPositionClasses()} ref={menuRef}>
+						<div
+							className={getPositionClasses()}
+							ref={menuRef}
+							onClick={(event) => {
+								if (stopPropagation) event.stopPropagation();
+								if (closeOnSelect) setIsOpen(false);
+							}}
+						>
 							<div className="py-1 bg-white dark:bg-gray-800 rounded-md shadow-xs">
 								{children}
 							</div>
