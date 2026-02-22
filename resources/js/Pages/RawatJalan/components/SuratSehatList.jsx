@@ -5,7 +5,7 @@ import SidebarRalan from "@/Layouts/SidebarRalan";
 import Pagination from "@/Components/Pagination";
 import { PencilSquareIcon, PrinterIcon, PlusIcon } from "@heroicons/react/24/outline";
 
-export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', filters }) {
+export default function SuratSehatList({ suratSehat, suratSakit, suratHamil, tab = 'sehat', filters }) {
 
     const initial = useMemo(
         () => ({
@@ -295,6 +295,108 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
         </div>
     );
 
+    const renderSuratHamilTable = () => (
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            No Surat
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            Nama Pasien
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            No. RM
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            No Rawat
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            Tanggal Periksa
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            Hasil Periksa
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+                    {suratHamil?.data?.length ? (
+                        suratHamil.data.map((row) => (
+                            <tr key={row.no_surat}>
+                                <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                    {row.no_surat}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                                    {row.nm_pasien || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                    {row.no_rkm_medis || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                    {row.no_rawat || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                    {row.tanggalperiksa ? row.tanggalperiksa.split('-').reverse().join('-') : "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
+                                    {row.hasilperiksa || "-"}
+                                </td>
+                                <td className="px-4 py-3 text-right whitespace-nowrap">
+                                    {row.no_rawat ? (
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                href={route(
+                                                    "rawat-jalan.surat-hamil",
+                                                    row.no_rawat
+                                                )}
+                                                className="inline-flex items-center gap-1 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white px-2.5 py-1.5 text-xs font-semibold transition-colors"
+                                                title="Edit Surat"
+                                            >
+                                                <PencilSquareIcon className="w-4 h-4" />
+                                                Edit
+                                            </Link>
+                                            <Link
+                                                href={route(
+                                                    "rawat-jalan.surat-hamil",
+                                                    {
+                                                        no_rawat: row.no_rawat,
+                                                        mode: "print",
+                                                    }
+                                                )}
+                                                className="inline-flex items-center gap-1 rounded-lg bg-green-600 hover:bg-green-700 text-white px-2.5 py-1.5 text-xs font-semibold transition-colors"
+                                                title="Cetak Surat"
+                                            >
+                                                <PrinterIcon className="w-4 h-4" />
+                                                Cetak
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-gray-400">
+                                            -
+                                        </span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td
+                                colSpan={7}
+                                className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                            >
+                                Tidak ada data.
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
+
     return (
         <SidebarRalan>
             <Head title="Surat - Surat" />
@@ -306,7 +408,7 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                             Surat - Surat
                         </h1>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Kelola data surat sehat dan surat sakit
+                            Kelola data surat sehat, sakit, dan hamil
                         </p>
                     </div>
                     <div className="flex gap-2">
@@ -315,6 +417,8 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                                 href={route(
                                     currentTab === "sakit"
                                         ? "rawat-jalan.surat-sakit"
+                                        : currentTab === "hamil"
+                                        ? "rawat-jalan.surat-hamil"
                                         : "rawat-jalan.surat-sehat",
                                     search
                                 )}
@@ -357,6 +461,17 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                         >
                             Surat Sakit
                         </button>
+                        <button
+                            onClick={() => handleTabChange('hamil')}
+                            className={`
+                                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                                ${currentTab === 'hamil'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'}
+                            `}
+                        >
+                            Surat Hamil
+                        </button>
                     </nav>
                 </div>
 
@@ -370,7 +485,11 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                                 <input
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    placeholder={currentTab === 'sehat' ? "No Surat / No Rawat / Keperluan / Kesimpulan" : "No Surat / No Rawat / Nama / Lama Sakit"}
+                                    placeholder={currentTab === 'sehat'
+                                        ? "No Surat / No Rawat / Keperluan / Kesimpulan"
+                                        : currentTab === 'sakit'
+                                        ? "No Surat / No Rawat / Nama / Lama Sakit"
+                                        : "No Surat / No Rawat / Nama / Hasil Periksa"}
                                     className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
@@ -412,7 +531,7 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
 
                     {currentTab === 'sehat' && renderSuratSehatTable()}
                     {currentTab === 'sakit' && renderSuratSakitTable()}
-
+                    {currentTab === 'hamil' && renderSuratHamilTable()}
                     {currentTab === 'sehat' && suratSehat?.links && (
                         <Pagination
                             links={suratSehat.links}
@@ -427,6 +546,14 @@ export default function SuratSehatList({ suratSehat, suratSakit, tab = 'sehat', 
                             from={suratSakit.from}
                             to={suratSakit.to}
                             total={suratSakit.total}
+                        />
+                    )}
+                    {currentTab === 'hamil' && suratHamil?.links && (
+                        <Pagination
+                            links={suratHamil.links}
+                            from={suratHamil.from}
+                            to={suratHamil.to}
+                            total={suratHamil.total}
                         />
                     )}
                 </div>

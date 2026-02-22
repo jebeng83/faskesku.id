@@ -1839,6 +1839,264 @@ class RawatJalanController extends Controller
         return response($html)->header('Content-Type', 'text/html; charset=utf-8');
     }
 
+    public function publicSuratHamil(Request $request)
+    {
+        $noSurat = '';
+
+        $token = (string) $request->query('token', '');
+        if ($token !== '') {
+            try {
+                $decoded = Crypt::decryptString($token);
+                $data = json_decode($decoded, true);
+                if (is_array($data) && isset($data['no_surat'])) {
+                    $noSurat = (string) $data['no_surat'];
+                }
+            } catch (\Throwable $e) {
+                return response('<h1>Surat tidak valid</h1>', 404)
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+        } else {
+            $noSurat = (string) $request->query('no_surat', '');
+        }
+
+        if ($noSurat === '' || ! Schema::hasTable('surat_hamil')) {
+            return response('<h1>Surat tidak valid</h1>', 404)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
+
+        $row = DB::table('surat_hamil')->where('no_surat', $noSurat)->first();
+
+        if (! $row) {
+            return response('<h1>Surat tidak valid</h1>', 404)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
+
+        $reg = null;
+        $pasien = null;
+        if (Schema::hasTable('reg_periksa')) {
+            $reg = DB::table('reg_periksa')->where('no_rawat', $row->no_rawat)->first();
+        }
+        if ($reg && Schema::hasTable('pasien')) {
+            $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
+        }
+
+        $setting = $this->getSuratSetting();
+
+        $namaInstansi = (string) ($setting['nama_instansi'] ?? '');
+        $alamatInstansi = (string) ($setting['alamat_instansi'] ?? '');
+        $kabupaten = (string) ($setting['kabupaten'] ?? '');
+        $propinsi = (string) ($setting['propinsi'] ?? '');
+
+        $namaPasien = (string) ($pasien->nm_pasien ?? '');
+        $noRkmMedis = (string) ($pasien->no_rkm_medis ?? '');
+        $tglLahirRaw = (string) ($pasien->tgl_lahir ?? '');
+        $tglLahir = $tglLahirRaw;
+        try { if ($tglLahirRaw) { $tglLahir = \Carbon\Carbon::parse($tglLahirRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+        $jkRaw = (string) ($pasien->jk ?? '');
+        $jk = $jkRaw === 'L' ? 'Laki-laki' : ($jkRaw === 'P' ? 'Perempuan' : $jkRaw);
+        $alamatPasien = (string) ($pasien->alamat ?? '');
+
+        $tglPeriksaRaw = (string) ($row->tanggalperiksa ?? '');
+        $tglPeriksa = $tglPeriksaRaw;
+        try { if ($tglPeriksaRaw) { $tglPeriksa = \Carbon\Carbon::parse($tglPeriksaRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+        $hasilPeriksa = (string) ($row->hasilperiksa ?? '');
+
+        $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Validasi Surat Keterangan Hamil</title>'
+            . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+            . '<style>'
+            . 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px;background:#f3f4f6;color:#111}'
+            . '.card{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px 24px 20px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}'
+            . '.header{text-align:center;margin-bottom:16px}'
+            . '.instansi{font-size:16px;font-weight:700;text-transform:uppercase}'
+            . '.alamat{font-size:12px;color:#4b5563;margin-top:4px}'
+            . '.title{font-size:18px;font-weight:700;margin-top:12px;text-decoration:underline}'
+            . '.status{display:inline-block;margin-top:8px;margin-bottom:16px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#16a34a1a;color:#166534}'
+            . '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:12px}'
+            . '.panel{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;background:#f9fafb}'
+            . '.panel-title{font-size:12px;font-weight:600;letter-spacing:.03em;color:#6b7280;margin-bottom:6px;text-transform:uppercase}'
+            . 'table{width:100%;border-collapse:collapse;font-size:13px}'
+            . 'th,td{text-align:left;padding:4px 2px;vertical-align:top}'
+            . 'th{width:110px;color:#6b7280;font-weight:500}'
+            . '.muted{color:#6b7280;font-size:11px;margin-top:12px}'
+            . '@media (max-width:640px){body{padding:12px}.card{max-width:100%;margin:0 4px;padding:18px 16px 16px}.grid{grid-template-columns:1fr}.panel{padding:10px 12px}}'
+            . '</style></head><body>'
+            . '<div class="card">'
+            . '<div class="header">'
+            . '<div class="instansi">'.e($namaInstansi ?: 'Fasilitas Kesehatan').'</div>';
+
+        if ($alamatInstansi || $kabupaten || $propinsi) {
+            $html .= '<div class="alamat">'.e(trim($alamatInstansi.' '.($kabupaten ?: '').' '.($propinsi ?: ''))).'</div>';
+        }
+
+        $html .= '<div class="title">Validasi Surat Keterangan Hamil</div>'
+            . '</div>'
+            . '<span class="status">VALID</span>'
+            . '<div class="grid">'
+            . '<div class="panel">'
+            . '<div class="panel-title">Identitas Pasien</div>'
+            . '<table>'
+            . '<tr><th>Nama</th><td>'.e($namaPasien ?: '-').'</td></tr>'
+            . '<tr><th>No. RM</th><td>'.e($noRkmMedis ?: '-').'</td></tr>'
+            . '<tr><th>Tgl Lahir</th><td>'.e($tglLahir ?: '-').'</td></tr>'
+            . '<tr><th>JK</th><td>'.e($jk ?: '-').'</td></tr>'
+            . '<tr><th>Alamat</th><td>'.e($alamatPasien ?: '-').'</td></tr>'
+            . '</table>'
+            . '</div>'
+            . '<div class="panel">'
+            . '<div class="panel-title">Data Surat Hamil</div>'
+            . '<table>'
+            . '<tr><th>Nomor Surat</th><td>'.e((string) $row->no_surat).'</td></tr>'
+            . '<tr><th>No. Rawat</th><td>'.e((string) ($row->no_rawat ?? '')).'</td></tr>'
+            . '<tr><th>Tanggal Periksa</th><td>'.e($tglPeriksa ?: '-').'</td></tr>'
+            . '<tr><th>Hasil Periksa</th><td>'.e($hasilPeriksa ?: '-').'</td></tr>'
+            . '</table>'
+            . '</div>'
+            . '</div>'
+            . '<div class="muted">Data di atas diambil langsung dari rekam surat keterangan hamil sistem dan dinyatakan valid.</div>'
+            . '</div></body></html>';
+
+        return response($html)->header('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    public function publicSuratNikah(Request $request)
+    {
+        $noSurat = '';
+
+        $token = (string) $request->query('token', '');
+        if ($token !== '') {
+            try {
+                $decoded = Crypt::decryptString($token);
+                $data = json_decode($decoded, true);
+                if (is_array($data) && isset($data['no_surat'])) {
+                    $noSurat = (string) $data['no_surat'];
+                }
+            } catch (\Throwable $e) {
+                return response('<h1>Surat tidak valid</h1>', 404)
+                    ->header('Content-Type', 'text/html; charset=utf-8');
+            }
+        } else {
+            $noSurat = (string) $request->query('no_surat', '');
+        }
+
+        if ($noSurat === '' || ! Schema::hasTable('suratnikah')) {
+            return response('<h1>Surat tidak valid</h1>', 404)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
+
+        $row = DB::table('suratnikah')->where('no_surat', $noSurat)->first();
+
+        if (! $row) {
+            return response('<h1>Surat tidak valid</h1>', 404)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
+
+        $reg = null;
+        $pasien = null;
+        if (Schema::hasTable('reg_periksa')) {
+            $reg = DB::table('reg_periksa')->where('no_rawat', $row->no_rawat)->first();
+        }
+        if ($reg && Schema::hasTable('pasien')) {
+            $pasien = DB::table('pasien')->where('no_rkm_medis', $reg->no_rkm_medis)->first();
+        }
+
+        $setting = $this->getSuratSetting();
+
+        $namaInstansi = (string) ($setting['nama_instansi'] ?? '');
+        $alamatInstansi = (string) ($setting['alamat_instansi'] ?? '');
+        $kabupaten = (string) ($setting['kabupaten'] ?? '');
+        $propinsi = (string) ($setting['propinsi'] ?? '');
+
+        $namaPasien = (string) ($pasien->nm_pasien ?? '');
+        $noRkmMedis = (string) ($pasien->no_rkm_medis ?? '');
+        $tglLahirRaw = (string) ($pasien->tgl_lahir ?? '');
+        $tglLahir = $tglLahirRaw;
+        try { if ($tglLahirRaw) { $tglLahir = \Carbon\Carbon::parse($tglLahirRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+        $jkRaw = (string) ($pasien->jk ?? '');
+        $jk = $jkRaw === 'L' ? 'Laki-laki' : ($jkRaw === 'P' ? 'Perempuan' : $jkRaw);
+        $alamatPasien = (string) ($pasien->alamat ?? '');
+
+        $tglLahirSuamiRaw = (string) ($row->tgl_lahir ?? '');
+        $tglLahirSuami = $tglLahirSuamiRaw;
+        try { if ($tglLahirSuamiRaw) { $tglLahirSuami = \Carbon\Carbon::parse($tglLahirSuamiRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+
+        $tanggalPpRaw = (string) ($row->tanggal_pp_test ?? '');
+        $tanggalPp = $tanggalPpRaw;
+        try { if ($tanggalPpRaw) { $tanggalPp = \Carbon\Carbon::parse($tanggalPpRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+
+        $tanggalRaw = (string) ($row->tanggal ?? '');
+        $tanggal = $tanggalRaw;
+        try { if ($tanggalRaw) { $tanggal = \Carbon\Carbon::parse($tanggalRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+
+        $tanggalNikahRaw = (string) ($row->tanggal_nikah ?? '');
+        $tanggalNikah = $tanggalNikahRaw;
+        try { if ($tanggalNikahRaw) { $tanggalNikah = \Carbon\Carbon::parse($tanggalNikahRaw)->format('d-m-Y'); } } catch (\Throwable $e) {}
+
+        $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Validasi Surat Keterangan Nikah</title>'
+            . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+            . '<style>'
+            . 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:20px;background:#f3f4f6;color:#111}'
+            . '.card{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e5e7eb;padding:24px 24px 20px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1)}'
+            . '.header{text-align:center;margin-bottom:16px}'
+            . '.instansi{font-size:16px;font-weight:700;text-transform:uppercase}'
+            . '.alamat{font-size:12px;color:#4b5563;margin-top:4px}'
+            . '.title{font-size:18px;font-weight:700;margin-top:12px;text-decoration:underline}'
+            . '.status{display:inline-block;margin-top:8px;margin-bottom:16px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#16a34a1a;color:#166534}'
+            . '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:12px}'
+            . '.panel{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;background:#f9fafb}'
+            . '.panel-title{font-size:12px;font-weight:600;letter-spacing:.03em;color:#6b7280;margin-bottom:6px;text-transform:uppercase}'
+            . 'table{width:100%;border-collapse:collapse;font-size:13px}'
+            . 'th,td{text-align:left;padding:4px 2px;vertical-align:top}'
+            . 'th{width:110px;color:#6b7280;font-weight:500}'
+            . '.muted{color:#6b7280;font-size:11px;margin-top:12px}'
+            . '@media (max-width:640px){body{padding:12px}.card{max-width:100%;margin:0 4px;padding:18px 16px 16px}.grid{grid-template-columns:1fr}.panel{padding:10px 12px}}'
+            . '</style></head><body>'
+            . '<div class="card">'
+            . '<div class="header">'
+            . '<div class="instansi">'.e($namaInstansi ?: 'Fasilitas Kesehatan').'</div>';
+
+        if ($alamatInstansi || $kabupaten || $propinsi) {
+            $html .= '<div class="alamat">'.e(trim($alamatInstansi.' '.($kabupaten ?: '').' '.($propinsi ?: ''))).'</div>';
+        }
+
+        $html .= '<div class="title">Validasi Surat Keterangan Nikah</div>'
+            . '</div>'
+            . '<span class="status">VALID</span>'
+            . '<div class="grid">'
+            . '<div class="panel">'
+            . '<div class="panel-title">Identitas Pasien</div>'
+            . '<table>'
+            . '<tr><th>Nama</th><td>'.e($namaPasien ?: '-').'</td></tr>'
+            . '<tr><th>No. RM</th><td>'.e($noRkmMedis ?: '-').'</td></tr>'
+            . '<tr><th>Tgl Lahir</th><td>'.e($tglLahir ?: '-').'</td></tr>'
+            . '<tr><th>JK</th><td>'.e($jk ?: '-').'</td></tr>'
+            . '<tr><th>Alamat</th><td>'.e($alamatPasien ?: '-').'</td></tr>'
+            . '</table>'
+            . '</div>'
+            . '<div class="panel">'
+            . '<div class="panel-title">Data Surat Nikah</div>'
+            . '<table>'
+            . '<tr><th>Nomor Surat</th><td>'.e((string) $row->no_surat).'</td></tr>'
+            . '<tr><th>No. Rawat</th><td>'.e((string) ($row->no_rawat ?? '')).'</td></tr>'
+            . '<tr><th>Nama Suami</th><td>'.e((string) ($row->nm_suami ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>No. KTP</th><td>'.e((string) ($row->no_ktp_suami ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Tgl Lahir</th><td>'.e($tglLahirSuami ?: '-').'</td></tr>'
+            . '<tr><th>Umur</th><td>'.e((string) ($row->umur ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Status</th><td>'.e((string) ($row->jk ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Alamat</th><td>'.e((string) ($row->alamat ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Pekerjaan</th><td>'.e((string) ($row->pekerjaan ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Hasil PP Test</th><td>'.e((string) ($row->hasil_pp_test ?? '') ?: '-').'</td></tr>'
+            . '<tr><th>Tgl PP Test</th><td>'.e($tanggalPp ?: '-').'</td></tr>'
+            . '<tr><th>Tanggal Surat</th><td>'.e($tanggal ?: '-').'</td></tr>'
+            . '<tr><th>Tanggal Nikah</th><td>'.e($tanggalNikah ?: '-').'</td></tr>'
+            . '</table>'
+            . '</div>'
+            . '</div>'
+            . '<div class="muted">Data di atas diambil langsung dari rekam surat keterangan nikah sistem dan dinyatakan valid.</div>'
+            . '</div></body></html>';
+
+        return response($html)->header('Content-Type', 'text/html; charset=utf-8');
+    }
+
     /**
      * Store surat sehat
      */
@@ -1950,6 +2208,130 @@ class RawatJalanController extends Controller
             'dokter' => $dokter,
             'setting' => $setting,
             'suratSakitData' => $suratSakitData,
+            'validationUrl' => $validationUrl,
+        ]);
+    }
+
+    public function suratHamil($noRawat)
+    {
+        $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
+            ->with([
+                'patient.kelurahan',
+                'patient.kecamatan',
+                'patient.kabupaten',
+                'dokter',
+            ])
+            ->firstOrFail();
+
+        $patient = $rawatJalan->patient;
+        $dokter = $rawatJalan->dokter;
+
+        if (! $dokter) {
+            $dokter = new \App\Models\Dokter;
+            $dokter->kd_dokter = '';
+            $dokter->nm_dokter = '';
+        }
+
+        $setting = $this->getSuratSetting();
+
+        $suratHamilData = null;
+        if (Schema::hasTable('surat_hamil')) {
+            $suratHamilData = DB::table('surat_hamil')
+                ->where('no_rawat', $rawatJalan->no_rawat)
+                ->orderByDesc('tanggalperiksa')
+                ->first();
+        }
+
+        $validationUrl = null;
+        try {
+            $configuredBase = (string) (config('app.url') ?: env('APP_URL', ''));
+            $host = request()->getSchemeAndHttpHost();
+            $baseAppUrl = rtrim($configuredBase !== '' ? $configuredBase : (string) ($host ?: 'http://localhost'), '/');
+
+            $noSurat = '';
+            if ($suratHamilData && isset($suratHamilData->no_surat)) {
+                $noSurat = (string) $suratHamilData->no_surat;
+            }
+
+            if ($noSurat !== '') {
+                $payload = json_encode([
+                    'type' => 'surat_hamil',
+                    'no_surat' => $noSurat,
+                ]);
+                $token = Crypt::encryptString($payload);
+                $validationUrl = $baseAppUrl.'/surat-hamil?token='.urlencode($token);
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return Inertia::render('RawatJalan/components/SuratHamil', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter,
+            'setting' => $setting,
+            'suratHamilData' => $suratHamilData,
+            'validationUrl' => $validationUrl,
+        ]);
+    }
+
+    public function suratNikah($noRawat)
+    {
+        $rawatJalan = RawatJalan::where('no_rawat', $noRawat)
+            ->with([
+                'patient.kelurahan',
+                'patient.kecamatan',
+                'patient.kabupaten',
+                'dokter',
+            ])
+            ->firstOrFail();
+
+        $patient = $rawatJalan->patient;
+        $dokter = $rawatJalan->dokter;
+
+        if (! $dokter) {
+            $dokter = new \App\Models\Dokter;
+            $dokter->kd_dokter = '';
+            $dokter->nm_dokter = '';
+        }
+
+        $setting = $this->getSuratSetting();
+
+        $suratNikahData = null;
+        if (Schema::hasTable('suratnikah')) {
+            $suratNikahData = DB::table('suratnikah')
+                ->where('no_rawat', $rawatJalan->no_rawat)
+                ->orderByDesc('tanggal_nikah')
+                ->first();
+        }
+
+        $validationUrl = null;
+        try {
+            $configuredBase = (string) (config('app.url') ?: env('APP_URL', ''));
+            $host = request()->getSchemeAndHttpHost();
+            $baseAppUrl = rtrim($configuredBase !== '' ? $configuredBase : (string) ($host ?: 'http://localhost'), '/');
+
+            $noSurat = '';
+            if ($suratNikahData && isset($suratNikahData->no_surat)) {
+                $noSurat = (string) $suratNikahData->no_surat;
+            }
+
+            if ($noSurat !== '') {
+                $payload = json_encode([
+                    'type' => 'surat_nikah',
+                    'no_surat' => $noSurat,
+                ]);
+                $token = Crypt::encryptString($payload);
+                $validationUrl = $baseAppUrl.'/surat-nikah?token='.urlencode($token);
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return Inertia::render('RawatJalan/components/SuratNikah', [
+            'rawatJalan' => $rawatJalan,
+            'patient' => $patient,
+            'dokter' => $dokter,
+            'setting' => $setting,
+            'suratNikahData' => $suratNikahData,
             'validationUrl' => $validationUrl,
         ]);
     }
@@ -3128,7 +3510,13 @@ class RawatJalanController extends Controller
             );
         }
 
-        return response()->json(['status' => 'success', 'message' => 'Surat nikah berhasil disimpan']);
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => 'Surat nikah berhasil disimpan']);
+        }
+
+        return redirect()->route('rawat-jalan.surat-nikah', [
+            'no_rawat' => $request->input('no_rawat'),
+        ])->with('success', 'Surat nikah berhasil disimpan');
     }
 
     public function storeSuratCutiHamil(Request $request)
@@ -3185,6 +3573,12 @@ class RawatJalanController extends Controller
             );
         }
 
-        return response()->json(['status' => 'success', 'message' => 'Surat hamil berhasil disimpan']);
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => 'Surat hamil berhasil disimpan']);
+        }
+
+        return redirect()->route('rawat-jalan.surat-hamil', [
+            'no_rawat' => $request->input('no_rawat'),
+        ])->with('success', 'Surat hamil berhasil disimpan');
     }
 }
