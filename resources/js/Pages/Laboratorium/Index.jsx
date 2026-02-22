@@ -767,6 +767,9 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                     viewRoute={null}
                     editRoute={null}
                     onDelete={can('laboratorium.edit') ? (() => handleDelete(item)) : undefined}
+                    dropdownPosition="bottom"
+                    dropdownAlign="end"
+                    usePortal
                     customItems={
                         <>
                             {can('laboratorium.show') && (
@@ -1181,7 +1184,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                             variants={itemVariants}
                             className="p-8"
                         >
-                            <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+                            <div className="overflow-x-auto overflow-y-visible rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                                 <ResponsiveTable
                                     data={currentData}
                                     columns={currentColumns}

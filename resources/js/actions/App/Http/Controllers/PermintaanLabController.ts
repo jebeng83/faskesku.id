@@ -1076,7 +1076,7 @@ preview.head = (args: { permintaan_lab: string | number } | [permintaan_lab: str
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
-* @see app/Http/Controllers/PermintaanLabController.php:1753
+* @see app/Http/Controllers/PermintaanLabController.php:1770
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 export const cetak = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1091,7 +1091,7 @@ cetak.definition = {
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
-* @see app/Http/Controllers/PermintaanLabController.php:1753
+* @see app/Http/Controllers/PermintaanLabController.php:1770
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -1118,7 +1118,7 @@ cetak.url = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
-* @see app/Http/Controllers/PermintaanLabController.php:1753
+* @see app/Http/Controllers/PermintaanLabController.php:1770
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -1128,7 +1128,7 @@ cetak.get = (args: { permintaan_lab: string | number } | [permintaan_lab: string
 
 /**
 * @see \App\Http\Controllers\PermintaanLabController::cetak
-* @see app/Http/Controllers/PermintaanLabController.php:1753
+* @see app/Http/Controllers/PermintaanLabController.php:1770
 * @route '/laboratorium/permintaan-lab/{permintaan_lab}/cetak'
 */
 cetak.head = (args: { permintaan_lab: string | number } | [permintaan_lab: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({

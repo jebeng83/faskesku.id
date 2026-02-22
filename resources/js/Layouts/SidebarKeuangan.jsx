@@ -14,6 +14,7 @@ import {
     Calendar,
     Scale,
     Home,
+    BarChart2,
 } from "lucide-react";
 import useTheme from "@/hooks/useTheme";
 import usePermission from "@/hooks/usePermission";
@@ -27,6 +28,7 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
     const [openPengaturan, setOpenPengaturan] = useState(true);
     const [openJurnal, setOpenJurnal] = useState(true);
     const [openAkutansi, setOpenAkutansi] = useState(false);
+    const [openLaporanKeuangan, setOpenLaporanKeuangan] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const { isDark, toggleDarkLight } = useTheme();
@@ -198,24 +200,6 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         icon: <Receipt className="w-4 h-4" />,
                     },
                     {
-                        label: "Cash Flow",
-                        href: "/akutansi/cashflow",
-                        icon: <Wallet className="w-4 h-4" />,
-                        permission: "akutansi.cash-flow",
-                    },
-                    {
-                        label: "Neraca",
-                        href: "/akutansi/neraca",
-                        icon: <Scale className="w-4 h-4" />,
-                        permission: "akutansi.neraca",
-                    },
-                    {
-                        label: "Mutasi Rekening",
-                        href: "/akutansi/mutasi-rekening",
-                        icon: <Banknote className="w-4 h-4" />,
-                        permission: "akutansi.mutasi-rekening",
-                    },
-                    {
                         label: "Mutasi Kas",
                         href: "/akutansi/mutasi-kas",
                         icon: <Wallet className="w-4 h-4" />,
@@ -226,6 +210,30 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                         href: "/akutansi/setoran-bank",
                         icon: <Banknote className="w-4 h-4" />,
                         permission: "akutansi.setoran-bank",
+                    },
+                ],
+            },
+            {
+                label: "Laporan Keuangan",
+                icon: <BarChart2 className="w-4 h-4" />,
+                children: [
+                    {
+                        label: "Neraca",
+                        href: "/akutansi/neraca",
+                        icon: <Scale className="w-4 h-4" />,
+                        permission: "akutansi.neraca",
+                    },
+                    {
+                        label: "Cash Flow",
+                        href: "/akutansi/cashflow",
+                        icon: <Wallet className="w-4 h-4" />,
+                        permission: "akutansi.cash-flow",
+                    },
+                    {
+                        label: "Mutasi Rekening",
+                        href: "/akutansi/mutasi-rekening",
+                        icon: <Banknote className="w-4 h-4" />,
+                        permission: "akutansi.mutasi-rekening",
                     },
                 ],
             },
@@ -346,6 +354,12 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                                                 setOpenJurnal((v) => !v);
                                             else if (item.label === "Akutansi")
                                                 setOpenAkutansi((v) => !v);
+                                            else if (
+                                                item.label === "Laporan Keuangan"
+                                            )
+                                                setOpenLaporanKeuangan(
+                                                    (v) => !v
+                                                );
                                         }}
                                         className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/10"
                                     >
@@ -363,7 +377,9 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                                                     ? openPengaturan
                                                     : item.label === "Jurnal"
                                                     ? openJurnal
-                                                    : openAkutansi
+                                                    : item.label === "Akutansi"
+                                                    ? openAkutansi
+                                                    : openLaporanKeuangan
                                             ) ? (
                                                 <ChevronDown className="w-4 h-4 text-white/70" />
                                             ) : (
@@ -374,7 +390,9 @@ export default function SidebarKeuangan({ title = "Keuangan", children }) {
                                         ? openPengaturan
                                         : item.label === "Jurnal"
                                         ? openJurnal
-                                        : openAkutansi) && (
+                                        : item.label === "Akutansi"
+                                        ? openAkutansi
+                                        : openLaporanKeuangan) && (
                                         <div
                                             className={`mt-1 ${
                                                 isSidebarCollapsed ? "" : "ml-2"
