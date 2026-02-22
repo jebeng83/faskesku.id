@@ -910,7 +910,7 @@ export default function SuratSakit({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggalawal)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
                                                             {qrDataUrl ? (
                                                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (

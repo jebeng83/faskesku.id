@@ -27,12 +27,9 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
     const [submitError, setSubmitError] = useState('');
     const [ttdQrDataUrl, setTtdQrDataUrl] = useState('');
     const [valQrDataUrl, setValQrDataUrl] = useState('');
-    const [isPrintMode, setIsPrintMode] = useState(false);
-
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('mode') === 'print') {
-            setIsPrintMode(true);
             setTimeout(() => {
                 window.print();
             }, 800);
@@ -300,7 +297,6 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
 
                 <div className="relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-gradient-to-br from-purple-50/80 via-white/70 to-indigo-50/80 dark:from-gray-900/70 dark:via-gray-900/60 dark:to-gray-800/70 p-4 lg:p-5 print:border-0 print:bg-transparent print:p-0 print:rounded-none">
                     <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 print:block">
-                        {!isPrintMode && (
                         <div className="lg:col-span-5 xl:col-span-4 print:hidden">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                                 {templateSelector && (
@@ -552,9 +548,7 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
                                 </form>
                             </div>
                         </div>
-                        )}
-
-                        <div className={`lg:col-span-7 xl:col-span-8 ${isPrintMode ? 'lg:col-span-12 flex justify-center' : ''}`}>
+                        <div className="lg:col-span-7 xl:col-span-8">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg print:shadow-none lg:sticky lg:top-20">
                                 <div className="p-4 sm:p-6 print:p-0">
                                     <div className="mx-auto w-full bg-white text-gray-900 rounded-xl border border-gray-200 shadow-sm print:shadow-none print:border-0 print:rounded-none print-container print:p-3">
@@ -674,7 +668,7 @@ export default function SuratNikah({ rawatJalan, patient, dokter, setting, surat
                                                     <div className="text-center">
                                                         <div className="print-text-black">{(setting?.kabupaten || 'Madiun')}, {formatShortDate(formData.tanggal)}</div>
                                                         <div className="print-text-black">Dokter Pemeriksa</div>
-                                                        <div className="mt-1.5 w-32 h-32 print:w-32 print:h-32 bg-white flex items-center justify-center mx-auto">
+                                                        <div className="mt-1.5 w-24 h-24 print:w-24 print:h-24 bg-white flex items-center justify-center mx-auto">
                                                             {ttdQrDataUrl ? (
                                                                 <img src={ttdQrDataUrl} alt="QR Code" className="w-full h-full object-contain" />
                                                             ) : (
