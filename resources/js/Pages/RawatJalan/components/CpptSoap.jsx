@@ -3320,7 +3320,16 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', co
                                 <div />
                             )}
                             <div className="flex items-center gap-2">
-                                <button type="button" onClick={sendKunjungan} disabled={sendingKunjungan || !kunjunganPreview} className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm">Kirim Kunjungan{rujukanActive ? ' + Rujuk' : ''}</button>
+                                <button
+                                    type="button"
+                                    onClick={sendKunjungan}
+                                    disabled={sendingKunjungan || !kunjunganPreview}
+                                    className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-md text-sm"
+                                >
+                                    {sendingKunjungan
+                                        ? `Mengirim ke BPJS, mohon tunggu${rujukanActive ? ' (Rujuk)' : ''}`
+                                        : `Kirim Kunjungan${rujukanActive ? ' + Rujuk' : ''}`}
+                                </button>
                                 <button type="button" onClick={editKunjungan} disabled={sendingKunjungan || !kunjunganPreview || !(lastNoKunjungan || (pcareRujukanSubspesialis && pcareRujukanSubspesialis.noKunjungan) || (kunjunganPreview && kunjunganPreview.noKunjungan))} className="bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white px-4 py-2 rounded-md text-sm">Edit Kunjungan</button>
                                 <button type="button" onClick={closeBridgingModal} className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-500 text-white px-4 py-2 rounded-md text-sm">Tutup</button>
                             </div>
