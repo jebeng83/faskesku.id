@@ -1126,18 +1126,38 @@ class RawatJalanController extends Controller
             'stts' => 'required|in:Belum,Sudah,Batal,Berkas Diterima,Dirujuk,Meninggal,Dirawat,Pulang Paksa',
         ]);
 
+        $current = DB::table('reg_periksa')
+            ->where('no_rawat', $validated['no_rawat'])
+            ->first(['stts']);
+
+        if (!$current) {
+            return response()->json(['message' => 'No rawat tidak ditemukan'], 404);
+        }
+
+        if ((string) $current->stts === (string) $validated['stts']) {
+            return response()->json([
+                'message' => 'Status sudah sesuai',
+                'stts' => $validated['stts'],
+            ]);
+        }
+
         $updated = DB::table('reg_periksa')
             ->where('no_rawat', $validated['no_rawat'])
             ->update(['stts' => $validated['stts']]);
 
         if ($updated === 0) {
-            // Cek apakah no_rawat ada
-            $exists = DB::table('reg_periksa')->where('no_rawat', $validated['no_rawat'])->exists();
-            if (!$exists) {
-                return response()->json(['message' => 'No rawat tidak ditemukan'], 404);
-            }
-            // Jika ada tapi tidak update, mungkin status sudah sama, dianggap sukses
+            return response()->json(['message' => 'Gagal memperbarui status'], 500);
         }
+
+        \Illuminate\Support\Facades\Log::info('[AUDIT] Update status rawat jalan', [
+            'no_rawat' => $validated['no_rawat'],
+            'old_stts' => $current->stts,
+            'new_stts' => $validated['stts'],
+            'user_id' => optional($request->user())->id,
+            'user_name' => optional($request->user())->name ?? optional($request->user())->username ?? null,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'message' => 'Status berhasil diperbarui',

@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { getRawatJalanFilters, setRawatJalanFilters, clearRawatJalanFilters } from '@/tools/rawatJalanFilters';
+import { getRowStatusClass } from '@/tools/statusColors';
 import LayoutUtama from '@/Pages/LayoutUtama';
 import LanjutanRalanSidebar from '@/Components/LanjutanRalanSidebar';
 import { motion } from 'framer-motion';
 import { todayDateString, getAppTimeZone } from '@/tools/datetime';
 import axios from 'axios';
+import toast from '@/tools/toast';
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
@@ -18,10 +20,11 @@ import {
   BanknotesIcon,
   EllipsisVerticalIcon,
   ClipboardDocumentListIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 // Simple Dropdown Component
-function SimpleDropdown({ children, trigger }) {
+function SimpleDropdown({ children, trigger, disabled = false }) {
     const [isOpen, setIsOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const dropdownRef = React.useRef(null);
@@ -57,6 +60,7 @@ function SimpleDropdown({ children, trigger }) {
     }, [isOpen]);
 
     const handleToggle = () => {
+        if (disabled) return;
         if (!isOpen && dropdownRef.current) {
             const rect = dropdownRef.current.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
@@ -77,8 +81,27 @@ function SimpleDropdown({ children, trigger }) {
 
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>
-            <div onClick={handleToggle}>
-                {trigger}
+            <div
+                onClick={handleToggle}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleToggle();
+                    }
+                }}
+                role="button"
+                tabIndex={disabled ? -1 : 0}
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                aria-disabled={disabled}
+            >
+                {React.isValidElement(trigger)
+                    ? React.cloneElement(trigger, {
+                        'aria-expanded': isOpen,
+                        'aria-haspopup': 'menu',
+                        'aria-disabled': disabled,
+                    })
+                    : trigger}
             </div>
             {isOpen && (
                 <div className="fixed z-[9999] w-56 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-600 animate-in slide-in-from-top-2 duration-200 overflow-hidden"
@@ -86,7 +109,7 @@ function SimpleDropdown({ children, trigger }) {
                          top: position.top,
                          left: position.left
                      }}>
-                    <div className="py-1">
+                    <div className="py-1" role="menu" onClick={() => setIsOpen(false)}>
                         {children}
                     </div>
                 </div>
@@ -99,6 +122,7 @@ function DropdownItem({ children, onClick, icon, _variant = "default" }) {
     return (
         <button
             onClick={onClick}
+            role="menuitem"
             className="group flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
         >
             {icon && (
@@ -114,6 +138,8 @@ function DropdownItem({ children, onClick, icon, _variant = "default" }) {
 export default function Index({ rawatJalan, statusOptions, statusBayarOptions, filters, dokterOptions = [], poliOptions = [] }) {
     const defaultPerPage = rawatJalan?.per_page || 25;
     const [isReloading, setIsReloading] = useState(false);
+    const [rows, setRows] = useState(rawatJalan?.data || []);
+    const [statusUpdatingMap, setStatusUpdatingMap] = useState({});
     const calculateStats = (data) => {
         const rows = data?.data || [];
         if (rows.length === 0) {
@@ -137,7 +163,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         };
     };
 
-    const stats = useMemo(() => calculateStats(rawatJalan), [rawatJalan]);
+    const stats = useMemo(() => calculateStats({ ...rawatJalan, data: rows }), [rawatJalan, rows]);
     const buildSearchParams = (source) => ({
         start_date: source?.start_date || todayDateString(),
         end_date: source?.end_date || todayDateString(),
@@ -220,6 +246,73 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
         filters?.kd_poli,
         filters?.per_page,
     ]);
+
+    useEffect(() => {
+        setRows(rawatJalan?.data || []);
+    }, [rawatJalan?.data]);
+
+    const statusList = useMemo(() => {
+        const options = statusOptions && typeof statusOptions === 'object' ? Object.keys(statusOptions) : [];
+        if (options.length > 0) return options;
+        return ['Belum', 'Sudah', 'Batal', 'Berkas Diterima', 'Dirujuk', 'Meninggal', 'Dirawat', 'Pulang Paksa'];
+    }, [statusOptions]);
+
+    const statusSet = useMemo(() => new Set(statusList), [statusList]);
+
+    const getStatusLabel = (status) => {
+        if (!status) return '-';
+        if (statusOptions && statusOptions[status]) return statusOptions[status];
+        return status;
+    };
+
+    const getStatusClass = (status) => {
+        if (status === 'Sudah') {
+            return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700';
+        }
+        if (status === 'Belum') {
+            return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700';
+        }
+        if (status === 'Batal') {
+            return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700';
+        }
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+    };
+
+    const updateStatus = async (row, nextStatus) => {
+        if (!row?.no_rawat) return;
+        if (!statusSet.has(nextStatus)) {
+            toast.error('Status tidak valid');
+            return;
+        }
+        if (row?.stts === nextStatus) {
+            toast.info('Status sudah sesuai');
+            return;
+        }
+
+        setStatusUpdatingMap((prev) => ({ ...prev, [row.no_rawat]: true }));
+        try {
+            const response = await axios.post(route('rawat-jalan.status.update'), {
+                no_rawat: row.no_rawat,
+                stts: nextStatus,
+            });
+
+            const updatedStatus = response?.data?.stts || nextStatus;
+            setRows((prev) =>
+                prev.map((item) =>
+                    item.no_rawat === row.no_rawat ? { ...item, stts: updatedStatus } : item
+                )
+            );
+            toast.success('Status berhasil diperbarui');
+        } catch (error) {
+            const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                'Gagal memperbarui status';
+            toast.error(message);
+        } finally {
+            setStatusUpdatingMap((prev) => ({ ...prev, [row.no_rawat]: false }));
+        }
+    };
 
     // Column Resizing Logic
     const [alamatWidth, setAlamatWidth] = useState(300);
@@ -729,13 +822,13 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
-                                {rawatJalan.data.map((item, index) => (
+                                {rows.map((item, index) => (
                                     <motion.tr 
                                         key={item.no_rawat}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className={`group transition-all duration-200 ${item.stts === 'Sudah' ? 'bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30' : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-800 dark:hover:to-gray-700'}`}
+                                        className={`group transition-all duration-200 ${getRowStatusClass(item.stts)}`}
                                     >
                                         <td className="px-4 py-2 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
@@ -853,9 +946,41 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                             )}
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap">
-                                            <span className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${item.stts === 'Sudah' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700' : item.stts === 'Belum' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700' : item.stts === 'Batal' ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700' : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'}`}>
-                                                {item.stts || '-'}
-                                            </span>
+                                            <SimpleDropdown
+                                                disabled={statusUpdatingMap[item.no_rawat]}
+                                                trigger={
+                                                    <button
+                                                        type="button"
+                                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors duration-150 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 ${getStatusClass(item.stts)} ${statusUpdatingMap[item.no_rawat] ? 'opacity-70 cursor-not-allowed' : 'hover:bg-white/60 dark:hover:bg-white/5'}`}
+                                                        aria-label={`Ubah status pasien: ${getStatusLabel(item.stts)}`}
+                                                        disabled={statusUpdatingMap[item.no_rawat]}
+                                                    >
+                                                        {statusUpdatingMap[item.no_rawat] ? (
+                                                            <span className="inline-flex items-center gap-1">
+                                                                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                                                                <span>Memperbarui</span>
+                                                            </span>
+                                                        ) : (
+                                                            <>
+                                                                <span>{getStatusLabel(item.stts)}</span>
+                                                                <ChevronDownIcon className="w-3.5 h-3.5 opacity-70" />
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                }
+                                            >
+                                                {statusList.map((status) => (
+                                                    <DropdownItem
+                                                        key={`${item.no_rawat}_${status}`}
+                                                        onClick={() => updateStatus(item, status)}
+                                                    >
+                                                        <span className={`inline-flex items-center gap-2 ${status === item.stts ? 'font-semibold' : ''}`}>
+                                                            <span className={`inline-block h-2 w-2 rounded-full border ${getStatusClass(status)}`}></span>
+                                                            <span>{getStatusLabel(status)}</span>
+                                                        </span>
+                                                    </DropdownItem>
+                                                ))}
+                                            </SimpleDropdown>
                                         </td>
                                         <td className="px-4 py-2 whitespace-nowrap">
                                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
@@ -928,7 +1053,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                 </div>
 
                 {/* Enhanced Empty State */}
-                {rawatJalan.data.length === 0 && (
+                {rows.length === 0 && (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
