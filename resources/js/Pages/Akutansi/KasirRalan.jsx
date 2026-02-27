@@ -332,13 +332,14 @@ export default function KasirRalanPage() {
             animate="visible"
             className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 px-4 sm:px-6 lg:px-12 xl:px-16 py-6 md:py-8"
         >
+            <div className="max-w-7xl mx-auto space-y-6">
             {/* Page Header Compact dengan Gradien */}
             <motion.div
                 variants={itemVariants}
-                className="relative px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-lg mb-6"
+                className="relative px-6 py-5 border border-gray-200/60 dark:border-gray-700/50 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-gray-700/80 dark:via-gray-700/80 dark:to-gray-700/80 backdrop-blur-sm rounded-2xl"
             >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                    <div className="space-y-1">
                         <motion.h1
                             className="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent"
                             initial={{ opacity: 0, x: -20 }}
@@ -347,6 +348,13 @@ export default function KasirRalanPage() {
                         >
                             Kasir Rawat Jalan
                         </motion.h1>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">
+                            Ringkasan kunjungan, status bayar, dan akses billing dalam satu layar.
+                        </p>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Maksimal rentang 14 hari
                     </div>
                 </div>
             </motion.div>
@@ -354,11 +362,11 @@ export default function KasirRalanPage() {
             {/* Filter Card dengan Top Border Gradient */}
             <motion.div
                 variants={itemVariants}
-                className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5 mb-6"
+                className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
             >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                <div className="relative p-6 md:p-8">
-                    <div className="flex items-center justify-between mb-6">
+                <div className="relative p-6 md:p-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <motion.div
                                 className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
@@ -390,7 +398,7 @@ export default function KasirRalanPage() {
                     </div>
 
                     {!filtersCollapsed && (
-                        <>
+                        <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                 <Field label="Tanggal Awal" icon={Calendar}>
                                     <input
@@ -425,7 +433,7 @@ export default function KasirRalanPage() {
                                 </Field>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mt-4 md:mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
                                 <Field
                                     label="Filter Penjamin"
                                     icon={CreditCard}
@@ -476,7 +484,7 @@ export default function KasirRalanPage() {
                                 </Field>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                                 <Field
                                     label="Status Registrasi"
                                     icon={FileText}
@@ -547,32 +555,8 @@ export default function KasirRalanPage() {
                                     </span>
                                 </motion.div>
                             )}
-                        </>
+                        </div>
                     )}
-                </div>
-            </motion.div>
-
-            {/* Summary & Table Container */}
-            <motion.div
-                variants={itemVariants}
-                className="flex items-center justify-between mb-4"
-            >
-                <motion.div
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-800/50"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                >
-                    <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Total data:{" "}
-                        <span className="text-blue-600 dark:text-blue-400">
-                            {LCount}
-                        </span>
-                    </span>
-                </motion.div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Maksimal rentang 14 hari
                 </div>
             </motion.div>
 
@@ -582,13 +566,30 @@ export default function KasirRalanPage() {
                 className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
             >
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                <div className="px-6 py-4 border-b border-gray-200/60 dark:border-gray-700/50">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                                <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                    Daftar Kunjungan
+                                </div>
+                                <div className="text-xs text-gray-600 dark:text-gray-300">
+                                    Total data: <span className="font-semibold text-blue-600 dark:text-blue-400">{LCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Urutan {order === "terbaru" ? "terbaru" : "terlama"}
+                        </div>
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                         <thead>
                             <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Kode Dokter
-                                </th>
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     No. RM
                                 </th>
@@ -621,6 +622,9 @@ export default function KasirRalanPage() {
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Dokter
                                 </th>
                             </tr>
                         </thead>
@@ -663,19 +667,6 @@ export default function KasirRalanPage() {
                                                 }}
                                                 whileHover={{ scale: 1.01 }}
                                             >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                                            {r?.kd_dokter ||
-                                                                "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.dokter
-                                                                ?.nm_dokter ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex flex-col">
                                                         <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
@@ -820,6 +811,19 @@ export default function KasirRalanPage() {
                                                         </motion.a>
                                                     </div>
                                                 </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                                            {r?.kd_dokter ||
+                                                                "-"}
+                                                        </span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                            {r?.dokter
+                                                                ?.nm_dokter ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+                                                </td>
                                             </motion.tr>
                                         );
                                     })}
@@ -849,6 +853,7 @@ export default function KasirRalanPage() {
                     </table>
                 </div>
             </motion.div>
+            </div>
         </motion.div>
         </LayoutUtama>
     );
