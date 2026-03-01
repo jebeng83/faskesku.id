@@ -4,7 +4,7 @@ import Alert from '@/Components/Alert';
 import ConfirmationAlert from '@/Components/ConfirmationAlert';
 import { todayDateString, nowDateTimeString } from '@/tools/datetime';
 
-const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initialDokterNama = '' }) => {
+const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initialDokterNama = '', onTindakanSaved = null }) => {
     const [activeTab, setActiveTab] = useState('dokter');
     const [jnsPerawatan, setJnsPerawatan] = useState([]);
     const [filteredPerawatan, setFilteredPerawatan] = useState([]);
@@ -37,6 +37,15 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
         message: '',
         onConfirm: null
     });
+
+    const sanitizeTindakanText = (text) => {
+        const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
+        return raw
+            .replace(/rp\s?[\d.,]+/gi, '')
+            .replace(/\b\d[\d.,]*\b/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+    };
 
     // Load data jenis perawatan
     const loadJnsPerawatan = async () => {
@@ -279,6 +288,18 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
             return;
         }
 
+        const tindakanTexts = selectedTindakan.map((tindakan) => sanitizeTindakanText(tindakan?.nm_perawatan ?? tindakan?.name ?? '')).filter(Boolean);
+        if (tindakanTexts.length === 0) {
+            setAlertConfig({
+                type: 'warning',
+                title: 'Peringatan',
+                message: 'Nama tindakan tidak valid atau hanya berisi nominal',
+                autoClose: true
+            });
+            setShowAlert(true);
+            return;
+        }
+
         try {
             setLoading(true);
             let endpoint = '';
@@ -326,7 +347,9 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
             );
             
             if (allSuccess) {
-                // Setelah simpan tindakan berhasil, otomatis susun staging dan posting jurnal
+                let postingType = 'success';
+                let postingTitle = 'Berhasil';
+                let postingMessage = `${selectedTindakan.length} tindakan disimpan. Mengalihkan ke CPPT...`;
                 try {
                     setPostingLoading(true);
                     const stageRes = await axios.post('/api/tarif-tindakan/stage-ralan', {
@@ -334,102 +357,72 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
                         no_rawat: noRawat,
                     });
 
-                    // Validasi staging: pastikan success, meta ada, dan balanced = true
                     if (!stageRes.data || !stageRes.data.success) {
                         const errMsg = stageRes.data?.message || 'Staging jurnal gagal. Posting dibatalkan.';
-                        setAlertConfig({
-                            type: 'error',
-                            title: 'Staging Gagal',
-                            message: errMsg,
-                            autoClose: true,
-                        });
-                        setShowAlert(true);
-                        setPostingLoading(false);
-                        return;
-                    }
-
-                    if (!stageRes.data.meta || !stageRes.data.meta.balanced) {
+                        postingType = 'warning';
+                        postingTitle = 'Peringatan';
+                        postingMessage = `Tindakan disimpan, namun staging jurnal gagal: ${errMsg}. Mengalihkan ke CPPT...`;
+                    } else if (!stageRes.data.meta || !stageRes.data.meta.balanced) {
                         const debet = stageRes.data.meta?.debet || 0;
                         const kredit = stageRes.data.meta?.kredit || 0;
                         const selisih = Math.abs(debet - kredit);
                         const errMsg = stageRes.data?.message || 
-                            `Staging jurnal tidak seimbang. Debet: ${debet.toLocaleString('id-ID')}, Kredit: ${kredit.toLocaleString('id-ID')}, Selisih: ${selisih.toLocaleString('id-ID')}. Posting dibatalkan.`;
+                            `Staging jurnal tidak seimbang. Debet: ${debet.toLocaleString('id-ID')}, Kredit: ${kredit.toLocaleString('id-ID')}, Selisih: ${selisih.toLocaleString('id-ID')}.`;
                         console.error('Staging tidak seimbang:', {
                             debet,
                             kredit,
                             selisih,
                             meta: stageRes.data.meta,
                         });
-                        setAlertConfig({
-                            type: 'error',
-                            title: 'Staging Tidak Seimbang',
-                            message: errMsg,
-                            autoClose: true,
-                        });
-                        setShowAlert(true);
-                        setPostingLoading(false);
-                        return;
-                    }
+                        postingType = 'warning';
+                        postingTitle = 'Peringatan';
+                        postingMessage = `Tindakan disimpan, namun ${errMsg} Mengalihkan ke CPPT...`;
+                    } else {
+                        try {
+                            const postRes = await axios.post('/api/akutansi/jurnal/post', {
+                                no_bukti: noRawat,
+                                keterangan: `Posting otomatis tindakan Rawat Jalan no_rawat ${noRawat}${noRkmMedis ? ` (RM ${noRkmMedis})` : ''}`,
+                            });
 
-                    // Staging berhasil dan seimbang, lanjutkan ke posting
-                    // Jalankan posting jurnal
-                    try {
-                        const postRes = await axios.post('/api/akutansi/jurnal/post', {
-                            no_bukti: noRawat,
-                            keterangan: `Posting otomatis tindakan Rawat Jalan no_rawat ${noRawat}${noRkmMedis ? ` (RM ${noRkmMedis})` : ''}`,
-                            // tgl_jurnal opsional: biarkan default di backend = hari ini
-                        });
-
-                        if (postRes.status === 201 && postRes.data && postRes.data.no_jurnal) {
-                            const noJurnal = postRes.data.no_jurnal;
-                            setAlertConfig({
-                                type: 'success',
-                                title: 'Berhasil',
-                                message: `${selectedTindakan.length} tindakan disimpan dan jurnal diposting (No: ${noJurnal}).`,
-                                autoClose: true,
-                            });
-                            setShowAlert(true);
-                        } else {
-                            // Error dari backend (400, 500, dll)
-                            const errMsg = postRes.data?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
-                            console.warn('Posting jurnal gagal:', {
-                                status: postRes.status,
-                                data: postRes.data,
-                                message: errMsg
-                            });
-                            setAlertConfig({
-                                type: 'error',
-                                title: 'Posting Gagal',
-                                message: errMsg,
-                                autoClose: true,
-                            });
-                            setShowAlert(true);
+                            if (postRes.status === 201 && postRes.data && postRes.data.no_jurnal) {
+                                const noJurnal = postRes.data.no_jurnal;
+                                postingMessage = `${selectedTindakan.length} tindakan disimpan dan jurnal diposting (No: ${noJurnal}). Mengalihkan ke CPPT...`;
+                            } else {
+                                const errMsg = postRes.data?.message || `Posting jurnal gagal (Status: ${postRes.status}).`;
+                                console.warn('Posting jurnal gagal:', {
+                                    status: postRes.status,
+                                    data: postRes.data,
+                                    message: errMsg
+                                });
+                                postingType = 'warning';
+                                postingTitle = 'Peringatan';
+                                postingMessage = `Tindakan disimpan, namun posting jurnal gagal: ${errMsg}. Mengalihkan ke CPPT...`;
+                            }
+                        } catch (postError) {
+                            console.error('Auto Stage→Post error:', postError);
+                            const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
+                            postingType = 'warning';
+                            postingTitle = 'Peringatan';
+                            postingMessage = `Tindakan disimpan, namun posting jurnal gagal: ${errMsg}. Mengalihkan ke CPPT...`;
                         }
-                    } catch (postError) {
-                        // Network error atau parsing error
-                        console.error('Auto Stage→Post error:', postError);
-                        const errMsg = postError?.response?.data?.message || postError?.message || 'Gagal melakukan posting jurnal otomatis.';
-                        setAlertConfig({
-                            type: 'error',
-                            title: 'Posting Error',
-                            message: errMsg,
-                            autoClose: true,
-                        });
-                        setShowAlert(true);
                     }
                 } catch (e) {
                     console.error('Auto Stage→Post error:', e);
                     const errMsg = e?.response?.data?.message || e?.message || 'Gagal melakukan Staging/Posting jurnal otomatis.';
-                    setAlertConfig({
-                        type: 'error',
-                        title: 'Error',
-                        message: errMsg,
-                        autoClose: true,
-                    });
-                    setShowAlert(true);
+                    postingType = 'warning';
+                    postingTitle = 'Peringatan';
+                    postingMessage = `Tindakan disimpan, namun proses jurnal gagal: ${errMsg}. Mengalihkan ke CPPT...`;
                 } finally {
                     setPostingLoading(false);
                 }
+
+                setAlertConfig({
+                    type: postingType,
+                    title: postingTitle,
+                    message: postingMessage,
+                    autoClose: true,
+                });
+                setShowAlert(true);
 
                 // Reset pilihan dan refresh riwayat
                 setSelectedTindakan([]);
@@ -437,6 +430,11 @@ const TarifTindakan = ({ token, noRkmMedis, noRawat, initialDokter = '', initial
                 setSelectedPetugas('');
                 setSearchTerm('');
                 loadRiwayatTindakan();
+                if (typeof onTindakanSaved === 'function') {
+                    try {
+                        setTimeout(() => onTindakanSaved(tindakanTexts.map((name) => ({ name }))), 350);
+                    } catch (_) {}
+                }
             } else {
                 setAlertConfig({
                     type: 'error',

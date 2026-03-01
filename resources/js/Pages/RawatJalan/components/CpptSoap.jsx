@@ -12,7 +12,7 @@ import { Eraser, Activity, FileText, HelpCircle, Plus, Save, Calendar, Clock, Us
 import toast from '@/tools/toast';
 import { buildCopyFormData } from './cpptSoapCopy.js';
 
-export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', context = 'ralan', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, onOpenBerkasDigital = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, onPemeriksaChange = null }) {
+export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', context = 'ralan', onOpenResep = null, onOpenDiagnosa = null, onOpenLab = null, onOpenTindakan = null, onOpenBerkasDigital = null, appendToPlanning = null, onPlanningAppended = null, appendToAssessment = null, onAssessmentAppended = null, appendTindakanToPlanning = null, onTindakanPlanningAppended = null, onPemeriksaChange = null }) {
     // Gunakan helper untuk mendapatkan tanggal/waktu dengan timezone yang benar
     const nowDateString = todayDateString();
     const nowTimeString = nowDateTimeString().split(' ')[1].substring(0, 5);
@@ -1061,6 +1061,34 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', co
             }
         }
     }, [appendToPlanning]);
+
+    const sanitizeTindakanText = (text) => {
+        const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
+        return raw
+            .replace(/rp\s?[\d.,]+/gi, '')
+            .replace(/\b\d[\d.,]*\b/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+    };
+
+    useEffect(() => {
+        if (appendTindakanToPlanning && Array.isArray(appendTindakanToPlanning) && appendTindakanToPlanning.length > 0) {
+            const items = appendTindakanToPlanning.map((it) => {
+                const name = sanitizeTindakanText(it?.name ?? it);
+                return name ? ` - ${name}` : '';
+            }).filter(Boolean);
+            if (items.length > 0) {
+                const block = `TINDAKAN:\n${items.join('\n')}`;
+                setFormData((prev) => ({
+                    ...prev,
+                    rtl: prev.rtl ? `${prev.rtl}\n${block}` : block,
+                }));
+            }
+            if (typeof onTindakanPlanningAppended === 'function') {
+                try { onTindakanPlanningAppended(); } catch (_) {}
+            }
+        }
+    }, [appendTindakanToPlanning, onTindakanPlanningAppended]);
 
     useEffect(() => {
         if (appendToAssessment && Array.isArray(appendToAssessment) && appendToAssessment.length > 0) {
@@ -2356,6 +2384,20 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', co
                                             title="Buka Permintaan Lab"
                                         >
                                             Laborat
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                if (typeof onOpenTindakan === 'function') {
+                                                    e.preventDefault();
+                                                    onOpenTindakan();
+                                                }
+                                            }}
+                                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 transition-colors"
+                                            aria-label="Buka tab Tarif Tindakan"
+                                            title="Buka Tarif Tindakan"
+                                        >
+                                            Tindakan
                                         </button>
                                         <Link
                                             href={noRawat ? `/rawat-jalan/obat-ralan/${encodeURIComponent(noRawat)}` : '/farmasi/resep-obat'}

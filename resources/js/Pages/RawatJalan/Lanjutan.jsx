@@ -30,6 +30,7 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
 
     const [diagnosaAppendItems, setDiagnosaAppendItems] = useState(null);
     const [resepAppendItems, setResepAppendItems] = useState(null);
+    const [tindakanAppendItems, setTindakanAppendItems] = useState(null);
     const [selectedDokterForResep, setSelectedDokterForResep] = useState(() => {
         const kd = rawatJalan?.kd_dokter || rawatJalan?.dokter?.kd_dokter || "";
         return kd ? String(kd) : "";
@@ -1379,9 +1380,12 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                         onOpenResep={() => setActiveTab("resep")}
                         onOpenDiagnosa={() => setActiveTab("diagnosa")}
                         onOpenLab={() => setActiveTab("lab")}
+                        onOpenTindakan={() => setActiveTab("tarifTindakan")}
                                 onOpenBerkasDigital={() => setActiveTab("berkasDigital")}
                         appendToPlanning={resepAppendItems}
                         onPlanningAppended={() => setResepAppendItems(null)}
+                        appendTindakanToPlanning={tindakanAppendItems}
+                        onTindakanPlanningAppended={() => setTindakanAppendItems(null)}
                         appendToAssessment={diagnosaAppendItems}
                         onAssessmentAppended={() => setDiagnosaAppendItems(null)}
                         onPemeriksaChange={handlePemeriksaChange}
@@ -1405,6 +1409,10 @@ export default function Lanjutan({ rawatJalan, params, lastVisitDays, lastVisitD
                     {...commonProps}
                     initialDokter={selectedDokterForResep}
                     initialDokterNama={selectedDokterNamaForResep}
+                    onTindakanSaved={(items) => {
+                        setTindakanAppendItems(items);
+                        setActiveTab("cppt");
+                    }}
                 />}
                 {activeTab === "diagnosa" && <Diagnosa
                     {...commonProps}
