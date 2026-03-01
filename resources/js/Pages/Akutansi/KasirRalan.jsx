@@ -5,9 +5,9 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
-    Filter,
     RefreshCw,
     Calendar,
+    Clock,
     User,
     Building2,
     CreditCard,
@@ -15,8 +15,6 @@ import {
     Loader2,
     AlertCircle,
     Database,
-    ChevronDown,
-    ChevronUp,
 } from "lucide-react";
 import LayoutUtama from "@/Pages/LayoutUtama";
 import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
@@ -41,12 +39,6 @@ const itemVariants = {
 };
 
 
-const currency = new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-});
-
 const formatShortDateId = (date) => {
     if (!date) return "-";
     try {
@@ -64,18 +56,6 @@ const formatShortDateId = (date) => {
     }
 };
 
-function Field({ label, children, icon: Icon }) {
-    return (
-        <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                {Icon && <Icon className="w-3.5 h-3.5" />}
-                {label}
-            </label>
-            {children}
-        </div>
-    );
-}
-
 function useDateRangeDefaults() {
     const today = todayDateString();
     return { start: today, end: today };
@@ -92,7 +72,8 @@ export default function KasirRalanPage() {
     const [statusBayar, setStatusBayar] = React.useState("Semua");
     const [q, setQ] = React.useState("");
     const [order, setOrder] = React.useState("terbaru"); // terbaru | terlama
-    const [filtersCollapsed, setFiltersCollapsed] = React.useState(true);
+    const [page, setPage] = React.useState(1);
+    const [perPage, setPerPage] = React.useState(25);
 
     const [rows, setRows] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -308,7 +289,68 @@ export default function KasirRalanPage() {
         return data;
     }, [rows, caripenjab, crPoli, crPtg, status, statusBayar, q, order]);
 
-    const LCount = filtered.length;
+    React.useEffect(() => {
+        setPage(1);
+    }, [startDate, endDate, caripenjab, crPoli, crPtg, status, statusBayar, q, order]);
+
+    const resetFilters = React.useCallback(() => {
+        const today = todayDateString();
+        setStartDate(today);
+        setEndDate(today);
+        setCariPenjab("");
+        setCrPoli("");
+        setCrPtg("");
+        setStatus("Semua");
+        setStatusBayar("Semua");
+        setQ("");
+        setOrder("terbaru");
+        setPage(1);
+    }, []);
+
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+    const safePage = Math.min(page, totalPages);
+    const pagedRows = React.useMemo(() => {
+        const start = (safePage - 1) * perPage;
+        return filtered.slice(start, start + perPage);
+    }, [filtered, safePage, perPage]);
+    const from = totalItems === 0 ? 0 : (safePage - 1) * perPage + 1;
+    const to = Math.min(safePage * perPage, totalItems);
+    const pageItems = React.useMemo(() => {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+        const items = [];
+        const addUnique = (val) => {
+            if (!items.includes(val)) items.push(val);
+        };
+        addUnique(1);
+        const start = Math.max(2, safePage - 1);
+        const end = Math.min(totalPages - 1, safePage + 1);
+        if (start > 2) items.push("...");
+        for (let i = start; i <= end; i += 1) addUnique(i);
+        if (end < totalPages - 1) items.push("...");
+        addUnique(totalPages);
+        return items;
+    }, [safePage, totalPages]);
+
+    React.useEffect(() => {
+        if (page > totalPages) {
+            setPage(totalPages);
+        }
+    }, [page, totalPages]);
+
+    const stats = React.useMemo(() => {
+        const sudahBayar = filtered.filter((r) => r?.status_bayar === "Sudah Bayar").length;
+        const belumBayar = filtered.filter((r) => r?.status_bayar === "Belum Bayar").length;
+        const batal = filtered.filter((r) => r?.stts === "Batal").length;
+        return {
+            total: filtered.length,
+            sudahBayar,
+            belumBayar,
+            batal,
+        };
+    }, [filtered]);
 
     const statusOptions = [
         "Semua",
@@ -323,6 +365,16 @@ export default function KasirRalanPage() {
     ];
 
     const statusBayarOptions = ["Semua", "Sudah Bayar", "Belum Bayar"];
+    const hasActiveFilters =
+        startDate !== defaults.start ||
+        endDate !== defaults.end ||
+        status !== "Semua" ||
+        statusBayar !== "Semua" ||
+        q.trim() !== "" ||
+        caripenjab.trim() !== "" ||
+        crPoli.trim() !== "" ||
+        crPtg.trim() !== "" ||
+        order !== "terbaru";
 
     return (
         <LayoutUtama title="Keuangan" left={<SidebarKeuanganMenu title="Keuangan" />}>
@@ -359,280 +411,260 @@ export default function KasirRalanPage() {
                 </div>
             </motion.div>
 
-            {/* Filter Card dengan Top Border Gradient */}
             <motion.div
                 variants={itemVariants}
-                className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden"
             >
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                <div className="relative p-6 md:p-8 space-y-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <motion.div
-                                className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md"
-                                whileHover={{ rotate: 90, scale: 1.1 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <Filter className="w-5 h-5 text-white" />
-                            </motion.div>
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                    Filter & Pencarian
-                                </span>
-                            </h2>
-                        </div>
-                        <motion.button
-                            type="button"
-                            onClick={() => setFiltersCollapsed((v) => !v)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300/60 dark:border-gray-600/60 bg-white/80 dark:bg-gray-700/80 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col gap-4">
+                        <motion.div
+                            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
                         >
-                            {filtersCollapsed ? (
-                                <ChevronDown className="w-4 h-4" />
-                            ) : (
-                                <ChevronUp className="w-4 h-4" />
+                            <motion.div
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black p-1 rounded-sm border border-white/10"
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                        <Database className="w-3 h-3 text-white/80" />
+                                        <p className="text-xs font-medium text-white/80">Total</p>
+                                    </div>
+                                    <p className="text-sm font-bold text-white">{stats.total}</p>
+                                </div>
+                            </motion.div>
+                            <motion.div
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black p-1 rounded-sm border border-white/10"
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                        <CreditCard className="w-3 h-3 text-white/80" />
+                                        <p className="text-xs font-medium text-white/80">Sudah Bayar</p>
+                                    </div>
+                                    <p className="text-sm font-bold text-white">{stats.sudahBayar}</p>
+                                </div>
+                            </motion.div>
+                            <motion.div
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black p-1 rounded-sm border border-white/10"
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3 text-white/80" />
+                                        <p className="text-xs font-medium text-white/80">Belum Bayar</p>
+                                    </div>
+                                    <p className="text-sm font-bold text-white">{stats.belumBayar}</p>
+                                </div>
+                            </motion.div>
+                            <motion.div
+                                className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 dark:from-blue-900 dark:via-blue-950 dark:to-black p-1 rounded-sm border border-white/10"
+                                whileHover={{ scale: 1.02, y: -2 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1">
+                                        <FileText className="w-3 h-3 text-white/80" />
+                                        <p className="text-xs font-medium text-white/80">Batal</p>
+                                    </div>
+                                    <p className="text-sm font-bold text-white">{stats.batal}</p>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 w-full">
+                            <div className="relative shrink-0">
+                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={q}
+                                    onChange={(e) => setQ(e.target.value)}
+                                    placeholder="Cari pasien..."
+                                    className="pl-6 pr-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white w-32"
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={loadData}
+                                disabled={loading}
+                                className="p-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                                aria-label="Reload data kasir"
+                            >
+                                {loading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="w-4 h-4" />
+                                )}
+                            </button>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                />
+                                <span className="text-xs text-gray-500">s/d</span>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                />
+                            </div>
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                            >
+                                {statusOptions.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </select>
+                            <select
+                                value={statusBayar}
+                                onChange={(e) => setStatusBayar(e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                            >
+                                {statusBayarOptions.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                value={caripenjab}
+                                onChange={(e) => setCariPenjab(e.target.value)}
+                                placeholder="Penjamin..."
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0 w-28"
+                            />
+                            <input
+                                type="text"
+                                value={crPoli}
+                                onChange={(e) => setCrPoli(e.target.value)}
+                                placeholder="Poli..."
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0 w-28"
+                            />
+                            <input
+                                type="text"
+                                value={crPtg}
+                                onChange={(e) => setCrPtg(e.target.value)}
+                                placeholder="Dokter..."
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0 w-28"
+                            />
+                            <select
+                                value={order}
+                                onChange={(e) => setOrder(e.target.value)}
+                                className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white shrink-0"
+                            >
+                                <option value="terbaru">Terbaru</option>
+                                <option value="terlama">Terlama</option>
+                            </select>
+                            {hasActiveFilters && (
+                                <button
+                                    onClick={resetFilters}
+                                    className="ml-2 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors shrink-0"
+                                    title="Reset filters"
+                                >
+                                    ✕
+                                </button>
                             )}
-                            {filtersCollapsed ? "Tampilkan" : "Sembunyikan"}
-                        </motion.button>
-                    </div>
-
-                    {!filtersCollapsed && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                                <Field label="Tanggal Awal" icon={Calendar}>
-                                    <input
-                                        type="date"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={startDate}
-                                        onChange={(e) =>
-                                            setStartDate(e.target.value)
-                                        }
-                                    />
-                                </Field>
-                                <Field label="Tanggal Akhir" icon={Calendar}>
-                                    <input
-                                        type="date"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={endDate}
-                                        onChange={(e) =>
-                                            setEndDate(e.target.value)
-                                        }
-                                    />
-                                </Field>
-                                <Field
-                                    label="Pencarian (No Rawat/RM/Nama)"
-                                    icon={Search}
-                                >
-                                    <input
-                                        placeholder="Cari…"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={q}
-                                        onChange={(e) => setQ(e.target.value)}
-                                    />
-                                </Field>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-                                <Field
-                                    label="Filter Penjamin"
-                                    icon={CreditCard}
-                                >
-                                    <input
-                                        placeholder="Nama penjamin / kode"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={caripenjab}
-                                        onChange={(e) =>
-                                            setCariPenjab(e.target.value)
-                                        }
-                                    />
-                                </Field>
-                                <Field label="Filter Poli" icon={Building2}>
-                                    <input
-                                        placeholder="Nama/Kode poli"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={crPoli}
-                                        onChange={(e) =>
-                                            setCrPoli(e.target.value)
-                                        }
-                                    />
-                                </Field>
-                                <Field
-                                    label="Filter Dokter/Petugas"
-                                    icon={User}
-                                >
-                                    <input
-                                        placeholder="Nama/Kode dokter"
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={crPtg}
-                                        onChange={(e) =>
-                                            setCrPtg(e.target.value)
-                                        }
-                                    />
-                                </Field>
-                                <Field label="Urutan">
-                                    <select
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={order}
-                                        onChange={(e) =>
-                                            setOrder(e.target.value)
-                                        }
-                                    >
-                                        <option value="terbaru">Terbaru</option>
-                                        <option value="terlama">Terlama</option>
-                                    </select>
-                                </Field>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                                <Field
-                                    label="Status Registrasi"
-                                    icon={FileText}
-                                >
-                                    <select
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={status}
-                                        onChange={(e) =>
-                                            setStatus(e.target.value)
-                                        }
-                                    >
-                                        {statusOptions.map((s) => (
-                                            <option key={s} value={s}>
-                                                {s}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </Field>
-                                <Field label="Status Bayar" icon={CreditCard}>
-                                    <select
-                                        className="w-full rounded-lg border border-gray-300/50 dark:border-gray-600/50 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
-                                        value={statusBayar}
-                                        onChange={(e) =>
-                                            setStatusBayar(e.target.value)
-                                        }
-                                    >
-                                        {statusBayarOptions.map((s) => (
-                                            <option key={s} value={s}>
-                                                {s}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </Field>
-                                <div className="flex items-end">
-                                    <motion.button
-                                        onClick={loadData}
-                                        disabled={loading}
-                                        className="flex items-center justify-center gap-2 w-full px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                        whileHover={{
-                                            scale: loading ? 1 : 1.02,
-                                        }}
-                                        whileTap={{ scale: loading ? 1 : 0.98 }}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                Memuat…
-                                            </>
-                                        ) : (
-                                            <>
-                                                <RefreshCw className="w-4 h-4" />
-                                                Muat Data
-                                            </>
-                                        )}
-                                    </motion.button>
-                                </div>
-                            </div>
-
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mt-4 p-4 rounded-lg bg-gradient-to-r from-red-50/50 to-rose-50/50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200/50 dark:border-red-800/50 flex items-center gap-2"
-                                >
-                                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                                    <span className="text-sm font-semibold text-red-700 dark:text-red-300">
-                                        {error}
-                                    </span>
-                                </motion.div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </motion.div>
-
-            {/* Table dengan Glassmorphism */}
-            <motion.div
-                variants={itemVariants}
-                className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl shadow-blue-500/5"
-            >
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-                <div className="px-6 py-4 border-b border-gray-200/60 dark:border-gray-700/50">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                                <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                    Daftar Kunjungan
-                                </div>
-                                <div className="text-xs text-gray-600 dark:text-gray-300">
-                                    Total data: <span className="font-semibold text-blue-600 dark:text-blue-400">{LCount}</span>
-                                </div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400 shrink-0">
+                                Maksimal rentang 14 hari
                             </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Urutan {order === "terbaru" ? "terbaru" : "terlama"}
-                        </div>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="p-3 rounded-lg bg-gradient-to-r from-red-50/50 to-rose-50/50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200/50 dark:border-red-800/50 flex items-center gap-2"
+                            >
+                                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                <span className="text-xs font-semibold text-red-700 dark:text-red-300">
+                                    {error}
+                                </span>
+                            </motion.div>
+                        )}
                     </div>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                        <thead>
-                            <tr className="bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    No. RM
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Poliklinik
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Penanggung Jawab
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Penjamin
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    No. Rawat
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Tgl
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Jam
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Status Bayar
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    No. Tlp
-                                </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
+                            <tr>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                                    Dokter
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        Nama Pasien
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard className="w-4 h-4" />
+                                        Penjamin
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    No. RM
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-4 h-4" />
+                                        No. Rawat
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    Alamat
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="w-4 h-4" />
+                                        Poliklinik
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <User className="w-4 h-4" />
+                                        Nama Dokter
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    Status Periksa
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="w-4 h-4" />
+                                        Tanggal
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    <div className="flex items-center gap-2">
+                                        <Clock className="w-4 h-4" />
+                                        Jam
+                                    </div>
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    Status Bayar
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    No. Tlp
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan={12}
+                                        colSpan={13}
                                         className="px-4 py-12 text-center"
                                     >
                                         <motion.div
@@ -649,7 +681,7 @@ export default function KasirRalanPage() {
                                 </tr>
                             ) : (
                                 <AnimatePresence>
-                                    {filtered.map((r, index) => {
+                                    {pagedRows.map((r, index) => {
                                         const statusBadgeClass =
                                             r?.status_bayar === "Sudah Bayar"
                                                 ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800"
@@ -658,7 +690,7 @@ export default function KasirRalanPage() {
                                         return (
                                             <motion.tr
                                                 key={r.no_rawat}
-                                                className="border-b border-gray-100/50 dark:border-gray-700/30 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-gray-700/50 dark:hover:to-gray-800/50 transition-all duration-200 group"
+                                                className="group transition-all duration-200 hover:bg-blue-50/50 dark:hover:bg-gray-800/60"
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: 20 }}
@@ -667,133 +699,7 @@ export default function KasirRalanPage() {
                                                 }}
                                                 whileHover={{ scale: 1.01 }}
                                             >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                                            {r?.no_rkm_medis ||
-                                                                "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.pasien
-                                                                ?.nm_pasien ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.poliklinik?.nm_poli ||
-                                                        "-"}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.p_jawab || "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.almt_pj || "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.penjab
-                                                                ?.png_jawab ||
-                                                                r?.kd_pj ||
-                                                                "-"}
-                                                        </span>
-                                                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">
-                                                            {currency.format(
-                                                                Number(
-                                                                    r?.biaya_reg ||
-                                                                        0
-                                                                )
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <motion.span
-                                                        className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadgeClass}`}
-                                                        whileHover={{
-                                                            scale: 1.05,
-                                                        }}
-                                                    >
-                                                        {r?.stts || "-"}
-                                                    </motion.span>
-                                                </td>
-                                                <td className="px-4 py-3 font-medium">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-mono text-xs text-gray-900 dark:text-gray-100">
-                                                            {formatShortDateId(r?.tgl_registrasi)}{" "}
-                                                            {String(r?.jam_reg || "").slice(0, 5)}
-                                                        </span>
-                                                        <motion.button
-                                                            onClick={() => {
-                                                                try {
-                                                                    const url = route('rawat-jalan.canvas', {
-                                                                        no_rawat: r?.no_rawat,
-                                                                        no_rkm_medis: r?.no_rkm_medis,
-                                                                        kd_poli: r?.kd_poli
-                                                                    });
-                                                                    router.visit(url);
-                                                                } catch {
-                                                                    const params = new URLSearchParams({
-                                                                        no_rawat: r?.no_rawat || '',
-                                                                        no_rkm_medis: r?.no_rkm_medis || '',
-                                                                        kd_poli: r?.kd_poli || ''
-                                                                    }).toString();
-                                                                    router.visit(`/rawat-jalan/canvas?${params}`);
-                                                                }
-                                                            }}
-                                                            className="font-mono text-xs font-bold text-gray-900 dark:text-gray-100 mt-0.5 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                        >
-                                                            {r?.no_rawat || "-"}
-                                                        </motion.button>
-                                                        <span className="text-[11px] truncate text-gray-900 dark:text-white mt-0.5">
-                                                            {r?.dokter?.nm_dokter ? `dr. ${r.dokter.nm_dokter}` : "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 font-normal mt-0.5">
-                                                            {r?.no_reg || "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.tgl_registrasi || "-"}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                    {r?.jam_reg || "-"}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <motion.span
-                                                            className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold w-fit ${statusBadgeClass}`}
-                                                            whileHover={{
-                                                                scale: 1.05,
-                                                            }}
-                                                        >
-                                                            {r?.status_bayar ||
-                                                                "-"}
-                                                        </motion.span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                                            {r?.status_poli ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 dark:text-gray-100">
-                                                            {r?.pasien
-                                                                ?.no_tlp || "-"}
-                                                        </span>
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.keputusan ||
-                                                                "-"}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2 whitespace-nowrap">
                                                     <div className="flex gap-2">
                                                         <motion.a
                                                             href={`/akutansi/billing?no_rawat=${encodeURIComponent(
@@ -811,15 +717,123 @@ export default function KasirRalanPage() {
                                                         </motion.a>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2 whitespace-nowrap">
                                                     <div className="flex flex-col">
-                                                        <span className="font-mono text-xs font-semibold text-gray-900 dark:text-gray-100">
-                                                            {r?.kd_dokter ||
+                                                        <span className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors duration-200">
+                                                            {r?.pasien?.nm_pasien || "-"}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                    {(() => {
+                                                        const penjamin = r?.penjab?.png_jawab || r?.kd_pj || "-";
+                                                        const isBpjs = penjamin && String(penjamin).toUpperCase().includes("BPJS");
+                                                        return (
+                                                            <div className="flex flex-col gap-1">
+                                                                <div
+                                                                    className={`inline-block px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                                                        isBpjs
+                                                                            ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700"
+                                                                            : "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
+                                                                    }`}
+                                                                >
+                                                                    {penjamin}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <span className="font-mono text-xs text-gray-700 dark:text-gray-300">
+                                                        {r?.no_rkm_medis || "-"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <motion.button
+                                                            onClick={() => {
+                                                                try {
+                                                                    const url = route("rawat-jalan.canvas", {
+                                                                        no_rawat: r?.no_rawat,
+                                                                        no_rkm_medis: r?.no_rkm_medis,
+                                                                        kd_poli: r?.kd_poli,
+                                                                    });
+                                                                    router.visit(url);
+                                                                } catch {
+                                                                    const params = new URLSearchParams({
+                                                                        no_rawat: r?.no_rawat || "",
+                                                                        no_rkm_medis: r?.no_rkm_medis || "",
+                                                                        kd_poli: r?.kd_poli || "",
+                                                                    }).toString();
+                                                                    router.visit(`/rawat-jalan/canvas?${params}`);
+                                                                }
+                                                            }}
+                                                            className="font-mono text-xs font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                        >
+                                                            {r?.no_rawat || "-"}
+                                                        </motion.button>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                                    <span className="block truncate" title={r?.almt_pj || "-"}>
+                                                        {r?.almt_pj || "-"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                                    {r?.poliklinik?.nm_poli || "-"}
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                                    <div className="flex flex-col">
+                                                        <span>{r?.dokter?.nm_dokter || "-"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <motion.span
+                                                        className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${statusBadgeClass}`}
+                                                        whileHover={{
+                                                            scale: 1.05,
+                                                        }}
+                                                    >
+                                                        {r?.stts || "-"}
+                                                    </motion.span>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                        <Calendar className="w-4 h-4 text-blue-500" />
+                                                        {formatShortDateId(r?.tgl_registrasi)}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                        <Clock className="w-4 h-4 text-green-500" />
+                                                        {String(r?.jam_reg || "").slice(0, 5) || "-"}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <motion.span
+                                                            className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold w-fit ${statusBadgeClass}`}
+                                                            whileHover={{
+                                                                scale: 1.05,
+                                                            }}
+                                                        >
+                                                            {r?.status_bayar ||
+                                                                "-"}
+                                                        </motion.span>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                            {r?.status_poli ||
                                                                 "-"}
                                                         </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-gray-900 dark:text-gray-100">
+                                                            {r?.pasien
+                                                                ?.no_tlp || "-"}
+                                                        </span>
                                                         <span className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                                                            {r?.dokter
-                                                                ?.nm_dokter ||
+                                                            {r?.keputusan ||
                                                                 "-"}
                                                         </span>
                                                     </div>
@@ -829,10 +843,10 @@ export default function KasirRalanPage() {
                                     })}
                                 </AnimatePresence>
                             )}
-                            {!loading && filtered.length === 0 && (
+                            {!loading && pagedRows.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={12}
+                                        colSpan={13}
                                         className="px-4 py-12 text-center"
                                     >
                                         <motion.div
@@ -852,6 +866,91 @@ export default function KasirRalanPage() {
                         </tbody>
                     </table>
                 </div>
+                {totalItems > 0 && (
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${loading ? "opacity-70" : ""}`}>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <span>Menampilkan</span>
+                                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                        {from}-{to}
+                                    </span>
+                                    <span>dari</span>
+                                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                        {totalItems}
+                                    </span>
+                                    <span>data</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <span>Tampilkan:</span>
+                                    <select
+                                        value={perPage}
+                                        onChange={(e) => {
+                                            setPerPage(Number(e.target.value));
+                                            setPage(1);
+                                        }}
+                                        className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
+                                    >
+                                        {[25, 50, 75, 100].map((size) => (
+                                            <option key={size} value={size}>
+                                                {size}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                                    className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
+                                        safePage === 1
+                                            ? "bg-white text-gray-400 dark:bg-gray-800 dark:text-gray-500 border border-gray-200 dark:border-gray-600 cursor-not-allowed"
+                                            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600"
+                                    }`}
+                                    disabled={safePage === 1}
+                                >
+                                    ‹
+                                </button>
+                                {pageItems.map((item, index) =>
+                                    item === "..." ? (
+                                        <span
+                                            key={`ellipsis-${index}`}
+                                            className="px-3 py-2 text-sm rounded-lg font-medium text-gray-500 dark:text-gray-400"
+                                        >
+                                            …
+                                        </span>
+                                    ) : (
+                                        <button
+                                            key={`page-${item}`}
+                                            type="button"
+                                            onClick={() => setPage(item)}
+                                            className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
+                                                safePage === item
+                                                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-105"
+                                                    : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600"
+                                            }`}
+                                        >
+                                            {item}
+                                        </button>
+                                    )
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                                    className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
+                                        safePage === totalPages
+                                            ? "bg-white text-gray-400 dark:bg-gray-800 dark:text-gray-500 border border-gray-200 dark:border-gray-600 cursor-not-allowed"
+                                            : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600"
+                                    }`}
+                                    disabled={safePage === totalPages}
+                                >
+                                    ›
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </motion.div>
             </div>
         </motion.div>

@@ -2006,14 +2006,18 @@ export function BillingPage({
                                 )}
                             </div>
                         </div>
-                        <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-900/80 border border-gray-200/60 dark:border-gray-700/60 p-6">
-                            <div className="mb-4">
-                                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <div className="group relative overflow-hidden rounded-2xl bg-white/95 dark:bg-gray-900/90 border border-gray-200/70 dark:border-gray-700/70 shadow-lg shadow-slate-200/60 dark:shadow-black/40 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-purple-50/30 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/10 opacity-70 pointer-events-none" />
+                            <div className="relative mb-6 flex items-start justify-between gap-4">
+                                <div>
+                                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                                     Pembayaran
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    </div>
+                                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                     Metode pembayaran, nominal, dan kembalian
+                                    </div>
                                 </div>
+                                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-blue-500/30" />
                             </div>
                             <PembayaranTab
                                 summary={summary}
@@ -2231,24 +2235,25 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
     }, [bayar, totalWithPpn]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Pilihan komponen biaya */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-4">
                 {categoryMap.map((c) => (
                     <label
                         key={c.label}
-                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer ${
+                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-200 cursor-pointer border ${
                             selected.includes(c.label)
-                                ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-200"
-                                : "bg-white border-gray-200 text-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                ? "text-blue-700 dark:text-blue-200 bg-blue-50/80 dark:bg-blue-900/30 border-blue-200/60 dark:border-blue-700/60 shadow-sm shadow-blue-200/40"
+                                : "text-gray-600 dark:text-gray-300 bg-white/60 dark:bg-gray-800/60 border-gray-200/70 dark:border-gray-700/70 hover:border-blue-200/80 hover:text-blue-700 dark:hover:text-blue-200"
                         }`}
                     >
                         <input
                             type="checkbox"
                             checked={selected.includes(c.label)}
                             onChange={() => toggle(c.label)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
                         />
-                        {c.label}
+                        <span>{c.label}</span>
                     </label>
                 ))}
             </div>
@@ -2256,13 +2261,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
             {/* Ringkasan pembayaran */}
             <div className="space-y-3">
                 {/* Baris tunggal: Total Tagihan, PPN (%), Tagihan + PPN dengan komposisi kolom 2-1-2 */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div className="md:col-span-2">
                         <Field label="Total Tagihan">
                             <input
                                 readOnly
                                 value={currency.format(subtotal || 0)}
-                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                             />
                         </Field>
                     </div>
@@ -2275,7 +2280,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                                 onChange={(e) =>
                                     setPpnPercent(Number(e.target.value) || 0)
                                 }
-                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                             />
                         </Field>
                     </div>
@@ -2284,13 +2289,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             <input
                                 readOnly
                                 value={currency.format(totalWithPpn || 0)}
-                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                                className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                             />
                         </Field>
                     </div>
                 </div>
                 {/* Baris Bayar: nominal + pilih akun bayar + tombol cek */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4">
                     <Field label="Bayar : Rp">
                         <input
                             type="text"
@@ -2306,7 +2311,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                                 setPiutang(p);
                                 setPiutangText(formatIDR(p));
                             }}
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                         />
                     </Field>
                     <Field label="Akun Bayar">
@@ -2334,14 +2339,14 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             setBayarText(formatIDR(b));
                             setPiutangText(formatIDR(0));
                         }}
-                        className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="self-end px-3 py-2.5 rounded-xl border border-blue-200/70 dark:border-blue-700/70 text-sm font-semibold text-blue-700 dark:text-blue-200 bg-blue-50/70 dark:bg-blue-900/30 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
                         title="Bayar penuh"
                     >
                         <Check className="w-4 h-4" />
                     </button>
                 </div>
                 {/* Baris Piutang: tampilan sisa + pilih akun piutang + tombol cek */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4">
                     <Field label="Piutang : Rp">
                         <input
                             type="text"
@@ -2357,7 +2362,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                                 setBayar(b);
                                 setBayarText(formatIDR(b));
                             }}
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                         />
                     </Field>
                     <Field label="Akun Piutang">
@@ -2379,27 +2384,27 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             setBayarText(formatIDR(0));
                             setPiutangText(formatIDR(p));
                         }}
-                        className="self-end px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="self-end px-3 py-2.5 rounded-xl border border-indigo-200/70 dark:border-indigo-700/70 text-sm font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-50/70 dark:bg-indigo-900/30 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
                         title="Jadikan semua piutang"
                     >
                         <Check className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <Field label="Kembali : Rp">
                         <input
                             readOnly
                             value={currency.format(kembali || 0)}
-                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
                         />
                     </Field>
                 </div>
             </div>
 
             {/* Tombol aksi */}
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50"
                     disabled={!onSave}
                     onClick={() =>
                         onSave?.({
@@ -2443,7 +2448,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                     Simpan
                 </button>
                 <button
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-xl border border-gray-300/80 dark:border-gray-700/80 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-900/70 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!noRawat || !invoice?.nota?.no_nota}
                     onClick={() => {
                         if (noRawat) {
@@ -2467,13 +2472,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                     Nota
                 </button>
                 <button
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className="px-4 py-2.5 rounded-xl border border-gray-300/80 dark:border-gray-700/80 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-900/70 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
                     disabled
                 >
                     Lihat
                 </button>
                 <button
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className="px-4 py-2.5 rounded-xl border border-gray-300/80 dark:border-gray-700/80 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-900/70 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
                     onClick={() => window.history.back()}
                 >
                     Keluar
