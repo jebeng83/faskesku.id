@@ -101,6 +101,12 @@ class PermintaanLabController extends Controller
                 $item->load('detailPermintaan');
             }
             $item->has_hasil = $item->hasHasilTersedia();
+            $item->tgl_permintaan = $this->normalizeDateValue($item->tgl_permintaan);
+            $item->jam_permintaan = $this->normalizeTimeValue($item->jam_permintaan);
+            $item->tgl_sampel = $this->normalizeDateValue($item->tgl_sampel);
+            $item->jam_sampel = $this->normalizeTimeValue($item->jam_sampel);
+            $item->tgl_hasil = $this->normalizeDateValue($item->tgl_hasil);
+            $item->jam_hasil = $this->normalizeTimeValue($item->jam_hasil);
 
             return $item;
         });
@@ -1102,12 +1108,12 @@ class PermintaanLabController extends Controller
                     return [
                         'noorder' => $permintaan->noorder,
                         'no_rawat' => $permintaan->no_rawat,
-                        'tgl_permintaan' => $permintaan->tgl_permintaan,
-                        'jam_permintaan' => $permintaan->jam_permintaan,
-                        'tgl_sampel' => $permintaan->tgl_sampel,
-                        'jam_sampel' => $permintaan->jam_sampel,
-                        'tgl_hasil' => $permintaan->tgl_hasil,
-                        'jam_hasil' => $permintaan->jam_hasil,
+                        'tgl_permintaan' => $this->normalizeDateValue($permintaan->tgl_permintaan),
+                        'jam_permintaan' => $this->normalizeTimeValue($permintaan->jam_permintaan),
+                        'tgl_sampel' => $this->normalizeDateValue($permintaan->tgl_sampel),
+                        'jam_sampel' => $this->normalizeTimeValue($permintaan->jam_sampel),
+                        'tgl_hasil' => $this->normalizeDateValue($permintaan->tgl_hasil),
+                        'jam_hasil' => $this->normalizeTimeValue($permintaan->jam_hasil),
                         'dokter_perujuk' => $permintaan->dokter_perujuk ?? '-',
                         'status' => $statusLabel, // Status yang lebih jelas
                         'status_raw' => $permintaan->status, // Status asli dari database
@@ -1328,7 +1334,17 @@ class PermintaanLabController extends Controller
                 ->where('no_rawat', $noRawat)
                 ->orderBy('tgl_permintaan', 'desc')
                 ->orderBy('jam_permintaan', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($permintaan) {
+                    $permintaan->tgl_permintaan = $this->normalizeDateValue($permintaan->tgl_permintaan);
+                    $permintaan->jam_permintaan = $this->normalizeTimeValue($permintaan->jam_permintaan);
+                    $permintaan->tgl_sampel = $this->normalizeDateValue($permintaan->tgl_sampel);
+                    $permintaan->jam_sampel = $this->normalizeTimeValue($permintaan->jam_sampel);
+                    $permintaan->tgl_hasil = $this->normalizeDateValue($permintaan->tgl_hasil);
+                    $permintaan->jam_hasil = $this->normalizeTimeValue($permintaan->jam_hasil);
+
+                    return $permintaan;
+                });
 
             return response()->json([
                 'success' => true,
@@ -1341,6 +1357,47 @@ class PermintaanLabController extends Controller
                 'message' => 'Gagal mengambil riwayat permintaan: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    private function normalizeDateValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $normalized, $match)) {
+            if ((int) $match[1] < 1900) {
+                return null;
+            }
+        }
+        if (
+            $normalized === '' ||
+            $normalized === '-' ||
+            $normalized === '0000-00-00' ||
+            str_starts_with($normalized, '0000-00-00 ') ||
+            str_starts_with($normalized, '-0001-11-30') ||
+            $normalized === '1970-01-01' ||
+            $normalized === '1970-01-01 00:00:00'
+        ) {
+            return null;
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeTimeValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+        if ($normalized === '' || $normalized === '-' || $normalized === '00:00:00' || $normalized === '00:00') {
+            return null;
+        }
+
+        return $normalized;
     }
 
     /**

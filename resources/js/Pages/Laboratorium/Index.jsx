@@ -143,6 +143,19 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         }
     }, [flash, pageErrors]);
 
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            if (!isSearching) {
+                router.reload({
+                    only: ['permintaanLab'],
+                    preserveState: true,
+                });
+            }
+        }, 30000);
+
+        return () => clearInterval(intervalId);
+    }, [isSearching]);
+
     // Ambil Sampel modal state
     const [showSampleModal, setShowSampleModal] = useState(false);
     const [sampleDate, setSampleDate] = useState("");
@@ -301,11 +314,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         const defaultTime = timeFormatter.format(now);
         
         // Gunakan tanggal/jam sampel yang sudah ada jika ada, atau default
-        setSampleDate(
-            item.tgl_sampel && item.tgl_sampel !== "0000-00-00"
-                ? item.tgl_sampel
-                : defaultDate
-        );
+        setSampleDate(!isPlaceholderDate(item.tgl_sampel) ? item.tgl_sampel : defaultDate);
         setSampleTime(
             item.jam_sampel && item.jam_sampel !== "00:00:00"
                 ? item.jam_sampel.toString().substring(0, 5)
@@ -476,7 +485,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
 
     const handleInputHasil = (item) => {
         // Validasi: sampel harus sudah diambil
-        if (!item.tgl_sampel || item.tgl_sampel === "0000-00-00") {
+        if (isPlaceholderDate(item.tgl_sampel)) {
             setAlertConfig({
                 type: "error",
                 title: "Tidak Bisa Input Hasil",
@@ -499,7 +508,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
         const hasPaidItem = details.some(
             (d) => d.stts_bayar === "Sudah"
         );
-        const hasSample = item.tgl_sampel && item.tgl_sampel !== "0000-00-00";
+        const hasSample = !isPlaceholderDate(item.tgl_sampel);
         
         // Check if user is admin (simplified - adjust based on your auth system)
         const isAdmin = auth?.user?.roles?.some(
@@ -625,12 +634,12 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
     };
 
     const getStatusBadge = (item) => {
-        const tglSampel = item.tgl_sampel && item.tgl_sampel !== "0000-00-00";
+        const tglSampel = !isPlaceholderDate(item.tgl_sampel);
         
         // Gunakan has_hasil dari backend jika tersedia, jika tidak gunakan fallback
         const hasHasil = item.has_hasil !== undefined 
             ? item.has_hasil 
-            : (item.tgl_hasil && item.tgl_hasil !== "0000-00-00");
+            : !isPlaceholderDate(item.tgl_hasil);
         
         let statusText = "Baru";
         let statusClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
@@ -650,6 +659,44 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                 {statusText}
             </span>
         );
+    };
+
+    const isPlaceholderDate = (date) => {
+        if (!date) return true;
+        const normalized = String(date).trim();
+        const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (match && Number(match[1]) < 1900) {
+            return true;
+        }
+        return (
+            normalized === '' ||
+            normalized === '-' ||
+            normalized === '0000-00-00' ||
+            normalized.startsWith('0000-00-00 ') ||
+            normalized.startsWith('-0001-11-30') ||
+            normalized === '1970-01-01' ||
+            normalized === '1970-01-01 00:00:00'
+        );
+    };
+
+    const isPlaceholderTime = (time) => {
+        if (!time) return true;
+        const normalized = String(time).trim();
+        return normalized === '' || normalized === '-' || normalized === '00:00:00' || normalized === '00:00';
+    };
+
+    const formatDate = (date) => {
+        if (isPlaceholderDate(date)) return '';
+        const dateObj = new Date(date);
+        if (Number.isNaN(dateObj.getTime())) {
+            return '';
+        }
+        return dateObj.toLocaleDateString("id-ID");
+    };
+
+    const formatTime = (time) => {
+        if (isPlaceholderTime(time)) return '';
+        return String(time).substring(0, 5);
     };
 
     // Kolom untuk tabel Data Permintaan
@@ -691,13 +738,11 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
             render: (item) => (
                 <div>
                     <div className="text-sm text-gray-900 dark:text-white">
-                        {item.tgl_permintaan
-                            ? new Date(item.tgl_permintaan).toLocaleDateString("id-ID")
-                            : "-"}
+                        {formatDate(item.tgl_permintaan)}
                     </div>
-                    {item.jam_permintaan && item.jam_permintaan !== "00:00:00" && (
+                    {formatTime(item.jam_permintaan) && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {item.jam_permintaan.toString().substring(0, 5)}
+                            {formatTime(item.jam_permintaan)}
                         </div>
                     )}
                 </div>
@@ -710,13 +755,11 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
             render: (item) => (
                 <div>
                     <div className="text-sm text-gray-900 dark:text-white">
-                        {item.tgl_sampel && item.tgl_sampel !== "0000-00-00"
-                            ? new Date(item.tgl_sampel).toLocaleDateString("id-ID")
-                            : "-"}
+                        {formatDate(item.tgl_sampel)}
                     </div>
-                    {item.jam_sampel && item.jam_sampel !== "00:00:00" && (
+                    {formatTime(item.jam_sampel) && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {item.jam_sampel.toString().substring(0, 5)}
+                            {formatTime(item.jam_sampel)}
                         </div>
                     )}
                 </div>
@@ -729,13 +772,11 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
             render: (item) => (
                 <div>
                     <div className="text-sm text-gray-900 dark:text-white">
-                        {item.tgl_hasil && item.tgl_hasil !== "0000-00-00"
-                            ? new Date(item.tgl_hasil).toLocaleDateString("id-ID")
-                            : "-"}
+                        {formatDate(item.tgl_hasil)}
                     </div>
-                    {item.jam_hasil && item.jam_hasil !== "00:00:00" && (
+                    {formatTime(item.jam_hasil) && (
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {item.jam_hasil.toString().substring(0, 5)}
+                            {formatTime(item.jam_hasil)}
                         </div>
                     )}
                 </div>
@@ -802,9 +843,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                                 <button
                                     onClick={() => handleInputHasil(item)}
                                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                                    disabled={
-                                        !item.tgl_sampel || item.tgl_sampel === "0000-00-00"
-                                    }
+                                    disabled={isPlaceholderDate(item.tgl_sampel)}
                                 >
                                     <span className="mr-3 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300">
                                         <ClipboardList className="w-4 h-4" />
@@ -917,6 +956,58 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
     ];
 
     const currentColumns = activeSubTab === "item" ? itemColumns : permintaanColumns;
+    const permintaanTableClassName = activeSubTab === "permintaan"
+        ? [
+            "[&>div>table>thead>tr]:flex",
+            "[&>div>table>thead>tr]:items-center",
+            "[&>div>table>thead>tr]:justify-start",
+            "[&>div>table>tbody>tr]:flex",
+            "[&>div>table>tbody>tr]:items-center",
+            "[&>div>table>tbody>tr]:justify-start",
+            "[&>div>table>thead>tr>th]:flex-none",
+            "[&>div>table>tbody>tr>td]:flex-none",
+            "[&>div>table>thead>tr>th]:min-w-0",
+            "[&>div>table>tbody>tr>td]:min-w-0",
+            "[&>div>table>thead>tr>th:nth-child(8)]:flex-[0_0_4rem]",
+            "[&>div>table>tbody>tr>td:nth-child(8)]:flex-[0_0_4rem]",
+            "[&>div>table>thead>tr>th:nth-child(1)]:flex-[1.2_1_10rem]",
+            "[&>div>table>tbody>tr>td:nth-child(1)]:flex-[1.2_1_10rem]",
+            "[&>div>table>thead>tr>th:nth-child(2)]:flex-[1.2_1_10rem]",
+            "[&>div>table>tbody>tr>td:nth-child(2)]:flex-[1.2_1_10rem]",
+            "[&>div>table>thead>tr>th:nth-child(7)]:flex-[0_0_7rem]",
+            "[&>div>table>tbody>tr>td:nth-child(7)]:flex-[0_0_7rem]",
+            "[&>div>table>thead>tr>th:nth-child(3)]:flex-[0_0_8rem]",
+            "[&>div>table>tbody>tr>td:nth-child(3)]:flex-[0_0_8rem]",
+            "[&>div>table>thead>tr>th:nth-child(4)]:flex-[0_0_8rem]",
+            "[&>div>table>tbody>tr>td:nth-child(4)]:flex-[0_0_8rem]",
+            "[&>div>table>thead>tr>th:nth-child(5)]:flex-[0_0_8rem]",
+            "[&>div>table>tbody>tr>td:nth-child(5)]:flex-[0_0_8rem]",
+            "[&>div>table>thead>tr>th:nth-child(6)]:flex-[1.6_1_14rem]",
+            "[&>div>table>tbody>tr>td:nth-child(6)]:flex-[1.6_1_14rem]",
+            "lg:[&>div>table>thead>tr>th:nth-child(1)]:flex-[1.4_1_12rem]",
+            "lg:[&>div>table>tbody>tr>td:nth-child(1)]:flex-[1.4_1_12rem]",
+            "lg:[&>div>table>thead>tr>th:nth-child(2)]:flex-[1.4_1_12rem]",
+            "lg:[&>div>table>tbody>tr>td:nth-child(2)]:flex-[1.4_1_12rem]",
+            "lg:[&>div>table>thead>tr>th:nth-child(6)]:flex-[1.8_1_16rem]",
+            "lg:[&>div>table>tbody>tr>td:nth-child(6)]:flex-[1.8_1_16rem]",
+            "[&>div>table>thead>tr>th:nth-child(8)]:order-1",
+            "[&>div>table>thead>tr>th:nth-child(1)]:order-2",
+            "[&>div>table>thead>tr>th:nth-child(2)]:order-3",
+            "[&>div>table>thead>tr>th:nth-child(7)]:order-4",
+            "[&>div>table>thead>tr>th:nth-child(3)]:order-5",
+            "[&>div>table>thead>tr>th:nth-child(4)]:order-6",
+            "[&>div>table>thead>tr>th:nth-child(5)]:order-7",
+            "[&>div>table>thead>tr>th:nth-child(6)]:order-8",
+            "[&>div>table>tbody>tr>td:nth-child(8)]:order-1",
+            "[&>div>table>tbody>tr>td:nth-child(1)]:order-2",
+            "[&>div>table>tbody>tr>td:nth-child(2)]:order-3",
+            "[&>div>table>tbody>tr>td:nth-child(7)]:order-4",
+            "[&>div>table>tbody>tr>td:nth-child(3)]:order-5",
+            "[&>div>table>tbody>tr>td:nth-child(4)]:order-6",
+            "[&>div>table>tbody>tr>td:nth-child(5)]:order-7",
+            "[&>div>table>tbody>tr>td:nth-child(6)]:order-8"
+        ].join(" ")
+        : "";
     // Pastikan currentData selalu array untuk menghindari error
     const currentData = Array.isArray(activeSubTab === "item" ? itemPermintaanData : filteredData) 
         ? (activeSubTab === "item" ? itemPermintaanData : filteredData)
@@ -1188,6 +1279,7 @@ export default function Index({ permintaanLab = null, dokters = [], filters = {}
                                 <ResponsiveTable
                                     data={currentData}
                                     columns={currentColumns}
+                                    className={permintaanTableClassName}
                                     emptyMessage={
                                         activeSubTab === "item"
                                             ? "Tidak ada item permintaan"

@@ -161,6 +161,16 @@ class PermintaanLab extends Model
                 return false;
             }
         }
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $tglHasilStr, $match)) {
+            if ((int) $match[1] < 1900) {
+                return false;
+            }
+        }
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $tglHasilStr, $match)) {
+            if ((int) $match[1] < 1900) {
+                return false;
+            }
+        }
 
         if (str_starts_with(trim($tglHasilStr), '-')) {
             return false;

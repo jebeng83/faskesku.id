@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { todayDateString, nowDateTimeString, getAppTimeZone } from '@/tools/datetime';
+import { getSamplingStatus } from '@/tools/samplingStatus';
 import Modal from '@/Components/Modal';
 
 export default function PermintaanLab({ noRawat = '', initialDokter = '', initialDokterNama = '' }) {
@@ -1287,73 +1288,85 @@ export function RiwayatPermintaanLab({ noRawat = '', pendingNoorder = '', onPend
             };
         }
 
-        const isValidDateValue = (value) => {
-            if (!value) return false;
-            const dateStr = String(value).trim();
-            if (!dateStr || dateStr.startsWith('-')) return false;
-            const invalidDates = [
-                '0000-00-00',
-                '0000-00-00 00:00:00',
-                '-0001-11-30',
-                '-0001-11-30 00:00:00',
-                '-0001-11-29',
-                '1970-01-01',
-                '1970-01-01 00:00:00'
-            ];
-            return !invalidDates.some((invalid) => dateStr.includes(invalid));
+        const samplingStatus = getSamplingStatus({
+            tgl_permintaan: permintaan.tgl_permintaan,
+            tgl_sampel: permintaan.tgl_sampel,
+            tgl_hasil: permintaan.tgl_hasil
+        });
+        const isBatal = permintaan.status === 'batal' || permintaan.status === 'dibatalkan';
+        const statusClassMap = {
+            'Hasil Tersedia': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+            'Sampel Diterima': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+            'Belum Sampling': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+            'Baru': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+            'Tanggal Tidak Valid': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
         };
 
-        const tglSampel = isValidDateValue(permintaan.tgl_sampel);
-        const hasHasilFromFlag = permintaan.has_hasil !== undefined
-            ? (typeof permintaan.has_hasil === 'string'
-                ? ['1', 'true', 'yes'].includes(permintaan.has_hasil.toLowerCase())
-                : Boolean(permintaan.has_hasil))
-            : null;
-        const hasHasil = hasHasilFromFlag !== null
-            ? hasHasilFromFlag && isValidDateValue(permintaan.tgl_hasil)
-            : isValidDateValue(permintaan.tgl_hasil);
-        const isBatal = permintaan.status === 'batal' || permintaan.status === 'dibatalkan';
-
-        let statusText = 'Baru';
-        let statusClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+        let statusText = samplingStatus.status;
+        let statusClass = statusClassMap[samplingStatus.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 
         if (isBatal) {
             statusText = 'Dibatalkan';
             statusClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-        } else if (hasHasil) {
-            statusText = 'Hasil Tersedia';
-            statusClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-        } else if (tglSampel) {
-            statusText = 'Sampel Diambil';
-            statusClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
         }
 
-        return { hasHasil, tglSampel, statusText, statusClass, isBatal };
+        return { hasHasil: samplingStatus.flags.hasHasil, tglSampel: samplingStatus.flags.hasSampel, statusText, statusClass, isBatal };
+    };
+
+    const isPlaceholderDate = (date) => {
+        if (!date) return true;
+        const normalized = String(date).trim();
+        const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (match && Number(match[1]) < 1900) {
+            return true;
+        }
+        return (
+            normalized === '' ||
+            normalized === '-' ||
+            normalized === '0000-00-00' ||
+            normalized.startsWith('0000-00-00 ') ||
+            normalized.startsWith('-0001-11-30') ||
+            normalized === '1970-01-01' ||
+            normalized === '1970-01-01 00:00:00'
+        );
+    };
+
+    const isPlaceholderTime = (time) => {
+        if (!time) return true;
+        const normalized = String(time).trim();
+        return normalized === '' || normalized === '-' || normalized === '00:00:00' || normalized === '00:00';
     };
 
     const formatDate = (date) => {
-        if (!date) return '-';
+        if (isPlaceholderDate(date)) return '-';
         try {
             const tz = getAppTimeZone();
             const dateObj = new Date(date);
+            if (Number.isNaN(dateObj.getTime())) {
+                return '-';
+            }
             return dateObj.toLocaleDateString('id-ID', {
                 day: '2-digit',
-                month: '2-digit', 
+                month: '2-digit',
                 year: 'numeric',
                 timeZone: tz
             });
         } catch {
-            return new Date(date).toLocaleDateString('id-ID', {
+            const dateObj = new Date(date);
+            if (Number.isNaN(dateObj.getTime())) {
+                return '-';
+            }
+            return dateObj.toLocaleDateString('id-ID', {
                 day: '2-digit',
-                month: '2-digit', 
+                month: '2-digit',
                 year: 'numeric'
             });
         }
     };
 
     const formatTime = (time) => {
-        if (!time) return '-';
-        return time.substring(0, 5); // HH:MM
+        if (isPlaceholderTime(time)) return '-';
+        return String(time).substring(0, 5);
     };
 
     if (!noRawat) {
