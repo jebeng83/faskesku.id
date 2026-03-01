@@ -767,6 +767,21 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', co
     // State untuk Modal Keluar
     const [exitModalOpen, setExitModalOpen] = useState(false);
     const [exitLoading, setExitLoading] = useState(false);
+    const resolveExitUrl = () => {
+        try {
+            const fromParam = new URLSearchParams(window.location.search).get('from') || '';
+            if (fromParam) {
+                const decoded = decodeURIComponent(fromParam);
+                if (decoded.startsWith('/')) return decoded;
+                if (decoded.startsWith(window.location.origin)) return decoded;
+            }
+        } catch (_) {}
+        try {
+            return route('rawat-jalan.index');
+        } catch (_) {
+            return '/rawat-jalan';
+        }
+    };
 
     const handleExit = async (choice) => {
         setExitLoading(true);
@@ -777,8 +792,7 @@ export default function CpptSoap({ token = '', noRkmMedis = '', noRawat = '', co
                 no_rawat: noRawat,
                 stts: newStatus
             });
-            // Redirect langsung tanpa alert
-            window.location.href = route('rawat-jalan.index');
+            window.location.href = resolveExitUrl();
         } catch (e) {
             console.error(e);
             const json = e.response ? e.response.data : null;

@@ -540,12 +540,13 @@ export default function Registration({
 
     const goToLanjutan = (no_rawat, no_rkm_medis) => {
         const token = toBase64Url({ no_rawat, no_rkm_medis });
+        const from = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '';
         // Gunakan Ziggy route jika tersedia; fallback ke path hardcode jika tidak
         let url = "/rawat-jalan/lanjutan";
         try {
             url = route("rawat-jalan.lanjutan");
         } catch (_) {}
-        router.get(url, { t: token }, { preserveScroll: true });
+        router.get(url, { t: token, from: encodeURIComponent(from) }, { preserveScroll: true });
     };
 
     // Buka halaman Layanan PCare (Inertia page)
@@ -606,7 +607,7 @@ export default function Registration({
                 goToLanjutan(reg.no_rawat, reg.no_rkm_medis);
             } catch {
                 const url = "/rawat-jalan/lanjutan";
-                router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })) }, { preserveScroll: true });
+                router.get(url, { t: btoa(JSON.stringify({ no_rawat: reg.no_rawat, no_rkm_medis: reg.no_rkm_medis })), from: encodeURIComponent(typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '') }, { preserveScroll: true });
             }
         } catch (e) {
             console.error(

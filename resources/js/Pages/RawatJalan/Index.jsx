@@ -474,6 +474,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
 
     const handleClickPasien = async (e, item) => {
         e.preventDefault();
+        const from = typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : '';
         try {
             if (isAllowedForAntrean(item)) {
                 const payload = {
@@ -486,8 +487,8 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
             }
         } catch (_) {}
         const token = toBase64Url({ no_rawat: item.no_rawat, no_rkm_medis: item.no_rkm_medis || '' });
-        try { router.get(route('rawat-jalan.lanjutan'), { t: token }, { preserveScroll: true }); }
-        catch { router.get('/rawat-jalan/lanjutan', { t: token }, { preserveScroll: true }); }
+        try { router.get(route('rawat-jalan.lanjutan'), { t: token, from: encodeURIComponent(from) }, { preserveScroll: true }); }
+        catch { router.get('/rawat-jalan/lanjutan', { t: token, from: encodeURIComponent(from) }, { preserveScroll: true }); }
     };
 
     const [panggilLoadingMap, setPanggilLoadingMap] = useState({});
@@ -867,6 +868,7 @@ export default function Index({ rawatJalan, statusOptions, statusBayarOptions, f
                                                                 .replace(/=+$/, '')
                                                                 .replace(/\+/g, '-')
                                                                 .replace(/\//g, '_'),
+                                                            from: typeof window !== 'undefined' ? encodeURIComponent(`${window.location.pathname}${window.location.search}`) : '',
                                                         })}
                                                         onClick={(e) => handleClickPasien(e, item)}
                                                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200"
