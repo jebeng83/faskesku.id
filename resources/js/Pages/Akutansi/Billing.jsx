@@ -1678,7 +1678,7 @@ export function BillingPage({
                 </div>
 
                 {activeTab === "pembayaran" && (
-                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1.1fr)] gap-6">
                         <div className="relative overflow-hidden rounded-2xl bg-white/90 dark:bg-gray-900/80 border border-gray-200/60 dark:border-gray-700/60 p-6">
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                                 <div>
@@ -2237,23 +2237,23 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
     return (
         <div className="space-y-6">
             {/* Pilihan komponen biaya */}
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 items-start">
                 {categoryMap.map((c) => (
                     <label
                         key={c.label}
-                        className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-200 cursor-pointer border ${
+                        className={`inline-flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight transition-colors duration-150 cursor-pointer border w-full min-w-0 ${
                             selected.includes(c.label)
-                                ? "text-blue-700 dark:text-blue-200 bg-blue-50/80 dark:bg-blue-900/30 border-blue-200/60 dark:border-blue-700/60 shadow-sm shadow-blue-200/40"
-                                : "text-gray-600 dark:text-gray-300 bg-white/60 dark:bg-gray-800/60 border-gray-200/70 dark:border-gray-700/70 hover:border-blue-200/80 hover:text-blue-700 dark:hover:text-blue-200"
+                                ? "text-blue-700 dark:text-blue-200 bg-blue-50/60 dark:bg-blue-900/20 border-blue-200/60 dark:border-blue-700/50"
+                                : "text-gray-600 dark:text-gray-300 bg-white/60 dark:bg-gray-800/50 border-gray-200/60 dark:border-gray-700/60 hover:border-blue-200/80 hover:text-blue-700 dark:hover:text-blue-200"
                         }`}
                     >
                         <input
                             type="checkbox"
                             checked={selected.includes(c.label)}
                             onChange={() => toggle(c.label)}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
+                            className="h-3 w-3 rounded-sm border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
                         />
-                        <span>{c.label}</span>
+                        <span className="min-w-0 truncate whitespace-nowrap">{c.label}</span>
                     </label>
                 ))}
             </div>
