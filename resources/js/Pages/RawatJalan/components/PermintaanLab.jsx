@@ -384,11 +384,6 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
             return;
         }
 
-        if (!formData.diagnosa_klinis || formData.diagnosa_klinis.trim() === '' || formData.diagnosa_klinis.trim() === '-') {
-            alert('Diagnosa klinis wajib diisi');
-            return;
-        }
-
         // Validasi: setiap jenis pemeriksaan harus punya minimal 1 template yang dipilih
         for (const test of selectedTests) {
             const selectedTemplateIds = selectedTemplates[test.kd_jenis_prw] || [];
@@ -413,9 +408,15 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                 };
             });
 
+            const normalizedFormData = {
+                ...formData,
+                diagnosa_klinis: formData.diagnosa_klinis?.trim() ? formData.diagnosa_klinis.trim() : '-',
+                informasi_tambahan: formData.informasi_tambahan?.trim() ? formData.informasi_tambahan.trim() : '-'
+            };
+
             const submitData = {
                 no_rawat: noRawat,
-                ...formData,
+                ...normalizedFormData,
                 dokter_perujuk: dokterPerujuk.kd_dokter || '-',
                 detail_tests: detailTests
             };
