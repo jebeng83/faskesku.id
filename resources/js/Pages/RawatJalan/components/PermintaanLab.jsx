@@ -59,6 +59,17 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
             ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             : '';
 
+    const formatCurrency = (amount) => {
+        if (!amount || amount === 0) return 'Rp 0';
+
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
+    };
+
     // Fetch available lab tests
     useEffect(() => {
         fetchAvailableTests();
@@ -671,7 +682,7 @@ export default function PermintaanLab({ noRawat = '', initialDokter = '', initia
                                             <div className="flex-1">
                                                 <h5 className="text-sm font-medium text-gray-900 dark:text-white">{test.nm_perawatan}</h5>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">Kode: {test.kd_jenis_prw}</p>
-                                                <p className="text-xs text-green-600 dark:text-green-400 font-medium">{test.total_byr_formatted || 'Rp 0'}</p>
+                                                <span className="text-xs text-green-600 dark:text-green-400 font-medium">{formatCurrency(test.total_byr)}</span>
                                             </div>
                                             <button 
                                                 type="button"
