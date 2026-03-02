@@ -8,7 +8,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 10mm;
         }
 
         body {
@@ -157,7 +157,7 @@
         }
 
         .signature-section {
-            margin-top: 40px;
+            margin-top: 20px;
             display: table;
             width: 100%;
         }
@@ -181,15 +181,78 @@
         }
 
         .footer {
-            margin-top: 30px;
+            margin-top: 10px;
             font-size: 9px;
             text-align: center;
             color: #666;
+        }
+
+        @media print {
+            html,
+            body {
+                height: auto;
+            }
+
+            body {
+                font-size: 11px;
+            }
+
+            .print-root {
+                break-after: avoid-page;
+                page-break-after: avoid;
+            }
+
+            .header {
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+
+            .title {
+                margin: 8px 0;
+                font-size: 14px;
+            }
+
+            .info-section {
+                margin-bottom: 10px;
+            }
+
+            .info-table td {
+                padding: 2px 3px;
+                font-size: 10px;
+            }
+
+            .results-section {
+                margin-bottom: 10px;
+            }
+
+            .results-table th {
+                padding: 5px;
+            }
+
+            .results-table td {
+                padding: 4px;
+            }
+
+            .signature-section {
+                margin-top: 14px;
+            }
+
+            .signature-section,
+            .footer {
+                page-break-inside: avoid;
+            }
+
+            .footer {
+                margin-top: 8px;
+                margin-bottom: 0;
+                page-break-after: avoid;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="print-root">
     <!-- Kop Surat -->
     <div class="header">
         <h1>{{ $setting['nama_instansi'] ?? 'Rumah Sakit' }}</h1>
@@ -509,6 +572,7 @@
     <div class="footer">
         <p>Dokumen ini dicetak secara elektronik dan tidak memerlukan tanda tangan basah</p>
         <p>Tanggal Cetak: {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }}</p>
+    </div>
     </div>
 </body>
 

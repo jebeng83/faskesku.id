@@ -8,7 +8,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 10mm;
         }
 
         body {
@@ -256,16 +256,25 @@
         }
 
         @media print {
+            html,
+            body {
+                height: auto;
+            }
+
             body {
                 background-color: #fff;
                 padding: 0;
             }
 
             .preview-container {
+                width: auto;
                 max-width: 100%;
+                min-height: auto;
                 margin: 0;
                 padding: 0;
                 box-shadow: none;
+                page-break-after: avoid;
+                break-after: avoid-page;
             }
 
             .action-bar {

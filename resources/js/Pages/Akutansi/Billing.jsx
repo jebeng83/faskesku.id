@@ -21,6 +21,8 @@ import {
     Database,
     RefreshCw,
     CreditCard,
+    ChevronDown,
+    ChevronUp,
 } from "lucide-react";
 import LayoutUtama from "@/Pages/LayoutUtama";
 import SidebarKeuanganMenu from "@/Components/SidebarKeuanganMenu";
@@ -204,14 +206,22 @@ function formatTanggal(dateString) {
     }
 }
 
-function Field({ label, children, icon: Icon }) {
+function Field({ label, children, icon: Icon, inline = false }) {
     return (
-        <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+        <div className={inline ? "flex items-center gap-3" : "space-y-2"}>
+            <label
+                className={`text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 ${
+                    inline ? "shrink-0 w-24 sm:w-28" : ""
+                }`}
+            >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
                 {label}
             </label>
-            {children}
+            {inline ? (
+                <div className="flex-1 min-w-0">{children}</div>
+            ) : (
+                children
+            )}
         </div>
     );
 }
@@ -2141,6 +2151,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
         // Default: semua komponen aktif (mirip notaralan=="Yes")
         (Array.isArray(categoryMap) ? categoryMap : []).map((c) => c.label)
     );
+    const [isCategoryOpen, setIsCategoryOpen] = React.useState(false);
     const toggle = (label) => {
         setSelected((prev) =>
             prev.includes(label)
@@ -2236,34 +2247,93 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
 
     return (
         <div className="space-y-6">
-            {/* Pilihan komponen biaya */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 items-start">
-                {categoryMap.map((c) => (
-                    <label
-                        key={c.label}
-                        className={`inline-flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight transition-colors duration-150 cursor-pointer border w-full min-w-0 ${
-                            selected.includes(c.label)
-                                ? "text-blue-700 dark:text-blue-200 bg-blue-50/60 dark:bg-blue-900/20 border-blue-200/60 dark:border-blue-700/50"
-                                : "text-gray-600 dark:text-gray-300 bg-white/60 dark:bg-gray-800/50 border-gray-200/60 dark:border-gray-700/60 hover:border-blue-200/80 hover:text-blue-700 dark:hover:text-blue-200"
+            <div
+                className={`flex items-center justify-between gap-2 rounded-lg border border-blue-300/70 dark:border-blue-700/60 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 transition-all duration-200 ${
+                    isCategoryOpen
+                        ? "px-2.5 py-1.5"
+                        : "px-2 py-1 min-h-0"
+                }`}
+            >
+                <div className="flex items-center gap-2">
+                    <div className="text-[11px] font-semibold tracking-wide">
+                        Komponen Biaya
+                    </div>
+                    <div
+                        className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold border ${
+                            isCategoryOpen
+                                ? "bg-white/20 border-white/30 text-white"
+                                : "bg-yellow-300/90 border-yellow-200 text-gray-900"
                         }`}
+                        aria-live="polite"
                     >
-                        <input
-                            type="checkbox"
-                            checked={selected.includes(c.label)}
-                            onChange={() => toggle(c.label)}
-                            className="h-3 w-3 rounded-sm border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900"
+                        <span
+                            className={`h-1 w-1 rounded-full ${
+                                isCategoryOpen ? "bg-white" : "bg-gray-900"
+                            }`}
                         />
-                        <span className="min-w-0 truncate whitespace-nowrap">{c.label}</span>
-                    </label>
-                ))}
+                        {isCategoryOpen ? "Terbuka" : "Tertutup"}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setIsCategoryOpen((prev) => !prev)}
+                    aria-expanded={isCategoryOpen}
+                    aria-controls="kategori-biaya"
+                    className="inline-flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-md border border-white/40 text-white bg-white/10 hover:bg-white/20 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600"
+                >
+                    <span className="sr-only">
+                        {isCategoryOpen ? "Sembunyikan" : "Tampilkan"} komponen
+                        biaya
+                    </span>
+                    {isCategoryOpen ? (
+                        <ChevronUp className="h-4 w-4" />
+                    ) : (
+                        <ChevronDown className="h-4 w-4" />
+                    )}
+                </button>
             </div>
+            <AnimatePresence initial={false}>
+                {isCategoryOpen ? (
+                    <motion.div
+                        id="kategori-biaya"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 items-start antialiased">
+                            {categoryMap.map((c) => (
+                                <label
+                                    key={c.label}
+                                    className={`inline-flex items-center gap-1 rounded px-1 py-0.5 text-[10px] leading-tight transition-colors duration-150 cursor-pointer border w-full min-w-0 ${
+                                        selected.includes(c.label)
+                                            ? "text-blue-800 dark:text-blue-100 bg-blue-50 dark:bg-blue-900/40 border-blue-300 dark:border-blue-700"
+                                            : "text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:border-blue-300 hover:text-blue-800 dark:hover:text-blue-200"
+                                    }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={selected.includes(c.label)}
+                                        onChange={() => toggle(c.label)}
+                                        className="h-3 w-3 rounded-sm border-gray-400 text-blue-600 focus:ring-blue-500 focus:ring-offset-0 dark:border-gray-500 dark:bg-gray-900"
+                                    />
+                                    <span className="min-w-0 truncate whitespace-nowrap">
+                                        {c.label}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
 
             {/* Ringkasan pembayaran */}
             <div className="space-y-3">
                 {/* Baris tunggal: Total Tagihan, PPN (%), Tagihan + PPN dengan komposisi kolom 2-1-2 */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div className="md:col-span-2">
-                        <Field label="Total Tagihan">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Field label="Total Tagihan" inline>
                             <input
                                 readOnly
                                 value={currency.format(subtotal || 0)}
@@ -2271,8 +2341,8 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             />
                         </Field>
                     </div>
-                    <div className="md:col-span-1">
-                        <Field label="PPN (%)">
+                    <div>
+                        <Field label="PPN (%)" inline>
                             <input
                                 type="number"
                                 step="0.1"
@@ -2285,7 +2355,7 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                         </Field>
                     </div>
                     <div className="md:col-span-2">
-                        <Field label="Tagihan + PPN">
+                        <Field label="Tagihan + PPN" inline>
                             <input
                                 readOnly
                                 value={currency.format(totalWithPpn || 0)}
