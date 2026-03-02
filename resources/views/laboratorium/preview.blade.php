@@ -146,13 +146,13 @@
 
         .info-table td {
             padding: 2px 3px;
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1.2;
         }
 
         .info-table td:first-child {
             width: 35%;
-            font-weight: 600;
+            font-weight: 400;
         }
 
         .info-table td:nth-child(2) {
@@ -213,7 +213,7 @@
         .results-table td {
             border: 1px solid #000;
             padding: 6px;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .results-table td:first-child,
@@ -248,8 +248,13 @@
             font-weight: bold;
         }
 
+        .signature-qr-box svg {
+            width: 80px;
+            height: 80px;
+        }
+
         .footer {
-            margin-top: 30px;
+            margin-top: 18px;
             font-size: 9px;
             text-align: center;
             color: #666;
@@ -275,6 +280,11 @@
                 box-shadow: none;
                 page-break-after: avoid;
                 break-after: avoid-page;
+            }
+
+            .signature-qr-box svg {
+                width: 70px;
+                height: 70px;
             }
 
             .action-bar {
@@ -570,7 +580,8 @@
                 <p style="margin-bottom: 6px; font-size: 11px;">Petugas Lab</p>
                 <!-- QR Code Petugas Lab -->
                 <div style="text-align: center; margin-bottom: 6px;">
-                    <div style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
+                    <div class="signature-qr-box"
+                        style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
                         {!! $qrCodePetugasSvg ?? '' !!}
                     </div>
                 </div>
@@ -582,7 +593,8 @@
                 <p style="margin-bottom: 6px; font-size: 11px;">Dokter Penanggung Jawab</p>
                 <!-- QR Code Dokter Penanggung Jawab -->
                 <div style="text-align: center; margin-bottom: 6px;">
-                    <div style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
+                    <div class="signature-qr-box"
+                        style="display: inline-block; padding: 5px; background-color: #fff; border: 1px solid #000;">
                         {!! $qrCodeDokterSvg ?? '' !!}
                     </div>
                 </div>
