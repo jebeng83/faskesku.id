@@ -115,6 +115,16 @@ export default function Index({
         );
     };
 
+    const formatDateDDMMYYYY = (value) => {
+        if (!value) return "-";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "-";
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
 	const handleDelete = async (patient) => {
 		const name = patient?.nm_pasien || "Pasien";
 		const noRm = patient?.no_rkm_medis || "";
@@ -574,6 +584,9 @@ export default function Index({
                                         JK
                                     </th>
                                     <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
+                                        Tgl. Lahir
+                                    </th>
+                                    <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
                                         Umur
                                     </th>
                                     <th className="text-left px-3 py-2 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-300 font-semibold uppercase tracking-wider">
@@ -750,6 +763,11 @@ export default function Index({
                                         <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.jk === "L" ? "L" : "P"}
                                         </td>
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 font-medium tabular-nums">
+                                            {formatDateDDMMYYYY(
+                                                patient.tgl_lahir
+                                            )}
+                                        </td>
                                         <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.umur}
                                         </td>
@@ -774,19 +792,17 @@ export default function Index({
                                         <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
                                             {patient.no_tlp || "-"}
                                         </td>
-                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                                            {patient.tgl_daftar
-                                                ? new Date(patient.tgl_daftar).toLocaleDateString(
-                                                        "id-ID"
-                                                  )
-                                                : "-"}
+                                        <td className="px-3 py-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 font-medium tabular-nums">
+                                            {formatDateDDMMYYYY(
+                                                patient.tgl_daftar
+                                            )}
                                         </td>
                                     </motion.tr>
                                 ))}
                                 </AnimatePresence>
                                 {patients.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={14} className="px-4 py-12">
+                                        <td colSpan={15} className="px-4 py-12">
                                             <motion.div
                                                 className="flex flex-col items-center justify-center gap-3"
                                                 initial={{ opacity: 0, y: 10 }}

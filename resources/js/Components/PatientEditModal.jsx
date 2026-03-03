@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useForm, router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,7 +52,6 @@ export default function PatientEditModal({
     const [pekerjaanOther, setPekerjaanOther] = useState("");
     const [usePatientAddress, setUsePatientAddress] = useState(false);
 
-    // Helper: normalize various date formats (e.g. ISO "1988-02-22T00:00:00.000000Z") to "YYYY-MM-DD"
     const formatDateForInput = (value) => {
         if (!value) return "";
         // If value already looks like YYYY-MM-DD, return as-is
@@ -70,6 +69,64 @@ export default function PatientEditModal({
             return value.slice(0, 10);
         }
         return "";
+    };
+
+    const formatDateInputLocal = (date) => {
+        if (!date) return "";
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const formatDateDisplay = (value) => {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
+    const parseDateFromInput = (value) => {
+        if (!value) return null;
+        const dashMatch = String(value).match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (dashMatch) {
+            const day = Number(dashMatch[1]);
+            const month = Number(dashMatch[2]);
+            const year = Number(dashMatch[3]);
+            const date = new Date(year, month - 1, day);
+            if (Number.isNaN(date.getTime())) return null;
+            return date;
+        }
+        const isoMatch = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (isoMatch) {
+            const year = Number(isoMatch[1]);
+            const month = Number(isoMatch[2]);
+            const day = Number(isoMatch[3]);
+            const date = new Date(year, month - 1, day);
+            if (Number.isNaN(date.getTime())) return null;
+            return date;
+        }
+        return null;
+    };
+
+    const calculateAgeYears = (birthDate) => {
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            years -= 1;
+        }
+        return years < 0 ? 0 : years;
+    };
+
+    const buildBirthDateFromAge = (age) => {
+        const today = new Date();
+        const year = today.getFullYear() - age;
+        return new Date(year, today.getMonth(), today.getDate());
     };
 
     const { data, setData, errors } = useForm({
@@ -148,9 +205,61 @@ export default function PatientEditModal({
         }
     }, [usePatientAddress, data.alamat]);
 
-    // Custom submitting state because we use router.post with method spoofing
+    const [ageYears, setAgeYears] = useState("");
+    const ageChangeOrigin = useRef(null);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [localErrors, setLocalErrors] = useState({});
+
+    const handleBirthDateChange = (value) => {
+        ageChangeOrigin.current = "birth";
+        setData("tgl_lahir", value);
+        const isValid = /^\d{2}-\d{2}-\d{4}$/.test(value);
+        setLocalErrors((prev) => ({
+            ...prev,
+            tgl_lahir:
+                value && value.length >= 10 && !isValid
+                    ? "Format tanggal lahir harus DD-MM-YYYY."
+                    : null,
+        }));
+    };
+
+    const handleAgeChange = (value) => {
+        const normalized = String(value || "").replace(/[^\d]/g, "");
+        ageChangeOrigin.current = "age";
+        setAgeYears(normalized);
+        if (!normalized) {
+            setData("tgl_lahir", "");
+            return;
+        }
+        const ageNumber = parseInt(normalized, 10);
+        if (Number.isNaN(ageNumber)) return;
+        const birthDate = buildBirthDateFromAge(ageNumber);
+        setData("tgl_lahir", formatDateDisplay(birthDate));
+    };
+
+    useEffect(() => {
+        if (!data.tgl_lahir) {
+            if (ageChangeOrigin.current !== "age") {
+                setAgeYears("");
+            }
+            return;
+        }
+        const parsed =
+            parseDateFromInput(data.tgl_lahir) ||
+            parseDateFromInput(formatDateForInput(data.tgl_lahir));
+        if (!parsed) {
+            if (ageChangeOrigin.current !== "age") {
+                setAgeYears("");
+            }
+            return;
+        }
+        const computedAge = calculateAgeYears(parsed);
+        if (ageChangeOrigin.current !== "age") {
+            setAgeYears(String(computedAge));
+        }
+        ageChangeOrigin.current = null;
+    }, [data.tgl_lahir]);
 
     // Load penjab options on open
     useEffect(() => {
@@ -237,8 +346,9 @@ export default function PatientEditModal({
                 no_kk: patient.no_kk || "",
                 jk: patient.jk || "L",
                 tmp_lahir: patient.tmp_lahir || "",
-                // Normalize date to input-friendly format
-                tgl_lahir: formatDateForInput(patient.tgl_lahir || ""),
+                tgl_lahir: formatDateDisplay(
+                    formatDateForInput(patient.tgl_lahir || "")
+                ),
                 nm_ibu: patient.nm_ibu || "",
                 alamat: patient.alamat || "",
                 gol_darah: patient.gol_darah || "",
@@ -1046,6 +1156,32 @@ export default function PatientEditModal({
             return;
         }
 
+        const tglLahirInput = String(
+            data.tgl_lahir || patient.tgl_lahir || ""
+        ).trim();
+        if (!tglLahirInput) {
+            setLocalErrors({
+                tgl_lahir: "Tanggal lahir harus diisi.",
+            });
+            return;
+        }
+        if (!/^\d{2}-\d{2}-\d{4}$/.test(tglLahirInput)) {
+            setLocalErrors({
+                tgl_lahir: "Format tanggal lahir harus DD-MM-YYYY.",
+            });
+            return;
+        }
+        const parsedTglLahir =
+            parseDateFromInput(tglLahirInput) ||
+            parseDateFromInput(formatDateForInput(tglLahirInput));
+        if (!parsedTglLahir) {
+            setLocalErrors({
+                tgl_lahir: "Format tanggal lahir tidak valid.",
+            });
+            return;
+        }
+        const normalizedTglLahir = formatDateInputLocal(parsedTglLahir);
+
         const resolvedAddress = parseFullAddress(resolvedFullAddress);
         const finalWilayah = {
             village:
@@ -1084,7 +1220,7 @@ export default function PatientEditModal({
             no_kk: data.no_kk || patient.no_kk || "",
             jk: data.jk || patient.jk || "L",
             tmp_lahir: data.tmp_lahir || patient.tmp_lahir || "",
-            tgl_lahir: data.tgl_lahir || patient.tgl_lahir || "",
+            tgl_lahir: normalizedTglLahir,
             nm_ibu: data.nm_ibu || patient.nm_ibu || "",
             alamat: data.alamat || patient.alamat || "",
             gol_darah: data.gol_darah || patient.gol_darah || "",
@@ -1463,16 +1599,17 @@ export default function PatientEditModal({
                                                     Tanggal Lahir *
                                                 </label>
                                                 <input
-                                                    type="date"
+                                                    type="text"
                                                     name="tgl_lahir"
                                                     value={data.tgl_lahir}
                                                     onChange={(e) =>
-                                                        setData(
-                                                            "tgl_lahir",
+                                                        handleBirthDateChange(
                                                             e.target.value
                                                         )
                                                     }
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    inputMode="numeric"
+                                                    placeholder="DD-MM-YYYY"
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white tabular-nums"
                                                 />
                                                 {getErrorMessage(
                                                     "tgl_lahir"
@@ -1483,6 +1620,24 @@ export default function PatientEditModal({
                                                         )}
                                                     </p>
                                                 )}
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Umur (Tahun)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    name="umur"
+                                                    value={ageYears}
+                                                    min="0"
+                                                    onChange={(e) =>
+                                                        handleAgeChange(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                                                    placeholder="Masukkan umur"
+                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
