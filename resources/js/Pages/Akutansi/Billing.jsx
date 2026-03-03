@@ -527,7 +527,7 @@ export function BillingPage({
         { label: "Sarpras", keys: ["Kamar", "TtlKamar", "Harian"] },
     ];
 
-    const buildUrl = (path, params = {}) => {
+    const buildUrl = React.useCallback((path, params = {}) => {
         try {
             const u = new URL(path, window.location.origin);
             Object.entries(params).forEach(([k, v]) => {
@@ -547,9 +547,9 @@ export function BillingPage({
                 .join("&");
             return path + (qs ? `?${qs}` : "");
         }
-    };
+    }, []);
 
-    const loadData = async () => {
+    const loadData = React.useCallback(async () => {
         if (!noRawat || noRawat.trim() === "") {
             console.warn("loadData: noRawat kosong, skip loading");
             return;
@@ -752,7 +752,7 @@ export function BillingPage({
         } finally {
             setLoading(false);
         }
-    };
+    }, [buildUrl, forceTodayOnly, noRawat, q, statusFilter]);
 
     const notify = (msg) => {
         if (!msg) return;
@@ -1467,8 +1467,7 @@ export function BillingPage({
         } else {
             console.warn("useEffect: noRawat kosong atau tidak valid");
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [noRawat]);
+    }, [noRawat, loadData]);
 
     // Refresh status permintaan setiap kali tab dibuka, noRawat berubah, atau items billing berubah
     React.useEffect(() => {

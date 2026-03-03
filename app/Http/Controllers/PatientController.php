@@ -24,6 +24,15 @@ use Inertia\Inertia;
 
 class PatientController extends Controller
 {
+    protected function normalizeEmailInput($value): ?string
+    {
+        $email = trim((string) $value);
+        if ($email === '' || $email === '-') {
+            return null;
+        }
+        return $email;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -102,6 +111,9 @@ class PatientController extends Controller
         if ($noKtp === '') {
             $request->merge(['no_ktp' => null]);
         }
+        $request->merge([
+            'email' => $this->normalizeEmailInput($request->input('email', '')),
+        ]);
         $validator = Validator::make($request->all(), [
             'no_rkm_medis' => 'nullable|string|max:15',
             'nm_pasien' => 'required|string|max:40',
@@ -333,6 +345,9 @@ class PatientController extends Controller
         if ($noKtp === '') {
             $request->merge(['no_ktp' => null]);
         }
+        $request->merge([
+            'email' => $this->normalizeEmailInput($request->input('email', '')),
+        ]);
         // Log request data untuk debugging
         Log::info('Patient update request', [
             'patient_no_rkm_medis' => $patient->no_rkm_medis,
@@ -340,6 +355,10 @@ class PatientController extends Controller
             'request_data_keys' => array_keys($request->all()),
             'request_data' => $request->all(),
         ]);
+
+        $messages = [
+            'email.email' => 'Format email tidak valid. Gunakan format nama@domain.com.',
+        ];
 
         $validator = Validator::make($request->all(), [
             'no_rkm_medis' => [
@@ -368,13 +387,13 @@ class PatientController extends Controller
             'pekerjaanpj' => 'nullable|string|max:35',
             'alamatpj' => 'nullable|string|max:100',
             'kode_wilayah' => 'required|string|max:13|exists:wilayah,kode',
-            'email' => 'nullable|email|max:50',
+            'email' => 'nullable|email:rfc|max:50',
             'perusahaan_pasien' => 'required|string|exists:perusahaan_pasien,kode_perusahaan|max:8',
             'suku_bangsa' => 'required|integer|exists:suku_bangsa,id',
             'bahasa_pasien' => 'required|integer|exists:bahasa_pasien,id',
             'cacat_fisik' => 'required|integer|exists:cacat_fisik,id',
             'nip' => 'nullable|string|max:30',
-        ]);
+        ], $messages);
 
         if ($validator->fails()) {
             Log::warning('Patient update validation failed', [

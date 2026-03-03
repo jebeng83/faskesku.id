@@ -9,7 +9,12 @@ import PenjabCreateModal from "@/Components/PenjabCreateModal";
 import WilayahSearchableSelect from "@/Components/WilayahSearchableSelect";
 import AddressDisplay from "@/Components/AddressDisplay";
 import wilayahRoutes from "@/routes/api/public/wilayah";
-import { isValidWilayahCode, constructKodeWilayah } from "@/tools/wilayah";
+import {
+    isValidWilayahCode,
+    constructKodeWilayah,
+    getSafeKodeWilayah,
+} from "@/tools/wilayah";
+import { toast } from "@/tools/toast";
 import { IdentificationIcon, PhoneIcon, ClipboardDocumentListIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 
 export default function PatientEditModal({
@@ -145,6 +150,7 @@ export default function PatientEditModal({
 
     // Custom submitting state because we use router.post with method spoofing
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [localErrors, setLocalErrors] = useState({});
 
     // Load penjab options on open
     useEffect(() => {
@@ -510,10 +516,173 @@ export default function PatientEditModal({
     }, [isOpen]);
 
     const getErrorMessage = (fieldName) => {
+        if (localErrors[fieldName]) return localErrors[fieldName];
         if (!errors[fieldName]) return null;
         return Array.isArray(errors[fieldName])
             ? errors[fieldName][0]
             : errors[fieldName];
+    };
+
+    const isValidEmail = (value) => {
+        const emailValue = String(value || "").trim();
+        if (!emailValue || emailValue === "-") return true;
+        const emailRegex =
+            /^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*)@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+        return emailRegex.test(emailValue);
+    };
+
+    const parseFullAddress = (fullAddress) => {
+        if (!fullAddress) return null;
+        const parts = fullAddress.split(", ").map((p) => p.trim());
+        return {
+            village: parts[3] || "",
+            district: parts[2] || "",
+            regency: parts[1] || "",
+            province: parts[0] || "",
+        };
+    };
+
+    const normalizeWilayahPart = (value) => {
+        return String(value || "")
+            .toLowerCase()
+            .replace(
+                /^(kabupaten|kab\.|kota|kec\.|kecamatan|kel\.|kelurahan|desa)\s+/i,
+                ""
+            )
+            .replace(/\s+/g, " ")
+            .trim();
+    };
+
+    const normalizeFullAddress = (value) => {
+        return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+    };
+
+    const resolveKodeWilayah = async () => {
+        const direct = (data.kode_wilayah || patient.kode_wilayah || "").trim();
+        if (direct) {
+            return { code: direct, fullAddress: "" };
+        }
+        const safeCode = getSafeKodeWilayah({
+            kode_wilayah: patient.kode_wilayah,
+            kd_prop: patient.kd_prop,
+            kd_kab: patient.kd_kab,
+            kd_kec: patient.kd_kec,
+            kd_kel: patient.kd_kel,
+        });
+        if (safeCode) {
+            return { code: String(safeCode), fullAddress: "" };
+        }
+        const target = {
+            village:
+                selectedWilayah?.village ||
+                data.kelurahanpj ||
+                patient.kelurahanpj ||
+                "",
+            district:
+                selectedWilayah?.district ||
+                data.kecamatanpj ||
+                patient.kecamatanpj ||
+                "",
+            regency:
+                selectedWilayah?.regency ||
+                data.kabupatenpj ||
+                patient.kabupatenpj ||
+                "",
+            province:
+                selectedWilayah?.province ||
+                data.propinsipj ||
+                patient.propinsipj ||
+                "",
+        };
+        const village = String(
+            target.village || ""
+        ).trim();
+        if (!village) {
+            return { code: "", fullAddress: "" };
+        }
+        try {
+            const resp = await fetch(
+                `/api/wilayah/search?q=${encodeURIComponent(
+                    village
+                )}&level=village`
+            );
+            if (!resp.ok) {
+                return { code: "", fullAddress: "" };
+            }
+            const resJson = await resp.json();
+            const items = Array.isArray(resJson?.data) ? resJson.data : [];
+            if (
+                items.length === 1 &&
+                items[0]?.code &&
+                isValidWilayahCode(String(items[0].code))
+            ) {
+                return {
+                    code: String(items[0].code),
+                    fullAddress: items[0]?.full_address || "",
+                };
+            }
+            if (items.length > 1) {
+                const enriched = items.map((item) => ({
+                    item,
+                    parsed: parseFullAddress(item?.full_address || "") || {},
+                }));
+                const filtered = enriched.filter(({ parsed }) => {
+                    const districtMatch = target.district
+                        ? normalizeWilayahPart(parsed.district) ===
+                          normalizeWilayahPart(target.district)
+                        : true;
+                    const regencyMatch = target.regency
+                        ? normalizeWilayahPart(parsed.regency) ===
+                          normalizeWilayahPart(target.regency)
+                        : true;
+                    const provinceMatch = target.province
+                        ? normalizeWilayahPart(parsed.province) ===
+                          normalizeWilayahPart(target.province)
+                        : true;
+                    return districtMatch && regencyMatch && provinceMatch;
+                });
+                if (
+                    filtered.length === 1 &&
+                    filtered[0].item?.code &&
+                    isValidWilayahCode(String(filtered[0].item.code))
+                ) {
+                    return {
+                        code: String(filtered[0].item.code),
+                        fullAddress: filtered[0].item?.full_address || "",
+                    };
+                }
+                if (filtered.length > 1) {
+                    const targetFull = [
+                        target.province,
+                        target.regency,
+                        target.district,
+                        target.village,
+                    ]
+                        .filter(Boolean)
+                        .join(", ");
+                    const exact = filtered.filter(({ item }) => {
+                        return (
+                            normalizeFullAddress(item?.full_address || "") ===
+                            normalizeFullAddress(targetFull)
+                        );
+                    });
+                    if (
+                        exact.length === 1 &&
+                        exact[0].item?.code &&
+                        isValidWilayahCode(String(exact[0].item.code))
+                    ) {
+                        return {
+                            code: String(exact[0].item.code),
+                            fullAddress: exact[0].item?.full_address || "",
+                        };
+                    }
+                }
+                return { code: "", fullAddress: "", multiple: true };
+            }
+        } catch (_err) {
+            return { code: "", fullAddress: "" };
+        }
+        return { code: "", fullAddress: "" };
     };
 
     const handleAddPenjab = () => {
@@ -833,12 +1002,14 @@ export default function PatientEditModal({
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!patient?.no_rkm_medis) {
             alert("Data pasien tidak valid");
             return;
         }
+
+        setLocalErrors({});
 
         // Jika opsi pekerjaan adalah LAINNYA, pastikan nilai custom terisi ke data.pekerjaan
         if (pekerjaanOption === "LAINNYA") {
@@ -847,14 +1018,61 @@ export default function PatientEditModal({
 
         // Validasi lokal wajib: kode_wilayah harus ada dan valid
         const kodeWilayahCandidate = (data.kode_wilayah || patient.kode_wilayah || "").trim();
-        if (!kodeWilayahCandidate) {
+        let resolvedCode = kodeWilayahCandidate;
+        let resolvedFullAddress = "";
+        if (!resolvedCode) {
+            const resolved = await resolveKodeWilayah();
+            if (resolved?.multiple) {
+                alert("Kode Wilayah ditemukan lebih dari satu. Silakan pilih kelurahan/desa secara manual.");
+                return;
+            }
+            resolvedCode = String(resolved?.code || "").trim();
+            resolvedFullAddress = resolved?.fullAddress || "";
+        }
+        if (!resolvedCode) {
             alert("Kode Wilayah harus diisi. Silakan pilih kelurahan/desa.");
             return;
         }
-        if (!isValidWilayahCode(kodeWilayahCandidate)) {
+        if (!isValidWilayahCode(resolvedCode)) {
             alert("Format Kode Wilayah tidak valid. Gunakan format PP.RR.DD.VVVV (contoh: 74.01.01.1001)");
             return;
         }
+
+        const emailCandidate = (data.email || patient.email || "").trim();
+        if (emailCandidate && !isValidEmail(emailCandidate)) {
+            setLocalErrors({
+                email: "Format email tidak valid. Gunakan format nama@domain.com.",
+            });
+            return;
+        }
+
+        const resolvedAddress = parseFullAddress(resolvedFullAddress);
+        const finalWilayah = {
+            village:
+                resolvedAddress?.village ||
+                selectedWilayah?.village ||
+                data.kelurahanpj ||
+                patient.kelurahanpj ||
+                "",
+            district:
+                resolvedAddress?.district ||
+                selectedWilayah?.district ||
+                data.kecamatanpj ||
+                patient.kecamatanpj ||
+                "",
+            regency:
+                resolvedAddress?.regency ||
+                selectedWilayah?.regency ||
+                data.kabupatenpj ||
+                patient.kabupatenpj ||
+                "",
+            province:
+                resolvedAddress?.province ||
+                selectedWilayah?.province ||
+                data.propinsipj ||
+                patient.propinsipj ||
+                "",
+        };
 
         // Pastikan semua field yang diperlukan ada
         const submitData = {
@@ -881,11 +1099,11 @@ export default function PatientEditModal({
             no_peserta: data.no_peserta || patient.no_peserta || "",
             pekerjaanpj: data.pekerjaanpj || patient.pekerjaanpj || "",
             alamatpj: data.alamatpj || patient.alamatpj || "",
-            kode_wilayah: kodeWilayahCandidate,
-            kelurahanpj: data.kelurahanpj || patient.kelurahanpj || "",
-            kecamatanpj: data.kecamatanpj || patient.kecamatanpj || "",
-            kabupatenpj: data.kabupatenpj || patient.kabupatenpj || "",
-            propinsipj: data.propinsipj || patient.propinsipj || "",
+            kode_wilayah: resolvedCode,
+            kelurahanpj: finalWilayah.village,
+            kecamatanpj: finalWilayah.district,
+            kabupatenpj: finalWilayah.regency,
+            propinsipj: finalWilayah.province,
             email: data.email || patient.email || "",
             perusahaan_pasien: data.perusahaan_pasien || patient.perusahaan_pasien || "",
             suku_bangsa: data.suku_bangsa || patient.suku_bangsa || "",
@@ -914,8 +1132,7 @@ export default function PatientEditModal({
                     if (onSuccess) {
                         onSuccess({ ...submitData });
                     } else {
-                        // Fallback alert jika onSuccess tidak tersedia
-                        alert("Data pasien berhasil diperbarui!");
+                        toast.success("Data pasien berhasil diperbarui!");
                     }
                     onClose();
                 },
@@ -1014,6 +1231,7 @@ export default function PatientEditModal({
                                 <form
                                     onSubmit={handleSubmit}
                                     className="space-y-6"
+                                    noValidate
                                 >
                                     {/* Informasi Dasar */}
                                     <motion.div
@@ -1418,15 +1636,17 @@ export default function PatientEditModal({
                                                     Email
                                                 </label>
                                                 <input
-                                                    type="email"
+                                                    type="text"
                                                     name="email"
                                                     value={data.email}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            "email",
-                                                            e.target.value
-                                                        )
-                                                    }
+                                                    onChange={(e) => {
+                                                        setData("email", e.target.value);
+                                                        setLocalErrors((prev) => ({
+                                                            ...prev,
+                                                            email: null,
+                                                        }));
+                                                    }}
+                                                    inputMode="email"
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                                     placeholder="Masukkan email"
                                                 />
