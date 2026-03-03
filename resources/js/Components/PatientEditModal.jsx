@@ -1229,8 +1229,9 @@ export default function PatientEditModal({
                             {/* Form Content */}
                             <div className="p-4 lg:p-6">
                                 <form
+                                    id="patient-edit-form"
                                     onSubmit={handleSubmit}
-                                    className="space-y-6"
+                                    className="space-y-6 pb-28"
                                     noValidate
                                 >
                                     {/* Informasi Dasar */}
@@ -2354,69 +2355,56 @@ export default function PatientEditModal({
                                         </div>
                                     </motion.div>
 
-                                    {/* Action Buttons */}
-                                    <motion.div
-                                        className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{
-                                            duration: 0.3,
-                                            delay: 0.5,
-                                        }}
-                                    >
-                                        <motion.button
-                                            type="button"
-                                            onClick={onClose}
-                                            disabled={isSubmitting}
-                                            className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900 transition-all duration-200"
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            Batal
-                                        </motion.button>
-                                        <motion.button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 dark:focus:ring-offset-gray-900 transition-all duration-200"
-                                            whileHover={{
-                                                scale: isSubmitting ? 1 : 1.02,
-                                            }}
-                                            whileTap={{
-                                                scale: isSubmitting ? 1 : 0.98,
-                                            }}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <svg
-                                                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <circle
-                                                            className="opacity-25"
-                                                            cx="12"
-                                                            cy="12"
-                                                            r="10"
-                                                            stroke="currentColor"
-                                                            strokeWidth="4"
-                                                        ></circle>
-                                                        <path
-                                                            className="opacity-75"
-                                                            fill="currentColor"
-                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                        ></path>
-                                                    </svg>
-                                                    Menyimpan...
-                                                </>
-                                            ) : (
-                                                "Perbaharui Data"
-                                            )}
-                                        </motion.button>
-                                    </motion.div>
                                 </form>
                             </div>
                         </motion.div>
+                        <div
+                            className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-4xl flex flex-col-reverse sm:flex-row sm:justify-end gap-3 px-4 lg:px-6 py-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur border-t border-gray-100 dark:border-gray-800 z-[10000]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-900 transition-all duration-200"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                form="patient-edit-form"
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto inline-flex justify-center items-center px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30 dark:focus:ring-offset-gray-900 transition-all duration-200"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <svg
+                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            ></path>
+                                        </svg>
+                                        Menyimpan...
+                                    </>
+                                ) : (
+                                    "Perbaharui Data"
+                                )}
+                            </button>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
