@@ -33,6 +33,11 @@ import {
     nowDateTimeString,
 } from "@/tools/datetime";
 import { toast } from "@/tools/toast";
+import {
+    PAY_FULL_LABEL,
+    resolveDefaultSelection,
+    togglePayFullState,
+} from "./billingPayToggle";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -2176,9 +2181,11 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
     const [piutang, setPiutang] = React.useState(0);
     const [bayarText, setBayarText] = React.useState("");
     const [piutangText, setPiutangText] = React.useState("");
+    const [isPayFullActive, setIsPayFullActive] = React.useState(true);
     // Akun bayar (Kas/Bank) dan akun piutang yang dipilih melalui SearchableSelect
     const [akunBayar, setAkunBayar] = React.useState("");
     const [akunBayarData, setAkunBayarData] = React.useState(null);
+    const [akunBayarDefault, setAkunBayarDefault] = React.useState(null);
     const [akunPiutang, setAkunPiutang] = React.useState("");
     const [akunPiutangData, setAkunPiutangData] = React.useState(null);
     // Akun pendapatan (kredit) dipilih otomatis di backend dari master rekening (rekening & subrekening); UI tidak perlu mengirimnya
@@ -2201,20 +2208,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
     React.useEffect(() => {
         (async () => {
             try {
-                if (akunBayar) return;
+                if (akunBayarDefault) return;
                 const res = await axios.get(
                     "/api/akutansi/akun-bayar",
-                    { params: { per_page: 50, q: "Kas Kasir" } }
+                    { params: { per_page: 1, q: "" } }
                 );
-                const items = Array.isArray(res?.data?.data)
-                    ? res.data.data
-                    : [];
-                const found = items.find(
-                    (it) =>
-                        (it?.nama_bayar || "")
-                            .toLowerCase()
-                            .includes("kas kasir")
-                );
+                const items = Array.isArray(res?.data?.data) ? res.data.data : [];
+                const found = items.length ? items[0] : null;
                 if (found && found.kd_rek) {
                     const opt = {
                         value: found.kd_rek,
@@ -2229,15 +2229,28 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             found.nm_rek ? " — " + found.nm_rek : ""
                         }`.replace("$$", ""),
                     };
-                    setAkunBayar(found.kd_rek);
-                    setAkunBayarData(opt);
-                    if (typeof opt.ppn === "number") {
-                        setPpnPercent(opt.ppn);
+                    setAkunBayarDefault(opt);
+                    if (!akunBayar) {
+                        setAkunBayar(found.kd_rek);
+                        setAkunBayarData(opt);
+                        if (typeof opt.ppn === "number") {
+                            setPpnPercent(opt.ppn);
+                        }
                     }
                 }
             } catch {}
         })();
-    }, [akunBayar]);
+    }, [akunBayar, akunBayarDefault]);
+
+    React.useEffect(() => {
+        if (!akunBayar && akunBayarDefault?.kd_rek) {
+            setAkunBayar(akunBayarDefault.kd_rek);
+            setAkunBayarData(akunBayarDefault);
+            if (typeof akunBayarDefault.ppn === "number") {
+                setPpnPercent(akunBayarDefault.ppn);
+            }
+        }
+    }, [akunBayar, akunBayarDefault]);
 
     const kembali = React.useMemo(() => {
         const k = Number(bayar) - (totalWithPpn || 0);
@@ -2329,15 +2342,13 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
 
             {/* Ringkasan pembayaran */}
             <div className="space-y-3">
-                {/* Baris tunggal: Total Tagihan, PPN (%), Tagihan + PPN dengan komposisi kolom 2-1-2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Baris tunggal: Total Tagihan, PPN (%), Tagihan + PPN dengan komposisi vertikal */}
+                <div className="flex flex-col gap-4">
                     <div>
                         <Field label="Total Tagihan" inline>
-                            <input
-                                readOnly
-                                value={currency.format(subtotal || 0)}
-                                className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
-                            />
+                            <div className="w-full text-sm sm:text-base font-normal text-gray-800 dark:text-gray-100 tabular-nums">
+                                {currency.format(subtotal || 0)}
+                            </div>
                         </Field>
                     </div>
                     <div>
@@ -2353,18 +2364,43 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             />
                         </Field>
                     </div>
-                    <div className="md:col-span-2">
+                    <div>
                         <Field label="Tagihan + PPN" inline>
-                            <input
-                                readOnly
-                                value={currency.format(totalWithPpn || 0)}
-                                className="w-full rounded-xl border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-900/80 px-3 py-2.5 text-sm shadow-sm focus:ring-2 focus:ring-blue-500/30"
-                            />
+                            <div className="w-full text-sm sm:text-base font-semibold text-black dark:text-white tabular-nums">
+                                {currency.format(totalWithPpn || 0)}
+                            </div>
                         </Field>
                     </div>
                 </div>
                 {/* Baris Bayar: nominal + pilih akun bayar + tombol cek */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4">
+                <div className="flex flex-col gap-4 rounded-xl border border-blue-200/60 dark:border-blue-800/40 bg-blue-50/60 dark:bg-blue-900/20 p-4">
+                    <div className="flex items-center gap-3">
+                        <input
+                            id="bayar-full-toggle"
+                            type="checkbox"
+                            checked={isPayFullActive}
+                            onChange={() => {
+                                setIsPayFullActive((prev) => {
+                                    const next = togglePayFullState(prev);
+                                    if (next) {
+                                        const b = totalWithPpn || 0;
+                                        setBayar(b);
+                                        setPiutang(0);
+                                        setBayarText(formatIDR(b));
+                                        setPiutangText(formatIDR(0));
+                                    }
+                                    return next;
+                                });
+                            }}
+                            className="h-5 w-5 rounded-[3px] border border-gray-300 bg-white text-blue-600 accent-blue-600 focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-offset-blue-900/20"
+                        />
+                        <label
+                            htmlFor="bayar-full-toggle"
+                            className="text-[14px] font-medium text-[#333333] dark:text-gray-200"
+                        >
+                            {PAY_FULL_LABEL}
+                        </label>
+                    </div>
                     <Field label="Bayar : Rp">
                         <input
                             type="text"
@@ -2396,26 +2432,20 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                                 }
                             }}
                             placeholder="Pilih akun bayar (Kas/Bank)"
-                            defaultDisplay={akunBayarData?.label || null}
+                            defaultDisplay={
+                                akunBayarData?.label ||
+                                akunBayarDefault?.label ||
+                                null
+                            }
+                            prependOptions={
+                                akunBayarDefault ? [akunBayarDefault] : []
+                            }
                             className="min-w-[180px]"
                         />
                     </Field>
-                    <button
-                        onClick={() => {
-                            const b = totalWithPpn || 0;
-                            setBayar(b);
-                            setPiutang(0);
-                            setBayarText(formatIDR(b));
-                            setPiutangText(formatIDR(0));
-                        }}
-                        className="self-end px-3 py-2.5 rounded-xl border border-blue-200/70 dark:border-blue-700/70 text-sm font-semibold text-blue-700 dark:text-blue-200 bg-blue-50/70 dark:bg-blue-900/30 hover:bg-blue-100/80 dark:hover:bg-blue-900/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
-                        title="Bayar penuh"
-                    >
-                        <Check className="w-4 h-4" />
-                    </button>
                 </div>
                 {/* Baris Piutang: tampilan sisa + pilih akun piutang + tombol cek */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4">
+                <div className="flex flex-col gap-4">
                     <Field label="Piutang : Rp">
                         <input
                             type="text"
@@ -2476,42 +2506,55 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                     className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50"
                     disabled={!onSave}
                     onClick={() =>
-                        onSave?.({
-                            selectedCategories: selected,
-                            ppnPercent,
-                            bayar,
-                            subtotal,
-                            totalWithPpn,
-                            kembali,
-                            piutang,
-                            setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
-                            setPiutang,
-                            // Kirim detail akun sesuai sumber Akun Bayar/Akun Piutang
-                            akunBayar: akunBayar
-                                ? {
-                                      kd_rek: akunBayar,
-                                      nama_bayar:
-                                          akunBayarData?.nama_bayar || null,
-                                      nm_rek: akunBayarData?.nm_rek || null,
-                                      ppn:
-                                          typeof akunBayarData?.ppn === "number"
-                                              ? akunBayarData.ppn
-                                              : null,
-                                  }
-                                : null,
-                            akunPiutang: akunPiutang
-                                ? {
-                                      kd_rek: akunPiutang,
-                                      nama_bayar:
-                                          akunPiutangData?.nama_bayar || null,
-                                      nm_rek: akunPiutangData?.nm_rek || null,
-                                      kd_pj: akunPiutangData?.kd_pj || null,
-                                      png_jawab:
-                                          akunPiutangData?.png_jawab || null,
-                                  }
-                                : null,
-                            // Akun pendapatan tidak dikirim dari UI; backend akan menentukan otomatis
-                        })
+                        onSave?.((() => {
+                            const resolvedAkunBayar = resolveDefaultSelection(
+                                akunBayar,
+                                akunBayarDefault?.kd_rek
+                            );
+                            const resolvedAkunBayarData =
+                                akunBayarData || akunBayarDefault;
+                            return {
+                                selectedCategories: selected,
+                                ppnPercent,
+                                bayar,
+                                subtotal,
+                                totalWithPpn,
+                                kembali,
+                                piutang,
+                                setBayar, // Tambahkan setBayar untuk menyesuaikan nominal bayar setelah snapshot
+                                setPiutang,
+                                // Kirim detail akun sesuai sumber Akun Bayar/Akun Piutang
+                                akunBayar: resolvedAkunBayar
+                                    ? {
+                                          kd_rek: resolvedAkunBayar,
+                                          nama_bayar:
+                                              resolvedAkunBayarData?.nama_bayar ||
+                                              null,
+                                          nm_rek:
+                                              resolvedAkunBayarData?.nm_rek ||
+                                              null,
+                                          ppn:
+                                              typeof resolvedAkunBayarData?.ppn ===
+                                              "number"
+                                                  ? resolvedAkunBayarData.ppn
+                                                  : null,
+                                      }
+                                    : null,
+                                akunPiutang: akunPiutang
+                                    ? {
+                                          kd_rek: akunPiutang,
+                                          nama_bayar:
+                                              akunPiutangData?.nama_bayar || null,
+                                          nm_rek:
+                                              akunPiutangData?.nm_rek || null,
+                                          kd_pj: akunPiutangData?.kd_pj || null,
+                                          png_jawab:
+                                              akunPiutangData?.png_jawab || null,
+                                      }
+                                    : null,
+                                // Akun pendapatan tidak dikirim dari UI; backend akan menentukan otomatis
+                            };
+                        })())
                     }
                 >
                     Simpan

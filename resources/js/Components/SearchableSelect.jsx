@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 // Global cache and pending requests to avoid redundant PCare API calls which trigger 429
@@ -787,6 +787,7 @@ const REFERENSI_CONFIG = {
 
 const SearchableSelect = ({
     options = [],
+    prependOptions = [],
     value,
     onChange,
     // Callback opsional untuk mendapatkan objek opsi terpilih (selain value)
@@ -843,7 +844,25 @@ const SearchableSelect = ({
     }, [source, JSON.stringify(sourceParams)]);
 
     // Filter options based on search term
-    const baseOptions = useRemote ? remoteOptions : options;
+    const baseOptions = useMemo(() => {
+        const list = useRemote ? remoteOptions : options;
+        const preferred = Array.isArray(prependOptions)
+            ? prependOptions.filter(Boolean)
+            : [];
+        if (preferred.length === 0) return list;
+        const merged = [];
+        const seen = new Set();
+        const addOption = (option) => {
+            const optionValue =
+                typeof option === "string" ? option : option[valueKey];
+            if (seen.has(optionValue)) return;
+            seen.add(optionValue);
+            merged.push(option);
+        };
+        preferred.forEach(addOption);
+        list.forEach(addOption);
+        return merged;
+    }, [useRemote, remoteOptions, options, prependOptions, valueKey]);
 
     // Find selected option early so it can be used in effects and display logic
     const selectedOption = baseOptions.find((option) => {
