@@ -2182,6 +2182,8 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
     const [bayarText, setBayarText] = React.useState("");
     const [piutangText, setPiutangText] = React.useState("");
     const [isPayFullActive, setIsPayFullActive] = React.useState(true);
+    const [isPiutangFullActive, setIsPiutangFullActive] =
+        React.useState(false);
     // Akun bayar (Kas/Bank) dan akun piutang yang dipilih melalui SearchableSelect
     const [akunBayar, setAkunBayar] = React.useState("");
     const [akunBayarData, setAkunBayarData] = React.useState(null);
@@ -2445,7 +2447,35 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                     </Field>
                 </div>
                 {/* Baris Piutang: tampilan sisa + pilih akun piutang + tombol cek */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 rounded-xl border border-blue-200/60 dark:border-blue-800/40 bg-blue-50/60 dark:bg-blue-900/20 p-4">
+                    <div className="flex items-center gap-3">
+                        <input
+                            id="piutang-full-toggle"
+                            type="checkbox"
+                            checked={isPiutangFullActive}
+                            onChange={() => {
+                                setIsPiutangFullActive((prev) => {
+                                    const next = !prev;
+                                    if (next) {
+                                        const p = totalWithPpn || 0;
+                                        setBayar(0);
+                                        setPiutang(p);
+                                        setBayarText(formatIDR(0));
+                                        setPiutangText(formatIDR(p));
+                                    }
+                                    return next;
+                                });
+                            }}
+                            aria-label="Piutang"
+                            className="h-5 w-5 rounded-[3px] border border-gray-300 bg-white text-blue-600 accent-blue-600 focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 focus:ring-offset-blue-50 dark:border-gray-600 dark:bg-gray-900 dark:focus:ring-offset-blue-900/20"
+                        />
+                        <label
+                            htmlFor="piutang-full-toggle"
+                            className="text-[14px] font-medium text-[#333333] dark:text-gray-200"
+                        >
+                            PIUTANG
+                        </label>
+                    </div>
                     <Field label="Piutang : Rp">
                         <input
                             type="text"
@@ -2475,19 +2505,6 @@ function PembayaranTab({ summary, categoryMap, onSave, noRawat, invoice, notaLab
                             className="min-w-[180px]"
                         />
                     </Field>
-                    <button
-                        onClick={() => {
-                            const p = totalWithPpn || 0;
-                            setBayar(0);
-                            setPiutang(p);
-                            setBayarText(formatIDR(0));
-                            setPiutangText(formatIDR(p));
-                        }}
-                        className="self-end px-3 py-2.5 rounded-xl border border-indigo-200/70 dark:border-indigo-700/70 text-sm font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-50/70 dark:bg-indigo-900/30 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5"
-                        title="Jadikan semua piutang"
-                    >
-                        <Check className="w-4 h-4" />
-                    </button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <Field label="Kembali : Rp">
